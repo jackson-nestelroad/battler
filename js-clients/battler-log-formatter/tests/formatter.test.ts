@@ -6,9 +6,11 @@ import { LogCategory } from "../src/types.js";
 describe("LogFormatter", () => {
   it("should format string log correctly", () => {
     const formatter = new LogFormatter();
-    // Simulate UiLogEntry enum using any
-    const entry = "Tie";
-    const result = formatter.format(entry);
+    const entry: Partial<UiLogEntry> = {
+      title: "tie",
+      values: {}
+    };
+    const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     const log = result!.message!;
     expect(log.category).toBe(LogCategory.Primary);
@@ -17,12 +19,11 @@ describe("LogFormatter", () => {
 
   it("should format complex Move log", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry = {
-      Move: {
-        name: "Thunderbolt",
-        mon: {
-          Active: { side: 0, position: 0, name: "Pikachu", player: "p2" }
-        }
+    const entry: Partial<UiLogEntry> = {
+      title: "move",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p2" } },
+        name: "Thunderbolt"
       }
     };
     
@@ -44,8 +45,6 @@ describe("LogFormatter", () => {
     expect(log.category).toBe(LogCategory.Primary);
     
     // Because localPlayerId is p1, and the mon belongs to p2, it should format as a foe.
-    // wait, we mocked the state to have player id 'p2', which is not 'p1'.
-    // so it should use mon.foe -> "The opposing Pikachu"
     expect(log.context.__CAPITALIZED_MON).toEqual({ text: "The opposing Pikachu", monRef: { Active: { player: "p2", position: 0, name: "Pikachu", side: 0 } } });
     expect(log.context.MOVE).toBe("Thunderbolt");
     
@@ -54,11 +53,10 @@ describe("LogFormatter", () => {
 
   it("should handle battle type disambiguation for critical hits", () => {
     const formatter = new LogFormatter();
-    const entry = {
-      Crit: {
-        mon: {
-          Active: { position: 0, name: "Pikachu", player: "p2" }
-        }
+    const entry: Partial<UiLogEntry> = {
+      title: "crit",
+      values: {
+        mon: { Active: { position: 0, name: "Pikachu", player: "p2", side: 0 } }
       }
     };
     
@@ -129,14 +127,15 @@ describe("LogFormatter", () => {
     };
     
     const getBoostLog = (by: number, max?: boolean) => {
-      const entry = {
-        Boost: {
-          mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
+      const entry: Partial<UiLogEntry> = {
+        title: "boost",
+        values: {
+          mon: { Active: { position: 0, name: "Snorlax", player: "p1", side: 0 } },
           stat: "atk",
           by: by
         }
       };
-      if (max) (entry.Boost as Record<string, unknown>).max = true;
+      if (max) entry.values!["max"] = true;
       const result = formatter.format(entry as unknown as UiLogEntry, mockState as unknown as BattleState);
       return stringifyLog(result!.message!);
     };
@@ -162,14 +161,15 @@ describe("LogFormatter", () => {
     };
     
     const getUnboostLog = (by: number, min?: boolean) => {
-      const entry = {
-        Unboost: {
-          mon: { Active: { position: 0, name: "Snorlax", player: "p1" } },
+      const entry: Partial<UiLogEntry> = {
+        title: "unboost",
+        values: {
+          mon: { Active: { position: 0, name: "Snorlax", player: "p1", side: 0 } },
           stat: "def",
           by: by
         }
       };
-      if (min) (entry.Unboost as Record<string, unknown>).min = true;
+      if (min) entry.values!["min"] = true;
       const result = formatter.format(entry as unknown as UiLogEntry, mockState as unknown as BattleState);
       return stringifyLog(result!.message!);
     };

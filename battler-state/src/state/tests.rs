@@ -5,10 +5,7 @@ mod state_test {
         vec::Vec,
     };
 
-    use hashbrown::{
-        HashMap,
-        HashSet,
-    };
+    use hashbrown::HashSet;
 
     use crate::{
         log::Log,
@@ -20,6 +17,7 @@ mod state_test {
         },
         state_selectors,
         ui,
+        ui_log,
     };
 
     fn squirtle_ref() -> MonBattleAppearanceReference {
@@ -91,7 +89,24 @@ mod state_test {
             state.field.sides[1].players.get("player-2").unwrap().name,
             "Player 2"
         );
-        assert!(state.ui_log.iter().all(|l| l.is_empty()));
+        assert_eq!(
+            state.ui_log,
+            vec![
+                vec![
+                    ui_log!(title = "info", values = { "battletype" => "Singles" }),
+                    ui_log!(title = "info", values = { "environment" => "Normal", "time" => "Evening" }),
+                    ui_log!(title = "side", values = { "name" => "Side 1", "id" => 0 }),
+                    ui_log!(title = "side", values = { "name" => "Side 2", "id" => 1 }),
+                    ui_log!(title = "maxsidelength", values = { "length" => 1 }),
+                    ui_log!(title = "player", side = 0usize, values = { "name" => "Player 1", "position" => 0, "id" => "player-1" }),
+                    ui_log!(title = "player", side = 1usize, values = { "position" => 0, "name" => "Player 2", "id" => "player-2" }),
+                    ui_log!(title = "teamsize", player = "player-1", values = { "size" => 3 }),
+                    ui_log!(title = "teamsize", player = "player-2", values = { "size" => 3 }),
+                    ui_log!(title = "battlestart"),
+                ],
+                vec![ui_log!(title = "turn", values = { "turn" => 1 }),],
+            ]
+        );
     }
 
     #[test]
@@ -104,80 +119,9 @@ mod state_test {
         let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
         assert_eq!(sq_mon.physical_appearance.name, "Squirtle");
         assert_eq!(sq_mon.physical_appearance.species, "Squirtle");
-        assert_eq!(state.ui_log[0].len(), 2);
-        assert!(state.ui_log[1].is_empty());
-    }
-
-    #[test]
-    fn records_simple_move_and_damage() {
-        let state = setup_singles_battle(&[
-            "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1",
-            "damage|mon:Charmander,player-2,1|health:75/100",
-        ]);
-        let ch = charmander_ref();
-        assert_eq!(
-            state_selectors::mon_health(&state, &ch).unwrap(),
-            Some((75, 100))
-        );
-        let sq = squirtle_ref();
-        let moves = state_selectors::mon_known_non_volatile_moves(&state, &sq)
-            .unwrap()
-            .collect::<Vec<_>>();
-        assert!(moves.contains(&"Pound"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Move {
-                    name: "Pound".to_owned(),
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    }),
-                    target: Some(ui::MoveTarget::Single(ui::Mon::Active(
-                        ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        }
-                    ))),
-                    animate: true,
-                    animate_only: false,
-                    z_power: false,
-                    no_target: false,
-                    from: None,
-                },
-                ui::UiLogEntry::Damage {
-                    health: (75, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "75/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![ui_log!(title = "turn", values = { "turn" => 1 }),]
         );
     }
 
@@ -191,15 +135,10 @@ mod state_test {
         assert_eq!(p1_mons[1].physical_appearance.name, "Bulbasaur");
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Switch {
-                title: "switch".to_owned(),
-                player: "player-1".to_owned(),
-                mon: 1,
-                into_position: ui::FieldPosition {
-                    side: 0,
-                    position: 0
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "gender" => "M", "name" => "Bulbasaur", "level" => 5, "mon_index" => 1, "species" => "Bulbasaur", "health" => (50, 100) }),
+            ]
         );
     }
 
@@ -224,26 +163,11 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Switch {
-                    title: "switch".to_owned(),
-                    player: "player-1".to_owned(),
-                    mon: 1,
-                    into_position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "switch".to_owned(),
-                    player: "player-1".to_owned(),
-                    mon: 0,
-                    into_position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "level" => 5, "gender" => "M", "health" => (50, 100), "position" => 1, "species" => "Bulbasaur", "name" => "Bulbasaur", "mon_index" => 1 }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle".to_owned() }, values = { "position" => 1, "gender" => "M", "health" => (100, 100), "species" => "Squirtle", "mon_index" => 0, "level" => 5, "name" => "Squirtle" }),
+            ]
         );
     }
 
@@ -287,58 +211,11 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Move {
-                    name: "Scratch".to_owned(),
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    }),
-                    target: Some(ui::MoveTarget::Single(ui::Mon::Active(
-                        ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        }
-                    ))),
-                    animate: true,
-                    animate_only: false,
-                    z_power: false,
-                    no_target: false,
-                    from: None,
-                },
-                ui::UiLogEntry::Damage {
-                    health: (80, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "80/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), "name" => "Scratch", "no_target" => false, "animate" => true, "animate_only" => false, "z_power" => false }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100) }),
+            ]
         );
     }
 
@@ -353,40 +230,23 @@ mod state_test {
         assert!(ch_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (0, 1),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([("health".to_owned(), "0".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Faint {
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(
+                    title = "faint",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 1usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-2".to_owned(),
+                            name: "Charmander".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -444,58 +304,12 @@ mod state_test {
 
         let state = alter_battle_state(state, &log).unwrap();
         assert_eq!(
-            state.ui_log[3],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (75, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "75/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "replace".to_owned(),
-                    player: "player-2".to_owned(),
-                    mon: 2,
-                    into_position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "end".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("ability".to_owned()),
-                            name: "Illusion".to_owned()
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Zoroark".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "species" => "Bulbasaur", "level" => 5, "health" => (100, 100), "name" => "Bulbasaur", "position" => 1, "gender" => "M", "mon_index" => 1 }),
+                ui_log!(title = "residual"),
+            ]
         );
         let p2 = &state.field.sides[1].players["player-2"];
         assert_eq!(p2.mons.len(), 3);
@@ -536,58 +350,12 @@ mod state_test {
 
         let state = alter_battle_state(state, &log).unwrap();
         assert_eq!(
-            state.ui_log[10],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (50, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Bulbasaur".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "50/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "replace".to_owned(),
-                    player: "player-2".to_owned(),
-                    mon: 2,
-                    into_position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "end".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("ability".to_owned()),
-                            name: "Illusion".to_owned()
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Zoroark".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "name" => "Bulbasaur", "mon_index" => 1, "gender" => "M", "level" => 5 }),
+                ui_log!(title = "residual"),
+            ]
         );
         let p2 = &state.field.sides[1].players["player-2"];
         assert_eq!(
@@ -638,58 +406,12 @@ mod state_test {
 
         let state = alter_battle_state(state, &log).unwrap();
         assert_eq!(
-            state.ui_log[16],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (25, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Bulbasaur".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "25/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "replace".to_owned(),
-                    player: "player-2".to_owned(),
-                    mon: 2,
-                    into_position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "end".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("ability".to_owned()),
-                            name: "Illusion".to_owned()
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Zoroark".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "level" => 5, "mon_index" => 1, "name" => "Bulbasaur", "species" => "Bulbasaur", "health" => (100, 100), "gender" => "M" }),
+                ui_log!(title = "residual"),
+            ]
         );
         let p2 = &state.field.sides[1].players["player-2"];
         assert_eq!(p2.mons.len(), 3);
@@ -749,58 +471,12 @@ mod state_test {
         assert_eq!(p2.mons[1].physical_appearance.name, "Bulbasaur");
         assert_eq!(p2.mons[2].physical_appearance.name, "Zoroark");
         assert_eq!(
-            state.ui_log[3],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (75, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "75/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "replace".to_owned(),
-                    player: "player-2".to_owned(),
-                    mon: 2,
-                    into_position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "end".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("ability".to_owned()),
-                            name: "Illusion".to_owned()
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Zoroark".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "level" => 5, "gender" => "M", "mon_index" => 1, "name" => "Bulbasaur" }),
+                ui_log!(title = "residual"),
+            ]
         );
     }
 
@@ -814,40 +490,23 @@ mod state_test {
         assert!(p2.mons[0].fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (0, 1),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([("health".to_owned(), "0".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Faint {
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(
+                    title = "faint",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 1usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-2".to_owned(),
+                            name: "Charmander".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -860,40 +519,23 @@ mod state_test {
         assert!(state.field.sides[1].players["player-2"].mons[0].fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (0, 1),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([("health".to_owned(), "0".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Faint {
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(
+                    title = "faint",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 1usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-2".to_owned(),
+                            name: "Charmander".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -909,40 +551,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "ability".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("ability".to_owned()),
-                        name: "Drizzle".to_owned()
-                    }),
-                    source_effect: Some(ui::Effect {
-                        effect_type: Some("ability".to_owned()),
-                        name: "Drizzle".to_owned()
-                    }),
-                    source: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "ability", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Drizzle".to_owned() }, source_effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Drizzle".to_owned() }, values = { "ability" => "Drizzle" }),
+            ]
         );
     }
 
@@ -958,40 +570,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "item".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("item".to_owned()),
-                        name: "Leftovers".to_owned()
-                    }),
-                    source_effect: Some(ui::Effect {
-                        effect_type: Some("item".to_owned()),
-                        name: "Leftovers".to_owned()
-                    }),
-                    source: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "item", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, source_effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, values = { "item" => "Leftovers" }),
+            ]
         );
     }
 
@@ -1005,26 +587,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "ability".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("ability".to_owned()),
-                        name: "Blaze".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "ability", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Blaze".to_owned() }, values = { "ability" => "Blaze" }),
+            ]
         );
     }
 
@@ -1045,31 +611,16 @@ mod state_test {
         assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Blaze"));
         assert_eq!(ch_mon.volatile_data.ability.as_deref(), Some("Torrent"));
         assert_eq!(
-            state.ui_log[1][3],
-            ui::UiLogEntry::Effect {
-                title: "ability".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("ability".to_owned()),
-                        name: "Blaze".to_owned()
-                    }),
-                    source_effect: Some(ui::Effect {
-                        effect_type: Some("move".to_owned()),
-                        name: "Skill Swap".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "z_power" => false, "no_target" => false, "animate_only" => false, "name" => "Skill Swap" }),
+                ui_log!(title = "activate", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "move" => "Skill Swap" }),
+                ui_log!(title = "abilityend", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Torrent".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Torrent" }),
+                ui_log!(title = "ability", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Blaze".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Blaze" }),
+                ui_log!(title = "abilityend", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Blaze".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Blaze" }),
+                ui_log!(title = "ability", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Torrent".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Torrent" }),
+            ]
         );
     }
 
@@ -1083,26 +634,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "activate".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("ability".to_owned()),
-                        name: "Intimidate".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "activate", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Intimidate".to_owned() }, values = { "ability" => "Intimidate" }),
+            ]
         );
     }
 
@@ -1116,26 +651,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "activate".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("item".to_owned()),
-                        name: "Quick Claw".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "activate", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Quick Claw".to_owned() }, values = { "item" => "Quick Claw" }),
+            ]
         );
     }
 
@@ -1149,48 +668,11 @@ mod state_test {
         assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "item".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("item".to_owned()),
-                            name: "Leftovers".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "itemend".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("item".to_owned()),
-                            name: "Leftovers".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "item", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, values = { "item" => "Leftovers" }),
+                ui_log!(title = "itemend", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, values = { "item" => "Leftovers" }),
+            ]
         );
     }
 
@@ -1203,27 +685,10 @@ mod state_test {
         assert!(state.field.sides[1].players["player-2"].mons[0].fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Caught {
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("item".to_owned()),
-                        name: "Ultra Ball".to_owned()
-                    }),
-                    player: Some("player-1".to_owned()),
-                    additional: HashMap::from_iter([("shakes".to_owned(), "4".to_owned())]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "catch", player = "player-1", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Ultra Ball".to_owned() }, values = { "shakes" => 4, "item" => "Ultra Ball" }),
+            ]
         );
     }
 
@@ -1252,72 +717,24 @@ mod state_test {
         assert_eq!(boosts.get(battler::Boost::Def), 0);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::StatBoost {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                stat: "atk".to_owned(),
-                by: 2,
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned()
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "stat" => "atk", "by" => 2 }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::StatBoost {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                stat: "def".to_owned(),
-                by: -1,
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned()
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+            ]
         );
         assert_eq!(
-            state.ui_log[3],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "clearallboosts".to_owned(),
-                effect: ui::EffectData {
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "stat" => "atk", "by" => 2 }),
+            ]
         );
     }
 
@@ -1332,25 +749,17 @@ mod state_test {
         assert_eq!(state_selectors::field_weather(&state), None);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "weather".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("weather".to_owned()),
-                        name: "Rain".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "weather", effect = ui::Effect { effect_type: Some("weather".to_owned()), name: "Rain".to_owned() }, values = { "weather" => "Rain" }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "clearweather".to_owned(),
-                effect: ui::EffectData {
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "weather", effect = ui::Effect { effect_type: Some("weather".to_owned()), name: "Rain".to_owned() }, values = { "weather" => "Rain" }),
+            ]
         );
     }
 
@@ -1373,49 +782,17 @@ mod state_test {
         assert_eq!(state_selectors::mon_status(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "status".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("status".to_owned()),
-                        name: "Paralysis".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "status", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("status".to_owned()), name: "Paralysis".to_owned() }, values = { "status" => "Paralysis" }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "curestatus".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("status".to_owned()),
-                        name: "Paralysis".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "status", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("status".to_owned()), name: "Paralysis".to_owned() }, values = { "status" => "Paralysis" }),
+            ]
         );
     }
 
@@ -1437,48 +814,11 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (50, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "50/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Heal {
-                    health: (75, 100),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "75/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (50, 100) }),
+                ui_log!(title = "heal", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (75, 100) }),
+            ]
         );
     }
 
@@ -1504,49 +844,17 @@ mod state_test {
         assert!(!conds.contains(&"Substitute"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "start".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("volatile".to_owned()),
-                        name: "Substitute".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "start", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("volatile".to_owned()), name: "Substitute".to_owned() }, values = { "volatile" => "Substitute" }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "end".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("volatile".to_owned()),
-                        name: "Substitute".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "start", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("volatile".to_owned()), name: "Substitute".to_owned() }, values = { "volatile" => "Substitute" }),
+            ]
         );
     }
 
@@ -1567,29 +875,17 @@ mod state_test {
         assert!(!conds.contains(&"Trick Room"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "fieldstart".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("condition".to_owned()),
-                        name: "Trick Room".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "fieldstart", effect = ui::Effect { effect_type: Some("condition".to_owned()), name: "Trick Room".to_owned() }, values = { "condition" => "Trick Room" }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "fieldend".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("condition".to_owned()),
-                        name: "Trick Room".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "fieldstart", effect = ui::Effect { effect_type: Some("condition".to_owned()), name: "Trick Room".to_owned() }, values = { "condition" => "Trick Room" }),
+            ]
         );
     }
 
@@ -1604,27 +900,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "formechange".to_owned(),
-                species: "Squirtle-Mega".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle-Mega".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "formechange", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle-Mega".to_owned() }, values = { "species" => "Squirtle-Mega" }),
+            ]
         );
     }
 
@@ -1643,48 +922,11 @@ mod state_test {
         assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "item".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("item".to_owned()),
-                            name: "Leftovers".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "itemend".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("item".to_owned()),
-                            name: "Leftovers".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "item", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, values = { "item" => "Leftovers" }),
+                ui_log!(title = "itemend", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Leftovers".to_owned() }, values = { "item" => "Leftovers" }),
+            ]
         );
     }
 
@@ -1696,26 +938,10 @@ mod state_test {
         assert!(sq_mon.volatile_data.conditions.contains_key("Solar Beam"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "prepare".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("move".to_owned()),
-                        name: "Solar Beam".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "prepare", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Solar Beam".to_owned() }, values = { "move" => "Solar Beam" }),
+            ]
         );
     }
 
@@ -1727,26 +953,10 @@ mod state_test {
         assert!(sq_mon.volatile_data.conditions.contains_key("Destiny Bond"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "singlemove".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("move".to_owned()),
-                        name: "Destiny Bond".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "singlemove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Destiny Bond".to_owned() }, values = { "move" => "Destiny Bond" }),
+            ]
         );
     }
 
@@ -1761,55 +971,21 @@ mod state_test {
             .unwrap()
             .collect::<Vec<_>>();
         assert!(!moves.contains(&"Ice Beam"));
-        assert_eq!(state.ui_log[1].len(), 2);
-    }
-
-    #[test]
-    fn records_side_condition() {
-        let mut logs = Vec::from_iter(["sidestart|side:0|condition:Spikes"]);
-        let state = setup_singles_battle(&logs);
-        let conds = state_selectors::side_conditions(&state, 0)
-            .unwrap()
-            .collect::<Vec<_>>();
-        assert!(conds.contains(&"Spikes"));
-
-        logs.extend_from_slice(&[
-            "turn|turn:2",
-            "sideend|side:0|condition:Spikes",
-            "turn|turn:3",
-        ]);
-        let state = setup_singles_battle(&logs);
-        let conds = state_selectors::side_conditions(&state, 0)
-            .unwrap()
-            .collect::<Vec<_>>();
-        assert!(!conds.contains(&"Spikes"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "sidestart".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("condition".to_owned()),
-                        name: "Spikes".to_owned()
-                    }),
-                    side: Some(0),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate_only" => false, "no_target" => false, "name" => "Metronome", "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "animate" => true, "z_power" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "no_target" => false, "z_power" => false, "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Ice Beam", "animate_only" => false }),
+            ]
         );
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "sideend".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("condition".to_owned()),
-                        name: "Spikes".to_owned()
-                    }),
-                    side: Some(0),
-                    ..Default::default()
-                }
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "z_power" => false, "no_target" => false, "name" => "Metronome", "animate" => true, "animate_only" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "z_power" => false, "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "animate_only" => false, "name" => "Ice Beam", "no_target" => false }),
+            ]
         );
     }
 
@@ -1823,31 +999,10 @@ mod state_test {
         assert!(sq_mon.volatile_data.transformed.is_some());
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "transform".to_owned(),
-                species: "Charmander".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Charmander".to_owned()
-                    }),
-                    additional: HashMap::from_iter([(
-                        "into".to_owned(),
-                        "Charmander,player-2,1".to_owned()
-                    )]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "transform", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Charmander".to_owned() }, values = { "into" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "species" => "Charmander" }),
+            ]
         );
     }
 
@@ -1862,26 +1017,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "typechange".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    additional: HashMap::from_iter([(
-                        "types".to_owned(),
-                        "Fire/Flying".to_owned()
-                    )]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "typechange", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "types" => "Fire/Flying" }),
+            ]
         );
     }
 
@@ -1908,23 +1047,20 @@ mod state_test {
         assert_eq!(state.phase, BattlePhase::Battle);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::CannotEscape {
-                player: "player-1".to_owned()
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "cannotescape", player = "player-1"),
+            ]
         );
 
         log.extend(["escaped|player:player-1"]).unwrap();
         let state = alter_battle_state(state, &log).unwrap();
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::Leave {
-                title: "escaped".to_owned(),
-                player: "player-1".to_owned(),
-                positions: HashSet::from_iter([ui::FieldPosition {
-                    side: 0,
-                    position: 0
-                }])
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "cannotescape", player = "player-1"),
+            ]
         );
     }
 
@@ -1934,14 +1070,10 @@ mod state_test {
         assert_eq!(state.phase, BattlePhase::Battle);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Leave {
-                title: "forfeited".to_owned(),
-                player: "player-1".to_owned(),
-                positions: HashSet::from_iter([ui::FieldPosition {
-                    side: 0,
-                    position: 0
-                }])
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "forfeited", player = "player-1", values = { "positions" => "0" }),
+            ]
         );
     }
 
@@ -1967,22 +1099,11 @@ mod state_test {
         assert!(moves.contains(&"Water Gun"));
         assert!(!moves.contains(&"Pound"));
         assert_eq!(
-            state.ui_log[2],
-            Vec::from_iter([ui::UiLogEntry::MoveUpdate {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                move_name: "Water Gun".to_owned(),
-                learned: true,
-                forgot: Some("Pound".to_owned()),
-            }])
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate_only" => false, "name" => "Pound", "no_target" => false, "z_power" => false, "animate" => true }),
+            ]
         );
     }
 
@@ -2000,24 +1121,14 @@ mod state_test {
             Some((80, 100))
         );
         assert_eq!(
-            state.ui_log[1][3],
-            ui::UiLogEntry::Effect {
-                title: "hitcount".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    })),
-                    additional: HashMap::from_iter([("count".to_owned(), "2".to_owned())]),
-                    ..Default::default()
-                }
-            }
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate" => true, "no_target" => false, "z_power" => false, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Double Slap", "animate_only" => false }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (90, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100) }),
+                ui_log!(title = "hitcount", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "count" => 2 }),
+            ]
         );
     }
 
@@ -2026,7 +1137,13 @@ mod state_test {
         let state = setup_singles_battle(&["tie"]);
         assert_eq!(state.phase, BattlePhase::Finished);
         assert_eq!(state.winning_side, None);
-        assert_eq!(state.ui_log[1], Vec::from_iter([ui::UiLogEntry::Tie]));
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "tie"),
+            ]
+        );
     }
 
     #[test]
@@ -2036,7 +1153,10 @@ mod state_test {
         assert_eq!(state.winning_side, Some(0));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Win { side: 0 }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "win", side = 0usize),
+            ]
         );
     }
 
@@ -2050,20 +1170,10 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UseItem {
-                player: "player-1".to_owned(),
-                item: "Oran Berry".to_owned(),
-                target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }))
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "useitem", player = "player-1", values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), "name" => "Oran Berry" }),
+            ]
         );
     }
 
@@ -2092,61 +1202,33 @@ mod state_test {
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+                ui_log!(
+                    title = "copyboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    }),
+                    source = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 1usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
+                            name: "Charmander".to_owned()
                         }
-                    }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "copyboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        source: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+                    })
+                ),
+            ]
         );
     }
 
@@ -2212,88 +1294,34 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "by" => 1, "stat" => "def" }),
+                ui_log!(
+                    title = "swapboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
                     }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+                    source = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
+                            side: 1usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
+                            name: "Charmander".to_owned()
                         }
-                    }),
-                    stat: "def".to_owned(),
-                    by: 1,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "swapboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        source: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+                    })
+                ),
+            ]
         );
     }
 
@@ -2359,89 +1387,12 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
-                        }
-                    }),
-                    stat: "def".to_owned(),
-                    by: 1,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "swapboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        source: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 1,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-2".to_owned(),
-                                name: "Charmander".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([("stats".to_owned(), "atk".to_owned())]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "stat" => "def", "by" => 1 }),
+                ui_log!(title = "swapboosts", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "stats" => "atk" }),
+            ]
         );
     }
 
@@ -2457,31 +1408,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "mega".to_owned(),
-                species: "Squirtle-Mega".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("item".to_owned()),
-                        name: "Squirtlite".to_owned()
-                    }),
-                    additional: HashMap::from_iter([(
-                        "species".to_owned(),
-                        "Squirtle-Mega".to_owned()
-                    )]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "mega", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("item".to_owned()), name: "Squirtlite".to_owned() }, values = { "species" => "Squirtle-Mega", "item" => "Squirtlite" }),
+            ]
         );
     }
 
@@ -2493,22 +1423,22 @@ mod state_test {
         assert!(sq_mon.volatile_data.conditions.contains_key("Dynamax"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "dynamax".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "dynamax",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
-                    })),
-                    ..Default::default()
-                }
-            }])
+                    })
+                ),
+            ]
         );
     }
 
@@ -2523,27 +1453,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "gigantamax".to_owned(),
-                species: "Squirtle-Gmax".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle-Gmax".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "gigantamax", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle-Gmax".to_owned() }, values = { "species" => "Squirtle-Gmax" }),
+            ]
         );
     }
 
@@ -2558,26 +1471,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "tera".to_owned(),
-                effect: ui::EffectData {
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    effect: Some(ui::Effect {
-                        effect_type: Some("type".to_owned()),
-                        name: "Fire".to_owned()
-                    }),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "tera", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("type".to_owned()), name: "Fire".to_owned() }, values = { "type" => "Fire" }),
+            ]
         );
     }
 
@@ -2602,14 +1499,10 @@ mod state_test {
         let state = alter_battle_state(BattleState::default(), &log).unwrap();
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Extension {
-                source: "-battlerservice".to_owned(),
-                title: "timer".to_owned(),
-                values: HashMap::from_iter([
-                    ("battle".to_owned(), "".to_owned()),
-                    ("remainingsecs".to_owned(), "5".to_owned()),
-                ])
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "timer", values = { "source" => "-battlerservice", "battle" => true, "remainingsecs" => 5 }),
+            ]
         );
     }
 
@@ -2662,114 +1555,39 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "stat" => "def", "by" => -1 }),
+                ui_log!(
+                    title = "invertboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
-                    }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+                    })
+                ),
+                ui_log!(
+                    title = "clearpositiveboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
-                    }),
-                    stat: "def".to_owned(),
-                    by: -1,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "invertboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "clearpositiveboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "addedtype".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("type".to_owned()),
-                            name: "Grass".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                }
-            ])
+                    })
+                ),
+                ui_log!(title = "addedtype", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("type".to_owned()), name: "Grass".to_owned() }, values = { "type" => "Grass" }),
+                ui_log!(title = "swapplayer", player = "player-1", values = { "position" => 2 }),
+            ]
         );
     }
 
@@ -2778,14 +1596,10 @@ mod state_test {
         let state = setup_singles_battle(&["fieldactivate|effect:Gravity"]);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "fieldactivate".to_owned(),
-                effect: ui::EffectData {
-                    effect: None,
-                    additional: HashMap::from_iter([("effect".to_owned(), "Gravity".to_owned())]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "fieldactivate", values = { "effect" => "Gravity" }),
+            ]
         );
     }
 
@@ -2803,51 +1617,23 @@ mod state_test {
         assert_eq!(boosts.get(battler::Boost::Atk), 0);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => 2, "stat" => "atk" }),
+                ui_log!(
+                    title = "clearboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
-                    }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "clearboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+                    })
+                ),
+            ]
         );
     }
 
@@ -2870,78 +1656,24 @@ mod state_test {
         assert_eq!(boosts.get(battler::Boost::Def), 0);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "stat" => "atk", "by" => 2 }),
+                ui_log!(title = "boost", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "by" => -2, "stat" => "def" }),
+                ui_log!(
+                    title = "clearnegativeboosts",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
+                            side: 0usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
+                            name: "Squirtle".to_owned()
                         }
-                    }),
-                    stat: "atk".to_owned(),
-                    by: 2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::StatBoost {
-                    mon: ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    }),
-                    stat: "def".to_owned(),
-                    by: -2,
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned()
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "clearnegativeboosts".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+                    })
+                ),
+            ]
         );
     }
 
@@ -2956,24 +1688,11 @@ mod state_test {
         assert_eq!(state_selectors::field_weather(&state), None);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "weather".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("weather".to_owned()),
-                            name: "RainDance".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "clearweather".to_owned(),
-                    effect: ui::EffectData {
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "weather", effect = ui::Effect { effect_type: Some("weather".to_owned()), name: "RainDance".to_owned() }, values = { "weather" => "RainDance" }),
+                ui_log!(title = "clearweather"),
+            ]
         );
     }
 
@@ -2998,61 +1717,24 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Damage {
-                    health: (0, 1),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([("health".to_owned(), "0".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Faint {
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Revive {
-                    effect: ui::EffectData {
-                        effect: None,
-                        player: None,
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "health".to_owned(),
-                            "50/100".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(
+                    title = "faint",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(title = "revive", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (50, 100) }),
+            ]
         );
     }
 
@@ -3066,25 +1748,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::SetHealth {
-                health: (42, 100),
-                effect: ui::EffectData {
-                    effect: None,
-                    player: None,
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    additional: HashMap::from_iter([("health".to_owned(), "42/100".to_owned())]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "sethp", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (42, 100) }),
+            ]
         );
     }
 
@@ -3099,28 +1766,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "primal".to_owned(),
-                species: "Squirtle-Primal".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle-Primal".to_owned(),
-                    }),
-                    player: None,
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "primal", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle-Primal".to_owned() }, values = { "species" => "Squirtle-Primal" }),
+            ]
         );
     }
 
@@ -3134,28 +1783,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "ultra".to_owned(),
-                species: "Squirtle-Ultra".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle-Ultra".to_owned(),
-                    }),
-                    player: None,
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "ultra", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle-Ultra".to_owned() }, values = { "species" => "Squirtle-Ultra" }),
+            ]
         );
     }
 
@@ -3173,40 +1804,35 @@ mod state_test {
         assert!(!sq_mon.volatile_data.conditions.contains_key("Dynamax"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "dynamax".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "revertdynamax".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "dynamax",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "revertdynamax",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -3221,27 +1847,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "revertgigantamax".to_owned(),
-                species: "Squirtle".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle".to_owned(),
-                    }),
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "revertgigantamax", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle".to_owned() }, values = { "species" => "Squirtle" }),
+            ]
         );
     }
 
@@ -3255,27 +1864,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "revertmega".to_owned(),
-                species: "Squirtle".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Squirtle".to_owned(),
-                    }),
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "revertmega", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle".to_owned() }, values = { "species" => "Squirtle" }),
+            ]
         );
     }
 
@@ -3299,44 +1891,23 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "tera".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("type".to_owned()),
-                            name: "Fire".to_owned()
-                        }),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "reverttera".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "tera", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("type".to_owned()), name: "Fire".to_owned() }, values = { "type" => "Fire" }),
+                ui_log!(
+                    title = "reverttera",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -3352,26 +1923,10 @@ mod state_test {
         );
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::UpdateAppearance {
-                title: "specieschange".to_owned(),
-                species: "Wartortle".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("species".to_owned()),
-                        name: "Wartortle".to_owned(),
-                    }),
-                    player: Some("player-1".to_owned()),
-                    target: None,
-                    additional: HashMap::from_iter([
-                        ("position".to_owned(), "1".to_owned()),
-                        ("gender".to_owned(), "M".to_owned()),
-                        ("name".to_owned(), "Squirtle".to_owned()),
-                        ("health".to_owned(), "100/100".to_owned()),
-                        ("level".to_owned(), "5".to_owned()),
-                    ]),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "specieschange", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Wartortle".to_owned() }, values = { "gender" => "M", "species" => "Wartortle", "name" => "Squirtle", "position" => 1, "level" => 5, "health" => (100, 100) }),
+            ]
         );
     }
 
@@ -3392,44 +1947,23 @@ mod state_test {
         assert!(sq_mon.volatile_data.types.is_empty());
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "typechange".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "types".to_owned(),
-                            "Fire/Flying".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "resettypechange".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "typechange", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "types" => "Fire/Flying" }),
+                ui_log!(
+                    title = "resettypechange",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -3463,7 +1997,13 @@ mod state_test {
             side.active[1].as_ref().unwrap().mon_index,
             0 // Squirtle
         );
-        assert!(state.ui_log[1].is_empty());
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "swap", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "position" => 2 }),
+            ]
+        );
     }
 
     #[test]
@@ -3480,54 +2020,13 @@ mod state_test {
             .collect::<Vec<_>>();
         assert!(side0_conds.is_empty());
         assert!(side1_conds.contains(&"Spikes"));
-        assert_eq!(state.ui_log[1].len(), 1); // Only the sidestart UI log entry is pushed.
-    }
-
-    #[test]
-    fn records_swap_single_side_condition() {
-        let state = setup_singles_battle(&[
-            "sidestart|side:0|condition:Spikes",
-            "swapsidecondition|side:1|source:0|condition:Spikes",
-        ]);
-        let side0_conds = state_selectors::side_conditions(&state, 0)
-            .unwrap()
-            .collect::<Vec<_>>();
-        let side1_conds = state_selectors::side_conditions(&state, 1)
-            .unwrap()
-            .collect::<Vec<_>>();
-        assert!(side0_conds.is_empty());
-        assert!(side1_conds.contains(&"Spikes"));
-        assert_eq!(state.ui_log[1].len(), 1); // Only the sidestart UI log entry is pushed.
-    }
-
-    #[test]
-    fn records_single_move_volatile() {
-        let state = setup_singles_battle(&["singlemove|mon:Squirtle,player-1,1|move:Destiny Bond"]);
-        let sq = squirtle_ref();
-        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
-        assert!(sq_mon.volatile_data.conditions.contains_key("Destiny Bond"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "singlemove".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("move".to_owned()),
-                        name: "Destiny Bond".to_owned(),
-                    }),
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "sidestart", side = 0usize, effect = ui::Effect { effect_type: Some("condition".to_owned()), name: "Spikes".to_owned() }, values = { "condition" => "Spikes" }),
+                ui_log!(title = "swapsideconditions", side = 0usize, values = { "with" => 1 }),
+            ]
         );
     }
 
@@ -3539,26 +2038,10 @@ mod state_test {
         assert!(sq_mon.volatile_data.conditions.contains_key("Protect"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "singleturn".to_owned(),
-                effect: ui::EffectData {
-                    effect: Some(ui::Effect {
-                        effect_type: Some("move".to_owned()),
-                        name: "Protect".to_owned(),
-                    }),
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 0,
-                            position: 0
-                        },
-                        reference: ui::MonReference {
-                            player: "player-1".to_owned(),
-                            name: "Squirtle".to_owned(),
-                        }
-                    })),
-                    ..Default::default()
-                }
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "singleturn", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Protect".to_owned() }, values = { "move" => "Protect" }),
+            ]
         );
     }
 
@@ -3576,48 +2059,11 @@ mod state_test {
         assert!(!sq_mon.volatile_data.conditions.contains_key("Substitute"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "start".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("volatile".to_owned()),
-                            name: "Substitute".to_owned()
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "end".to_owned(),
-                    effect: ui::EffectData {
-                        effect: Some(ui::Effect {
-                            effect_type: Some("volatile".to_owned()),
-                            name: "Substitute".to_owned(),
-                        }),
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "start", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("volatile".to_owned()), name: "Substitute".to_owned() }, values = { "volatile" => "Substitute" }),
+                ui_log!(title = "end", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("volatile".to_owned()), name: "Substitute".to_owned() }, values = { "volatile" => "Substitute" }),
+            ]
         );
     }
 
@@ -3629,21 +2075,10 @@ mod state_test {
         assert!(!sq_mon.volatile_data.moves.contains(&"Tackle".to_owned()));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::MoveUpdate {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                move_name: "Tackle".to_owned(),
-                learned: false,
-                forgot: None,
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "didnotlearnmove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "move" => "Tackle", "learned" => false }),
+            ]
         );
     }
 
@@ -3654,19 +2089,10 @@ mod state_test {
         assert_eq!(state_selectors::mon_level(&state, &sq).unwrap(), Some(5));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Experience {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                exp: 100,
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "exp", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "exp" => 100 }),
+            ]
         );
     }
 
@@ -3678,24 +2104,10 @@ mod state_test {
         assert_eq!(state_selectors::mon_level(&state, &sq).unwrap(), Some(6));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::LevelUp {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                level: 6,
-                stats: HashMap::from_iter([
-                    ("hp".to_owned(), 20),
-                    ("atk".to_owned(), 12),
-                    ("def".to_owned(), 12),
-                ])
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "levelup", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "def" => 12, "atk" => 12, "level" => 6, "hp" => 20 }),
+            ]
         );
     }
 
@@ -3719,7 +2131,21 @@ mod state_test {
         log.extend(["teampreview|pick:4"]).unwrap();
         let state = alter_battle_state(state, &log).unwrap();
         assert_eq!(state.phase, BattlePhase::TeamPreview(4));
-        assert!(state.ui_log.iter().all(|l| l.is_empty()));
+        assert_eq!(
+            state.ui_log[0],
+            vec![
+                ui_log!(title = "info", values = { "battletype" => "Singles" }),
+                ui_log!(title = "side", values = { "id" => 0, "name" => "Side 1" }),
+                ui_log!(title = "side", values = { "id" => 1, "name" => "Side 2" }),
+                ui_log!(title = "maxsidelength", values = { "length" => 1 }),
+                ui_log!(title = "player", side = 0usize, values = { "position" => 0, "name" => "Player 1", "id" => "player-1" }),
+                ui_log!(title = "player", side = 1usize, values = { "name" => "Player 2", "id" => "player-2", "position" => 0 }),
+                ui_log!(title = "teamsize", player = "player-1", values = { "size" => 1 }),
+                ui_log!(title = "teamsize", player = "player-2", values = { "size" => 1 }),
+                ui_log!(title = "teampreviewstart", values = {}),
+                ui_log!(title = "teampreview", values = { "pick" => 4 })
+            ]
+        );
     }
 
     #[test]
@@ -3923,13 +2349,26 @@ mod state_test {
     fn records_turn_limit() {
         let state = setup_singles_battle(&["turnlimit"]);
         assert_eq!(state.phase, BattlePhase::Battle);
-        assert_eq!(state.ui_log[1], Vec::from_iter([ui::UiLogEntry::TurnLimit]));
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "turnlimit"),
+            ]
+        );
     }
 
     #[test]
     fn records_time_and_continue() {
         let state = setup_singles_battle(&["time", "continue"]);
-        assert!(state.ui_log[1].is_empty());
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "time"),
+                ui_log!(title = "continue"),
+            ]
+        );
     }
 
     #[test]
@@ -3940,7 +2379,13 @@ mod state_test {
         let p1 = &state.field.sides[0].players["player-1"];
         assert_eq!(p1.mons.len(), 2);
         assert_eq!(p1.mons[1].physical_appearance.name, "Bulbasaur");
-        assert!(state.ui_log[1].is_empty());
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "mon", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "name" => "Bulbasaur", "level" => 5, "gender" => "F", "species" => "Bulbasaur" }),
+            ]
+        );
     }
 
     #[test]
@@ -3953,25 +2398,10 @@ mod state_test {
         assert!(!known_moves.contains(&"Tackle"));
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Move {
-                name: "Tackle".to_owned(),
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                target: None,
-                animate: true,
-                animate_only: true,
-                z_power: false,
-                no_target: false,
-                from: None,
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "animatemove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "no_target" => false, "animate_only" => true, "animate" => true, "name" => "Tackle", "z_power" => false }),
+            ]
         );
     }
 
@@ -4001,26 +2431,11 @@ mod state_test {
         assert_eq!(p2.mons[1].physical_appearance.name, "Charmeleon");
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Switch {
-                    title: "drag".to_owned(),
-                    player: "player-1".to_owned(),
-                    mon: 1,
-                    into_position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    }
-                },
-                ui::UiLogEntry::Switch {
-                    title: "appear".to_owned(),
-                    player: "player-2".to_owned(),
-                    mon: 1,
-                    into_position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "drag", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Wartortle".to_owned() }, values = { "species" => "Wartortle", "gender" => "M", "position" => 1, "mon_index" => 1, "health" => (100, 100), "level" => 5, "name" => "Wartortle" }),
+                ui_log!(title = "appear", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Charmeleon".to_owned() }, values = { "level" => 5, "name" => "Charmeleon", "gender" => "M", "position" => 1, "health" => (100, 100), "mon_index" => 1, "species" => "Charmeleon" }),
+            ]
         );
     }
 
@@ -4032,20 +2447,10 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::SwitchOut {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                copy_substitute: false,
-                copy_volatile: false,
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "switchout", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "copy_substitute" => false, "copy_volatile" => false }),
+            ]
         );
     }
 
@@ -4058,28 +2463,10 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Waiting {
-                mon: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 0,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-1".to_owned(),
-                        name: "Squirtle".to_owned(),
-                    }
-                }),
-                on: ui::Mon::Active(ui::ActiveMonReference {
-                    position: ui::FieldPosition {
-                        side: 1,
-                        position: 0
-                    },
-                    reference: ui::MonReference {
-                        player: "player-2".to_owned(),
-                        name: "Charmander".to_owned(),
-                    }
-                }),
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "waiting", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "on" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
+            ]
         );
     }
 
@@ -4099,162 +2486,115 @@ mod state_test {
         ]);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "cant".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        additional: HashMap::from_iter([(
-                            "reason".to_owned(),
-                            "Paralysis".to_owned()
-                        )]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "crit".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "fail".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "immune".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "miss".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "ohko".to_owned(),
-                    effect: ui::EffectData {
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "protectweaken".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "resisted".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "supereffective".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "block".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "cant", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "reason" => "Paralysis" }),
+                ui_log!(
+                    title = "crit",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "fail",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "immune",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "miss",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(title = "ohko"),
+                ui_log!(
+                    title = "protectweaken",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "resisted",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "supereffective",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+                ui_log!(
+                    title = "block",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
+            ]
         );
     }
 
@@ -4266,24 +2606,22 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "catchfailed".to_owned(),
-                effect: ui::EffectData {
-                    effect: None,
-                    player: None,
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "catchfailed",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
+                            side: 1usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
+                            name: "Charmander".to_owned()
                         }
-                    })),
-                    ..Default::default()
-                }
-            }])
+                    })
+                ),
+            ]
         );
     }
 
@@ -4295,24 +2633,22 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Effect {
-                title: "uncatchable".to_owned(),
-                effect: ui::EffectData {
-                    effect: None,
-                    player: None,
-                    target: Some(ui::Mon::Active(ui::ActiveMonReference {
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "uncatchable",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
                         position: ui::FieldPosition {
-                            side: 1,
-                            position: 0
+                            side: 1usize,
+                            position: 0usize
                         },
                         reference: ui::MonReference {
                             player: "player-2".to_owned(),
-                            name: "Charmander".to_owned(),
+                            name: "Charmander".to_owned()
                         }
-                    })),
-                    ..Default::default()
-                }
-            }])
+                    })
+                ),
+            ]
         );
     }
 
@@ -4324,10 +2660,10 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Debug {
-                title: "catchrate".to_owned(),
-                values: HashMap::from_iter([("rate".to_owned(), "255".to_owned())])
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "catchrate", values = { "rate" => 255 }),
+            ]
         );
     }
 
@@ -4339,10 +2675,10 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([ui::UiLogEntry::Debug {
-                title: "fxlang_debug".to_owned(),
-                values: HashMap::from_iter([("var".to_owned(), "val".to_owned())])
-            }])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "fxlang_debug", values = { "var" => "val" }),
+            ]
         );
     }
 
@@ -4365,71 +2701,12 @@ mod state_test {
         assert!(!sq_mon.fainted);
         assert_eq!(
             state.ui_log[1],
-            Vec::from_iter([
-                ui::UiLogEntry::Effect {
-                    title: "deductpp".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("move".to_owned()),
-                            name: "Tackle".to_owned()
-                        }),
-                        additional: HashMap::from_iter([("pp".to_owned(), "1".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "restorepp".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("move".to_owned()),
-                            name: "Tackle".to_owned()
-                        }),
-                        additional: HashMap::from_iter([("pp".to_owned(), "1".to_owned())]),
-                        ..Default::default()
-                    }
-                },
-                ui::UiLogEntry::Effect {
-                    title: "setpp".to_owned(),
-                    effect: ui::EffectData {
-                        target: Some(ui::Mon::Active(ui::ActiveMonReference {
-                            position: ui::FieldPosition {
-                                side: 0,
-                                position: 0
-                            },
-                            reference: ui::MonReference {
-                                player: "player-1".to_owned(),
-                                name: "Squirtle".to_owned(),
-                            }
-                        })),
-                        effect: Some(ui::Effect {
-                            effect_type: Some("move".to_owned()),
-                            name: "Tackle".to_owned()
-                        }),
-                        additional: HashMap::from_iter([("pp".to_owned(), "35".to_owned())]),
-                        ..Default::default()
-                    }
-                }
-            ])
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "deductpp", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "move" => "Tackle", "pp" => 1 }),
+                ui_log!(title = "restorepp", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "move" => "Tackle", "pp" => 1 }),
+                ui_log!(title = "setpp", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "pp" => 35, "move" => "Tackle" }),
+            ]
         );
     }
 

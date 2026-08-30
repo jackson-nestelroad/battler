@@ -134,7 +134,6 @@ export class LogFormatter {
     if (this.options.forceTemplateKey) {
         templateKey = `logs.${this.options.forceTemplateKey}`;
     } else if (patterns && patterns.length > 0) {
-        let unhandledKey: string | undefined = undefined;
         for (const pattern of patterns) {
             let p = pattern;
             const parts = p.split('|');
@@ -153,20 +152,10 @@ export class LogFormatter {
               .replace(/[^a-z0-9_]/g, '');
               
             const fullKey = `logs.${safePattern}`;
-            if (i18next.exists(fullKey)) {
-                const translation = i18next.t(fullKey);
-                if (translation === "[UNHANDLED]") {
-                    // Keep track of the most specific UNHANDLED key in case nothing matches
-                    if (!unhandledKey) unhandledKey = fullKey;
-                    continue;
-                }
-                
+            if (i18next.exists(fullKey) && i18next.t(fullKey, templateArgs) !== null) {
                 templateKey = fullKey;
                 break;
             }
-        }
-        if (!templateKey && unhandledKey) {
-            templateKey = unhandledKey;
         }
     }
 
@@ -258,9 +247,7 @@ export class LogFormatter {
         }
     }
 
-    if (message && message.tokens.length === 0) {
-        message = undefined;
-    }
+
 
     if (!message && notices.length === 0) return null;
 

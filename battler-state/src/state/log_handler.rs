@@ -11,10 +11,7 @@ use anyhow::{
     Error,
     Result,
 };
-use hashbrown::{
-    HashMap,
-    HashSet,
-};
+use hashbrown::HashMap;
 
 use crate::{
     Ambiguity,
@@ -183,7 +180,52 @@ fn effect_from_log_entry(entry: &LogEntry, effect_value_name: Option<&str>) -> R
     }
 }
 
-fn effect_data_from_log_entry(state: &mut BattleState, entry: &LogEntry) -> Result<ui::EffectData> {
+fn parse_log_value(state: &mut BattleState, value: &str) -> ui::LogValue {
+    if value.is_empty() {
+        return ui::LogValue::Boolean(true);
+    }
+
+    if value.contains(';') {
+        if let Ok(mon_list) = value.parse::<MonNameList>() {
+            let mons: Result<Vec<_>, _> = mon_list
+                .0
+                .into_iter()
+                .map(|m| mon_name_to_mon_for_ui_log(state, &m))
+                .collect();
+            if let Ok(mons) = mons {
+                return ui::LogValue::MonList(mons);
+            }
+        }
+    }
+
+    if value.contains(',') {
+        if let Ok(mon) = value.parse::<MonName>() {
+            if let Ok(m) = mon_name_to_mon_for_ui_log(state, &mon) {
+                return ui::LogValue::Mon(m);
+            }
+        }
+    }
+
+    if let Ok(num) = value.parse::<i64>() {
+        return ui::LogValue::Number(num);
+    }
+
+    if value.contains('/') {
+        let parts: Vec<&str> = value.split('/').collect();
+        if parts.len() == 2 {
+            if let (Ok(n1), Ok(n2)) = (parts[0].parse::<u64>(), parts[1].parse::<u64>()) {
+                return ui::LogValue::Fraction(n1, n2);
+            }
+        }
+    }
+
+    ui::LogValue::String(value.to_owned())
+}
+
+fn ui_log_entry_from_log_entry(
+    state: &mut BattleState,
+    entry: &LogEntry,
+) -> Result<ui::UiLogEntry> {
     let effect = effect_from_log_entry(entry, None).ok();
     let side = entry.value("side");
     let slot = entry.value("slot");
@@ -198,24 +240,16 @@ fn effect_data_from_log_entry(state: &mut BattleState, entry: &LogEntry) -> Resu
         .transpose()?;
     let source_effect = effect_from_log_entry(entry, Some("from")).ok();
 
-    // Additional data that may be useful to the user interface for specific effects.
-    let effect_type = effect
-        .as_ref()
-        .map(|effect| effect.effect_type.clone())
-        .flatten();
-    let additional = entry
-        .values()
-        .filter(|(key, _)| match *key {
-            "from" | "mon" | "of" | "player" | "side" | "slot" => false,
-            "stat" | "by" | "boost" => !matches!(entry.title(), "boost" | "unboost" | "setboost"),
-            key => effect_type
-                .as_ref()
-                .is_none_or(|effect_type| key != effect_type),
-        })
-        .map(|(k, v)| (k.to_owned(), v.to_owned()))
-        .collect();
+    let mut values = HashMap::new();
+    for (k, v) in entry.values() {
+        if matches!(k, "from" | "mon" | "of" | "player" | "side" | "slot") {
+            continue;
+        }
+        values.insert(k.to_owned(), parse_log_value(state, v));
+    }
 
-    Ok(ui::EffectData {
+    Ok(ui::UiLogEntry {
+        title: entry.title().to_owned(),
         effect: effect.map(|effect| effect.into()),
         side,
         slot,
@@ -223,8 +257,34 @@ fn effect_data_from_log_entry(state: &mut BattleState, entry: &LogEntry) -> Resu
         target,
         source,
         source_effect: source_effect.map(|effect| effect.into()),
-        additional,
+        values,
     })
+}
+
+fn effect_data_from_ui_log(entry: &ui::UiLogEntry) -> ui::EffectData {
+    ui::EffectData {
+        effect: entry.effect.clone(),
+        side: entry.side,
+        slot: entry.slot,
+        player: entry.player.clone(),
+        target: entry.target.clone(),
+        source: entry.source.clone(),
+        source_effect: entry.source_effect.clone(),
+        additional: entry
+            .values
+            .iter()
+            .map(|(k, v)| {
+                let v_str = match v {
+                    ui::LogValue::String(s) => s.clone(),
+                    ui::LogValue::Number(n) => alloc::format!("{n}"),
+                    ui::LogValue::Boolean(_) => String::default(), // Emptystring for boolean flags
+                    ui::LogValue::Fraction(n, d) => alloc::format!("{n}/{d}"),
+                    _ => String::default(),
+                };
+                (k.clone(), v_str)
+            })
+            .collect(),
+    }
 }
 
 fn mons_by_mon_name(
@@ -795,6 +855,7 @@ fn alter_battle_state_for_entry(
     ui_log: &mut Vec<ui::UiLogEntry>,
     entry: &LogEntry,
 ) -> Result<()> {
+    let mut ui_entry = ui_log_entry_from_log_entry(state, entry)?;
     let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
     match title {
         "ability"
@@ -865,45 +926,23 @@ fn alter_battle_state_for_entry(
         | "ultra"
         | "uncatchable"
         | "weather" => {
-            let effect = effect_data_from_log_entry(state, entry)?;
+            let effect = effect_data_from_ui_log(&ui_entry);
             modify_state_from_effect(state, entry, &effect)?;
 
             // Generate UI log for the effect. Some effects may have special logs.
             match entry.title() {
-                "catch" => {
-                    ui_log.push(ui::UiLogEntry::Caught { effect });
-                }
-                "damage" | "heal" | "sethp" => {
-                    let health = health_from_log_entry(entry)?;
-                    ui_log.push(match entry.title() {
-                        "damage" => ui::UiLogEntry::Damage { health, effect },
-                        "heal" => ui::UiLogEntry::Heal { health, effect },
-                        "sethp" => ui::UiLogEntry::SetHealth { health, effect },
-                        _ => unreachable!(),
-                    });
-                }
-                "faint" => {
-                    ui_log.push(ui::UiLogEntry::Faint { effect });
-                }
+                "catch" => {}
+                "faint" => {}
                 "formechange" | "gigantamax" | "mega" | "revertgigantamax" | "revertmega"
                 | "specieschange" | "transform" | "primal" | "revertprimal" | "ultra"
                 | "revertultra" => {
                     let species = entry.value_or_else("species")?;
-                    ui_log.push(ui::UiLogEntry::UpdateAppearance {
-                        title: entry.title().to_owned(),
-                        species,
-                        effect,
-                    });
+                    ui_entry
+                        .values
+                        .insert("species".to_owned(), ui::LogValue::String(species));
                 }
-                "revive" => {
-                    ui_log.push(ui::UiLogEntry::Revive { effect });
-                }
-                _ => {
-                    ui_log.push(ui::UiLogEntry::Effect {
-                        title: entry.title().to_owned(),
-                        effect,
-                    });
-                }
+                "revive" => {}
+                _ => {}
             }
         }
         "battlestart" => {
@@ -919,35 +958,11 @@ fn alter_battle_state_for_entry(
             apply_for_each_mon(state, &mon, |mon, _| {
                 mon.volatile_data.record_stat_boost(stat.clone(), by);
             })?;
-
-            ui_log.push(ui::UiLogEntry::StatBoost {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                stat,
-                by,
-                effect: effect_data_from_log_entry(state, entry)?,
-            });
         }
-        "cannotescape" => {
-            let player = entry.value_or_else("player")?;
-            ui_log.push(ui::UiLogEntry::CannotEscape { player });
-        }
-        "continue" => (),
-        "debug" | "fxlang_debug" => ui_log.push(ui::UiLogEntry::Debug {
-            title: entry.title().to_owned(),
-            values: entry
-                .values()
-                .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                .collect(),
-        }),
         "didnotlearnmove" => {
-            let mon = entry.value_or_else("mon")?;
-            let move_name = entry.value_or_else("move")?;
-            ui_log.push(ui::UiLogEntry::MoveUpdate {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                move_name,
-                learned: false,
-                forgot: None,
-            });
+            ui_entry
+                .values
+                .insert("learned".to_owned(), ui::LogValue::Boolean(false));
         }
         "escaped" | "forfeited" => {
             let player: String = entry.value_or_else("player")?;
@@ -967,25 +982,14 @@ fn alter_battle_state_for_entry(
                 side.switch_out(&mon, true)?;
             }
 
-            ui_log.push(ui::UiLogEntry::Leave {
-                title: entry.title().to_owned(),
-                player: player.clone(),
-                positions: active_mons
-                    .into_iter()
-                    .map(|(i, _)| ui::FieldPosition {
-                        side: side_index,
-                        position: i,
-                    })
-                    .collect(),
-            });
-        }
-        "exp" => {
-            let mon = entry.value_or_else("mon")?;
-            let exp = entry.value_or_else("exp")?;
-            ui_log.push(ui::UiLogEntry::Experience {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                exp,
-            })
+            let pos_str = active_mons
+                .into_iter()
+                .map(|(i, _)| i.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            ui_entry
+                .values
+                .insert("positions".to_owned(), ui::LogValue::String(pos_str));
         }
         "info" => {
             if let Some(battle_type) = entry.value::<String>("battletype") {
@@ -1019,12 +1023,17 @@ fn alter_battle_state_for_entry(
                 }
             })?;
 
-            ui_log.push(ui::UiLogEntry::MoveUpdate {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                move_name,
-                learned: true,
-                forgot,
-            });
+            ui_entry
+                .values
+                .insert("move_name".to_owned(), ui::LogValue::String(move_name));
+            ui_entry
+                .values
+                .insert("learned".to_owned(), ui::LogValue::Boolean(true));
+            if let Some(forgot) = forgot {
+                ui_entry
+                    .values
+                    .insert("forgot".to_owned(), ui::LogValue::String(forgot));
+            }
         }
         "levelup" => {
             let mon = entry.value_or_else("mon")?;
@@ -1033,26 +1042,6 @@ fn alter_battle_state_for_entry(
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                 mon.record_level(level.into(), ambiguity);
             })?;
-
-            let mut stats = HashMap::default();
-
-            let mut add_stat_to_map_if_present = |name: &str| {
-                if let Some(stat) = entry.value(name) {
-                    stats.insert(name.to_owned(), stat);
-                }
-            };
-            add_stat_to_map_if_present("hp");
-            add_stat_to_map_if_present("atk");
-            add_stat_to_map_if_present("def");
-            add_stat_to_map_if_present("spa");
-            add_stat_to_map_if_present("spd");
-            add_stat_to_map_if_present("spe");
-
-            ui_log.push(ui::UiLogEntry::LevelUp {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                level,
-                stats,
-            });
         }
         "maxsidelength" => {
             state.field.max_side_length = entry.value_or_else("length")?;
@@ -1070,8 +1059,6 @@ fn alter_battle_state_for_entry(
             let mon: MonName = entry.value_or_else("mon")?;
             let name: String = entry.value_or_else("name")?;
             let used_directly = entry.title() == "move";
-            let target: Option<MonName> = entry.value("target");
-            let spread: Option<MonNameList> = entry.value("spread");
             let from: Option<EffectName> = entry.value("from");
             let animate = entry.value_ref("noanim").is_none();
             let animate_only = entry.title() == "animatemove";
@@ -1147,33 +1134,25 @@ fn alter_battle_state_for_entry(
                 }
             })?;
 
-            ui_log.push(ui::UiLogEntry::Move {
-                name,
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                target: if let Some(spread) = spread {
-                    Some(ui::MoveTarget::Spread(
-                        spread
-                            .0
-                            .into_iter()
-                            .map(|mon| mon_name_to_mon_for_ui_log(state, &mon))
-                            .collect::<Result<HashSet<_>>>()?,
-                    ))
-                } else if let Some(mon) = target {
-                    Some(ui::MoveTarget::Single(mon_name_to_mon_for_ui_log(
-                        state, &mon,
-                    )?))
-                } else {
-                    None
-                },
-                animate,
-                animate_only,
-                z_power,
-                no_target,
-                from: from.map(|from| ui::EffectData {
-                    effect: Some(from.into()),
-                    ..Default::default()
-                }),
-            })
+            ui_entry
+                .values
+                .insert("name".to_owned(), ui::LogValue::String(name));
+            ui_entry
+                .values
+                .insert("animate".to_owned(), ui::LogValue::Boolean(animate));
+            ui_entry.values.insert(
+                "animate_only".to_owned(),
+                ui::LogValue::Boolean(animate_only),
+            );
+            ui_entry
+                .values
+                .insert("z_power".to_owned(), ui::LogValue::Boolean(z_power));
+            ui_entry
+                .values
+                .insert("no_target".to_owned(), ui::LogValue::Boolean(no_target));
+
+            // `spread` or `target` are already in `ui_entry.values` via `parse_log_value`!
+            // `from` is already in `source_effect`!
         }
         "player" => {
             let id: String = entry.value_or_else("id")?;
@@ -1191,7 +1170,6 @@ fn alter_battle_state_for_entry(
                 },
             );
         }
-        "residual" => (),
         "side" => {
             let id: usize = entry.value_or_else("id")?;
             let name = entry.value_or_else("name")?;
@@ -1289,26 +1267,25 @@ fn alter_battle_state_for_entry(
             // SAFETY: Resized above.
             *side.active.get_mut(position).unwrap() = Some(mon.clone());
 
-            ui_log.push(ui::UiLogEntry::Switch {
-                title: entry.title().to_owned(),
-                player,
-                mon: mon_index,
-                into_position: ui::FieldPosition {
-                    side: side_index,
-                    position,
-                },
-            });
+            ui_entry.values.insert(
+                "mon_index".to_owned(),
+                ui::LogValue::Number(mon_index as i64),
+            );
+            // player, position, and side are already parsed from the log string.
         }
         "switchout" => {
             // The switch out log is purely visual.
-            let mon = entry.value_or_else("mon")?;
             let copy_substitute = entry.value_ref("copysubstitute").is_some();
             let copy_volatile = entry.value_ref("copyvolatile").is_some();
-            ui_log.push(ui::UiLogEntry::SwitchOut {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                copy_substitute,
-                copy_volatile,
-            });
+
+            ui_entry.values.insert(
+                "copy_substitute".to_owned(),
+                ui::LogValue::Boolean(copy_substitute),
+            );
+            ui_entry.values.insert(
+                "copy_volatile".to_owned(),
+                ui::LogValue::Boolean(copy_volatile),
+            );
         }
         "teampreviewstart" => {
             state.phase = BattlePhase::PreTeamPreview;
@@ -1333,39 +1310,11 @@ fn alter_battle_state_for_entry(
         }
         "tie" => {
             state.phase = BattlePhase::Finished;
-            ui_log.push(ui::UiLogEntry::Tie);
-        }
-        "time" => (),
-        "turn" => (),
-        "turnlimit" => {
-            ui_log.push(ui::UiLogEntry::TurnLimit);
-        }
-        "useitem" => {
-            let player = entry.value_or_else("player")?;
-            let item = entry.value_or_else("name")?;
-            let target = entry.value("target");
-            ui_log.push(ui::UiLogEntry::UseItem {
-                player,
-                item,
-                target: target
-                    .map(|target| mon_name_to_mon_for_ui_log(state, &target))
-                    .transpose()?,
-            });
         }
         "win" => {
             state.phase = BattlePhase::Finished;
             let side = entry.value_or_else("side")?;
             state.winning_side = Some(side);
-            ui_log.push(ui::UiLogEntry::Win { side });
-        }
-        "catchrate" => {
-            ui_log.push(ui::UiLogEntry::Debug {
-                title: entry.title().to_owned(),
-                values: entry
-                    .values()
-                    .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                    .collect(),
-            });
         }
         "swap" => {
             let mon_name = entry.value_or_else::<MonName>("mon")?;
@@ -1425,42 +1374,19 @@ fn alter_battle_state_for_entry(
                 }
             }
         }
-        "waiting" => {
-            let mon: MonName = entry.value_or_else("mon")?;
-            let on: MonName = entry.value_or_else("on")?;
-            ui_log.push(ui::UiLogEntry::Waiting {
-                mon: mon_name_to_mon_for_ui_log(state, &mon)?,
-                on: mon_name_to_mon_for_ui_log(state, &on)?,
-            });
-        }
-        "addvolatile"
-        | "removevolatile"
-        | "addsidecondition"
-        | "removesidecondition"
-        | "addslotcondition"
-        | "removeslotcondition"
-        | "addpseudoweather"
-        | "removepseudoweather" => {
-            // Debug only logs, ignore in state tracking.
-        }
-        title @ _ => {
+        _ => {
             let orig_title = entry.title();
             if orig_title.starts_with("-") && orig_title.contains(":") {
                 let (source, title) = orig_title
                     .split_once(":")
                     .ok_or_else(|| Error::msg("extension log had no title following a colon"))?;
-                ui_log.push(ui::UiLogEntry::Extension {
-                    source: source.to_owned(),
-                    title: title.to_owned(),
-                    values: entry
-                        .values()
-                        .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                        .collect(),
-                });
-            } else {
-                return Err(Error::msg(format!("unsupported log: {title}")));
+                ui_entry.title = title.to_owned();
+                ui_entry
+                    .values
+                    .insert("source".to_owned(), ui::LogValue::String(source.to_owned()));
             }
         }
     }
+    ui_log.push(ui_entry);
     Ok(())
 }

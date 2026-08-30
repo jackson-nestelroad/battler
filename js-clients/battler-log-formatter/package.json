@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run",
+    "test": "vitest run tests",
     "extract-logs": "tsx tests/scraper.ts",
     "lint:locales": "tsx scripts/validate-locales.ts",
     "lint": "tsc -b && tsc -p tsconfig.test.json --noEmit && npm run lint:locales"

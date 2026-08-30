@@ -241,6 +241,10 @@ export function generateCombinatorics(
     // 3. Omit dimension entirely
     let canOmit = rules.omittableTags.always.includes(k);
 
+    if (dim.includes(":") && !rules.wildcardableTags.includes(k)) {
+      canOmit = true;
+    }
+
     const condRule = (
       rules.omittableTags.conditional as Record<string, { excludeTitles: string[] }>
     )[k];
@@ -269,16 +273,12 @@ export function mapUiLogEntry(
     return { patterns: [lower], category: LogCategory.Primary, context };
   }
 
-  const keyStr = Object.keys(entry)[0];
-  const key = keyStr.toLowerCase();
-  const data = (entry as Record<string, Record<string, unknown>>)[keyStr];
-
-  let title = key;
+  let title = entry.title.toLowerCase();
   let metadata: MappedLogMetadata = {};
 
   if (rules.aliases[title as keyof typeof rules.aliases]) {
     title = rules.aliases[title as keyof typeof rules.aliases];
-  } else if (title === "statboost") title = (data?.by as number) < 0 ? "unboost" : "boost";
+  } else if (title === "statboost") title = (entry.values?.by as number) < 0 ? "unboost" : "boost";
   else if (title === "itemend") title = "itemend";
   else if (title === "clearweather") title = "clearweather";
   else if (title === "fieldstart") title = "fieldstart";
@@ -287,45 +287,83 @@ export function mapUiLogEntry(
   else if (title === "sideend") title = "sideend";
   else if (title === "curestatus") title = "curestatus";
   else if (title === "updateappearance") {
-    if (data && data.title === "specieschange") title = "specieschange";
+    if (entry.values?.title === "specieschange") title = "specieschange";
   } else if (title === "effect") {
-    if (
-      data?.effect &&
-      typeof data.effect === "object" &&
-      (data.effect as Record<string, unknown>).effect_type === "Ability"
-    )
+    if (entry.effect?.effect_type === "Ability") {
       title = "ability";
+    }
   } else if (title === "extension") {
-    if (data && data.title === "Affection") title = "affection";
-    if (data && data.title === "TierChange") title = "tierchange";
+    if (entry.values?.title === "Affection") title = "affection";
+    if (entry.values?.title === "TierChange") title = "tierchange";
   }
 
-  if (data && data.title) {
-    title = data.title as string;
+  if (entry.values?.title && typeof entry.values.title === "string") {
+    title = entry.values.title.toLowerCase();
   }
+
+  if (title === "leave" && entry.values?.title !== "forfeited" && entry.values?.title !== "escaped") return null;
+  if (title === "extension") return null;
 
   const tags: string[] = [];
   const flags: string[] = [];
   const context: LogContext = {};
 
   let category = LogCategory.Secondary;
-  if (rules.primaryKeys.includes(key) || rules.primaryKeys.includes(title)) {
+  if (rules.primaryKeys.includes(entry.title.toLowerCase()) || rules.primaryKeys.includes(title)) {
     category = LogCategory.Primary;
-  } else if (rules.hintKeys.includes(key) || rules.hintKeys.includes(title)) {
+  } else if (rules.hintKeys.includes(entry.title.toLowerCase()) || rules.hintKeys.includes(title)) {
     category = LogCategory.Hint;
   }
 
-  if (data && typeof data === "object") {
+  // --- Process explicit struct fields ---
+  if (entry.player) {
+    tags.push("player:*");
+    const resolved = resolvePlayerContext(entry.player, state, options);
+    context.PLAYER = resolved.standard;
+    context.PLAYER_POSSESSIVE = resolved.possessive;
+  }
+
+  if (entry.side !== undefined && entry.side !== null) {
+    tags.push("side:*");
+    const resolved = resolveSideContext(entry.side, state, options);
+    context.SIDE = resolved.standard;
+    context.SIDE_POSSESSIVE = resolved.possessive;
+  }
+
+  if (entry.target) {
+    tags.push(entry.title.toLowerCase() === "effect" ? "mon:*" : "target:*");
+    const resolved = resolveMonContext(entry.target, state, options);
+    const prefix = entry.title.toLowerCase() === "effect" ? "MON" : "TARGET";
+    context[prefix] = resolved.standard;
+    context[`${prefix}_POSSESSIVE`] = resolved.possessive;
+    context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
+    metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+  }
+
+  if (entry.source) {
+    tags.push("of:*");
+    const resolved = resolveMonContext(entry.source, state, options);
+    context.SOURCE = resolved.standard;
+    context.SOURCE_POSSESSIVE = resolved.possessive;
+    context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
+    metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+  }
+
+  if (entry.effect) {
+    if (entry.effect.effect_type) tags.push(`${entry.effect.effect_type.toLowerCase()}:${entry.effect.name}`);
+    else tags.push(`effect:${entry.effect.name}`);
+  }
+
+  if (entry.source_effect) {
+    if (entry.source_effect.effect_type) tags.push(`from:${entry.source_effect.effect_type.toLowerCase()}:${entry.source_effect.name}`);
+    else tags.push(`from:${entry.source_effect.name}`);
+  }
+
+  // --- Process generic dynamic values ---
+  if (entry.values) {
     const processValue = (k: string, v: unknown) => {
       if (v === undefined || v === null) return;
       if (k === "title") return;
-
-      if (k === "additional" && typeof v === "object" && v !== null) {
-        for (const [ak, av] of Object.entries(v)) {
-          processValue(ak, av);
-        }
-        return;
-      }
 
       if (k === "animate") {
         if (v === false) flags.push("noanim");
@@ -336,128 +374,43 @@ export function mapUiLogEntry(
         return;
       }
 
-      if (k === "learned" && key === "moveupdate") {
+      if (k === "learned" && entry.title.toLowerCase() === "moveupdate") {
         title = v ? "learnedmove" : "didnotlearnmove";
         return;
       }
+      
+      // Opportunistic UI context binding: mon context
+      if (k === "mon" || k === "target" || k === "source" || k === "of") {
+        if (typeof v === "object" && v !== null && ("Active" in v || "Inactive" in v)) {
+            const mappedK = (k === "of" || k === "source") ? "source" : (k === "target" ? "target" : "mon");
+            const tagK = mappedK === "source" ? "of" : mappedK;
+            tags.push(`${tagK}:*`);
+            const resolved = resolveMonContext(v as UiMon, state, options);
+            const prefix = mappedK.toUpperCase();
+            context[prefix] = resolved.standard;
+            context[`${prefix}_POSSESSIVE`] = resolved.possessive;
+            context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
+            
+            if (mappedK === "source") metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            else if (mappedK === "target") metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            else metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            return;
+        }
+      }
 
-      if (k === "mon") {
-        tags.push(`${k}:*`);
-        const resolved = resolveMonContext(v as UiMon, state, options);
-        context[k.toUpperCase()] = resolved.standard;
-        context[`${k.toUpperCase()}_POSSESSIVE`] = resolved.possessive;
-        context.FOE_SIDE =
-          resolved.rel === "self" || resolved.rel === "ally"
-            ? i18next.t("side.foe")
-            : i18next.t("side.self");
-      } else if (k === "target") {
-        if (key === "effect") {
-          tags.push(`mon:*`);
-          const resolved = resolveMonContext(v as UiMon, state, options);
-          context.MON = resolved.standard;
-          context.MON_POSSESSIVE = resolved.possessive;
-          context.FOE_SIDE =
-            resolved.rel === "self" || resolved.rel === "ally"
-              ? i18next.t("side.foe")
-              : i18next.t("side.self");
-          metadata.mon = {
-            raw: resolved.raw,
-            raw_possessive: resolved.raw_possessive,
-            ref: resolved.ref,
-          };
-        } else {
-          tags.push(`target:*`);
-          const resolved = resolveMonContext(v as UiMon, state, options);
-          context.TARGET = resolved.standard;
-          context.TARGET_POSSESSIVE = resolved.possessive;
-          context.FOE_SIDE =
-            resolved.rel === "self" || resolved.rel === "ally"
-              ? i18next.t("side.foe")
-              : i18next.t("side.self");
-          metadata.target = {
-            raw: resolved.raw,
-            raw_possessive: resolved.raw_possessive,
-            ref: resolved.ref,
-          };
-        }
-      } else if (k === "source" || k === "of") {
-        tags.push(`of:*`);
-        const resolved = resolveMonContext(v as UiMon, state, options);
-        context.SOURCE = resolved.standard;
-        context.SOURCE_POSSESSIVE = resolved.possessive;
-        context.FOE_SIDE =
-          resolved.rel === "self" || resolved.rel === "ally"
-            ? i18next.t("side.foe")
-            : i18next.t("side.self");
-        metadata.source = {
-          raw: resolved.raw,
-          raw_possessive: resolved.raw_possessive,
-          ref: resolved.ref,
-        };
-      } else if (k === "effect") {
-        if (typeof v === "object" && v !== null && "name" in v) {
-          const ve = v as Record<string, unknown>;
-          if (ve.effect_type) tags.push(`${ve.effect_type}:${ve.name}`);
-          else tags.push(`effect:${ve.name}`);
-        } else {
-          tags.push(`effect:${typeof v === "string" ? v : "*"}`);
-        }
-      } else if (k === "source_effect") {
-        if (typeof v === "object" && v !== null && "name" in v) {
-          const ve = v as Record<string, unknown>;
-          if (ve.effect_type) tags.push(`from:${ve.effect_type}:${ve.name}`);
-          else tags.push(`from:${ve.name}`);
-        } else {
-          tags.push(`from:*`);
-        }
-      } else if (
-        k === "move_name" &&
-        (title === "learnedmove" || title === "didnotlearnmove" || key === "moveupdate")
-      ) {
+      if (k === "move_name" && (title === "learnedmove" || title === "didnotlearnmove" || entry.title.toLowerCase() === "moveupdate")) {
         tags.push(`move:${v}`);
         context.MOVE = v as ContextValue;
       } else if (k === "name" && title === "move") {
         tags.push(`name:*`);
         context.MOVE = v as ContextValue;
-      } else if (k === "from") {
-        if (typeof v === "object" && v !== null && "name" in v) {
-          const ve = v as Record<string, unknown>;
-          if (ve.effect_type) tags.push(`from:${ve.effect_type}:${ve.name}`);
-          else tags.push(`from:${ve.name}`);
-        } else {
-          tags.push(`from:${v}`);
-        }
-      } else if (k === "of" || k === "player" || k === "position") {
-        tags.push(`${k}:*`);
-        if (k === "player") {
-          const resolved = resolvePlayerContext(v as string, state, options);
-          context.PLAYER = resolved.standard;
-          context.PLAYER_POSSESSIVE = resolved.possessive;
-        }
-      } else if (k === "side") {
-        tags.push(`side:*`);
-        const resolved = resolveSideContext(Number(v), state, options);
-        context.SIDE = resolved.standard;
-        context.SIDE_POSSESSIVE = resolved.possessive;
       } else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
         if (v === true || v === "") {
           flags.push(k.replace(/_/g, ""));
         } else if (v === false) {
-          // Do not push false booleans to tags, they represent the absence of a flag
+          // Do not push false booleans to tags
         } else {
-          if (
-            [
-              "ability",
-              "item",
-              "move",
-              "effect",
-              "condition",
-              "weather",
-              "status",
-              "volatile",
-              "from",
-            ].includes(k)
-          ) {
+          if (["ability", "item", "move", "effect", "condition", "weather", "status", "volatile", "from"].includes(k)) {
             tags.push(`${k}:${v}`);
           } else if (k === "by") {
             const num = Number(v);
@@ -471,9 +424,7 @@ export function mapUiLogEntry(
                 }
               }
             }
-            if (!appliedBucket) {
-              tags.push(`by:${v}`);
-            }
+            if (!appliedBucket) tags.push(`by:${v}`);
           } else if (k === "stat") {
             context.STAT = i18next.t(`stats.${v}`);
             tags.push(`${k}:*`);
@@ -481,49 +432,41 @@ export function mapUiLogEntry(
             tags.push(`${k}:${v}`);
           }
         }
+      } else if (Array.isArray(v)) {
+         tags.push(`${k}:*`);
+         if (k === "health" && v.length === 2) {
+             // For Health Fraction
+             if (options.healthFormat === "percentage") {
+                 context.HEALTH = `${Math.ceil((Number(v[0]) / Number(v[1])) * 100)}%`;
+             } else {
+                 context.HEALTH = `${v[0]}/${v[1]}`;
+             }
+         }
       } else {
         tags.push(`${k}:*`);
       }
     };
 
-    for (const [k, v] of Object.entries(data)) {
-      if (k === "effect") {
-        if (typeof v === "object" && v !== null) {
-          for (const [ek, ev] of Object.entries(v as Record<string, unknown>)) {
-            processValue(ek, ev);
-          }
-        }
-      } else {
-        processValue(k, v);
-      }
-    }
-
-    if (["switch", "drag", "replace", "appear"].includes(title)) {
-      tags.length = 0;
-      ["player", "position", "name", "health", "species", "level", "gender"].forEach((t) =>
-        tags.push(`${t}:*`),
-      );
-      const resolvedPlayer = resolvePlayerContext(data.player as string, state, options);
-      context.PLAYER = resolvedPlayer.standard;
-      context.PLAYER_POSSESSIVE = resolvedPlayer.possessive;
-      context.MON = { text: (data.name as string) || "Mon" };
-      context.MON_POSSESSIVE = { text: `${(data.name as string) || "Mon"}'s` };
-      metadata.mon = {
-        raw: (data.name as string) || "Mon",
-        raw_possessive: `${(data.name as string) || "Mon"}'s`,
-      };
-      if (data.mon) {
-        const resolved = resolveMonContext(data.mon as UiMon, state, options);
-        metadata.mon.ref = resolved.ref;
-      }
-    } else if (title === "switchout") {
-      tags.length = 0;
-      tags.push("mon:*");
+    for (const [k, v] of Object.entries(entry.values)) {
+      processValue(k, v);
     }
   }
 
-  if (title === "leave" && data.title !== "forfeited" && data.title !== "escaped") return null;
-  if (title === "extension") return null;
+  // --- Special hardcoded parsing logic ---
+  if (["switch", "drag", "replace", "appear"].includes(title)) {
+    tags.length = 0;
+    ["player", "position", "name", "health", "species", "level", "gender"].forEach((t) => tags.push(`${t}:*`));
+    // The player context should have already been handled by entry.player, or entry.values
+    
+    // We expect values to contain 'name', 'mon_index', etc. for string mapping, but not 'mon' UiMon.
+    const monName = (entry.values?.name as string) || "Mon";
+    context.MON = { text: monName };
+    context.MON_POSSESSIVE = { text: `${monName}'s` };
+    if (!metadata.mon) metadata.mon = { raw: monName, raw_possessive: `${monName}'s` };
+  } else if (title === "switchout") {
+    tags.length = 0;
+    tags.push("mon:*");
+  }
 
   const combinatoricTags = tags.filter((t) => !rules.excludeTags.includes(t.split(":")[0]));
 
@@ -541,13 +484,29 @@ export function mapUiLogEntry(
     );
   }
 
-  const patterns = generateCombinatorics(title, finalTags, finalFlags);
+  const patterns = generateCombinatorics(
+    title,
+    Array.from(new Set(finalTags)),
+    Array.from(new Set(finalFlags)),
+  );
+
+  // We need to synthesize an EffectData object for the consumer if there isn't one already available in effect
+  const effectData: EffectData | undefined = entry.effect ? {
+      effect: entry.effect,
+      side: entry.side ?? undefined,
+      slot: entry.slot ?? undefined,
+      player: entry.player ?? undefined,
+      target: entry.target ?? undefined,
+      source: entry.source ?? undefined,
+      source_effect: entry.source_effect ?? undefined,
+      additional: {}
+  } as unknown as EffectData : undefined;
 
   const mapped: AnyMappedLog = {
     patterns,
     category,
     context,
-    effect: ((data as Record<string, unknown>).effect as EffectData) || undefined,
+    effect: effectData,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
   };
   return mapped;

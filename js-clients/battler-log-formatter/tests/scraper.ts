@@ -640,7 +640,7 @@ function generateMatrix() {
       }
 
       for (const k of newKeys) {
-        entries.set(k, `    "${k}": "[UNHANDLED]",`);
+        entries.set(k, `    "${k}": null,`);
       }
 
       const sortedKeys = Array.from(entries.keys()).sort((a, b) => a.localeCompare(b));
@@ -649,35 +649,6 @@ function generateMatrix() {
       const newBlock = `${match[1]}\n${newLines.join("\n")}${match[3]}`;
       enTsContent = enTsContent.replace(logsRegex, newBlock);
       fs.writeFileSync(enTsPath, enTsContent);
-      console.log("Updated locales/en.ts with missing [UNHANDLED] logs (sorted).");
-    }
-
-    const undefinedKeys = new Set<string>();
-    const lines = blockContent.split("\n");
-    for (const line of lines) {
-      const match = line.match(/^ {4}["']?([a-zA-Z0-9_]+)["']?\s*:\s*undefined,/);
-      if (match) {
-        undefinedKeys.add(match[1]);
-      }
-    }
-
-    const staleKeys: string[] = [];
-    for (const line of lines) {
-      const match = line.match(/^ {4}["']?([a-zA-Z0-9_]+)["']?\s*:/);
-      if (match) {
-        const k = match[1];
-        if (!allGeneratedFallbacks.has(k)) {
-          staleKeys.push(k);
-        }
-      }
-    }
-
-    if (staleKeys.length > 0) {
-      fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), staleKeys.join("\n"));
-      console.log(`Found ${staleKeys.length} stale keys. Wrote to data/stale-keys.txt`);
-    } else {
-      fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), "");
-      console.log("No stale keys found.");
     }
   } else {
     console.error("Could not parse en.ts logs block");

@@ -4,6 +4,7 @@ import { en } from "../locales/en.js";
 i18next.init({
   lng: "en",
   fallbackLng: "en",
+  returnNull: true,
   resources: {
     en: { translation: en }
   },
