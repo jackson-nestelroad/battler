@@ -163,10 +163,6 @@ activate|move:Lock-On
 activate|move:Lunar Dance
 activate|move:Magic Coat
 activate|move:Magnitude
-activate|move:Magnitude|magnitude:4
-activate|move:Magnitude|magnitude:6
-activate|move:Magnitude|magnitude:7
-activate|move:Magnitude|magnitude:8
 activate|move:Mat Block
 activate|move:Max Guard
 activate|move:Mist
@@ -325,6 +321,7 @@ damage|from:status:Burn
 damage|from:status:Poison
 damage|from:weather:Hail
 damage|from:weather:Sandstorm
+debug
 deductpp|move:*
 didnotlearnmove|move:*
 drag

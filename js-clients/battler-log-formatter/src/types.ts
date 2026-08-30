@@ -1,6 +1,7 @@
 import { en } from "../locales/en.js";
 import type { UiMon, EffectData } from "battler-state";
 import type { FormattedUiLog } from "./formatter.js";
+import type { LogToken } from "./engine.js";
 
 export type LogTemplateKey = keyof typeof en.logs;
 
@@ -10,6 +11,8 @@ export enum LogCategory {
   Hint = "hint",           // Side-effects, abilities, weather, etc.
 }
 
+export type UiToken = LogToken;
+
 export interface UiNotice {
   type: string;
   name: string;
@@ -18,7 +21,7 @@ export interface UiNotice {
 }
 
 export interface FormattedLogEvent {
-  message?: FormattedUiLog;
+  messages: FormattedUiLog[];
   notices: UiNotice[];
 }
 
@@ -32,10 +35,14 @@ export type ContextValue = string | number | ContextVar | (string | ContextVar)[
 
 export type LogContext = Record<string, ContextValue> & { count?: number };
 
-export type ExtractVariables<T extends string> =
-  T extends `${string}{{${infer Var}}}${infer Rest}`
-    ? Var | ExtractVariables<Rest>
-    : never;
+export type ExtractVariables<T> =
+  T extends string
+    ? (T extends `${string}{{${infer Var}}}${infer Rest}` ? Var | ExtractVariables<Rest> : never)
+    : T extends readonly (infer U)[]
+      ? ExtractVariables<U>
+      : T extends (infer U)[]
+        ? ExtractVariables<U>
+        : never;
 
 export type RequiredContext<K extends LogTemplateKey> = 
   ExtractVariables<NonNullable<typeof en.logs[K]>> extends never
@@ -46,6 +53,7 @@ export interface MappedLogMetadata {
   mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
   target?: { raw?: string, raw_possessive?: string, ref?: UiMon };
   source?: { raw?: string, raw_possessive?: string, ref?: UiMon };
+  prev_mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
 }
 
 export interface AnyMappedLog {

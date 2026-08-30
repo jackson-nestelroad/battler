@@ -95,14 +95,14 @@ describe("Exhaustive Log Coverage", () => {
     if (event) {
         primaryResult = {
             notices: event.notices,
-            message: event.message ? {
-                key: event.message.key,
-                context: event.message.context,
+            messages: event.messages.map((msg) => ({
+                key: msg.key,
+                context: msg.context,
                 formatted: {
-                    category: event.message.category,
-                    text: stringifyLog(event.message)
+                    category: msg.category,
+                    text: stringifyLog(msg)
                 }
-            } : undefined
+            }))
         };
     }
 

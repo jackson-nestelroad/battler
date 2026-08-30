@@ -56,10 +56,11 @@ export interface ParsedTimerLog {
 
 export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   if (typeof entry !== "object" || entry === null || !("Extension" in entry)) return null;
-  const ext = entry.Extension;
-  if (ext.source !== "-battlerservice" || ext.title !== "timer") return null;
+  const ext = entry.Extension as { source?: string; title?: string; values?: Record<string, string> } | undefined;
+  if (!ext || ext.source !== "-battlerservice" || ext.title !== "timer") return null;
 
   const values = ext.values;
+  if (!values) return null;
   const remainingsecsStr = values["remainingsecs"];
   if (remainingsecsStr === undefined) return null;
   const remainingSecs = parseInt(remainingsecsStr, 10);

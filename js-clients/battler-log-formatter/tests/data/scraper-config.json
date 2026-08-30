@@ -6,7 +6,8 @@
     "removeslotcondition|side:0|slot:0|condition:Condition|from:Effect",
     "addpseudoweather|condition:Condition|from:Effect",
     "removepseudoweather|condition:Condition|from:Effect",
-    "turnlimit"
+    "turnlimit",
+    "debug"
   ],
   "excludeTags": [
     "mon",
@@ -51,7 +52,11 @@
     "on",
     "to",
     "into",
-    "with"
+    "with",
+    "magnitude",
+    "event",
+    "error",
+    "effect"
   ],
   "alwaysFromEffectLogs": [
     "cant",
@@ -70,7 +75,7 @@
     "transform",
     "block"
   ],
-  "alwaysNoTagLogs": ["ohko", "waiting", "animatemove", "protectweaken", "copyboosts"],
+  "alwaysNoTagLogs": ["ohko", "waiting", "animatemove", "protectweaken", "copyboosts", "debug"],
   "noTagUnlessFromLogs": ["immune", "move"],
   "prependWildcardTagLogs": ["block"],
   "ignoreKeys": [

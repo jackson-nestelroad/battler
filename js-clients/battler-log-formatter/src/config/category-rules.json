@@ -1,0 +1,60 @@
+[
+  {
+    "category": "hint",
+    "condition": {
+      "title": "damage",
+      "withoutTags": ["from"]
+    }
+  },
+  {
+    "category": "hint",
+    "condition": {
+      "titleIn": [
+        "addvolatile",
+        "animatemove",
+        "battlestart",
+        "debug",
+        "info",
+        "maxsidelength",
+        "mon",
+        "player",
+        "removevolatile",
+        "split",
+        "teampreview",
+        "teampreviewstart",
+        "teamsize",
+        "time"
+      ]
+    }
+  },
+  {
+    "category": "primary",
+    "condition": {
+      "titleIn": [
+        "move",
+        "switch",
+        "drag",
+        "faint",
+        "mega",
+        "primal",
+        "burst",
+        "zpower",
+        "dynamax",
+        "gigantamax",
+        "tera",
+        "terastallize",
+        "turn",
+        "win",
+        "tie",
+        "useitem",
+        "residual"
+      ]
+    }
+  },
+  {
+    "category": "secondary",
+    "condition": {
+      "default": true
+    }
+  }
+]

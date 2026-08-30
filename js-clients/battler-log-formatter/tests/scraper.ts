@@ -347,6 +347,10 @@ function extractLogsFromFxlang(): Set<string> {
     if (sideRemoveRegex.test(effect.program)) {
       logs.push({ logType: "sideend", fromEffect: false });
     }
+    const formeChangeRegex = /forme_change\:\s*([^"'\n\]]+)/g;
+    if (formeChangeRegex.test(effect.program)) {
+      logs.push({ logType: "formechange", fromEffect: true });
+    }
 
     for (const delegateId of effect.delegates || []) {
       const delegateEffect = registry.get(delegateId);

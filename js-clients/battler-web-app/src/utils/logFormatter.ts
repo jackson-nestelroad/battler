@@ -12,7 +12,8 @@ export function formatUiLogEntry(
   entry: UiLogEntry,
   state?: BattleState,
   localPlayerId?: string,
-): FormattedUiLog | null {
+): FormattedUiLog[] {
   const formatter = getFormatter(localPlayerId);
-  return formatter.format(entry, state);
+  const event = formatter.format(entry, state);
+  return event?.messages ?? [];
 }

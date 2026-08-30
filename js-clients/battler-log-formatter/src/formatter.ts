@@ -1,7 +1,7 @@
 import type { UiLogEntry, BattleState, UiMon } from "battler-state";
 import i18next from "./i18n.js";
 import { LogCategory } from "./types.js";
-import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice, UiToken } from "./types.js";
+import type { LogContext, MapperOptions, ContextValue, ContextVar, FormattedLogEvent, UiNotice } from "./types.js";
 import noticeRules from "./config/notice-rules.json" with { type: "json" };
 import { parseTemplateToTokens } from "./engine.js";
 import type { LogToken } from "./engine.js";
@@ -34,12 +34,118 @@ function capitalizeContextValue(val: ContextValue): ContextValue {
   return val;
 }
 
+function createFormattedUiLog(
+  templateKey: string,
+  templateString: string,
+  category: LogCategory,
+  context: LogContext,
+): FormattedUiLog | null {
+  if (!templateString || typeof templateString !== "string") return null;
+
+  const tokens = parseTemplateToTokens(templateString);
+  if (tokens.length === 0) return null;
+
+  // Verify all variable dependencies exist in context
+  for (const token of tokens) {
+    if (token.type === "variable") {
+      if (context[token.value] === undefined) {
+        return null;
+      }
+    }
+  }
+
+  let msgContext = { ...context };
+  let finalTokens = [...tokens];
+
+  const firstToken = finalTokens[0];
+  if (firstToken.type === "text" && firstToken.value.length > 0) {
+    finalTokens[0] = {
+      ...firstToken,
+      value: firstToken.value.charAt(0).toUpperCase() + firstToken.value.slice(1),
+    };
+  } else if (firstToken.type === "variable") {
+    const val = msgContext[firstToken.value];
+    const capitalizedVal = capitalizeContextValue(val);
+    if (capitalizedVal !== val) {
+      const newKey = `__CAPITALIZED_${firstToken.value}`;
+      msgContext[newKey] = capitalizedVal;
+      finalTokens[0] = { ...firstToken, value: newKey };
+    }
+  }
+
+  const usedKeys = new Set<string>();
+  for (const token of finalTokens) {
+    if (token.type === "variable") {
+      usedKeys.add(token.value);
+    }
+  }
+
+  const cleanContext: Record<string, ContextValue> = {};
+  for (const [k, v] of Object.entries(msgContext)) {
+    if (!usedKeys.has(k)) continue;
+
+    if (typeof v === "object" && v !== null && "text" in v) {
+      const cleaned: ContextVar = { text: v.text };
+      if (v.monRef) cleaned.monRef = v.monRef;
+      cleanContext[k] = cleaned;
+    } else if (Array.isArray(v)) {
+      cleanContext[k] = (v as ContextValue[]).map((item: ContextValue) => {
+        if (typeof item === "object" && item !== null && "text" in item) {
+          const cleaned: ContextVar = { text: item.text as string };
+          if (item.monRef) cleaned.monRef = item.monRef;
+          return cleaned;
+        }
+        return item as string | ContextVar;
+      });
+    } else {
+      cleanContext[k] = v;
+    }
+  }
+
+  return {
+    key: templateKey.replace(/^logs\./, ""),
+    tokens: finalTokens,
+    category,
+    context: cleanContext,
+  };
+}
+
+function findTemplateKey(
+  patterns: string[],
+  templateArgs: Record<string, unknown>,
+): string | undefined {
+  if (!patterns || patterns.length === 0) return undefined;
+  for (const pattern of patterns) {
+    const parts = pattern.split("|");
+    const title = parts.shift()!;
+    const tags = parts.filter((x) => x.includes(":"));
+    const flags = parts.filter((x) => !x.includes(":"));
+    tags.sort();
+    flags.sort();
+    const p = [title, ...tags, ...flags].join("|");
+
+    const safePattern = p
+      .replace(/\|/g, "__")
+      .replace(/:/g, "_")
+      .replace(/\*/g, "any")
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, "");
+
+    const fullKey = `logs.${safePattern}`;
+    if (i18next.exists(fullKey) && i18next.t(fullKey, templateArgs) !== null) {
+      return fullKey;
+    }
+  }
+  return undefined;
+}
+
 export class LogFormatter {
   private options: MapperOptions;
 
   constructor(options: MapperOptions = {}) {
     this.options = options;
   }
+
   public format(entry: UiLogEntry, state?: BattleState): FormattedLogEvent | null {
     const mapped = mapUiLogEntry(entry, state, this.options);
     if (!mapped) return null;
@@ -82,23 +188,20 @@ export class LogFormatter {
     }
     
     // Also auto-augment from any other raw top-level fields (e.g. exp in Experience, stats in LevelUp)
-    const rawData = typeof entry === 'string' ? null : Object.values(entry)[0] as Record<string, unknown>;
-    if (rawData && typeof rawData === 'object') {
+    const rawData = typeof entry === "string" ? null : Object.values(entry)[0] as Record<string, unknown>;
+    if (rawData && typeof rawData === "object") {
         for (const [k, v] of Object.entries(rawData)) {
-            // Skip large domain objects that are explicitly mapped
-            if (k === 'effect' || k === 'mon' || k === 'target' || k === 'source' || k === 'title') continue;
+            if (k === "effect" || k === "mon" || k === "target" || k === "source" || k === "title") continue;
             
-            if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+            if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
                 const upperK = k.toUpperCase();
                 if (ctx[upperK] === undefined) {
                     ctx[upperK] = String(v);
                 }
-            } else if (v && typeof v === 'object' && !Array.isArray(v)) {
-                // If it's a map of primitive values (like stats: { atk: 10 })
-                // ensure it's not a Mon object by checking for known Mon keys
-                if (!('Active' in v) && !('Bench' in v) && !('Party' in v)) {
+            } else if (v && typeof v === "object" && !Array.isArray(v)) {
+                if (!("Active" in v) && !("Bench" in v) && !("Party" in v)) {
                     for (const [subK, subV] of Object.entries(v)) {
-                        if (typeof subV === 'string' || typeof subV === 'number' || typeof subV === 'boolean') {
+                        if (typeof subV === "string" || typeof subV === "number" || typeof subV === "boolean") {
                             const upperSubK = subK.toUpperCase();
                             if (ctx[upperSubK] === undefined) {
                                 ctx[upperSubK] = String(subV);
@@ -115,56 +218,20 @@ export class LogFormatter {
     if (count !== undefined) templateArgs.count = count;
     
     // Inject global text replacements (only Titlecase to protect {{MON}})
-    templateArgs.Mon = i18next.t('vocabulary.Mon');
-    templateArgs.Mons = i18next.t('vocabulary.Mons');
+    templateArgs.Mon = i18next.t("vocabulary.Mon");
+    templateArgs.Mons = i18next.t("vocabulary.Mons");
     
     // Inject stats
-    templateArgs.hp = i18next.t('stats.hp');
-    templateArgs.atk = i18next.t('stats.atk');
-    templateArgs.def = i18next.t('stats.def');
-    templateArgs.spa = i18next.t('stats.spa');
-    templateArgs.spd = i18next.t('stats.spd');
-    templateArgs.spe = i18next.t('stats.spe');
-    templateArgs.eva = i18next.t('stats.eva');
-    templateArgs.acc = i18next.t('stats.acc');
-
-    let templateKey: string | undefined = undefined;
-    const patterns = mapped.patterns;
-    
-    if (this.options.forceTemplateKey) {
-        templateKey = `logs.${this.options.forceTemplateKey}`;
-    } else if (patterns && patterns.length > 0) {
-        for (const pattern of patterns) {
-            let p = pattern;
-            const parts = p.split('|');
-            const title = parts.shift()!;
-            const tags = parts.filter(x => x.includes(':'));
-            const flags = parts.filter(x => !x.includes(':'));
-            tags.sort();
-            flags.sort();
-            p = [title, ...tags, ...flags].join('|');
-            
-            const safePattern = p
-              .replace(/\|/g, '__')
-              .replace(/:/g, '_')
-              .replace(/\*/g, 'any')
-              .toLowerCase()
-              .replace(/[^a-z0-9_]/g, '');
-              
-            const fullKey = `logs.${safePattern}`;
-            if (i18next.exists(fullKey) && i18next.t(fullKey, templateArgs) !== null) {
-                templateKey = fullKey;
-                break;
-            }
-        }
-    }
+    templateArgs.hp = i18next.t("stats.hp");
+    templateArgs.atk = i18next.t("stats.atk");
+    templateArgs.def = i18next.t("stats.def");
+    templateArgs.spa = i18next.t("stats.spa");
+    templateArgs.spd = i18next.t("stats.spd");
+    templateArgs.spe = i18next.t("stats.spe");
+    templateArgs.eva = i18next.t("stats.eva");
+    templateArgs.acc = i18next.t("stats.acc");
 
     const notices: UiNotice[] = [];
-    
-    let template: string | undefined = undefined;
-    if (templateKey && i18next.exists(templateKey)) {
-        template = i18next.t(templateKey, templateArgs) as string;
-    }
     
     for (const rule of noticeRules) {
         let match = true;
@@ -172,7 +239,7 @@ export class LogFormatter {
             match = false;
         }
         if (rule.condition.titleIn) {
-            const title = mapped.patterns[0]?.split('|')[0];
+            const title = mapped.patterns[0]?.split("|")[0];
             if (!title || !rule.condition.titleIn.includes(title)) {
                 match = false;
             }
@@ -207,85 +274,44 @@ export class LogFormatter {
         }
     }
 
-    let message: FormattedUiLog | undefined = undefined;
+    const messages: FormattedUiLog[] = [];
 
     // Check for explicit empty/silent structural primary logs
-    if (mapped.patterns.includes('residual')) {
-      message = {
-          key: "residual",
-          tokens: [],
-          category: mapped.category,
-          context: mapped.context
-      };
-    } else if (template !== undefined) {
-        message = {
-          key: templateKey!.replace('logs.', ''),
-          tokens: parseTemplateToTokens(template),
-          category: mapped.category,
-          context: mapped.context
-        };
+    if (mapped.patterns.includes("residual")) {
+      messages.push({
+        key: "residual",
+        tokens: [],
+        category: mapped.category,
+        context: {},
+      });
+    } else {
+      let resolvedKey: string | undefined = undefined;
+      if (this.options.forceTemplateKey) {
+        resolvedKey = `logs.${this.options.forceTemplateKey}`;
+      } else {
+        resolvedKey = findTemplateKey(mapped.patterns, templateArgs);
+      }
 
-        if (message.tokens.length > 0) {
-          const firstToken = message.tokens[0];
-          if (firstToken.type === "text" && firstToken.value.length > 0) {
-            message.tokens = [...message.tokens];
-            message.tokens[0] = { 
-              ...firstToken, 
-              value: firstToken.value.charAt(0).toUpperCase() + firstToken.value.slice(1) 
-            };
-          } else if (firstToken.type === "variable") {
-            const val = message.context[firstToken.value];
-            const capitalizedVal = capitalizeContextValue(val);
-            if (capitalizedVal !== val) {
-              message.tokens = [...message.tokens];
-              message.context = { ...message.context };
-              const newKey = `__CAPITALIZED_${firstToken.value}`;
-              message.context[newKey] = capitalizedVal;
-              message.tokens[0] = { ...firstToken, value: newKey };
+      if (resolvedKey && i18next.exists(resolvedKey)) {
+        const rawTemplate = i18next.t(resolvedKey, { ...templateArgs, returnObjects: true });
+        if (typeof rawTemplate === "string") {
+          const msg = createFormattedUiLog(resolvedKey, rawTemplate, mapped.category, mapped.context);
+          if (msg) messages.push(msg);
+        } else if (Array.isArray(rawTemplate)) {
+          for (const item of rawTemplate) {
+            if (typeof item === "string") {
+              const msg = createFormattedUiLog(resolvedKey, item, mapped.category, mapped.context);
+              if (msg) messages.push(msg);
             }
           }
         }
+      }
     }
 
+    if (messages.length === 0 && notices.length === 0) return null;
 
-
-    if (!message && notices.length === 0) return null;
-
-    if (message) {
-      const usedKeys = new Set<string>();
-      for (const token of message.tokens) {
-          if (token.type === "variable") {
-              usedKeys.add(token.value);
-          }
-      }
-
-      const cleanContext: Record<string, ContextValue> = {};
-      for (const [k, v] of Object.entries(message.context)) {
-          if (!usedKeys.has(k)) continue;
-
-          if (typeof v === "object" && v !== null && "text" in v) {
-              const cleaned: ContextVar = { text: v.text };
-              if (v.monRef) cleaned.monRef = v.monRef;
-              cleanContext[k] = cleaned;
-          } else if (Array.isArray(v)) {
-              cleanContext[k] = (v as ContextValue[]).map((item: ContextValue) => {
-                  if (typeof item === 'object' && item !== null && "text" in item) {
-                      const cleaned: ContextVar = { text: item.text as string };
-                      if (item.monRef) cleaned.monRef = item.monRef;
-                      return cleaned;
-                  }
-                  return item as string | ContextVar;
-              });
-          } else {
-              cleanContext[k] = v;
-          }
-      }
-      message.context = cleanContext;
-    }
-
-    return { message, notices };
+    return { messages, notices };
   }
-
 }
 
 export function stringifyLog(log: FormattedUiLog): string {
