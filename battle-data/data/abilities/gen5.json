@@ -543,12 +543,14 @@
     "condition": {
       "callbacks": {
         "on_start": [
+          "log_start",
           "if $target.species == darmanitan:",
           ["forme_change: $target darmanitanzen"],
           "else if $target.species == darmanitangalar:",
           ["forme_change: $target darmanitangalarzen"]
         ],
         "on_end": [
+          "log_end",
           "if $target.species == darmanitanzen:",
           ["forme_change: $target darmanitan"],
           "else if $target.species == darmanitangalarzen:",

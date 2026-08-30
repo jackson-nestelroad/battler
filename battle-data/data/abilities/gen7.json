@@ -97,11 +97,18 @@
           "$base_species = func_call(base_species: $target)",
           "require $base_species == minior and $target.hp != 0 else return",
           "if $target.hp > $target.max_hp / 2:",
-          ["forme_change: $target miniormeteor"],
+          [
+            "if $target.species != miniormeteor:",
+            ["forme_change: $target miniormeteor", "log_activate: with_target deactivated"]
+          ],
           "else:",
           [
-            "# Original base species preserves the Minior color.",
-            "forme_change: $target $target.original_base_species"
+            "if $target.species == miniormeteor:",
+            [
+              "# Original base species preserves the Minior color.",
+              "forme_change: $target $target.original_base_species",
+              "log_activate: with_target activated"
+            ]
           ]
         ],
         "on_set_status": [
@@ -259,9 +266,15 @@
           "$base_species = func_call(base_species: $target)",
           "require $base_species == wishiwashi and $target.hp != 0 else return",
           "if $target.level >= 20 and $target.hp > $target.max_hp / 4:",
-          ["forme_change: $target wishiwashischool"],
+          [
+            "if $target.species != wishiwashischool:",
+            ["forme_change: $target wishiwashischool", "log_activate: with_target started"]
+          ],
           "else:",
-          ["forme_change: $target wishiwashi"]
+          [
+            "if $target.species != wishiwashi:",
+            ["forme_change: $target wishiwashi", "log_activate: with_target stopped"]
+          ]
         ]
       }
     }

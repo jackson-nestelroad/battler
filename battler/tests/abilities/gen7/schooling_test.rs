@@ -69,6 +69,7 @@ fn schooling_transforms_wishiwashi_based_on_hp() {
                 ["switch", "player-2", "Wishiwashi"],
                 ["switch", "player-2", "Wishiwashi"],
                 "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling",
+                "activate|mon:Wishiwashi,player-2,1|ability:Schooling|started",
                 "turn|turn:1",
                 "continue",
                 "move|mon:Wishiwashi,player-1,1|name:Recover|target:Wishiwashi,player-1,1",
@@ -77,6 +78,7 @@ fn schooling_transforms_wishiwashi_based_on_hp() {
                 "heal|mon:Wishiwashi,player-1,1|health:75/100",
                 "residual",
                 "formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling",
+                "activate|mon:Wishiwashi,player-1,1|ability:Schooling|started",
                 "turn|turn:2",
                 "continue",
                 "move|mon:Wishiwashi,player-1,1|name:Thunderbolt|target:Wishiwashi,player-2,1",
@@ -86,6 +88,7 @@ fn schooling_transforms_wishiwashi_based_on_hp() {
                 "damage|mon:Wishiwashi,player-2,1|health:23/100",
                 "residual",
                 "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling",
+                "activate|mon:Wishiwashi,player-2,1|ability:Schooling|stopped",
                 "turn|turn:3"
             ]"#,
     )

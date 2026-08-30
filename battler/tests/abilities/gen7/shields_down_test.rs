@@ -72,6 +72,7 @@ fn shields_down_transforms_minior_based_on_hp() {
                 ["switch", "player-2", "Minior"],
                 ["switch", "player-2", "Minior"],
                 "formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down",
+                "activate|mon:Minior,player-2,1|ability:Shields Down|deactivated",
                 "turn|turn:1",
                 "continue",
                 "move|mon:Minior,player-1,1|name:Recover|target:Minior,player-1,1",
@@ -80,6 +81,7 @@ fn shields_down_transforms_minior_based_on_hp() {
                 "heal|mon:Minior,player-1,1|health:72/100",
                 "residual",
                 "formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down",
+                "activate|mon:Minior,player-1,1|ability:Shields Down|deactivated",
                 "turn|turn:2",
                 "continue",
                 "move|mon:Minior,player-1,1|name:Stone Edge|target:Minior,player-2,1",
@@ -89,6 +91,7 @@ fn shields_down_transforms_minior_based_on_hp() {
                 "damage|mon:Minior,player-2,1|health:34/100",
                 "residual",
                 "formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down",
+                "activate|mon:Minior,player-2,1|ability:Shields Down|activated",
                 "turn|turn:3"
             ]"#,
     )
@@ -124,6 +127,7 @@ fn minior_meteor_is_immune_to_status_conditions() {
                 "damage|mon:Minior,player-2,1|health:40/100",
                 "residual",
                 "formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down",
+                "activate|mon:Minior,player-2,1|ability:Shields Down|activated",
                 "turn|turn:3",
                 "continue",
                 "move|mon:Minior,player-1,1|name:Toxic|target:Minior,player-2,1",

@@ -205,10 +205,11 @@
           "require func_call(base_species: $user) == aegislash else return",
           "require $move.category != status or $move.id == kingsshield else return",
           "$species = aegislashblade",
+          "$stance = blade",
           "if $move.id == kingsshield:",
-          ["$species = aegislash"],
+          ["$species = aegislash", "$stance = shield"],
           "if $user.species != $species:",
-          ["forme_change: $user $species"]
+          ["forme_change: $user $species", "log_activate: with_target $stance"]
         ]
       }
     }

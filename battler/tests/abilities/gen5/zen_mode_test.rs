@@ -149,6 +149,7 @@ fn zen_mode_transforms_darmanitan_at_end_of_turn() {
                 "damage|mon:Darmanitan,player-2,1|health:73/165",
                 "damage|mon:Darmanitan,player-2,1|health:45/100",
                 "residual",
+                "start|mon:Darmanitan,player-2,1|ability:Zen Mode",
                 "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode",
                 "turn|turn:3",
                 "continue",
@@ -157,6 +158,7 @@ fn zen_mode_transforms_darmanitan_at_end_of_turn() {
                 "heal|mon:Darmanitan,player-2,1|health:156/165",
                 "heal|mon:Darmanitan,player-2,1|health:95/100",
                 "residual",
+                "end|mon:Darmanitan,player-2,1|ability:Zen Mode",
                 "formechange|mon:Darmanitan,player-2,1|species:Darmanitan|from:ability:Zen Mode",
                 "turn|turn:4"
             ]"#,
@@ -193,6 +195,7 @@ fn zen_mode_transforms_darmanitan_galar_at_end_of_turn() {
                 "damage|mon:Darmanitan,player-2,1|health:27/165",
                 "damage|mon:Darmanitan,player-2,1|health:17/100",
                 "residual",
+                "start|mon:Darmanitan,player-2,1|ability:Zen Mode",
                 "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode",
                 "turn|turn:3",
                 "continue",
@@ -201,6 +204,7 @@ fn zen_mode_transforms_darmanitan_galar_at_end_of_turn() {
                 "heal|mon:Darmanitan,player-2,1|health:110/165",
                 "heal|mon:Darmanitan,player-2,1|health:67/100",
                 "residual",
+                "end|mon:Darmanitan,player-2,1|ability:Zen Mode",
                 "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar|from:ability:Zen Mode",
                 "turn|turn:4"
             ]"#,

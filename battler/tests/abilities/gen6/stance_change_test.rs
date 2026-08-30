@@ -64,6 +64,7 @@ fn stance_change_changes_aegislash_forme() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change",
+            "activate|mon:Aegislash,player-1,1|ability:Stance Change|blade",
             "move|mon:Aegislash,player-1,1|name:Shadow Claw|target:Aegislash,player-2,1",
             "supereffective|mon:Aegislash,player-2,1",
             "split|side:1",
@@ -78,6 +79,7 @@ fn stance_change_changes_aegislash_forme() {
             "turn|turn:3",
             "continue",
             "formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change",
+            "activate|mon:Aegislash,player-1,1|ability:Stance Change|shield",
             "move|mon:Aegislash,player-1,1|name:King's Shield|noanim",
             "fail|mon:Aegislash,player-1,1",
             "residual",
