@@ -407,12 +407,20 @@ export function mapUiLogEntry(
     context[`${prefix}_POSSESSIVE`] = resolved.possessive;
     context[`${prefix}_PLAYER`] = resolved.player;
     context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
-    if (prefix === "MON") {
-      if (!context.PLAYER) context.PLAYER = resolved.player;
-      if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+
+    if (prefix === "TARGET" && !context.MON) {
+      context.MON = resolved.standard;
+      context.MON_POSSESSIVE = resolved.possessive;
+      context.MON_PLAYER = resolved.player;
+      context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
     }
+
+    if (!context.PLAYER) context.PLAYER = resolved.player;
+    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+
     context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
     metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+    if (!metadata.mon) metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
   }
 
   if (entry.source) {
@@ -422,6 +430,8 @@ export function mapUiLogEntry(
     context.SOURCE_POSSESSIVE = resolved.possessive;
     context.SOURCE_PLAYER = resolved.player;
     context.SOURCE_PLAYER_POSSESSIVE = resolved.player_possessive;
+    context.OF = resolved.standard;
+    context.OF_POSSESSIVE = resolved.possessive;
     context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
     metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
   }
@@ -483,15 +493,40 @@ export function mapUiLogEntry(
             context[`${prefix}_POSSESSIVE`] = resolved.possessive;
             context[`${prefix}_PLAYER`] = resolved.player;
             context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
+
             if (prefix === "MON") {
               if (!context.PLAYER) context.PLAYER = resolved.player;
               if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+              if (!context.TARGET) {
+                context.TARGET = resolved.standard;
+                context.TARGET_POSSESSIVE = resolved.possessive;
+                context.TARGET_PLAYER = resolved.player;
+                context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
+              }
+            } else if (prefix === "TARGET") {
+              if (!context.MON) {
+                context.MON = resolved.standard;
+                context.MON_POSSESSIVE = resolved.possessive;
+                context.MON_PLAYER = resolved.player;
+                context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
+                if (!context.PLAYER) context.PLAYER = resolved.player;
+                if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+              }
+            } else if (prefix === "SOURCE") {
+              context.OF = resolved.standard;
+              context.OF_POSSESSIVE = resolved.possessive;
             }
+
             context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
             
             if (mappedK === "source") metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-            else if (mappedK === "target") metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-            else metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            else if (mappedK === "target") {
+              metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+              if (!metadata.mon) metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            } else {
+              metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+              if (!metadata.target) metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+            }
             return;
         }
       }
@@ -673,12 +708,13 @@ export function mapUiLogEntry(
   }
 
   const combinatoricTags = tags.filter((t) => !rules.excludeTags.includes(t.split(":")[0]));
+  const combinatoricFlags = flags.filter((f) => !rules.excludeTags.includes(f));
 
   if (state?.battle_type) {
     combinatoricTags.push(`battletype:${state.battle_type.toLowerCase()}`);
   }
 
-  let finalFlags = flags;
+  let finalFlags = combinatoricFlags;
   let finalTags = combinatoricTags;
 
   if (title === "move") {

@@ -251,11 +251,12 @@ export class LogFormatter {
         if (match) {
             let monStr: string | undefined = undefined;
             let monRef: UiMon | undefined = undefined;
-            if (mapped.metadata?.mon?.raw_possessive) {
-                monStr = String(mapped.metadata.mon.raw_possessive);
+            const monMeta = mapped.metadata?.mon || mapped.metadata?.target;
+            if (monMeta?.raw_possessive) {
+                monStr = String(monMeta.raw_possessive);
             }
-            if (mapped.metadata?.mon?.ref) {
-                monRef = mapped.metadata.mon.ref;
+            if (monMeta?.ref) {
+                monRef = monMeta.ref;
             }
             
             let name = "";

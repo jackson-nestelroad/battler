@@ -56,7 +56,9 @@
     "magnitude",
     "event",
     "error",
-    "effect"
+    "effect",
+    "learned",
+    "silent"
   ],
   "alwaysFromEffectLogs": [
     "cant",

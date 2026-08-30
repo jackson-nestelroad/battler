@@ -83,7 +83,9 @@
     "time",
     "magnitude",
     "event",
-    "error"
+    "error",
+    "learned",
+    "silent"
   ],
   "wildcardableTags": [
     "ability",
