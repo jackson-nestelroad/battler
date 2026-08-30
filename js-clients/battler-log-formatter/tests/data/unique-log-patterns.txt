@@ -74,7 +74,16 @@ activate|ability:Quark Drive
 activate|ability:Quark Drive|from:item:Booster Energy
 activate|ability:Quick Draw
 activate|ability:Ripen
+activate|ability:Schooling
+activate|ability:Schooling|started
+activate|ability:Schooling|stopped
 activate|ability:Screen Cleaner
+activate|ability:Shields Down
+activate|ability:Shields Down|activated
+activate|ability:Shields Down|deactivated
+activate|ability:Stance Change
+activate|ability:Stance Change|blade
+activate|ability:Stance Change|shield
 activate|ability:Sticky Hold
 activate|ability:Storm Drain
 activate|ability:Sturdy
@@ -335,6 +344,7 @@ end|ability:Quark Drive
 end|ability:Slow Start
 end|ability:Supreme Overlord
 end|ability:Supreme Overlord|silent
+end|ability:Zen Mode
 end|condition:Commanding
 end|condition:Confusion
 end|condition:Future Move
@@ -754,6 +764,7 @@ start|ability:Quark Drive
 start|ability:Slow Start
 start|ability:Supreme Overlord
 start|ability:Supreme Overlord|silent
+start|ability:Zen Mode
 start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|fatigue

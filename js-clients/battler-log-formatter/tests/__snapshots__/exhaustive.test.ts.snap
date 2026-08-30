@@ -1315,6 +1315,20 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Aegislash,player-1,1|ability:Stance Change|blade 1`] = `
+{
+  "rawLog": "activate|mon:Aegislash,player-1,1|ability:Stance Change|blade",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Aegislash,player-1,1|ability:Stance Change|shield 1`] = `
+{
+  "rawLog": "activate|mon:Aegislash,player-1,1|ability:Stance Change|shield",
+  "result": null,
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Aerodactyl,player-2,1|move:Speed Swap|of:Camerupt,player-1,2 1`] = `
 {
   "rawLog": "activate|mon:Aerodactyl,player-2,1|move:Speed Swap|of:Camerupt,player-1,2",
@@ -1923,6 +1937,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Minior,player-1,1|ability:Shields Down|deactivated 1`] = `
+{
+  "rawLog": "activate|mon:Minior,player-1,1|ability:Shields Down|deactivated",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Minior,player-2,1|ability:Shields Down|activated 1`] = `
+{
+  "rawLog": "activate|mon:Minior,player-2,1|ability:Shields Down|activated",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Minior,player-2,1|ability:Shields Down|deactivated 1`] = `
+{
+  "rawLog": "activate|mon:Minior,player-2,1|ability:Shields Down|deactivated",
+  "result": null,
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Mr. Rime,player-1,1|ability:Screen Cleaner 1`] = `
 {
   "rawLog": "activate|mon:Mr. Rime,player-1,1|ability:Screen Cleaner",
@@ -2403,6 +2438,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Whimsicott,player-2,1|move:Quash 1`] = `
 {
   "rawLog": "activate|mon:Whimsicott,player-2,1|move:Quash",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Wishiwashi,player-1,1|ability:Schooling|started 1`] = `
+{
+  "rawLog": "activate|mon:Wishiwashi,player-1,1|ability:Schooling|started",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Wishiwashi,player-2,1|ability:Schooling|started 1`] = `
+{
+  "rawLog": "activate|mon:Wishiwashi,player-2,1|ability:Schooling|started",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Wishiwashi,player-2,1|ability:Schooling|stopped 1`] = `
+{
+  "rawLog": "activate|mon:Wishiwashi,player-2,1|ability:Schooling|stopped",
   "result": null,
 }
 `;
@@ -4777,6 +4833,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:C
 exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Crobat,player-1,1|condition:Confusion 1`] = `
 {
   "rawLog": "end|mon:Crobat,player-1,1|condition:Confusion",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Darmanitan,player-2,1|ability:Zen Mode 1`] = `
+{
+  "rawLog": "end|mon:Darmanitan,player-2,1|ability:Zen Mode",
   "result": null,
 }
 `;
@@ -11745,6 +11808,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Cursola,player-2,1|move:Perish Song|perish:3 1`] = `
 {
   "rawLog": "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
+  "result": null,
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Darmanitan,player-2,1|ability:Zen Mode 1`] = `
+{
+  "rawLog": "start|mon:Darmanitan,player-2,1|ability:Zen Mode",
   "result": null,
 }
 `;
