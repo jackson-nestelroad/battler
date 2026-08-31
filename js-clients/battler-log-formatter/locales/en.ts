@@ -794,8 +794,7 @@ export const en = {
     move__from_move_any: null,
     move__from_move_any__zpower: null,
     move__from_move_assist: null,
-    move__from_move_assist__zpower:
-      "{{MON}} will change {{MOVE}} chosen by Assist to its Z-Move!",
+    move__from_move_assist__zpower: "{{MON}} will change {{MOVE}} chosen by Assist to its Z-Move!",
     move__from_move_copycat: null,
     move__from_move_copycat__zpower:
       "{{MON}} will change {{MOVE}} copied by Copycat to its Z-Move!",
