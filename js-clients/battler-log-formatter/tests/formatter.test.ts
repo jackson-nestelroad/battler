@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { mapUiLogEntry } from "../src/mapper.js";
 import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
 
@@ -180,19 +181,29 @@ describe("LogFormatter", () => {
       title: "damage",
       values: {
         mon: { Active: { position: 0, name: "Charmander", player: "p2", side: 1 } },
-        health: [0, 100]
+        health: [0, 100],
+        damage: [100, 100]
       }
     };
 
     const plainResult = formatter.format(plainDamageEntry as UiLogEntry);
-    expect(plainResult).toBeNull();
+    expect(plainResult).not.toBeNull();
+    expect(plainResult!.messages.length).toBe(0);
+    expect(plainResult!.notices.length).toBe(1);
+    expect(plainResult!.notices[0]).toEqual({
+      type: "Damage",
+      name: "100/100",
+      mon: "The opposing Charmander",
+      monRef: { Active: { position: 0, name: "Charmander", player: "p2", side: 1 } }
+    });
 
     const stealthRockDamageEntry: Partial<UiLogEntry> = {
       title: "damage",
       values: {
         mon: { Active: { position: 0, name: "Charizard", player: "p2", side: 1 } },
         from: "move:Stealth Rock",
-        health: [50, 100]
+        health: [50, 100],
+        damage: [50, 100]
       }
     };
 
@@ -201,6 +212,55 @@ describe("LogFormatter", () => {
     expect(srResult!.messages.length).toBe(1);
     expect(srResult!.messages[0].category).toBe(LogCategory.Secondary);
     expect(stringifyLog(srResult!.messages[0])).toBe("Pointed stones dug into the opposing Charizard!");
+    expect(srResult!.notices.length).toBe(1);
+    expect(srResult!.notices[0]).toEqual({
+      type: "Damage",
+      name: "50/100",
+      mon: "The opposing Charizard",
+      monRef: { Active: { position: 0, name: "Charizard", player: "p2", side: 1 } }
+    });
+  });
+
+  it("should format Damage and Heal notices with non-possessive mon and percentage format", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1", healthFormat: "percentage" });
+
+    const damageEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
+        health: [75, 100],
+        damage: [25, 100]
+      }
+    };
+
+    const damageResult = formatter.format(damageEntry as UiLogEntry);
+    expect(damageResult).not.toBeNull();
+    expect(damageResult!.notices.length).toBe(1);
+    expect(damageResult!.notices[0]).toEqual({
+      type: "Damage",
+      name: "25%",
+      mon: "Charmander",
+      monRef: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } }
+    });
+
+    const healEntry: Partial<UiLogEntry> = {
+      title: "heal",
+      values: {
+        mon: { Active: { position: 0, name: "Squirtle", player: "p2", side: 1 } },
+        health: [90, 100],
+        heal: [15, 100]
+      }
+    };
+
+    const healResult = formatter.format(healEntry as UiLogEntry);
+    expect(healResult).not.toBeNull();
+    expect(healResult!.notices.length).toBe(1);
+    expect(healResult!.notices[0]).toEqual({
+      type: "Heal",
+      name: "15%",
+      mon: "The opposing Squirtle",
+      monRef: { Active: { position: 0, name: "Squirtle", player: "p2", side: 1 } }
+    });
   });
 
   it("should disambiguate single vs multiple stats for fail what:unboost", () => {
@@ -360,19 +420,52 @@ describe("LogFormatter", () => {
     expect(stringifyLog(result!.messages[1])).toBe("The opposing Espeon used Toxic!");
   });
 
-  it("should emit two messages for switch when replacing an active mon", () => {
+  it("should emit two messages for switch when prev_mon is present", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const state = {
-      field: {
-        sides: [
-          {
-            active: [{ position: 0, name: "Pikachu", player: "p1", side: 0 }],
-            players: { p1: { id: "p1", name: "Jackson" } }
-          }
-        ]
+    const entry: Partial<UiLogEntry> = {
+      title: "switch",
+      player: "p1",
+      side: 0,
+      values: {
+        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
+        prev_mon: { Active: { position: 0, name: "Pikachu", player: "p1", side: 0 } },
+        name: "Charmander",
+        position: 0,
+        player: "p1"
       }
     };
 
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(2);
+    expect(stringifyLog(result!.messages[0])).toBe("Pikachu was switched out!");
+    expect(stringifyLog(result!.messages[1])).toBe("You sent out Charmander!");
+  });
+
+  it("should emit two messages for opposing switch when prev_mon is present", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "switch",
+      player: "p2",
+      side: 1,
+      values: {
+        mon: { Active: { position: 0, name: "Charmeleon", player: "p2", side: 1 } },
+        prev_mon: { Active: { position: 0, name: "Charmander", player: "p2", side: 1 } },
+        name: "Charmeleon",
+        position: 0,
+        player: "p2"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(2);
+    expect(stringifyLog(result!.messages[0])).toBe("The opposing Charmander was switched out!");
+    expect(stringifyLog(result!.messages[1])).toBe("P2 sent out the opposing Charmeleon!");
+  });
+
+  it("should emit a single message for switch when prev_mon is absent", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "switch",
       player: "p1",
@@ -384,10 +477,49 @@ describe("LogFormatter", () => {
       }
     };
 
-    const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+    const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(1);
     expect(stringifyLog(result!.messages[0])).toBe("You sent out Charmander!");
+  });
+
+  it("should map damage and heal HP diffs into context", () => {
+    const formatterFraction = new LogFormatter({ healthFormat: "fraction" });
+    const formatterPercent = new LogFormatter({ healthFormat: "percentage" });
+
+    const damageEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
+        health: [75, 100],
+        damage: [25, 100]
+      }
+    };
+
+    const healEntry: Partial<UiLogEntry> = {
+      title: "heal",
+      values: {
+        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
+        health: [90, 100],
+        heal: [15, 100]
+      }
+    };
+
+    const mappedD1 = mapUiLogEntry(damageEntry as UiLogEntry, undefined, { healthFormat: "fraction" });
+    expect(mappedD1!.context.DAMAGE).toBe("25/100");
+    expect(mappedD1!.context.HEALTH).toBe("75/100");
+
+    const mappedD2 = mapUiLogEntry(damageEntry as UiLogEntry, undefined, { healthFormat: "percentage" });
+    expect(mappedD2!.context.DAMAGE).toBe("25%");
+    expect(mappedD2!.context.HEALTH).toBe("75%");
+
+    const mappedH1 = mapUiLogEntry(healEntry as UiLogEntry, undefined, { healthFormat: "fraction" });
+    expect(mappedH1!.context.HEAL).toBe("15/100");
+    expect(mappedH1!.context.HEALTH).toBe("90/100");
+
+    const mappedH2 = mapUiLogEntry(healEntry as UiLogEntry, undefined, { healthFormat: "percentage" });
+    expect(mappedH2!.context.HEAL).toBe("15%");
+    expect(mappedH2!.context.HEALTH).toBe("90%");
   });
 
   it("should generalize magnitude formatting dynamically", () => {

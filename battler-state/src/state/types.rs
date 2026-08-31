@@ -629,6 +629,9 @@ pub struct Side {
     pub conditions: BTreeMap<String, ConditionData>,
     pub slot_conditions: Vec<BTreeMap<String, ConditionData>>,
     pub active: Vec<Option<MonBattleAppearanceReference>>,
+    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
+    #[cfg_attr(feature = "typescript", ts(skip))]
+    pub switched_out: HashSet<usize>,
 }
 
 impl Side {

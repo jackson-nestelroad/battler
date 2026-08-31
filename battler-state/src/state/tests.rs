@@ -137,7 +137,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "gender" => "M", "name" => "Bulbasaur", "level" => 5, "mon_index" => 1, "species" => "Bulbasaur", "health" => (50, 100) }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "gender" => "M", "name" => "Bulbasaur", "level" => 5, "mon_index" => 1, "species" => "Bulbasaur", "health" => (50, 100), "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }) }),
             ]
         );
     }
@@ -165,8 +165,8 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "level" => 5, "gender" => "M", "health" => (50, 100), "position" => 1, "species" => "Bulbasaur", "name" => "Bulbasaur", "mon_index" => 1 }),
-                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle".to_owned() }, values = { "position" => 1, "gender" => "M", "health" => (100, 100), "species" => "Squirtle", "mon_index" => 0, "level" => 5, "name" => "Squirtle" }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "level" => 5, "gender" => "M", "health" => (50, 100), "position" => 1, "species" => "Bulbasaur", "name" => "Bulbasaur", "mon_index" => 1, "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }) }),
+                ui_log!(title = "switch", player = "player-1", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Squirtle".to_owned() }, values = { "position" => 1, "gender" => "M", "health" => (100, 100), "species" => "Squirtle", "mon_index" => 0, "level" => 5, "name" => "Squirtle", "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Bulbasaur".to_owned() } }) }),
             ]
         );
     }
@@ -214,7 +214,7 @@ mod state_test {
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
                 ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), "name" => "Scratch", "no_target" => false, "animate" => true, "animate_only" => false, "z_power" => false }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100), "damage" => (20, 100) }),
             ]
         );
     }
@@ -232,7 +232,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0, "damage" => (100, 100) }),
                 ui_log!(
                     title = "faint",
                     target = ui::Mon::Active(ui::ActiveMonReference {
@@ -307,7 +307,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "species" => "Bulbasaur", "level" => 5, "health" => (100, 100), "name" => "Bulbasaur", "position" => 1, "gender" => "M", "mon_index" => 1 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "species" => "Bulbasaur", "level" => 5, "health" => (100, 100), "name" => "Bulbasaur", "position" => 1, "gender" => "M", "mon_index" => 1, "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
                 ui_log!(title = "residual"),
             ]
         );
@@ -353,7 +353,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "name" => "Bulbasaur", "mon_index" => 1, "gender" => "M", "level" => 5 }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "name" => "Bulbasaur", "mon_index" => 1, "gender" => "M", "level" => 5, "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
                 ui_log!(title = "residual"),
             ]
         );
@@ -409,7 +409,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "level" => 5, "mon_index" => 1, "name" => "Bulbasaur", "species" => "Bulbasaur", "health" => (100, 100), "gender" => "M" }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "level" => 5, "mon_index" => 1, "name" => "Bulbasaur", "species" => "Bulbasaur", "health" => (100, 100), "gender" => "M", "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
                 ui_log!(title = "residual"),
             ]
         );
@@ -474,7 +474,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "level" => 5, "gender" => "M", "mon_index" => 1, "name" => "Bulbasaur" }),
+                ui_log!(title = "switch", player = "player-2", effect = ui::Effect { effect_type: Some("species".to_owned()), name: "Bulbasaur".to_owned() }, values = { "position" => 1, "species" => "Bulbasaur", "health" => (100, 100), "level" => 5, "gender" => "M", "mon_index" => 1, "name" => "Bulbasaur", "prev_mon" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
                 ui_log!(title = "residual"),
             ]
         );
@@ -492,7 +492,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0, "damage" => (100, 100) }),
                 ui_log!(
                     title = "faint",
                     target = ui::Mon::Active(ui::ActiveMonReference {
@@ -521,7 +521,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0, "damage" => (100, 100) }),
                 ui_log!(
                     title = "faint",
                     target = ui::Mon::Active(ui::ActiveMonReference {
@@ -816,8 +816,8 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (50, 100) }),
-                ui_log!(title = "heal", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (75, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (50, 100), "damage" => (50, 100) }),
+                ui_log!(title = "heal", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => (75, 100), "heal" => (25, 100) }),
             ]
         );
     }
@@ -1125,8 +1125,8 @@ mod state_test {
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
                 ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate" => true, "no_target" => false, "z_power" => false, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Double Slap", "animate_only" => false }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (90, 100) }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (90, 100), "damage" => (10, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100), "damage" => (10, 100) }),
                 ui_log!(title = "hitcount", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "count" => 2 }),
             ]
         );
@@ -1719,7 +1719,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => 0 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "health" => 0, "damage" => (100, 100) }),
                 ui_log!(
                     title = "faint",
                     target = ui::Mon::Active(ui::ActiveMonReference {
@@ -2786,5 +2786,106 @@ mod state_test {
             state_selectors::mon_health(&state, &ch).unwrap(),
             Some((0, 100))
         );
+    }
+
+    #[test]
+    fn records_damage_amount() {
+        let state = setup_singles_battle(&[
+            "damage|mon:Charmander,player-2,1|health:73/100",
+            "damage|mon:Charmander,player-2,1|health:0",
+        ]);
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (73, 100), "damage" => (27, 100) }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => 0, "damage" => (73, 100) }),
+            ]
+        );
+    }
+
+    #[test]
+    fn records_heal_amount() {
+        let state = setup_singles_battle(&[
+            "damage|mon:Charmander,player-2,1|health:50/100",
+            "heal|mon:Charmander,player-2,1|health:85/100",
+        ]);
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (50, 100), "damage" => (50, 100) }),
+                ui_log!(title = "heal", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (85, 100), "heal" => (35, 100) }),
+            ]
+        );
+    }
+
+    #[test]
+    fn records_previous_mon_on_switch() {
+        let state = setup_singles_battle(&[
+            "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+        ]);
+        let switch_log = &state.ui_log[1][1];
+        assert_eq!(switch_log.title, "switch");
+        assert_eq!(
+            switch_log.values.get("prev_mon"),
+            Some(&ui::LogValue::Mon(ui::Mon::Active(
+                ui::ActiveMonReference {
+                    position: ui::FieldPosition {
+                        side: 0,
+                        position: 0,
+                    },
+                    reference: ui::MonReference {
+                        player: "player-1".to_owned(),
+                        name: "Squirtle".to_owned(),
+                    },
+                }
+            )))
+        );
+    }
+
+    #[test]
+    fn does_not_record_previous_mon_on_initial_switch() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:1",
+            "teamsize|player:player-2|size:1",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            "switch|player:player-2|position:1|name:Charmander|health:100/100|species:Charmander|level:5|gender:M",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+        let p1_switch = &state.ui_log[0][10];
+        assert_eq!(p1_switch.title, "switch");
+        assert_eq!(p1_switch.values.get("prev_mon"), None);
+    }
+
+    #[test]
+    fn does_not_record_previous_mon_after_switchout() {
+        let state = setup_singles_battle(&[
+            "switchout|mon:Squirtle,player-1,1",
+            "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+        ]);
+        let switch_log = &state.ui_log[1][2];
+        assert_eq!(switch_log.title, "switch");
+        assert_eq!(switch_log.values.get("prev_mon"), None);
+    }
+
+    #[test]
+    fn does_not_record_previous_mon_after_faint() {
+        let state = setup_singles_battle(&[
+            "damage|mon:Squirtle,player-1,1|health:0",
+            "faint|mon:Squirtle,player-1,1",
+            "switch|player:player-1|position:1|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+        ]);
+        let switch_log = &state.ui_log[1][3];
+        assert_eq!(switch_log.title, "switch");
+        assert_eq!(switch_log.values.get("prev_mon"), None);
     }
 }

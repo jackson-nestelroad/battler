@@ -202,12 +202,30 @@ export class LogFormatter {
       if (match) {
         let monStr: string | undefined = undefined;
         let monRef: UiMon | undefined = undefined;
-        const monMeta = mapped.metadata?.mon || mapped.metadata?.target;
-        if (monMeta?.raw_possessive) {
-          monStr = String(monMeta.raw_possessive);
-        }
-        if (monMeta?.ref) {
-          monRef = monMeta.ref;
+
+        if (
+          "monFromContext" in rule.notice &&
+          rule.notice.monFromContext &&
+          mapped.context[rule.notice.monFromContext as string]
+        ) {
+          const rawCtx = mapped.context[rule.notice.monFromContext as string];
+          const capCtx = capitalizeContextValue(rawCtx);
+          if (typeof capCtx === "string") {
+            monStr = capCtx;
+          } else if (capCtx && typeof capCtx === "object" && "text" in capCtx) {
+            monStr = (capCtx as ContextVar).text;
+            if ((capCtx as ContextVar).monRef) {
+              monRef = (capCtx as ContextVar).monRef;
+            }
+          }
+        } else {
+          const monMeta = mapped.metadata?.mon || mapped.metadata?.target;
+          if (monMeta?.raw_possessive) {
+            monStr = String(monMeta.raw_possessive);
+          }
+          if (monMeta?.ref) {
+            monRef = monMeta.ref;
+          }
         }
 
         let name = "";
@@ -227,6 +245,47 @@ export class LogFormatter {
     }
 
     const messages: FormattedUiLog[] = [];
+
+    // If entry is a switch log and prev_mon is present, format switchout message first
+    const isSwitch =
+      mapped.patterns[0]?.split("|")[0] === "switch" || entry.title.toLowerCase() === "switch";
+    if (isSwitch && mapped.metadata?.prev_mon && mapped.context.PREV_MON) {
+      const switchoutKey = "logs.switchout";
+      if (i18next.exists(switchoutKey)) {
+        const switchoutTemplate = i18next.t(switchoutKey, { ...templateArgs, returnObjects: true });
+        const switchoutContext: LogContext = {
+          ...mapped.context,
+          MON: mapped.context.PREV_MON,
+          MON_POSSESSIVE: mapped.context.PREV_MON_POSSESSIVE,
+          MON_PLAYER: mapped.context.PREV_MON_PLAYER,
+          MON_PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+          PLAYER: mapped.context.PREV_MON_PLAYER,
+          PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+        };
+        if (typeof switchoutTemplate === "string") {
+          const msg = createFormattedUiLog(
+            switchoutKey,
+            switchoutTemplate,
+            mapped.category,
+            switchoutContext,
+          );
+          if (msg) messages.push(msg);
+        } else if (Array.isArray(switchoutTemplate)) {
+          for (const item of switchoutTemplate) {
+            if (typeof item === "string") {
+              const msg = createFormattedUiLog(
+                switchoutKey,
+                item,
+                mapped.category,
+                switchoutContext,
+              );
+              if (msg) messages.push(msg);
+            }
+          }
+        }
+      }
+    }
+
     let resolvedKey: string | undefined = undefined;
     if (this.options.forceTemplateKey) {
       resolvedKey = `logs.${this.options.forceTemplateKey}`;

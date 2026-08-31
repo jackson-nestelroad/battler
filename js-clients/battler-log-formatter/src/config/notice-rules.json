@@ -36,5 +36,27 @@
       "type": "Item",
       "nameFromContext": "ITEM"
     }
+  },
+  {
+    "condition": {
+      "titleIn": ["damage"],
+      "hasContext": "DAMAGE"
+    },
+    "notice": {
+      "type": "Damage",
+      "nameFromContext": "DAMAGE",
+      "monFromContext": "MON"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["heal"],
+      "hasContext": "HEAL"
+    },
+    "notice": {
+      "type": "Heal",
+      "nameFromContext": "HEAL",
+      "monFromContext": "MON"
+    }
   }
 ]

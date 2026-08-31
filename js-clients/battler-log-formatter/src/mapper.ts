@@ -236,8 +236,19 @@ export function resolveMonContext(
   };
 }
 
+export function formatFraction(
+  fraction: unknown[],
+  format: "fraction" | "percentage" | undefined,
+): string {
+  if (fraction.length !== 2) return "";
+  if (format === "percentage") {
+    return `${Math.ceil((Number(fraction[0]) / Number(fraction[1])) * 100)}%`;
+  }
+  return `${fraction[0]}/${fraction[1]}`;
+}
+
 export function bindMonParticipant(
-  role: "mon" | "target" | "source",
+  role: "mon" | "target" | "source" | "prev_mon",
   uiMon: UiMon,
   state: BattleState | undefined,
   options: MapperOptions,
@@ -245,8 +256,10 @@ export function bindMonParticipant(
   metadata: MappedLogMetadata,
   tags: string[],
 ): void {
-  const tagK = role === "source" ? "of" : role;
-  tags.push(`${tagK}:*`);
+  if (role !== "prev_mon") {
+    const tagK = role === "source" ? "of" : role;
+    tags.push(`${tagK}:*`);
+  }
 
   const resolved = resolveMonContext(uiMon, state, options);
   const prefix = role.toUpperCase();
@@ -294,12 +307,20 @@ export function bindMonParticipant(
       raw_possessive: resolved.raw_possessive,
       ref: resolved.ref,
     };
+  } else if (role === "prev_mon") {
+    metadata.prev_mon = {
+      raw: resolved.raw,
+      raw_possessive: resolved.raw_possessive,
+      ref: resolved.ref,
+    };
   }
 
-  context.FOE_SIDE =
-    resolved.rel === "self" || resolved.rel === "ally"
-      ? i18next.t("side.foe")
-      : i18next.t("side.self");
+  if (role !== "prev_mon") {
+    context.FOE_SIDE =
+      resolved.rel === "self" || resolved.rel === "ally"
+        ? i18next.t("side.foe")
+        : i18next.t("side.self");
+  }
 }
 
 export function normalizeTitle(entry: UiLogEntry): string {
@@ -510,9 +531,16 @@ export function mapUiLogEntry(
       if (k === "title" || k === "player" || k === "side") continue;
 
       // Participant references in values map
-      if (k === "mon" || k === "target" || k === "source" || k === "of") {
+      if (k === "mon" || k === "target" || k === "source" || k === "of" || k === "prev_mon") {
         if (typeof v === "object" && v !== null && ("Active" in v || "Inactive" in v)) {
-          const role = k === "of" || k === "source" ? "source" : k === "target" ? "target" : "mon";
+          const role =
+            k === "of" || k === "source"
+              ? "source"
+              : k === "target"
+                ? "target"
+                : k === "prev_mon"
+                  ? "prev_mon"
+                  : "mon";
           bindMonParticipant(role, v as UiMon, state, options, context, metadata, tags);
           continue;
         }
@@ -592,12 +620,8 @@ export function mapUiLogEntry(
         }
       } else if (Array.isArray(v)) {
         tags.push(`${k}:*`);
-        if (k === "health" && v.length === 2) {
-          if (options.healthFormat === "percentage") {
-            context.HEALTH = `${Math.ceil((Number(v[0]) / Number(v[1])) * 100)}%`;
-          } else {
-            context.HEALTH = `${v[0]}/${v[1]}`;
-          }
+        if ((k === "health" || k === "damage" || k === "heal") && v.length === 2) {
+          context[k.toUpperCase()] = formatFraction(v, options.healthFormat);
         }
       } else {
         tags.push(`${k}:*`);

@@ -1,7 +1,6 @@
 use alloc::{
     borrow::ToOwned,
     collections::BTreeMap,
-    format,
     string::String,
     vec::Vec,
 };
@@ -96,6 +95,33 @@ fn health_from_log_entry(entry: &LogEntry) -> Result<(u64, u64)> {
     match health.split_once('/') {
         Some((a, b)) => Ok((a.parse()?, b.parse()?)),
         None => Ok((health.parse()?, 1)),
+    }
+}
+
+fn current_mon_health_from_log_entry(
+    state: &mut BattleState,
+    entry: &LogEntry,
+) -> Option<(u64, u64)> {
+    let mon_name = entry.value_or_else::<MonName>("mon").ok()?;
+    let mons = mons_by_mon_name(state, &mon_name).ok()?;
+    let mon_ref = mons.first()?;
+    let mon_appearance = state
+        .field
+        .mon_battle_appearance_with_recovery_by_reference_or_else(mon_ref)
+        .ok()?;
+    mon_appearance.primary().health.known().cloned()
+}
+
+fn insert_hp_diff_value(
+    values: &mut HashMap<String, ui::LogValue>,
+    key: &str,
+    diff: u64,
+    effective_max: u64,
+) {
+    if effective_max > 1 {
+        values.insert(key.to_owned(), ui::LogValue::Fraction(diff, effective_max));
+    } else {
+        values.insert(key.to_owned(), ui::LogValue::Number(diff as i64));
     }
 }
 
@@ -926,13 +952,34 @@ fn alter_battle_state_for_entry(
         | "ultra"
         | "uncatchable"
         | "weather" => {
+            let old_health = if matches!(title, "damage" | "heal") {
+                current_mon_health_from_log_entry(state, entry)
+            } else {
+                None
+            };
+
             let effect = effect_data_from_ui_log(&ui_entry);
             modify_state_from_effect(state, entry, &effect)?;
 
             // Generate UI log for the effect. Some effects may have special logs.
-            match entry.title() {
-                "catch" => {}
-                "faint" => {}
+            match title {
+                "damage" | "heal" => {
+                    if let Some((old_hp, old_max)) = old_health {
+                        if let Ok((new_hp, new_max)) = health_from_log_entry(entry) {
+                            let effective_max = if new_max == 1 && old_max > 1 {
+                                old_max
+                            } else {
+                                new_max
+                            };
+                            let diff = if title == "damage" {
+                                old_hp.saturating_sub(new_hp)
+                            } else {
+                                new_hp.saturating_sub(old_hp)
+                            };
+                            insert_hp_diff_value(&mut ui_entry.values, title, diff, effective_max);
+                        }
+                    }
+                }
                 "formechange" | "gigantamax" | "mega" | "revertgigantamax" | "revertmega"
                 | "specieschange" | "transform" | "primal" | "revertprimal" | "ultra"
                 | "revertultra" => {
@@ -941,7 +988,6 @@ fn alter_battle_state_for_entry(
                         .values
                         .insert("species".to_owned(), ui::LogValue::String(species));
                 }
-                "revive" => {}
                 _ => {}
             }
         }
@@ -1201,9 +1247,27 @@ fn alter_battle_state_for_entry(
 
             let replace = entry.title() == "replace";
             let mut current_appearance = None;
+            let had_explicit_switchout = side.switched_out.remove(&position);
+            let mut prev_ui_mon = None;
 
             // First, handle illusion recovery.
             if let Some(previous) = &previous {
+                if !replace && !had_explicit_switchout && title == "switch" {
+                    let prev_mon = side.mon_by_reference_or_else(previous)?;
+                    if !prev_mon.fainted {
+                        prev_ui_mon = Some(ui::Mon::Active(ui::ActiveMonReference {
+                            position: ui::FieldPosition {
+                                side: side_index,
+                                position,
+                            },
+                            reference: ui::MonReference {
+                                player: previous.player.clone(),
+                                name: prev_mon.physical_appearance.name.clone(),
+                            },
+                        }));
+                    }
+                }
+
                 // If applicable, handle illusion recovery first.
 
                 if replace {
@@ -1267,6 +1331,12 @@ fn alter_battle_state_for_entry(
             // SAFETY: Resized above.
             *side.active.get_mut(position).unwrap() = Some(mon.clone());
 
+            if let Some(prev_ui_mon) = prev_ui_mon {
+                ui_entry
+                    .values
+                    .insert("prev_mon".to_owned(), ui::LogValue::Mon(prev_ui_mon));
+            }
+
             ui_entry.values.insert(
                 "mon_index".to_owned(),
                 ui::LogValue::Number(mon_index as i64),
@@ -1274,7 +1344,20 @@ fn alter_battle_state_for_entry(
             // player, position, and side are already parsed from the log string.
         }
         "switchout" => {
-            // The switch out log is purely visual.
+            let mon: MonName = entry.value_or_else("mon")?;
+            let side_index = state.field.side_for_player(&mon.player)?;
+            let pos = mon
+                .position
+                .ok_or_else(|| Error::msg("switchout log requires mon position"))?;
+            let pos_idx = pos
+                .checked_sub(1)
+                .ok_or_else(|| Error::msg(format!("invalid mon position {pos}")))?;
+            state
+                .field
+                .side_mut_or_else(side_index)?
+                .switched_out
+                .insert(pos_idx);
+
             let copy_substitute = entry.value_ref("copysubstitute").is_some();
             let copy_volatile = entry.value_ref("copyvolatile").is_some();
 

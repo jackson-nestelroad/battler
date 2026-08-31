@@ -9386,6 +9386,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearweat
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: combine 1`] = `
+{
+  "rawLog": "combine",
+  "result": {
+    "key": "combine",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: continue 1`] = `
 {
   "rawLog": "continue",
@@ -10135,7 +10146,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_confusion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Alakazam",
+        "monRef": {
+          "Active": {
+            "name": "Alakazam",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "17/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10154,7 +10179,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_confusion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Alakazam",
+        "monRef": {
+          "Active": {
+            "name": "Alakazam",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "5/115",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10196,7 +10235,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_jabocaberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Applin",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10227,7 +10280,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_hail",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blastoise",
+        "monRef": {
+          "Active": {
+            "name": "Blastoise",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/139",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10258,7 +10325,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_strugglerecoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Bulbasaur",
+        "monRef": {
+          "Active": {
+            "name": "Bulbasaur",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "21/105",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10289,7 +10370,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_sandstorm",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cacnea",
+        "monRef": {
+          "Active": {
+            "name": "Cacnea",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "5/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10320,7 +10415,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_sandstorm",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cacnea",
+        "monRef": {
+          "Active": {
+            "name": "Cacnea",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10351,7 +10460,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_sandstorm",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cacnea",
+        "monRef": {
+          "Active": {
+            "name": "Cacnea",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10382,7 +10505,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikyshield",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Chesnaught",
+        "monRef": {
+          "Active": {
+            "name": "Chesnaught",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10413,7 +10550,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikyshield",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Chesnaught",
+        "monRef": {
+          "Active": {
+            "name": "Chesnaught",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/286",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10444,7 +10595,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_gulpmissile",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cramorant",
+        "monRef": {
+          "Active": {
+            "name": "Cramorant",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "100/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10475,7 +10640,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_gulpmissile",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cramorant",
+        "monRef": {
+          "Active": {
+            "name": "Cramorant",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "43/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10506,7 +10685,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_gulpmissile",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cramorant",
+        "monRef": {
+          "Active": {
+            "name": "Cramorant",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/250",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10537,7 +10730,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_baddreams",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Darkrai",
+        "monRef": {
+          "Active": {
+            "name": "Darkrai",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10568,7 +10775,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_baddreams",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Darkrai",
+        "monRef": {
+          "Active": {
+            "name": "Darkrai",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/130",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10599,7 +10820,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikes",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Decidueye",
+        "monRef": {
+          "Active": {
+            "name": "Decidueye",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/138",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10630,7 +10865,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_stealthrock",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Decidueye",
+        "monRef": {
+          "Active": {
+            "name": "Decidueye",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10661,7 +10910,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_stealthrock",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Decidueye",
+        "monRef": {
+          "Active": {
+            "name": "Decidueye",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/138",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10692,7 +10955,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_hail",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Ditto",
+        "monRef": {
+          "Active": {
+            "name": "Ditto",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "5/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10723,7 +11000,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_weather_hail",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Ditto",
+        "monRef": {
+          "Active": {
+            "name": "Ditto",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/108",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10765,7 +11056,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_aftermath",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Drifblim",
+        "monRef": {
+          "Active": {
+            "name": "Drifblim",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10807,7 +11112,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_aftermath",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Drifblim",
+        "monRef": {
+          "Active": {
+            "name": "Drifblim",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/210",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10838,7 +11157,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_curse",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Eevee",
+        "monRef": {
+          "Active": {
+            "name": "Eevee",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10869,7 +11202,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_curse",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Eevee",
+        "monRef": {
+          "Active": {
+            "name": "Eevee",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "13/115",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10900,7 +11247,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_leechseed",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Eevee",
+        "monRef": {
+          "Active": {
+            "name": "Eevee",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/115",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10931,7 +11292,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_lifeorb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Entei",
+        "monRef": {
+          "Active": {
+            "name": "Entei",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "10/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10962,7 +11337,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_lifeorb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Entei",
+        "monRef": {
+          "Active": {
+            "name": "Entei",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "4/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -10993,7 +11382,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_lifeorb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Entei",
+        "monRef": {
+          "Active": {
+            "name": "Entei",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11024,7 +11427,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_bind",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Forretress",
+        "monRef": {
+          "Active": {
+            "name": "Forretress",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11055,7 +11472,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_curse",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Forretress",
+        "monRef": {
+          "Active": {
+            "name": "Forretress",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11086,7 +11517,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_saltcure",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Garganacl",
+        "monRef": {
+          "Active": {
+            "name": "Garganacl",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "44/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11117,7 +11562,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_saltcure",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Garganacl",
+        "monRef": {
+          "Active": {
+            "name": "Garganacl",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "2/175",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11148,7 +11607,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_nightmare",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Gengar",
+        "monRef": {
+          "Active": {
+            "name": "Gengar",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "40/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11179,7 +11652,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_nightmare",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Gengar",
+        "monRef": {
+          "Active": {
+            "name": "Gengar",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "25/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11210,7 +11697,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_nightmare",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Gengar",
+        "monRef": {
+          "Active": {
+            "name": "Gengar",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "10/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11272,7 +11773,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_gmaxsteelsurge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Glalie",
+        "monRef": {
+          "Active": {
+            "name": "Glalie",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/140",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11303,7 +11818,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_recoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "66/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11334,7 +11863,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_recoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "55/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11365,7 +11908,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_strugglerecoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "74/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11396,7 +11953,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_strugglerecoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "65/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11438,7 +12009,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_roughskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "47/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11469,7 +12054,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikes",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "60/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11500,7 +12099,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikes",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Golisopod",
+        "monRef": {
+          "Active": {
+            "name": "Golisopod",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "47/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11531,7 +12144,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_jumpkick",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Hitmonlee",
+        "monRef": {
+          "Active": {
+            "name": "Hitmonlee",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "50/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11562,7 +12189,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_jumpkick",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Hitmonlee",
+        "monRef": {
+          "Active": {
+            "name": "Hitmonlee",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "45/110",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11717,7 +12358,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_spikyshield",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Incineroar",
+        "monRef": {
+          "Active": {
+            "name": "Incineroar",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/300",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11748,7 +12403,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_badpoison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Jigglypuff",
+        "monRef": {
+          "Active": {
+            "name": "Jigglypuff",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "18/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11779,7 +12448,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_badpoison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Jigglypuff",
+        "monRef": {
+          "Active": {
+            "name": "Jigglypuff",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/340",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11788,9 +12471,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:92/100",
   "result": {
-    "key": "damage",
     "messages": [],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Kecleon",
+        "monRef": {
+          "Active": {
+            "name": "Kecleon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "8/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11799,9 +12495,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:105/120",
   "result": {
-    "key": "damage",
     "messages": [],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Kecleon",
+        "monRef": {
+          "Active": {
+            "name": "Kecleon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11810,9 +12519,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Kecleon,player-2,1|health:110/120",
   "result": {
-    "key": "damage",
     "messages": [],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Kecleon",
+        "monRef": {
+          "Active": {
+            "name": "Kecleon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11843,7 +12565,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_disguise",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mimikyu",
+        "monRef": {
+          "Active": {
+            "name": "Mimikyu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/220",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11874,7 +12610,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_disguise",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mimikyu",
+        "monRef": {
+          "Active": {
+            "name": "Mimikyu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11905,7 +12655,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_disguise",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mimikyu",
+        "monRef": {
+          "Active": {
+            "name": "Mimikyu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/220",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11936,7 +12700,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_poison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mudkip",
+        "monRef": {
+          "Active": {
+            "name": "Mudkip",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "11/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11967,7 +12745,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_poison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mudkip",
+        "monRef": {
+          "Active": {
+            "name": "Mudkip",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "3/110",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -11986,7 +12778,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_confusion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Oricorio",
+        "monRef": {
+          "Active": {
+            "name": "Oricorio",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/135",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12028,7 +12834,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_jabocaberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Oshawott",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12070,7 +12890,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_jabocaberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Oshawott",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/115",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12112,7 +12946,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_rowapberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Oshawott",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12154,7 +13002,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_rowapberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Oshawott",
+        "monRef": {
+          "Active": {
+            "name": "Oshawott",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/115",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12185,7 +13047,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_stickybarb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pachirisu",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12216,7 +13092,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_stickybarb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pachirisu",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12247,7 +13137,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_flameburst",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pansear",
+        "monRef": {
+          "Active": {
+            "name": "Pansear",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12278,7 +13182,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_gmaxsteelsurge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "10/95",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12309,7 +13227,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_gmaxsteelsurge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "5/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12328,7 +13260,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_disobedience",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "protagonist",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "25/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12347,7 +13293,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_disobedience",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "protagonist",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/180",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12389,7 +13349,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_innardsout",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pyukumuku",
+        "monRef": {
+          "Active": {
+            "name": "Pyukumuku",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "100/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12431,7 +13405,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_innardsout",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pyukumuku",
+        "monRef": {
+          "Active": {
+            "name": "Pyukumuku",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "19/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12473,7 +13461,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_innardsout",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pyukumuku",
+        "monRef": {
+          "Active": {
+            "name": "Pyukumuku",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/220",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12504,7 +13506,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_badpoison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Salazzle",
+        "monRef": {
+          "Active": {
+            "name": "Salazzle",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/246",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12608,7 +13624,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_roughskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Sharpedo",
+        "monRef": {
+          "Active": {
+            "name": "Sharpedo",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12650,7 +13680,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_roughskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Sharpedo",
+        "monRef": {
+          "Active": {
+            "name": "Sharpedo",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/130",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12774,7 +13818,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_recoil",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Slaking",
+        "monRef": {
+          "Active": {
+            "name": "Slaking",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/410",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12805,7 +13863,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_blacksludge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Staraptor",
+        "monRef": {
+          "Active": {
+            "name": "Staraptor",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12836,7 +13908,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_item_blacksludge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Staraptor",
+        "monRef": {
+          "Active": {
+            "name": "Staraptor",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/145",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12867,7 +13953,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_stealthrock",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Staraptor",
+        "monRef": {
+          "Active": {
+            "name": "Staraptor",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/145",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12898,7 +13998,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_liquidooze",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Swalot",
+        "monRef": {
+          "Active": {
+            "name": "Swalot",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "31/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12929,7 +14043,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_liquidooze",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Swalot",
+        "monRef": {
+          "Active": {
+            "name": "Swalot",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/160",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12960,7 +14088,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_burn",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Swellow",
+        "monRef": {
+          "Active": {
+            "name": "Swellow",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "5/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -12991,7 +14133,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_burn",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Swellow",
+        "monRef": {
+          "Active": {
+            "name": "Swellow",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13022,7 +14178,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_burn",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Swellow",
+        "monRef": {
+          "Active": {
+            "name": "Swellow",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/120",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13053,7 +14223,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "11/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13084,7 +14268,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/143",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13115,7 +14313,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/143",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13146,7 +14358,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_solarpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Tropius",
+        "monRef": {
+          "Active": {
+            "name": "Tropius",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "86/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13177,7 +14403,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_ability_solarpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Tropius",
+        "monRef": {
+          "Active": {
+            "name": "Tropius",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "79/159",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13208,7 +14448,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_gmaxcannonade",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Venusaur",
+        "monRef": {
+          "Active": {
+            "name": "Venusaur",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "43/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13239,7 +14493,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_gmaxcannonade",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Venusaur",
+        "monRef": {
+          "Active": {
+            "name": "Venusaur",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "21/140",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13258,7 +14526,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_powder",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Vivillon",
+        "monRef": {
+          "Active": {
+            "name": "Vivillon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/100",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13277,7 +14559,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_move_powder",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Vivillon",
+        "monRef": {
+          "Active": {
+            "name": "Vivillon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/270",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -13308,7 +14604,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         "key": "damage__from_status_poison",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Vivillon",
+        "monRef": {
+          "Active": {
+            "name": "Vivillon",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "12/140",
+        "type": "Damage",
+      },
+    ],
   },
 }
 `;
@@ -18207,7 +19517,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_oranberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Applin",
+        "monRef": {
+          "Active": {
+            "name": "Applin",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18238,7 +19562,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_grassyterrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Arboliva",
+        "monRef": {
+          "Active": {
+            "name": "Arboliva",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "27/138",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18269,7 +19607,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_oranberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Archeops",
+        "monRef": {
+          "Active": {
+            "name": "Archeops",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18300,7 +19652,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_oranberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Archeops",
+        "monRef": {
+          "Active": {
+            "name": "Archeops",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/260",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18331,7 +19697,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_drain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Bibarel",
+        "monRef": {
+          "Active": {
+            "name": "Bibarel",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18362,7 +19742,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_drain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Bibarel",
+        "monRef": {
+          "Active": {
+            "name": "Bibarel",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/139",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18393,7 +19787,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_drain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Bibarel",
+        "monRef": {
+          "Active": {
+            "name": "Bibarel",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/139",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18424,7 +19832,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_aguavberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blaziken",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18455,7 +19877,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_aguavberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blaziken",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/140",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18486,7 +19922,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_aguavberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blaziken",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/140",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18517,7 +19967,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_wish",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blaziken",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18548,7 +20012,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_wish",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Blaziken",
+        "monRef": {
+          "Active": {
+            "name": "Blaziken",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "130/270",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18579,7 +20057,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Conkeldurr",
+        "monRef": {
+          "Active": {
+            "name": "Conkeldurr",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "46/165",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18610,7 +20102,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_lunardance",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cresselia",
+        "monRef": {
+          "Active": {
+            "name": "Cresselia",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18641,7 +20147,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_lunardance",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Cresselia",
+        "monRef": {
+          "Active": {
+            "name": "Cresselia",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "80/180",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18672,7 +20192,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_cheekpouch",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Diggersby",
+        "monRef": {
+          "Active": {
+            "name": "Diggersby",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18703,7 +20237,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_cheekpouch",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Diggersby",
+        "monRef": {
+          "Active": {
+            "name": "Diggersby",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "180/280",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18734,7 +20282,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_sitrusberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Drampa",
+        "monRef": {
+          "Active": {
+            "name": "Drampa",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18765,7 +20327,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_sitrusberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Drampa",
+        "monRef": {
+          "Active": {
+            "name": "Drampa",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "76/266",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18796,7 +20372,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_sitrusberry",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Drampa",
+        "monRef": {
+          "Active": {
+            "name": "Drampa",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "88/266",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18827,7 +20417,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_leechseed",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Eevee",
+        "monRef": {
+          "Active": {
+            "name": "Eevee",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/115",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18858,7 +20462,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_poisonheal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Gliscor",
+        "monRef": {
+          "Active": {
+            "name": "Gliscor",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18889,7 +20507,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_poisonheal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Gliscor",
+        "monRef": {
+          "Active": {
+            "name": "Gliscor",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "24/135",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18920,7 +20552,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_hospitality",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Incineroar",
+        "monRef": {
+          "Active": {
+            "name": "Incineroar",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18951,7 +20597,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_hospitality",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Incineroar",
+        "monRef": {
+          "Active": {
+            "name": "Incineroar",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/155",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -18982,7 +20642,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_healingwish",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Lopunny",
+        "monRef": {
+          "Active": {
+            "name": "Lopunny",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19013,7 +20687,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_healingwish",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Lopunny",
+        "monRef": {
+          "Active": {
+            "name": "Lopunny",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "25/125",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19044,7 +20732,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_raindish",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Lotad",
+        "monRef": {
+          "Active": {
+            "name": "Lotad",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19075,7 +20777,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_aquaring",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mantyke",
+        "monRef": {
+          "Active": {
+            "name": "Mantyke",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19106,7 +20822,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_aquaring",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mantyke",
+        "monRef": {
+          "Active": {
+            "name": "Mantyke",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/105",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19137,7 +20867,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_regenerator",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mienshao",
+        "monRef": {
+          "Active": {
+            "name": "Mienshao",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19168,7 +20912,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_regenerator",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Mienshao",
+        "monRef": {
+          "Active": {
+            "name": "Mienshao",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/125",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19199,7 +20957,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_eartheater",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Orthworm",
+        "monRef": {
+          "Active": {
+            "name": "Orthworm",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19230,7 +21002,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_eartheater",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Orthworm",
+        "monRef": {
+          "Active": {
+            "name": "Orthworm",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "22/130",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19261,7 +21047,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/95",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19292,7 +21092,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19323,7 +21137,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_voltabsorb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/95",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19354,7 +21182,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_voltabsorb",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19385,7 +21227,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_fullrestore",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/95",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19416,7 +21272,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_fullrestore",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19447,7 +21317,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_leechseed",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/95",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19478,7 +21362,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_leechseed",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19509,7 +21407,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_potion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "protagonist",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/95",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19540,7 +21452,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_potion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "protagonist",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19600,7 +21526,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Raichu",
+        "monRef": {
+          "Active": {
+            "name": "Raichu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "20/120",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19631,7 +21571,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_ingrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Roselia",
+        "monRef": {
+          "Active": {
+            "name": "Roselia",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19662,7 +21616,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_ingrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Roselia",
+        "monRef": {
+          "Active": {
+            "name": "Roselia",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19693,7 +21661,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_ingrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Roselia",
+        "monRef": {
+          "Active": {
+            "name": "Roselia",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19724,7 +21706,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_shellbell",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Sceptile",
+        "monRef": {
+          "Active": {
+            "name": "Sceptile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19755,7 +21751,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_shellbell",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Sceptile",
+        "monRef": {
+          "Active": {
+            "name": "Sceptile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/130",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19786,7 +21796,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_shellbell",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Sceptile",
+        "monRef": {
+          "Active": {
+            "name": "Sceptile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/130",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19817,7 +21841,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Seedot",
+        "monRef": {
+          "Active": {
+            "name": "Seedot",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19848,7 +21886,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Seedot",
+        "monRef": {
+          "Active": {
+            "name": "Seedot",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19879,7 +21931,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_icebody",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Seel",
+        "monRef": {
+          "Active": {
+            "name": "Seel",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19910,7 +21976,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_icebody",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Seel",
+        "monRef": {
+          "Active": {
+            "name": "Seel",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/125",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19941,7 +22021,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_heal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Shiinotic",
+        "monRef": {
+          "Active": {
+            "name": "Shiinotic",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -19972,7 +22066,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_heal",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Shiinotic",
+        "monRef": {
+          "Active": {
+            "name": "Shiinotic",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "130/230",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20003,7 +22111,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_leftovers",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Starly",
+        "monRef": {
+          "Active": {
+            "name": "Starly",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20034,7 +22156,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_grassyterrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Stunfisk",
+        "monRef": {
+          "Active": {
+            "name": "Stunfisk",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20065,7 +22201,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_move_grassyterrain",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Stunfisk",
+        "monRef": {
+          "Active": {
+            "name": "Stunfisk",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "130/328",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20096,7 +22246,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_berryjuice",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Totodile",
+        "monRef": {
+          "Active": {
+            "name": "Totodile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20127,7 +22291,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_berryjuice",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Totodile",
+        "monRef": {
+          "Active": {
+            "name": "Totodile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20158,7 +22336,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_leftovers",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Totodile",
+        "monRef": {
+          "Active": {
+            "name": "Totodile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20189,7 +22381,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_leftovers",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Totodile",
+        "monRef": {
+          "Active": {
+            "name": "Totodile",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/110",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20220,7 +22426,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20251,7 +22471,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "32/143",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20282,7 +22516,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_ability_dryskin",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Toxicroak",
+        "monRef": {
+          "Active": {
+            "name": "Toxicroak",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "43/143",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20313,7 +22561,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_blacksludge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Weezing",
+        "monRef": {
+          "Active": {
+            "name": "Weezing",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20344,7 +22606,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_blacksludge",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Weezing",
+        "monRef": {
+          "Active": {
+            "name": "Weezing",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/125",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20375,7 +22651,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_maxpotion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Zekrom",
+        "monRef": {
+          "Active": {
+            "name": "Zekrom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "0/100",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20406,7 +22696,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_maxpotion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Zekrom",
+        "monRef": {
+          "Active": {
+            "name": "Zekrom",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "210/310",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -20437,7 +22741,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         "key": "heal__from_item_maxpotion",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Zekrom",
+        "monRef": {
+          "Active": {
+            "name": "Zekrom",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "210/310",
+        "type": "Heal",
+      },
+    ],
   },
 }
 `;
@@ -32945,6 +35263,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: speciesch
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: split|side:0 1`] = `
+{
+  "rawLog": "split|side:0",
+  "result": {
+    "key": "split",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: split|side:1 1`] = `
+{
+  "rawLog": "split|side:1",
+  "result": {
+    "key": "split",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Aerodactyl,player-2,1|move:Disable|disabledmove:Tackle 1`] = `
 {
   "rawLog": "start|mon:Aerodactyl,player-2,1|move:Disable|disabledmove:Tackle",
@@ -36944,6 +39284,26 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
     "messages": [
       {
         "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Bulbasaur",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Bulbasaur",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Bulbasaur was switched out!",
+        },
+        "key": "switchout",
+      },
+      {
+        "context": {
           "MON": {
             "monRef": {
               "Active": {
@@ -36978,6 +39338,26 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
     "messages": [
       {
         "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Bulbasaur",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Bulbasaur",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Bulbasaur was switched out!",
+        },
+        "key": "switchout",
+      },
+      {
+        "context": {
           "MON": {
             "monRef": {
               "Active": {
@@ -37010,6 +39390,26 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
   "rawLog": "switch|player:player-2|position:1|name:Shedinja|health:1/1|species:Shedinja|level:50|gender:U",
   "result": {
     "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Bulbasaur",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Bulbasaur",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Bulbasaur was switched out!",
+        },
+        "key": "switchout",
+      },
       {
         "context": {
           "MON": {

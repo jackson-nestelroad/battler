@@ -90,7 +90,8 @@
     "animate_only",
     "animateonly",
     "notarget",
-    "no_target"
+    "no_target",
+    "prev_mon"
   ],
   "wildcardableTags": [
     "ability",
