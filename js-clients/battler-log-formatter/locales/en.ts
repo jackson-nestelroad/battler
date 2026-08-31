@@ -336,9 +336,13 @@ export const en = {
     boost: null,
     boost__by_0: "{{MON_POSSESSIVE}} {{STAT}} can't go any higher!",
     boost__by_1: "{{MON_POSSESSIVE}} {{STAT}} rose!",
+    boost__by_1__from_zpower: "{{MON}} boosted its {{STAT}} using its Z-Power!",
     boost__by_2: "{{MON_POSSESSIVE}} {{STAT}} rose sharply!",
+    boost__by_2__from_zpower: "{{MON}} boosted its {{STAT}} sharply using its Z-Power!",
     boost__by_3plus: "{{MON_POSSESSIVE}} {{STAT}} rose drastically!",
+    boost__by_3plus__from_zpower: "{{MON}} boosted its {{STAT}} drastically using its Z-Power!",
     boost__by_3plus__max: null,
+    boost__from_zpower: "{{MON}} boosted its {{STAT}} using its Z-Power!",
     boost__max: "{{MON}} maximized its {{STAT}}!",
     cannotescape: "{{MON}} cannot escape!",
     cant: null,
@@ -383,6 +387,8 @@ export const en = {
     clearallboosts: null,
     clearboosts: "{{MON_POSSESSIVE}} stat changes were removed!",
     clearnegativeboosts: "{{MON_POSSESSIVE}} negative stat changes were removed!",
+    clearnegativeboosts__from_zpower:
+      "{{MON}} returned its decreased stats to normal using its Z-Power!",
     clearpositiveboosts: "{{MON_POSSESSIVE}} positive stat changes were removed!",
     clearweather__weather_any: "The weather cleared.",
     clearweather__weather_extremelyharshsunlight: "The harsh sunlight faded.",
@@ -788,17 +794,28 @@ export const en = {
     move__from_move_any: null,
     move__from_move_any__zpower: null,
     move__from_move_assist: null,
+    move__from_move_assist__zpower:
+      "{{MON}} will change {{MOVE}} chosen by Assist to its Z-Move!",
     move__from_move_copycat: null,
+    move__from_move_copycat__zpower:
+      "{{MON}} will change {{MOVE}} copied by Copycat to its Z-Move!",
     move__from_move_grasspledge: null,
     move__from_move_instruct: null,
     move__from_move_magiccoat: null,
     move__from_move_mefirst: null,
+    move__from_move_mefirst__zpower:
+      "{{MON}} will change {{MOVE}} it stole using Me First to its Z-Move!",
     move__from_move_metronome: null,
-    move__from_move_metronome__zpower: null,
+    move__from_move_metronome__zpower:
+      "{{MON}} will change {{MOVE}} chosen by Metronome to its Z-Move!",
     move__from_move_mirrormove: null,
+    move__from_move_mirrormove__zpower:
+      "{{MON}} will change {{MOVE}} to its Z-Move using Mirror Move!",
     move__from_move_naturepower: null,
     move__from_move_round: null,
     move__from_move_sleeptalk: null,
+    move__from_move_sleeptalk__zpower:
+      "{{MON}} will change {{MOVE}} chosen by Sleep Talk to its Z-Move!",
     move__from_move_snatch: null,
     move__from_move_waterpledge: null,
     move__notarget: "{{MON}} used {{MOVE}}!",
@@ -971,6 +988,10 @@ export const en = {
     start__disabledmove_any: null,
     start__disabledmove_any__move_any: "{{MON_POSSESSIVE}} {{MOVE}} was disabled!",
     start__disabledmove_any__move_disable: "{{MON_POSSESSIVE}} {{MOVE}} was disabled!",
+    start__from_zpower: null,
+    start__from_zpower__move_any: null,
+    start__from_zpower__move_focusenergy:
+      "{{MON}} boosted its critical-hit ratio using its Z-Power!",
     start__mimic_any: null,
     start__mimic_any__move_any: "{{MON}} learned {{MOVE}}!",
     start__mimic_any__move_mimic: "{{MON}} learned {{MOVE}}!",

@@ -218,8 +218,11 @@ block|move:*|from:ability:Sweet Veil
 block|move:*|from:item:Ability Shield
 boost|by:0
 boost|by:1
+boost|by:1|from:Z-Power
 boost|by:2
+boost|by:2|from:Z-Power
 boost|by:3plus
+boost|by:3plus|from:Z-Power
 boost|by:3plus|max
 cannotescape
 cant|from:Flinch
@@ -256,6 +259,7 @@ catch|item:*|shakes:4
 clearallboosts
 clearboosts
 clearnegativeboosts
+clearnegativeboosts|from:Z-Power
 clearpositiveboosts
 clearweather|weather:Extremely Harsh Sunlight
 clearweather|weather:Hail
@@ -581,17 +585,22 @@ move
 move|from:ability:Dancer
 move|from:ability:Magic Bounce
 move|from:move:Assist
+move|from:move:Assist|zpower
 move|from:move:Copycat
+move|from:move:Copycat|zpower
 move|from:move:Grass Pledge
 move|from:move:Instruct
 move|from:move:Magic Coat
 move|from:move:Me First
+move|from:move:Me First|zpower
 move|from:move:Metronome
 move|from:move:Metronome|zpower
 move|from:move:Mirror Move
+move|from:move:Mirror Move|zpower
 move|from:move:Nature Power
 move|from:move:Round
 move|from:move:Sleep Talk
+move|from:move:Sleep Talk|zpower
 move|from:move:Snatch
 move|from:move:Water Pledge
 move|notarget
@@ -749,6 +758,7 @@ start|move:Dragon Cheer|silent
 start|move:Embargo
 start|move:Encore
 start|move:Focus Energy
+start|move:Focus Energy|from:Z-Power
 start|move:Focus Energy|silent
 start|move:Foresight
 start|move:Future Sight

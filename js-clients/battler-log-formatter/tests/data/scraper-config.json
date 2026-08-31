@@ -8,7 +8,13 @@
     "removepseudoweather|condition:Condition|from:Effect",
     "turnlimit",
     "debug",
-    "catchfailed|item:Poké Ball|shakes:2"
+    "catchfailed|item:Poké Ball|shakes:2",
+    "boost|stat:atk|by:2|from:Z-Power",
+    "move|from:move:Assist|zpower",
+    "move|from:move:Copycat|zpower",
+    "move|from:move:Me First|zpower",
+    "move|from:move:Mirror Move|zpower",
+    "move|from:move:Sleep Talk|zpower"
   ],
   "excludeTags": [
     "mon",
@@ -240,9 +246,13 @@
     },
     {
       "match": {
-        "title": "boost"
+        "title": "boost",
+        "from": "*"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
     },
     {
       "match": {
@@ -276,9 +286,13 @@
     },
     {
       "match": {
-        "title": "start"
+        "title": "start",
+        "from": "*"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
     },
     {
       "match": {
@@ -322,9 +336,13 @@
     },
     {
       "match": {
-        "title": "clearnegativeboosts"
+        "title": "clearnegativeboosts",
+        "from": "*"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
     },
     {
       "match": {

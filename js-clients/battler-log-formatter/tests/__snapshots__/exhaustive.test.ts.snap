@@ -7597,6 +7597,38 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power 1`] = `
+{
+  "rawLog": "boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "STAT": "Sp. Def",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eevee",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eevee",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Eevee boosted its Sp. Def using its Z-Power!",
+        },
+        "key": "boost__by_1__from_zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Emolga,player-1,1|stat:atk|by:6|max 1`] = `
 {
   "rawLog": "boost|mon:Emolga,player-1,1|stat:atk|by:6|max",
@@ -7622,6 +7654,38 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
           "text": "The opposing Emolga maximized its Attack!",
         },
         "key": "boost__max",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Genesect,player-1,1|stat:atk|by:3 1`] = `
+{
+  "rawLog": "boost|mon:Genesect,player-1,1|stat:atk|by:3",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "STAT": "Attack",
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Genesect",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Genesect's",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Genesect's Attack rose drastically!",
+        },
+        "key": "boost__by_3plus",
       },
     ],
     "notices": [],
@@ -7757,15 +7821,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Pikachu,player-1,1|stat:atk|by:3|from:Z-Power 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:Z-Power 1`] = `
 {
-  "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:3|from:Z-Power",
+  "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:Z-Power",
   "result": {
     "messages": [
       {
         "context": {
           "STAT": "Attack",
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Pikachu",
@@ -7774,14 +7838,78 @@ exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Pikachu's",
+            "text": "The opposing Pikachu",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu's Attack rose drastically!",
+          "text": "The opposing Pikachu boosted its Attack using its Z-Power!",
         },
-        "key": "boost__by_3plus",
+        "key": "boost__by_1__from_zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Pikachu,player-1,1|stat:atk|by:3|from:Z-Power 1`] = `
+{
+  "rawLog": "boost|mon:Pikachu,player-1,1|stat:atk|by:3|from:Z-Power",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "STAT": "Attack",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu boosted its Attack drastically using its Z-Power!",
+        },
+        "key": "boost__by_3plus__from_zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:Z-Power 1`] = `
+{
+  "rawLog": "boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:Z-Power",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "STAT": "Speed",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu boosted its Speed using its Z-Power!",
+        },
+        "key": "boost__by_1__from_zpower",
       },
     ],
     "notices": [],
@@ -9070,7 +9198,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearnega
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Pikachu",
@@ -9079,14 +9207,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearnega
                 "side": 0,
               },
             },
-            "text": "The opposing Pikachu's",
+            "text": "The opposing Pikachu",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu's negative stat changes were removed!",
+          "text": "The opposing Pikachu returned its decreased stats to normal using its Z-Power!",
         },
-        "key": "clearnegativeboosts",
+        "key": "clearnegativeboosts__from_zpower",
       },
     ],
     "notices": [],
@@ -28116,9 +28244,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Pikachu used Mist!",
+          "text": "The opposing Pikachu will change Mist chosen by Metronome to its Z-Move!",
         },
-        "key": "move__zpower",
+        "key": "move__from_move_metronome__zpower",
       },
     ],
     "notices": [],
@@ -34966,6 +35094,37 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
           "text": "The opposing Pikachu is getting pumped!",
         },
         "key": "start__move_focusenergy",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Pikachu,player-1,1|move:Focus Energy|from:Z-Power 1`] = `
+{
+  "rawLog": "start|mon:Pikachu,player-1,1|move:Focus Energy|from:Z-Power",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu boosted its critical-hit ratio using its Z-Power!",
+        },
+        "key": "start__from_zpower__move_focusenergy",
       },
     ],
     "notices": [],
