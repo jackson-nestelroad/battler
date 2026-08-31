@@ -265,25 +265,11 @@
     {
       "match": {
         "title": "curestatus",
-        "from": "ability:*"
-      },
-      "strip": ["from"]
-    },
-    {
-      "match": {
-        "title": "curestatus",
-        "from": "item:*"
-      },
-      "strip": ["from"]
-    },
-    {
-      "match": {
-        "title": "curestatus",
-        "from": "move:*"
+        "from": "*"
       },
       "strip": ["from"],
       "except": {
-        "from": "move:Uproar"
+        "from": ["Affection", "move:Uproar"]
       }
     },
     {
@@ -301,30 +287,12 @@
     {
       "match": {
         "title": "status",
-        "from": "ability:*"
+        "from": "*"
       },
-      "strip": ["from"]
-    },
-    {
-      "match": {
-        "title": "status",
-        "from": "item:*"
-      },
-      "strip": ["from"]
-    },
-    {
-      "match": {
-        "title": "status",
-        "from": "move:*"
-      },
-      "strip": ["from"]
-    },
-    {
-      "match": {
-        "title": "status",
-        "from": "Toxic Fumes"
-      },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Disobedience"
+      }
     },
     {
       "match": {
@@ -379,6 +347,16 @@
         "title": "invertboosts"
       },
       "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "swapboosts",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": ["move:Heart Swap", "move:Power Swap"]
+      }
     },
     {
       "match": {

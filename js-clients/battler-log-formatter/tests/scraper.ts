@@ -81,14 +81,17 @@ export function maskLog(line: string): string[] {
 
     if (isMatch && (rule as any).except) {
       for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const excList = Array.isArray(excV) ? excV : [excV];
         const hasExc = tags.some((t) => {
-          if ((excV as string) === "*") {
-            return t.startsWith(`${excK}:`);
-          } else if ((excV as string).endsWith("*")) {
-            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
-          } else {
-            return t === `${excK}:${excV as string}`;
-          }
+          return excList.some((v: string) => {
+            if (v === "*") {
+              return t.startsWith(`${excK}:`);
+            } else if (v.endsWith("*")) {
+              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
+            } else {
+              return t === `${excK}:${v}`;
+            }
+          });
         });
         if (hasExc) {
           isMatch = false;
@@ -132,14 +135,17 @@ export function maskLog(line: string): string[] {
 
     if (isMatch && (rule as any).except) {
       for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const excList = Array.isArray(excV) ? excV : [excV];
         const hasExc = tags.some((t) => {
-          if ((excV as string) === "*") {
-            return t.startsWith(`${excK}:`);
-          } else if ((excV as string).endsWith("*")) {
-            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
-          } else {
-            return t === `${excK}:${excV as string}`;
-          }
+          return excList.some((v: string) => {
+            if (v === "*") {
+              return t.startsWith(`${excK}:`);
+            } else if (v.endsWith("*")) {
+              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
+            } else {
+              return t === `${excK}:${v}`;
+            }
+          });
         });
         if (hasExc) {
           isMatch = false;
@@ -195,14 +201,17 @@ export function maskLog(line: string): string[] {
 
     if (isMatch && (rule as any).except) {
       for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const excList = Array.isArray(excV) ? excV : [excV];
         const hasExc = tags.some((t) => {
-          if ((excV as string) === "*") {
-            return t.startsWith(`${excK}:`);
-          } else if ((excV as string).endsWith("*")) {
-            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
-          } else {
-            return t === `${excK}:${excV as string}`;
-          }
+          return excList.some((v: string) => {
+            if (v === "*") {
+              return t.startsWith(`${excK}:`);
+            } else if (v.endsWith("*")) {
+              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
+            } else {
+              return t === `${excK}:${v}`;
+            }
+          });
         });
         if (hasExc) {
           isMatch = false;
