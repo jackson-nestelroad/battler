@@ -79,6 +79,24 @@ export function maskLog(line: string): string[] {
       }
     }
 
+    if (isMatch && (rule as any).except) {
+      for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const hasExc = tags.some((t) => {
+          if ((excV as string) === "*") {
+            return t.startsWith(`${excK}:`);
+          } else if ((excV as string).endsWith("*")) {
+            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
+          } else {
+            return t === `${excK}:${excV as string}`;
+          }
+        });
+        if (hasExc) {
+          isMatch = false;
+          break;
+        }
+      }
+    }
+
     if (isMatch) {
       finalTags = finalTags.filter((t) => !rule.strip.includes(t.split(":")[0]));
       finalFlags = finalFlags.filter((f) => !rule.strip.includes(f));
@@ -112,11 +130,34 @@ export function maskLog(line: string): string[] {
       }
     }
 
+    if (isMatch && (rule as any).except) {
+      for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const hasExc = tags.some((t) => {
+          if ((excV as string) === "*") {
+            return t.startsWith(`${excK}:`);
+          } else if ((excV as string).endsWith("*")) {
+            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
+          } else {
+            return t === `${excK}:${excV as string}`;
+          }
+        });
+        if (hasExc) {
+          isMatch = false;
+          break;
+        }
+      }
+    }
+
     if (isMatch) {
       for (let i = 0; i < finalTags.length; i++) {
         const [k] = finalTags[i].split(":");
         if (rule.collapse.includes(k)) {
-          finalTags[i] = `${k}:*`;
+          const parts = finalTags[i].split(":");
+          if (parts.length > 2 && (k === "from" || k === "what")) {
+            finalTags[i] = `${parts[0]}:${parts[1]}:*`;
+          } else {
+            finalTags[i] = `${k}:*`;
+          }
         }
       }
     }
@@ -146,6 +187,24 @@ export function maskLog(line: string): string[] {
           }
         });
         if (!hasTag) {
+          isMatch = false;
+          break;
+        }
+      }
+    }
+
+    if (isMatch && (rule as any).except) {
+      for (const [excK, excV] of Object.entries((rule as any).except)) {
+        const hasExc = tags.some((t) => {
+          if ((excV as string) === "*") {
+            return t.startsWith(`${excK}:`);
+          } else if ((excV as string).endsWith("*")) {
+            return t.startsWith(`${excK}:${(excV as string).slice(0, -1)}`);
+          } else {
+            return t === `${excK}:${excV as string}`;
+          }
+        });
+        if (hasExc) {
           isMatch = false;
           break;
         }
@@ -556,6 +615,39 @@ function generateMatrix() {
       // Do nothing
     }
     extracted.patterns.add(cloned);
+  }
+
+  // Dynamic status condition expansion from conditions.json
+  const statusConditionNames = new Set<string>();
+  for (const entry of uniqueEffects) {
+    if (entry.condition_type === "Status") {
+      statusConditionNames.add(entry.name);
+    }
+  }
+
+  for (const pattern of Array.from(extracted.patterns)) {
+    for (const sName of statusConditionNames) {
+      if (pattern.includes(`|status:${sName}|`) || pattern.endsWith(`|status:${sName}`)) {
+        for (const targetName of statusConditionNames) {
+          if (targetName === sName) continue;
+          const clonedPattern = pattern.split(`|status:${sName}|`).join(`|status:${targetName}|`);
+          const finalCloned = clonedPattern.endsWith(`|status:${sName}`)
+            ? clonedPattern.slice(0, -`|status:${sName}`.length) + `|status:${targetName}`
+            : clonedPattern;
+          extracted.patterns.add(finalCloned);
+        }
+      }
+      if (pattern.includes(`|from:status:${sName}|`) || pattern.endsWith(`|from:status:${sName}`)) {
+        for (const targetName of statusConditionNames) {
+          if (targetName === sName) continue;
+          const clonedPattern = pattern.split(`|from:status:${sName}|`).join(`|from:status:${targetName}|`);
+          const finalCloned = clonedPattern.endsWith(`|from:status:${sName}`)
+            ? clonedPattern.slice(0, -`|from:status:${sName}`.length) + `|from:status:${targetName}`
+            : clonedPattern;
+          extracted.patterns.add(finalCloned);
+        }
+      }
+    }
   }
 
   const finalMatrix: string[] = [];

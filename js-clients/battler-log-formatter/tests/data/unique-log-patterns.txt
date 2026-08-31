@@ -241,19 +241,21 @@ cant|from:move:Shell Trap
 cant|from:move:Taunt
 cant|from:move:Telekinesis
 cant|from:move:Throat Chop
+cant|from:status:Bad Poison
+cant|from:status:Burn
 cant|from:status:Freeze
 cant|from:status:Paralysis
+cant|from:status:Poison
 cant|from:status:Sleep
 catchfailed|item:*|shakes:0
 catchfailed|item:*|shakes:1
+catchfailed|item:*|shakes:2
 catchfailed|item:*|shakes:3
 catch|item:*|shakes:1|critical
 catch|item:*|shakes:4
 clearallboosts
-clearboosts|from:ability:Curious Medicine
-clearboosts|from:move:Clear Smog
+clearboosts
 clearnegativeboosts
-clearnegativeboosts|from:item:White Herb
 clearpositiveboosts
 clearweather|weather:Extremely Harsh Sunlight
 clearweather|weather:Hail
@@ -265,29 +267,25 @@ clearweather|weather:Snow
 combine
 continue
 copyboosts
-copyboosts|from:ability:Costar
 crit
 crit|battletype:singles
 curestatus|status:Bad Poison
 curestatus|status:Bad Poison|from:Affection
-curestatus|status:Bad Poison|from:ability:Pastel Veil
-curestatus|status:Bad Poison|from:move:Aromatherapy
+curestatus|status:Bad Poison|from:move:Uproar
 curestatus|status:Burn
-curestatus|status:Burn|from:ability:Natural Cure
-curestatus|status:Burn|from:ability:Thermal Exchange
-curestatus|status:Burn|from:ability:Water Bubble
+curestatus|status:Burn|from:Affection
+curestatus|status:Burn|from:move:Uproar
 curestatus|status:Freeze
-curestatus|status:Freeze|from:ability:Magma Armor
+curestatus|status:Freeze|from:Affection
+curestatus|status:Freeze|from:move:Uproar
 curestatus|status:Paralysis
-curestatus|status:Paralysis|from:ability:Hydration
-curestatus|status:Paralysis|from:ability:Natural Cure
-curestatus|status:Paralysis|from:ability:Shed Skin
-curestatus|status:Paralysis|from:move:Aromatherapy
+curestatus|status:Paralysis|from:Affection
+curestatus|status:Paralysis|from:move:Uproar
+curestatus|status:Poison
+curestatus|status:Poison|from:Affection
+curestatus|status:Poison|from:move:Uproar
 curestatus|status:Sleep
-curestatus|status:Sleep|from:ability:Healer
-curestatus|status:Sleep|from:move:Aromatherapy
-curestatus|status:Sleep|from:move:Healing Wish
-curestatus|status:Sleep|from:move:Lunar Dance
+curestatus|status:Sleep|from:Affection
 curestatus|status:Sleep|from:move:Uproar
 damage
 damage|from:Confusion
@@ -327,7 +325,10 @@ damage|from:move:Stealth Rock
 damage|from:move:Supercell Slam
 damage|from:status:Bad Poison
 damage|from:status:Burn
+damage|from:status:Freeze
+damage|from:status:Paralysis
 damage|from:status:Poison
+damage|from:status:Sleep
 damage|from:weather:Hail
 damage|from:weather:Sandstorm
 debug
@@ -395,22 +396,9 @@ fail|what:move:Corrosive Gas
 fail|what:move:Soak
 fail|what:move:Teatime
 fail|what:status:Sleep|from:move:Uproar
-fail|what:unboost|from:ability:Big Pecks
-fail|what:unboost|from:ability:Clear Body
-fail|what:unboost|from:ability:Flower Veil
-fail|what:unboost|from:ability:Full Metal Body
-fail|what:unboost|from:ability:Guard Dog
-fail|what:unboost|from:ability:Hyper Cutter
-fail|what:unboost|from:ability:Illuminate
-fail|what:unboost|from:ability:Inner Focus
-fail|what:unboost|from:ability:Keen Eye
-fail|what:unboost|from:ability:Mind's Eye
-fail|what:unboost|from:ability:Oblivious
-fail|what:unboost|from:ability:Own Tempo
-fail|what:unboost|from:ability:Scrappy
-fail|what:unboost|from:ability:White Smoke
-fail|what:unboost|from:item:Clear Amulet
-fail|what:unboost|from:move:Substitute
+fail|what:unboost|from:ability:*
+fail|what:unboost|from:item:*
+fail|what:unboost|from:move:*
 faint
 fieldactivate|condition:Stat Shuffle
 fieldactivate|move:Fairy Lock
@@ -429,9 +417,7 @@ fieldend|move:Water Sport
 fieldend|move:Wonder Room
 fieldstart|condition:Stat Shuffle
 fieldstart|move:Electric Terrain
-fieldstart|move:Electric Terrain|from:ability:Electric Surge
 fieldstart|move:Grassy Terrain
-fieldstart|move:Grassy Terrain|from:ability:Seed Sower
 fieldstart|move:Gravity
 fieldstart|move:Ion Deluge
 fieldstart|move:Magic Room
@@ -505,40 +491,10 @@ heal|from:move:Lunar Dance
 heal|from:move:Wish
 hitcount
 immune
-immune|from:ability:Bulletproof
-immune|from:ability:Dry Skin
-immune|from:ability:Earth Eater
-immune|from:ability:Flash Fire
-immune|from:ability:Good as Gold
-immune|from:ability:Immunity
-immune|from:ability:Insomnia
-immune|from:ability:Leaf Guard
-immune|from:ability:Lightning Rod
-immune|from:ability:Limber
-immune|from:ability:Motor Drive
-immune|from:ability:Oblivious
-immune|from:ability:Overcoat
-immune|from:ability:Own Tempo
-immune|from:ability:Pastel Veil
-immune|from:ability:Purifying Salt
-immune|from:ability:Sap Sipper
-immune|from:ability:Shields Down
-immune|from:ability:Soundproof
-immune|from:ability:Storm Drain
-immune|from:ability:Sturdy
-immune|from:ability:Thermal Exchange
-immune|from:ability:Vital Spirit
-immune|from:ability:Volt Absorb
-immune|from:ability:Water Absorb
-immune|from:ability:Water Bubble
-immune|from:ability:Water Veil
-immune|from:ability:Well-Baked Body
-immune|from:ability:Wind Rider
-immune|from:ability:Wonder Guard
 info|battletype:*
 info|environment:*
 info|rule:*
-invertboosts|from:move:Topsy-Turvy
+invertboosts
 itemend|item:*|from:ability:Magician
 itemend|item:*|from:ability:Pickpocket
 itemend|item:*|from:ability:Symbiosis
@@ -667,18 +623,18 @@ removesidecondition|condition:*
 removeslotcondition|condition:*
 removevolatile|volatile:*
 replace
-resettypechange|from:ability:Mimicry
+resettypechange
 residual
 resisted
 resisted|battletype:singles
 restorepp|move:*
 revertdynamax
 revertgigantamax
-revertmega|from:Faint
-revertprimal|from:Faint
+revertmega
+revertprimal
 reverttera
-revertultra|from:Faint
-revive|from:*
+revertultra
+revive|from:item:*
 revive|from:move:Revival Blessing
 sethp
 setpp|move:*|from:move:Grudge
@@ -757,7 +713,12 @@ singleturn|move:Snatch
 singleturn|move:Spotlight
 singleturn|move:Wide Guard
 specieschange
+specieschange|status:Bad Poison
+specieschange|status:Burn
 specieschange|status:Freeze
+specieschange|status:Paralysis
+specieschange|status:Poison
+specieschange|status:Sleep
 split
 start|ability:Flash Fire
 start|ability:Flash Fire|silent
@@ -770,17 +731,13 @@ start|ability:Zen Mode
 start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|fatigue
-start|condition:Confusion|from:ability:Poison Puppeteer
 start|condition:Future Move
 start|condition:Highlighting Sample
 start|move:Aqua Ring
 start|move:Attract
-start|move:Attract|from:ability:Cute Charm
-start|move:Attract|from:item:Destiny Knot
 start|move:Autotomize
 start|move:Bide
 start|move:Charge
-start|move:Charge|from:ability:Wind Power
 start|move:Curse
 start|move:Disable
 start|move:Disable|disabledmove:*
@@ -823,36 +780,25 @@ start|move:Uproar
 start|move:Uproar|residual
 start|move:Yawn
 status|status:Bad Poison
-status|status:Bad Poison|from:Toxic Fumes
-status|status:Bad Poison|from:item:Toxic Orb
-status|status:Bad Poison|from:move:Toxic Spikes
+status|status:Bad Poison|from:Disobedience
 status|status:Burn
-status|status:Burn|from:move:Beak Blast
-status|status:Burn|from:move:Burning Bulwark
+status|status:Burn|from:Disobedience
 status|status:Freeze
+status|status:Freeze|from:Disobedience
 status|status:Paralysis
-status|status:Paralysis|from:ability:Gulp Missile
-status|status:Paralysis|from:ability:Static
-status|status:Paralysis|from:ability:Synchronize
+status|status:Paralysis|from:Disobedience
 status|status:Poison
-status|status:Poison|from:ability:Effect Spore
-status|status:Poison|from:ability:Poison Touch
-status|status:Poison|from:move:Baneful Bunker
-status|status:Poison|from:move:Toxic Spikes
+status|status:Poison|from:Disobedience
 status|status:Sleep
 status|status:Sleep|from:Disobedience
-status|status:Sleep|from:ability:Effect Spore
-status|status:Sleep|from:move:Yawn
 supereffective
 supereffective|battletype:singles
+swap
 swapboosts|from:move:Heart Swap
 swapboosts|from:move:Power Swap
 swapplayer
 swapsideconditions|from:move:Court Change
 swapsidecondition|condition:*|from:move:Court Change
-swap|from:Auto-Shift
-swap|from:Player Choice
-swap|from:move:Ally Switch
 switch
 switchout
 switchout|copysubstitute
@@ -867,10 +813,6 @@ transform|from:ability:Imposter
 turn
 turnlimit
 typechange|types:*
-typechange|types:*|from:ability:Color Change
-typechange|types:*|from:ability:Libero
-typechange|types:*|from:ability:Mimicry
-typechange|types:*|from:ability:Protean
 ultra|from:item:Ultranecrozium Z
 unboost|by:0
 unboost|by:1
@@ -882,33 +824,19 @@ uncatchable|thief
 useitem
 waiting
 weather|weather:Extremely Harsh Sunlight
-weather|weather:Extremely Harsh Sunlight|from:ability:Desolate Land
 weather|weather:Extremely Harsh Sunlight|residual
 weather|weather:Hail
-weather|weather:Hail|from:Start
-weather|weather:Hail|from:ability:Snow Warning
 weather|weather:Hail|residual
 weather|weather:Harsh Sunlight
-weather|weather:Harsh Sunlight|from:Start
-weather|weather:Harsh Sunlight|from:ability:Drought
-weather|weather:Harsh Sunlight|from:ability:Orichalcum Pulse
 weather|weather:Harsh Sunlight|residual
 weather|weather:Heavy Rain
-weather|weather:Heavy Rain|from:ability:Primordial Sea
 weather|weather:Heavy Rain|residual
 weather|weather:Rain
-weather|weather:Rain|from:Start
-weather|weather:Rain|from:ability:Drizzle
 weather|weather:Rain|residual
 weather|weather:Sandstorm
-weather|weather:Sandstorm|from:Start
-weather|weather:Sandstorm|from:ability:Sand Stream
 weather|weather:Sandstorm|residual
 weather|weather:Snow
-weather|weather:Snow|from:Start
-weather|weather:Snow|from:ability:Snow Warning
 weather|weather:Snow|residual
 weather|weather:Strong Winds
-weather|weather:Strong Winds|from:ability:Delta Stream
 weather|weather:Strong Winds|residual
 win

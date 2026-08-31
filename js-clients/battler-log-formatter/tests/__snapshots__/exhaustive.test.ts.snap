@@ -9497,37 +9497,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: crit|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Abra,player-1,1|status:Paralysis|from:item:Cheri Berry 1`] = `
-{
-  "rawLog": "curestatus|mon:Abra,player-1,1|status:Paralysis|from:item:Cheri Berry",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Abra",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Abra",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Abra was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2 1`] = `
 {
   "rawLog": "curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2",
@@ -9559,248 +9528,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Araquanid,player-1,1|status:Burn|from:ability:Water Bubble 1`] = `
-{
-  "rawLog": "curestatus|mon:Araquanid,player-1,1|status:Burn|from:ability:Water Bubble",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Araquanid",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Araquanid's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Araquanid's burn was healed!",
-        },
-        "key": "curestatus__status_burn",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Baxcalibur,player-1,1|status:Burn|from:ability:Thermal Exchange 1`] = `
-{
-  "rawLog": "curestatus|mon:Baxcalibur,player-1,1|status:Burn|from:ability:Thermal Exchange",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Baxcalibur",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Baxcalibur's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Baxcalibur's burn was healed!",
-        },
-        "key": "curestatus__status_burn",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Blaziken,player-1|status:Sleep|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Blaziken,player-1|status:Sleep|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Inactive": {
-                "name": "Blaziken",
-                "player": "player-1",
-              },
-            },
-            "text": "The opposing Blaziken",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Blaziken woke up!",
-        },
-        "key": "curestatus__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Bulbasaur,player-1|status:Paralysis|from:move:Aromatherapy|of:Eevee,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Bulbasaur,player-1|status:Paralysis|from:move:Aromatherapy|of:Eevee,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Inactive": {
-                "name": "Bulbasaur",
-                "player": "player-1",
-              },
-            },
-            "text": "The opposing Bulbasaur",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Bulbasaur was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Charizard,player-1,1|status:Sleep 1`] = `
-{
-  "rawLog": "curestatus|mon:Charizard,player-1,1|status:Sleep",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Charizard",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Charizard",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Charizard woke up!",
-        },
-        "key": "curestatus__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Charmander,player-1|status:Sleep|from:move:Aromatherapy|of:Eevee,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Charmander,player-1|status:Sleep|from:move:Aromatherapy|of:Eevee,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Inactive": {
-                "name": "Charmander",
-                "player": "player-1",
-              },
-            },
-            "text": "The opposing Charmander",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Charmander woke up!",
-        },
-        "key": "curestatus__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance 1`] = `
-{
-  "rawLog": "curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Cresselia",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Cresselia",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Cresselia woke up!",
-        },
-        "key": "curestatus__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Darmanitan,player-2,2|status:Bad Poison|from:ability:Pastel Veil|of:Rapidash,player-2,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Darmanitan,player-2,2|status:Bad Poison|from:ability:Pastel Veil|of:Rapidash,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Darmanitan",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Darmanitan",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Darmanitan was cured of its poison!",
-        },
-        "key": "curestatus__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Diggersby,player-1,1|status:Bad Poison|from:item:Lum Berry 1`] = `
 {
   "rawLog": "curestatus|mon:Diggersby,player-1,1|status:Bad Poison|from:item:Lum Berry",
@@ -9823,37 +9550,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
         "formatted": {
           "category": "secondary",
           "text": "The opposing Diggersby was cured of its poison!",
-        },
-        "key": "curestatus__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Eevee,player-1,1|status:Bad Poison|from:move:Aromatherapy 1`] = `
-{
-  "rawLog": "curestatus|mon:Eevee,player-1,1|status:Bad Poison|from:move:Aromatherapy",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Eevee",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Eevee",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Eevee was cured of its poison!",
         },
         "key": "curestatus__status_badpoison",
       },
@@ -10049,68 +9745,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish 1`] = `
-{
-  "rawLog": "curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Lopunny",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Lopunny",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Lopunny woke up!",
-        },
-        "key": "curestatus__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration 1`] = `
-{
-  "rawLog": "curestatus|mon:Manaphy,player-1,1|status:Paralysis|from:ability:Hydration",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Manaphy",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Manaphy",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Manaphy was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Mewtwo,player-2,1|status:Freeze 1`] = `
 {
   "rawLog": "curestatus|mon:Mewtwo,player-2,1|status:Freeze",
@@ -10142,68 +9776,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Miltank,player-1,1|status:Bad Poison 1`] = `
-{
-  "rawLog": "curestatus|mon:Miltank,player-1,1|status:Bad Poison",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Miltank",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Miltank",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Miltank was cured of its poison!",
-        },
-        "key": "curestatus__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Miltank,player-1,1|status:Bad Poison|from:move:Aromatherapy 1`] = `
-{
-  "rawLog": "curestatus|mon:Miltank,player-1,1|status:Bad Poison|from:move:Aromatherapy",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Miltank",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Miltank",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Miltank was cured of its poison!",
-        },
-        "key": "curestatus__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection 1`] = `
 {
   "rawLog": "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection",
@@ -10225,9 +9797,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu was cured of its poison!",
+          "text": "The opposing Pikachu managed to expel the poison so you wouldn't worry!",
         },
-        "key": "curestatus__status_badpoison",
+        "key": "curestatus__from_affection__status_badpoison",
       },
     ],
     "notices": [],
@@ -10328,66 +9900,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Sceptile,player-1,2|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Sceptile,player-1,2|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Sceptile",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Sceptile",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Sceptile was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Sceptile,player-1|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Sceptile,player-1|status:Paralysis|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Inactive": {
-                "name": "Sceptile",
-                "player": "player-1",
-              },
-            },
-            "text": "The opposing Sceptile",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Sceptile was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Seedot,player-1,1|status:Sleep 1`] = `
 {
   "rawLog": "curestatus|mon:Seedot,player-1,1|status:Sleep",
@@ -10450,97 +9962,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin 1`] = `
-{
-  "rawLog": "curestatus|mon:Seviper,player-2,1|status:Paralysis|from:ability:Shed Skin",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Seviper",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Seviper",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Seviper was cured of paralysis!",
-        },
-        "key": "curestatus__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Snorlax,player-1,2|status:Burn|from:item:Rawst Berry 1`] = `
-{
-  "rawLog": "curestatus|mon:Snorlax,player-1,2|status:Burn|from:item:Rawst Berry",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Snorlax",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Snorlax's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Snorlax's burn was healed!",
-        },
-        "key": "curestatus__status_burn",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Swampert,player-1|status:Bad Poison|from:move:Aromatherapy|of:Miltank,player-1,1 1`] = `
-{
-  "rawLog": "curestatus|mon:Swampert,player-1|status:Bad Poison|from:move:Aromatherapy|of:Miltank,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Inactive": {
-                "name": "Swampert",
-                "player": "player-1",
-              },
-            },
-            "text": "The opposing Swampert",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Swampert was cured of its poison!",
-        },
-        "key": "curestatus__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1 1`] = `
 {
   "rawLog": "curestatus|mon:Whismur,player-2,1|status:Sleep|from:move:Uproar|of:Whismur,player-1,1",
@@ -10548,7 +9969,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Whismur",
@@ -10557,14 +9978,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
                 "side": 0,
               },
             },
-            "text": "The opposing Whismur",
+            "text": "the opposing Whismur",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Whismur woke up!",
+          "text": "The uproar woke the opposing Whismur!",
         },
-        "key": "curestatus__status_sleep",
+        "key": "curestatus__from_move_uproar__status_sleep",
       },
     ],
     "notices": [],
@@ -15860,7 +15281,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
           "category": "secondary",
           "text": "The opposing Beldum's Clear Body prevents its accuracy from being lowered!",
         },
-        "key": "fail__from_ability_clearbody__what_unboost",
+        "key": "fail__from_ability_any__what_unboost",
       },
     ],
     "notices": [],
@@ -15893,7 +15314,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
           "category": "secondary",
           "text": "The opposing Beldum's Clear Body prevents its Attack from being lowered!",
         },
-        "key": "fail__from_ability_clearbody__what_unboost",
+        "key": "fail__from_ability_any__what_unboost",
       },
     ],
     "notices": [],
@@ -16021,7 +15442,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
           "category": "secondary",
           "text": "The opposing Mawile's Hyper Cutter prevents its Attack from being lowered!",
         },
-        "key": "fail__from_ability_hypercutter__what_unboost",
+        "key": "fail__from_ability_any__what_unboost",
       },
     ],
     "notices": [],
@@ -16041,39 +15462,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
           "text": "But it failed!",
         },
         "key": "fail",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye 1`] = `
-{
-  "rawLog": "fail|mon:Sableye,player-2,1|what:unboost|boosts:acc|from:ability:Keen Eye",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Keen Eye",
-          "STAT": "accuracy",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Sableye",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Sableye's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Sableye's Keen Eye prevents its accuracy from being lowered!",
-        },
-        "key": "fail__from_ability_keeneye__what_unboost",
       },
     ],
     "notices": [],
@@ -16119,39 +15507,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo 1`] = `
-{
-  "rawLog": "fail|mon:Spinda,player-1,1|what:unboost|boosts:atk|from:ability:Own Tempo",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Own Tempo",
-          "STAT": "Attack",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Spinda",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Spinda's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Spinda's Own Tempo prevents its Attack from being lowered!",
-        },
-        "key": "fail__from_ability_owntempo__what_unboost",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Squirtle,player-2,1|what:move:Soak 1`] = `
 {
   "rawLog": "fail|mon:Squirtle,player-2,1|what:move:Soak",
@@ -16183,39 +15538,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
           "text": "But it failed!",
         },
         "key": "fail__from_move_any__what_any",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye 1`] = `
-{
-  "rawLog": "fail|mon:Ursaluna,player-1,1|what:unboost|boosts:acc|from:ability:Mind's Eye",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Mind's Eye",
-          "STAT": "accuracy",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Ursaluna",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ursaluna's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ursaluna's Mind's Eye prevents its accuracy from being lowered!",
-        },
-        "key": "fail__from_ability_mindseye__what_unboost",
       },
     ],
     "notices": [],
@@ -20994,130 +20316,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: hitcount|
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Araquanid,player-1,1|from:ability:Water Bubble 1`] = `
-{
-  "rawLog": "immune|mon:Araquanid,player-1,1|from:ability:Water Bubble",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Araquanid",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Araquanid's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Araquanid's Water Bubble makes it immune!",
-        },
-        "key": "immune__from_ability_waterbubble",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Baxcalibur,player-2,1|from:ability:Thermal Exchange 1`] = `
-{
-  "rawLog": "immune|mon:Baxcalibur,player-2,1|from:ability:Thermal Exchange",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Baxcalibur",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Baxcalibur's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Baxcalibur's Thermal Exchange protects it!",
-        },
-        "key": "immune__from_ability_thermalexchange",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Budew,player-2,1|from:ability:Leaf Guard 1`] = `
-{
-  "rawLog": "immune|mon:Budew,player-2,1|from:ability:Leaf Guard",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Budew",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Budew's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Budew's Leaf Guard protected it from status problems!",
-        },
-        "key": "immune__from_ability_leafguard",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Chesnaught,player-2,1|from:ability:Bulletproof 1`] = `
-{
-  "rawLog": "immune|mon:Chesnaught,player-2,1|from:ability:Bulletproof",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Chesnaught",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Chesnaught's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Chesnaught's Bulletproof makes it immune!",
-        },
-        "key": "immune__from_ability_bulletproof",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Drowzee,player-2,1|from:ability:Insomnia 1`] = `
 {
   "rawLog": "immune|mon:Drowzee,player-2,1|from:ability:Insomnia",
@@ -21125,7 +20323,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Drowzee",
@@ -21134,45 +20332,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
                 "side": 0,
               },
             },
-            "text": "The opposing Drowzee's",
+            "text": "the opposing Drowzee",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Drowzee's Insomnia makes it immune to sleep!",
+          "text": "It doesn't affect the opposing Drowzee...",
         },
-        "key": "immune__from_ability_insomnia",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Garganacl,player-2,1|from:ability:Purifying Salt 1`] = `
-{
-  "rawLog": "immune|mon:Garganacl,player-2,1|from:ability:Purifying Salt",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Garganacl",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Garganacl's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Garganacl's Purifying Salt protects it!",
-        },
-        "key": "immune__from_ability_purifyingsalt",
+        "key": "immune",
       },
     ],
     "notices": [],
@@ -21211,223 +20378,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Gengar,player-2,1 1`] = `
-{
-  "rawLog": "immune|mon:Gengar,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "MON": {
-            "monRef": {
-              "Active": {
-                "name": "Gengar",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Gengar",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "It doesn't affect the opposing Gengar...",
-        },
-        "key": "immune",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Geodude,player-1,1|from:ability:Sturdy 1`] = `
-{
-  "rawLog": "immune|mon:Geodude,player-1,1|from:ability:Sturdy",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Geodude",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Geodude's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Geodude's Sturdy makes it immune to one-hit KO moves!",
-        },
-        "key": "immune__from_ability_sturdy",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Gholdengo,player-2,1|from:ability:Good as Gold 1`] = `
-{
-  "rawLog": "immune|mon:Gholdengo,player-2,1|from:ability:Good as Gold",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Gholdengo",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Gholdengo's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Gholdengo's Good as Gold makes it immune!",
-        },
-        "key": "immune__from_ability_goodasgold",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Guzzlord,player-2,1|from:ability:Water Absorb 1`] = `
-{
-  "rawLog": "immune|mon:Guzzlord,player-2,1|from:ability:Water Absorb",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Guzzlord",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Guzzlord's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Guzzlord's Water Absorb makes it immune!",
-        },
-        "key": "immune__from_ability_waterabsorb",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-1,1|from:ability:Shields Down 1`] = `
-{
-  "rawLog": "immune|mon:Minior,player-1,1|from:ability:Shields Down",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Minior",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Minior's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Minior's Shields Down protects it!",
-        },
-        "key": "immune__from_ability_shieldsdown",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minior,player-2,1|from:ability:Shields Down 1`] = `
-{
-  "rawLog": "immune|mon:Minior,player-2,1|from:ability:Shields Down",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Minior",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Minior's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Minior's Shields Down protects it!",
-        },
-        "key": "immune__from_ability_shieldsdown",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Minun,player-1,2|from:ability:Soundproof 1`] = `
-{
-  "rawLog": "immune|mon:Minun,player-1,2|from:ability:Soundproof",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Minun",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Minun's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Minun's Soundproof makes it immune to sound-based moves!",
-        },
-        "key": "immune__from_ability_soundproof",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ninetales,player-1,1|from:ability:Flash Fire 1`] = `
 {
   "rawLog": "immune|mon:Ninetales,player-1,1|from:ability:Flash Fire",
@@ -21435,7 +20385,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Ninetales",
@@ -21444,386 +20394,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: immune|mo
                 "side": 0,
               },
             },
-            "text": "The opposing Ninetales's",
+            "text": "the opposing Ninetales",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Ninetales's Flash Fire makes it immune!",
-        },
-        "key": "immune__from_ability_flashfire",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb 1`] = `
-{
-  "rawLog": "immune|mon:Pikachu,player-1,1|from:ability:Volt Absorb",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Pikachu",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Pikachu's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Pikachu's Volt Absorb makes it immune!",
-        },
-        "key": "immune__from_ability_voltabsorb",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Ralts,player-1,1|from:ability:Insomnia 1`] = `
-{
-  "rawLog": "immune|mon:Ralts,player-1,1|from:ability:Insomnia",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Ralts",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ralts's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ralts's Insomnia makes it immune to sleep!",
-        },
-        "key": "immune__from_ability_insomnia",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Rapidash,player-2,1|from:ability:Pastel Veil 1`] = `
-{
-  "rawLog": "immune|mon:Rapidash,player-2,1|from:ability:Pastel Veil",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Rapidash",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Rapidash",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Rapidash is protected by a pastel veil!",
-        },
-        "key": "immune__from_ability_pastelveil",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Reuniclus,player-1,1|from:ability:Overcoat 1`] = `
-{
-  "rawLog": "immune|mon:Reuniclus,player-1,1|from:ability:Overcoat",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Reuniclus",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Reuniclus's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Reuniclus's Overcoat protects it from the weather!",
-        },
-        "key": "immune__from_ability_overcoat",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Sableye,player-2,1 1`] = `
-{
-  "rawLog": "immune|mon:Sableye,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "MON": {
-            "monRef": {
-              "Active": {
-                "name": "Sableye",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Sableye",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "It doesn't affect the opposing Sableye...",
+          "text": "It doesn't affect the opposing Ninetales...",
         },
         "key": "immune",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard 1`] = `
-{
-  "rawLog": "immune|mon:Shedinja,player-2,1|from:ability:Wonder Guard",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Shedinja",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Shedinja's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Shedinja's Wonder Guard protected it!",
-        },
-        "key": "immune__from_ability_wonderguard",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Shedinja,player-2,2|from:ability:Wonder Guard 1`] = `
-{
-  "rawLog": "immune|mon:Shedinja,player-2,2|from:ability:Wonder Guard",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Shedinja",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Shedinja's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Shedinja's Wonder Guard protected it!",
-        },
-        "key": "immune__from_ability_wonderguard",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Spinda,player-1,1|from:ability:Own Tempo 1`] = `
-{
-  "rawLog": "immune|mon:Spinda,player-1,1|from:ability:Own Tempo",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Spinda",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Spinda's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Spinda's Own Tempo prevents confusion!",
-        },
-        "key": "immune__from_ability_owntempo",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Sudowoodo,player-2,1|from:ability:Limber 1`] = `
-{
-  "rawLog": "immune|mon:Sudowoodo,player-2,1|from:ability:Limber",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Sudowoodo",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Sudowoodo's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Sudowoodo's Limber protects it from paralysis!",
-        },
-        "key": "immune__from_ability_limber",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Toxicroak,player-2,1|from:ability:Dry Skin 1`] = `
-{
-  "rawLog": "immune|mon:Toxicroak,player-2,1|from:ability:Dry Skin",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Toxicroak",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Toxicroak's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Toxicroak's Dry Skin makes it immune!",
-        },
-        "key": "immune__from_ability_dryskin",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Wailmer,player-2,1|from:ability:Oblivious 1`] = `
-{
-  "rawLog": "immune|mon:Wailmer,player-2,1|from:ability:Oblivious",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Wailmer",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Wailmer's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Wailmer's Oblivious prevents it from being infatuated!",
-        },
-        "key": "immune__from_ability_oblivious",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: immune|mon:Whismur,player-1,1|from:ability:Soundproof 1`] = `
-{
-  "rawLog": "immune|mon:Whismur,player-1,1|from:ability:Soundproof",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Whismur",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Whismur's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Whismur's Soundproof makes it immune to sound-based moves!",
-        },
-        "key": "immune__from_ability_soundproof",
       },
     ],
     "notices": [],
@@ -36923,37 +35501,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1 1`] = `
-{
-  "rawLog": "start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Terapagos",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Terapagos",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Terapagos became confused!",
-        },
-        "key": "start__condition_confusion",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Togepi,player-2,1|move:Encore 1`] = `
 {
   "rawLog": "start|mon:Togepi,player-2,1|move:Encore",
@@ -37171,37 +35718,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1 1`] = `
-{
-  "rawLog": "start|mon:Wobbuffet,player-1,1|move:Attract|from:item:Destiny Knot|of:Wobbuffet,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Wobbuffet",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Wobbuffet",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Wobbuffet fell in love!",
-        },
-        "key": "start__move_attract",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Wobbuffet,player-2,1|move:Attract 1`] = `
 {
   "rawLog": "start|mon:Wobbuffet,player-2,1|move:Attract",
@@ -37295,37 +35811,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Abra,player-1,1|status:Paralysis|from:ability:Synchronize|of:Abra,player-2,1 1`] = `
-{
-  "rawLog": "status|mon:Abra,player-1,1|status:Paralysis|from:ability:Synchronize|of:Abra,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Abra",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Abra",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Abra is paralyzed! It may be unable to move!",
-        },
-        "key": "status__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Alakazam,player-2,1|status:Bad Poison 1`] = `
 {
   "rawLog": "status|mon:Alakazam,player-2,1|status:Bad Poison",
@@ -37357,37 +35842,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Charizard,player-2,1|status:Poison 1`] = `
-{
-  "rawLog": "status|mon:Charizard,player-2,1|status:Poison",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Charizard",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Charizard",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Charizard was poisoned!",
-        },
-        "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Charmander,player-2,1|status:Poison 1`] = `
 {
   "rawLog": "status|mon:Charmander,player-2,1|status:Poison",
@@ -37412,161 +35866,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
           "text": "The opposing Charmander was poisoned!",
         },
         "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn 1`] = `
-{
-  "rawLog": "status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Chespin",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Chespin",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Chespin fell asleep!",
-        },
-        "key": "status__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Cramorant,player-2,1|status:Paralysis|from:ability:Gulp Missile|of:Cramorant,player-1,1 1`] = `
-{
-  "rawLog": "status|mon:Cramorant,player-2,1|status:Paralysis|from:ability:Gulp Missile|of:Cramorant,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Cramorant",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Cramorant",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Cramorant is paralyzed! It may be unable to move!",
-        },
-        "key": "status__status_paralysis",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Darkrai,player-2,1|status:Sleep 1`] = `
-{
-  "rawLog": "status|mon:Darkrai,player-2,1|status:Sleep",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Darkrai",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Darkrai",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Darkrai fell asleep!",
-        },
-        "key": "status__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Diggersby,player-1,1|status:Bad Poison 1`] = `
-{
-  "rawLog": "status|mon:Diggersby,player-1,1|status:Bad Poison",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Diggersby",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Diggersby",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Diggersby was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Florges,player-2,2|status:Bad Poison 1`] = `
-{
-  "rawLog": "status|mon:Florges,player-2,2|status:Bad Poison",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Florges",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Florges",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Florges was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
       },
     ],
     "notices": [],
@@ -37636,130 +35935,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1 1`] = `
-{
-  "rawLog": "status|mon:Hydrapple,player-2,1|status:Burn|from:move:Burning Bulwark|of:Hydrapple,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Hydrapple",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Hydrapple",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Hydrapple was burned!",
-        },
-        "key": "status__status_burn",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Incineroar,player-2,1|status:Poison 1`] = `
-{
-  "rawLog": "status|mon:Incineroar,player-2,1|status:Poison",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Incineroar",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Incineroar",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Incineroar was poisoned!",
-        },
-        "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1 1`] = `
-{
-  "rawLog": "status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Incineroar",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Incineroar",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Incineroar was poisoned!",
-        },
-        "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Infernape,player-2,2|status:Poison|from:move:Toxic Spikes 1`] = `
-{
-  "rawLog": "status|mon:Infernape,player-2,2|status:Poison|from:move:Toxic Spikes",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Infernape",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Infernape",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Infernape was poisoned!",
-        },
-        "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Jirachi,player-2,1|status:Freeze 1`] = `
 {
   "rawLog": "status|mon:Jirachi,player-2,1|status:Freeze",
@@ -37784,37 +35959,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
           "text": "The opposing Jirachi was frozen solid!",
         },
         "key": "status__status_freeze",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn 1`] = `
-{
-  "rawLog": "status|mon:Ledian,player-1,1|status:Sleep|from:move:Yawn",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Ledian",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ledian",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ledian fell asleep!",
-        },
-        "key": "status__status_sleep",
       },
     ],
     "notices": [],
@@ -37946,68 +36090,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes 1`] = `
-{
-  "rawLog": "status|mon:Magikarp,player-1,2|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Magikarp",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Magikarp",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Magikarp was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes 1`] = `
-{
-  "rawLog": "status|mon:Magikarp,player-2,2|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Magikarp",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Magikarp",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Magikarp was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1 1`] = `
 {
   "rawLog": "status|mon:Mudkip,player-1,1|status:Poison|from:ability:Effect Spore|of:Shroomish,player-2,1",
@@ -38070,37 +36152,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes 1`] = `
-{
-  "rawLog": "status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Pikachu",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Pikachu",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Pikachu was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Pikachu,protagonist,1|status:Sleep|from:Disobedience 1`] = `
 {
   "rawLog": "status|mon:Pikachu,protagonist,1|status:Sleep|from:Disobedience",
@@ -38122,40 +36173,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu fell asleep!",
+          "text": "The opposing Pikachu began to nap!",
         },
-        "key": "status__status_sleep",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Poochyena,player-1,1|status:Paralysis|from:ability:Static|of:Poochyena,player-2,1 1`] = `
-{
-  "rawLog": "status|mon:Poochyena,player-1,1|status:Paralysis|from:ability:Static|of:Poochyena,player-2,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Poochyena",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Poochyena",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Poochyena is paralyzed! It may be unable to move!",
-        },
-        "key": "status__status_paralysis",
+        "key": "status__from_disobedience__status_sleep",
       },
     ],
     "notices": [],
@@ -38349,68 +36369,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Torterra,player-2,1|status:Bad Poison|from:move:Toxic Spikes 1`] = `
-{
-  "rawLog": "status|mon:Torterra,player-2,1|status:Bad Poison|from:move:Toxic Spikes",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Torterra",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Torterra",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Torterra was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1 1`] = `
-{
-  "rawLog": "status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Toucannon",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Toucannon",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Toucannon was burned!",
-        },
-        "key": "status__status_burn",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1 1`] = `
 {
   "rawLog": "status|mon:Vivillon,player-2,1|status:Poison|from:ability:Poison Touch|of:Toxicroak,player-1,1",
@@ -38435,37 +36393,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: status|mo
           "text": "The opposing Vivillon was poisoned!",
         },
         "key": "status__status_poison",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb 1`] = `
-{
-  "rawLog": "status|mon:Weavile,player-2,1|status:Bad Poison|from:item:Toxic Orb",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Weavile",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Weavile",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Weavile was badly poisoned!",
-        },
-        "key": "status__status_badpoison",
       },
     ],
     "notices": [],
@@ -38587,44 +36514,11 @@ exports[`Exhaustive Log Coverage > should parse and format log string: supereffe
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:Bar,player-1,1|position:2|from:move:Ally Switch 1`] = `
-{
-  "rawLog": "swap|mon:Bar,player-1,1|position:2|from:move:Ally Switch",
-  "result": {
-    "key": "swap__from_move_allyswitch",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:Foo,player-1,1|position:2|from:move:Ally Switch 1`] = `
-{
-  "rawLog": "swap|mon:Foo,player-1,1|position:2|from:move:Ally Switch",
-  "result": {
-    "key": "swap__from_move_allyswitch",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:Foo,player-1,1|position:3|from:move:Ally Switch 1`] = `
-{
-  "rawLog": "swap|mon:Foo,player-1,1|position:3|from:move:Ally Switch",
-  "result": {
-    "key": "swap__from_move_allyswitch",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:Pikachu,player-1,1|position:2|from:Auto-Shift 1`] = `
 {
   "rawLog": "swap|mon:Pikachu,player-1,1|position:2|from:Auto-Shift",
   "result": {
-    "key": "swap__from_autoshift",
+    "key": "swap",
     "messages": [],
     "notices": [],
   },
@@ -38635,7 +36529,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:
 {
   "rawLog": "swap|mon:Pikachu,player-1,1|position:2|from:Player Choice",
   "result": {
-    "key": "swap__from_playerchoice",
+    "key": "swap",
     "messages": [],
     "notices": [],
   },
@@ -38646,7 +36540,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:
 {
   "rawLog": "swap|mon:Pikachu,player-2,1|position:2|from:Auto-Shift",
   "result": {
-    "key": "swap__from_autoshift",
+    "key": "swap",
     "messages": [],
     "notices": [],
   },
@@ -38674,9 +36568,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapboost
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Cresselia swapped stat changes with its target!",
+          "text": "The opposing Cresselia switched stat changes with its target!",
         },
-        "key": "swapboosts",
+        "key": "swapboosts__from_move_heartswap",
       },
     ],
     "notices": [],
@@ -38705,9 +36599,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapboost
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Cresselia swapped stat changes with its target!",
+          "text": "The opposing Cresselia switched all changes to its Attack and Sp. Atk with its target!",
         },
-        "key": "swapboosts",
+        "key": "swapboosts__from_move_powerswap",
       },
     ],
     "notices": [],
@@ -39374,44 +37268,11 @@ exports[`Exhaustive Log Coverage > should parse and format log string: turn|turn
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Charizard,player-2,1|types:Normal 1`] = `
-{
-  "rawLog": "typechange|mon:Charizard,player-2,1|types:Normal",
-  "result": {
-    "key": "typechange__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean 1`] = `
 {
   "rawLog": "typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean",
   "result": {
-    "key": "typechange__from_ability_protean__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-1,1|types:Normal|from:ability:Protean 1`] = `
-{
-  "rawLog": "typechange|mon:Greninja,player-1,1|types:Normal|from:ability:Protean",
-  "result": {
-    "key": "typechange__from_ability_protean__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-2,1|types:Water|from:ability:Protean 1`] = `
-{
-  "rawLog": "typechange|mon:Greninja,player-2,1|types:Water|from:ability:Protean",
-  "result": {
-    "key": "typechange__from_ability_protean__types_any",
+    "key": "typechange__types_any",
     "messages": [],
     "notices": [],
   },
@@ -39422,7 +37283,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
 {
   "rawLog": "typechange|mon:Kecleon,player-2,1|types:Fire|from:ability:Color Change",
   "result": {
-    "key": "typechange__from_ability_colorchange__types_any",
+    "key": "typechange__types_any",
     "messages": [],
     "notices": [],
   },
@@ -39433,73 +37294,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
 {
   "rawLog": "typechange|mon:Kecleon,player-2,1|types:Water|from:ability:Color Change",
   "result": {
-    "key": "typechange__from_ability_colorchange__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Pikachu,player-1,1|types:Normal|from:ability:Color Change 1`] = `
-{
-  "rawLog": "typechange|mon:Pikachu,player-1,1|types:Normal|from:ability:Color Change",
-  "result": {
-    "key": "typechange__from_ability_colorchange__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon,player-1,1|types:Water 1`] = `
-{
-  "rawLog": "typechange|mon:Porygon,player-1,1|types:Water",
-  "result": {
     "key": "typechange__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon2,player-1,1|types:Rock 1`] = `
-{
-  "rawLog": "typechange|mon:Porygon2,player-1,1|types:Rock",
-  "result": {
-    "key": "typechange__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-1,1|types:Electric|from:ability:Mimicry 1`] = `
-{
-  "rawLog": "typechange|mon:Stunfisk,player-1,1|types:Electric|from:ability:Mimicry",
-  "result": {
-    "key": "typechange__from_ability_mimicry__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-1,1|types:Grass|from:ability:Mimicry 1`] = `
-{
-  "rawLog": "typechange|mon:Stunfisk,player-1,1|types:Grass|from:ability:Mimicry",
-  "result": {
-    "key": "typechange__from_ability_mimicry__types_any",
-    "messages": [],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Stunfisk,player-2,1|types:Electric|from:ability:Mimicry 1`] = `
-{
-  "rawLog": "typechange|mon:Stunfisk,player-2,1|types:Electric|from:ability:Mimicry",
-  "result": {
-    "key": "typechange__from_ability_mimicry__types_any",
     "messages": [],
     "notices": [],
   },
@@ -40190,44 +37985,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:Start 1`] = `
-{
-  "rawLog": "weather|weather:Harsh Sunlight|from:Start",
-  "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "The sunlight turned harsh!",
-        },
-        "key": "weather__weather_harshsunlight",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1 1`] = `
-{
-  "rawLog": "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "The sunlight turned harsh!",
-        },
-        "key": "weather__weather_harshsunlight",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1 1`] = `
 {
   "rawLog": "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1",
@@ -40364,25 +38121,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Rain|from:ability:Drizzle|of:Blastoise,player-1,1 1`] = `
 {
   "rawLog": "weather|weather:Rain|from:ability:Drizzle|of:Blastoise,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "It started to rain!",
-        },
-        "key": "weather__weather_rain",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: weather|weather:Rain|from:ability:Drizzle|of:Kyogre,player-2,1 1`] = `
-{
-  "rawLog": "weather|weather:Rain|from:ability:Drizzle|of:Kyogre,player-2,1",
   "result": {
     "messages": [
       {

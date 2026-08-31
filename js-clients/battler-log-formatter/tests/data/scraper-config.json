@@ -7,7 +7,8 @@
     "addpseudoweather|condition:Condition|from:Effect",
     "removepseudoweather|condition:Condition|from:Effect",
     "turnlimit",
-    "debug"
+    "debug",
+    "catchfailed|item:Poké Ball|shakes:2"
   ],
   "excludeTags": [
     "mon",
@@ -105,28 +106,18 @@
     "fail|from:move:Uproar"
   ],
   "allowKeys": [
-    "fail|what:unboost|from:ability:Oblivious",
-    "fail|what:unboost|from:ability:Own Tempo",
-    "fail|what:unboost|from:ability:Clear Body",
-    "fail|what:unboost|from:ability:Illuminate",
-    "fail|what:unboost|from:ability:Inner Focus",
-    "fail|what:unboost|from:ability:Keen Eye",
-    "fail|what:unboost|from:ability:Hyper Cutter",
-    "fail|what:unboost|from:ability:White Smoke",
-    "fail|what:unboost|from:ability:Scrappy",
-    "fail|what:unboost|from:ability:Big Pecks",
     "block|ability:*|from:ability:Aroma Veil",
-    "fail|what:unboost|from:ability:Flower Veil",
     "block|ability:*|from:ability:Flower Veil",
     "block|ability:*|from:ability:Sweet Veil",
-    "fail|what:unboost|from:ability:Full Metal Body",
     "block|ability:*|from:ability:Pastel Veil",
-    "fail|what:unboost|from:ability:Guard Dog",
-    "fail|what:unboost|from:ability:Mind's Eye",
     "block|move:*|from:Dynamax",
     "fail|from:Choice Lock",
     "item|item:Air Balloon",
-    "fail|what:unboost|from:item:Clear Amulet"
+    "fail|what:unboost|from:item:*",
+    "curestatus|status:Sleep|from:move:Uproar",
+    "status|status:Sleep|from:Disobedience",
+    "swapboosts|from:move:Heart Swap",
+    "swapboosts|from:move:Power Swap"
   ],
   "rules": [
     {
@@ -268,7 +259,150 @@
         "title": "fail",
         "what": "unboost"
       },
-      "strip": ["boosts"]
+      "strip": ["boosts"],
+      "collapse": ["from"]
+    },
+    {
+      "match": {
+        "title": "curestatus",
+        "from": "ability:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "curestatus",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "curestatus",
+        "from": "move:*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "move:Uproar"
+      }
+    },
+    {
+      "match": {
+        "title": "fieldstart"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "start"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "status",
+        "from": "ability:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "status",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "status",
+        "from": "move:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "status",
+        "from": "Toxic Fumes"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "typechange"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "resettypechange"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "weather"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "immune"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "clearboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "clearnegativeboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "clearpositiveboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "copyboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "invertboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "swap"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertmega"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertprimal"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertultra"
+      },
+      "strip": ["from"]
     },
     {
       "match": {
@@ -315,13 +449,6 @@
         "title": "resisted"
       },
       "inject": ["battletype:singles"]
-    },
-    {
-      "match": {
-        "title": "curestatus",
-        "from": "item:*"
-      },
-      "strip": ["from"]
     },
     {
       "match": {
