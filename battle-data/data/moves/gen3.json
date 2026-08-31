@@ -386,7 +386,12 @@
     "condition": {
       "duration": 1,
       "callbacks": {
-        "on_start": ["log_single_turn: with_target"],
+        "on_start": [
+          "if $source_effect.is_condition:",
+          ["log_single_turn: with_target with_source_effect"],
+          "else:",
+          ["log_single_turn: with_target"]
+        ],
         "on_foe_redirect_target": {
           "priority": 1,
           "program": [

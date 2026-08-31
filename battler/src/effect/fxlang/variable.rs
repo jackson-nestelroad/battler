@@ -268,6 +268,7 @@ where
                                 .to_owned(),
                             ),
                             "is_ability" => ValueRef::Boolean(effect_handle.is_ability()),
+                            "is_condition" => ValueRef::Boolean(effect_handle.is_condition()),
                             "is_item" => ValueRef::Boolean(effect_handle.is_item()),
                             "is_move" => ValueRef::Boolean(effect_handle.is_active_move()),
                             "is_move_secondary" => {

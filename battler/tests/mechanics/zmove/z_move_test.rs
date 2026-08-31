@@ -350,7 +350,7 @@ fn z_power_boosts_critical_hit_ratio() {
         r#"[
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Tailwind|zpower",
-            "start|mon:Pikachu,player-1,1|move:Focus Energy",
+            "start|mon:Pikachu,player-1,1|move:Focus Energy|from:Z-Power",
             "sidestart|side:0|move:Tailwind",
             "residual",
             "turn|turn:2"
@@ -374,7 +374,7 @@ fn z_power_clears_negative_boosts() {
         r#"[
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Swords Dance|target:Pikachu,player-1,1|zpower",
-            "clearnegativeboosts|mon:Pikachu,player-1,1",
+            "clearnegativeboosts|mon:Pikachu,player-1,1|from:Z-Power",
             "boost|mon:Pikachu,player-1,1|stat:atk|by:2",
             "residual",
             "turn|turn:2"
@@ -403,8 +403,8 @@ fn z_power_fully_heals() {
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Belly Drum|target:Pikachu,player-1,1|zpower",
             "split|side:0",
-            "heal|mon:Pikachu,player-1,1|health:95/95",
-            "heal|mon:Pikachu,player-1,1|health:100/100",
+            "heal|mon:Pikachu,player-1,1|from:Z-Power|health:95/95",
+            "heal|mon:Pikachu,player-1,1|from:Z-Power|health:100/100",
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:48/95",
             "damage|mon:Pikachu,player-1,1|health:51/100",
@@ -445,8 +445,8 @@ fn z_power_fully_heals_replacement() {
             ["switch", "player-1", "Raichu"],
             ["switch", "player-1", "Raichu"],
             "split|side:0",
-            "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:120/120",
-            "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:100/100",
+            "heal|mon:Raichu,player-1,1|from:Z-Power|health:120/120",
+            "heal|mon:Raichu,player-1,1|from:Z-Power|health:100/100",
             "turn|turn:4"
         ]"#,
     )
@@ -474,7 +474,7 @@ fn z_power_redirects_moves() {
         r#"[
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
             "move|mon:Pikachu,player-1,1|name:Destiny Bond|target:Pikachu,player-1,1|zpower",
-            "singleturn|mon:Pikachu,player-1,1|move:Follow Me",
+            "singleturn|mon:Pikachu,player-1,1|move:Follow Me|from:Z-Power",
             "singlemove|mon:Pikachu,player-1,1|move:Destiny Bond",
             "move|mon:Eevee,player-2,1|name:Water Gun|target:Pikachu,player-1,1",
             "split|side:0",
@@ -814,8 +814,8 @@ fn curse_applies_heal_for_ghost_user() {
                 "singleturn|mon:Mimikyu,player-1,1|condition:Z-Power",
                 "move|mon:Mimikyu,player-1,1|name:Curse|target:Eevee,player-2,1|zpower",
                 "split|side:0",
-                "heal|mon:Mimikyu,player-1,1|health:115/115",
-                "heal|mon:Mimikyu,player-1,1|health:100/100",
+                "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:115/115",
+                "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:100/100",
                 "start|mon:Eevee,player-2,1|move:Curse",
                 "split|side:0",
                 "damage|mon:Mimikyu,player-1,1|health:58/115",

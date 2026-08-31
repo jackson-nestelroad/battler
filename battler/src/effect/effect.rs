@@ -209,6 +209,14 @@ impl EffectHandle {
         }
     }
 
+    /// Is the effect handle a condition?
+    pub fn is_condition(&self) -> bool {
+        match self {
+            Self::Condition(_) | Self::OutsideCondition(_) => true,
+            _ => false,
+        }
+    }
+
     /// Returns the ID associated with the effect handle, if any.
     pub fn try_id(&self) -> Option<&Id> {
         match self {

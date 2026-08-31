@@ -461,7 +461,7 @@ gigantamax
 heal
 heal|from:Drain
 heal|from:Heal
-heal|from:Heal Replacement
+heal|from:Z-Power
 heal|from:ability:Cheek Pouch
 heal|from:ability:Dry Skin
 heal|from:ability:Earth Eater
@@ -699,6 +699,7 @@ singleturn|move:Electrify
 singleturn|move:Endure
 singleturn|move:Focus Punch
 singleturn|move:Follow Me
+singleturn|move:Follow Me|from:Z-Power
 singleturn|move:Helping Hand
 singleturn|move:Instruct
 singleturn|move:Magic Coat
@@ -711,6 +712,7 @@ singleturn|move:Roost
 singleturn|move:Shell Trap
 singleturn|move:Snatch
 singleturn|move:Spotlight
+singleturn|move:Spotlight|from:Z-Power
 singleturn|move:Wide Guard
 specieschange
 specieschange|status:Bad Poison

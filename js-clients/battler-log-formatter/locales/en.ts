@@ -645,7 +645,6 @@ export const en = {
     heal__from_ability_voltabsorb: "{{MON_POSSESSIVE}} HP was restored by Volt Absorb!",
     heal__from_drain: "{{MON}} had its energy drained!",
     heal__from_heal: "{{MON_POSSESSIVE}} HP was restored.",
-    heal__from_healreplacement: "{{MON_POSSESSIVE}} HP was restored.",
     heal__from_item_aguavberry: "{{MON}} restored HP using its Aguav Berry!",
     heal__from_item_any: "{{MON}} restored HP using its {{ITEM}}!",
     heal__from_item_berryjuice: "{{MON}} restored HP using its Berry Juice!",
@@ -666,6 +665,7 @@ export const en = {
     heal__from_move_leechseed: "{{MON_POSSESSIVE}} health is sapped by Leech Seed!",
     heal__from_move_lunardance: "{{MON}} became cloaked in mystical moonlight!",
     heal__from_move_wish: "{{MON_POSSESSIVE}} wish came true!",
+    heal__from_zpower: "{{MON_POSSESSIVE}} HP was restored by the Z-Power!",
     hitcount: null,
     immune: "It doesn't affect {{MON}}...",
     info: null,
@@ -917,6 +917,12 @@ export const en = {
     singleturn__condition_any: "{{MON}} is readying {{CONDITION}}!",
     singleturn__condition_protectmoveconditionbase: null,
     singleturn__condition_zpower: "{{MON}} surrounds itself with its Z-Power!",
+    singleturn__from_zpower: "{{MON}} became the center of attention using its Z-Power!",
+    singleturn__from_zpower__move_any: "{{MON}} became the center of attention using its Z-Power!",
+    singleturn__from_zpower__move_followme:
+      "{{MON}} became the center of attention using its Z-Power!",
+    singleturn__from_zpower__move_spotlight:
+      "{{MON}} became the center of attention using its Z-Power!",
     singleturn__move_any: "{{MON}} is preparing {{MOVE}}!",
     singleturn__move_beakblast: "{{MON}} started heating up its beak!",
     singleturn__move_craftyshield: "{{MON}} protected itself with Crafty Shield!",

@@ -9063,9 +9063,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearnega
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: clearnegativeboosts|mon:Pikachu,player-1,1 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: clearnegativeboosts|mon:Pikachu,player-1,1|from:Z-Power 1`] = `
 {
-  "rawLog": "clearnegativeboosts|mon:Pikachu,player-1,1",
+  "rawLog": "clearnegativeboosts|mon:Pikachu,player-1,1|from:Z-Power",
   "result": {
     "messages": [
       {
@@ -19107,6 +19107,68 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:Z-Power|health:95/95 1`] = `
+{
+  "rawLog": "heal|mon:Pikachu,player-1,1|from:Z-Power|health:95/95",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu's",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu's HP was restored by the Z-Power!",
+        },
+        "key": "heal__from_zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:Z-Power|health:100/100 1`] = `
+{
+  "rawLog": "heal|mon:Pikachu,player-1,1|from:Z-Power|health:100/100",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu's",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu's HP was restored by the Z-Power!",
+        },
+        "key": "heal__from_zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95 1`] = `
 {
   "rawLog": "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95",
@@ -19384,9 +19446,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Raichu,player-1,1|from:Heal Replacement|health:100/100 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Raichu,player-1,1|from:Z-Power|health:120/120 1`] = `
 {
-  "rawLog": "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:100/100",
+  "rawLog": "heal|mon:Raichu,player-1,1|from:Z-Power|health:120/120",
   "result": {
     "messages": [
       {
@@ -19405,40 +19467,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Raichu's HP was restored.",
+          "text": "The opposing Raichu's HP was restored by the Z-Power!",
         },
-        "key": "heal__from_healreplacement",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:Raichu,player-1,1|from:Heal Replacement|health:120/120 1`] = `
-{
-  "rawLog": "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:120/120",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Raichu",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Raichu's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Raichu's HP was restored.",
-        },
-        "key": "heal__from_healreplacement",
+        "key": "heal__from_zpower",
       },
     ],
     "notices": [],
@@ -32155,9 +32186,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Pikachu,player-1,1|move:Follow Me 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Pikachu,player-1,1|move:Follow Me|from:Z-Power 1`] = `
 {
-  "rawLog": "singleturn|mon:Pikachu,player-1,1|move:Follow Me",
+  "rawLog": "singleturn|mon:Pikachu,player-1,1|move:Follow Me|from:Z-Power",
   "result": {
     "messages": [
       {
@@ -32176,9 +32207,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu became the center of attention!",
+          "text": "The opposing Pikachu became the center of attention using its Z-Power!",
         },
-        "key": "singleturn__move_followme",
+        "key": "singleturn__from_zpower__move_followme",
       },
     ],
     "notices": [],
@@ -32210,6 +32241,37 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
           "text": "The opposing Pikachu protected itself with Max Guard!",
         },
         "key": "singleturn__move_maxguard",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Plusle,player-1,1|move:Follow Me 1`] = `
+{
+  "rawLog": "singleturn|mon:Plusle,player-1,1|move:Follow Me",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Plusle",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Plusle",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Plusle became the center of attention!",
+        },
+        "key": "singleturn__move_followme",
       },
     ],
     "notices": [],

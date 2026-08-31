@@ -2046,7 +2046,13 @@
     "condition": {
       "copy_with_boosts": true,
       "callbacks": {
-        "on_start": ["require !func_call(has_volatile: $target dragoncheer)", "log_start"],
+        "on_start": [
+          "require !func_call(has_volatile: $target dragoncheer)",
+          "if $source_effect.is_condition:",
+          ["log_start: with_source_effect"],
+          "else:",
+          ["log_start"]
+        ],
         "on_copy_volatile": [
           "require $source_effect.is_move or $source_effect.is_ability else return",
           "log_start: silent"
