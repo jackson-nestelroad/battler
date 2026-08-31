@@ -1,15 +1,15 @@
 # Battler Log Formatter Tests
 
-This directory contains the testing suite for the log formatting library. Because the formatter sits directly on top of the Rust `battler-state` engine, testing it requires a slightly complex setup to guarantee complete coverage without duplicating the engine's parsing logic.
+This directory contains the testing suite for the log formatting library. Because the formatter sits directly on top of the Rust `battler-state` engine, testing it requires a structured setup to guarantee complete coverage without duplicating the engine's parsing logic.
 
 ## The Exhaustive Snapshot Test
 
-The crown jewel of this test suite is `exhaustive.test.ts`. It runs over **1,500+ unique log permutations** to guarantee that our UI string formatting doesn't break or look grammatically incorrect for *any* possible log output from the engine.
+The crown jewel of this test suite is `exhaustive.test.ts`. It runs over **1,300+ unique log permutations** to guarantee that our UI string formatting doesn't break or look grammatically incorrect for *any* possible log output from the engine.
 
-Instead of asserting against manually constructed objects, this test uses **Golden Master Snapshot Testing**. It feeds every log through the parser and snapshots the exact data contract produced by the formatter into `__snapshots__/exhaustive.test.ts.snap`. 
+Instead of asserting against manually constructed objects, this test uses **Golden Master Snapshot Testing**. It feeds every log through the parser and snapshots the exact data contract produced by the formatter into `__snapshots__/exhaustive.test.ts.snap`.
 
 This snapshot file acts as a human-readable dictionary. For each log, it asserts:
-1. **The Context**: The extracted context variables (e.g., `MON`, `STAT`).
+1. **The Context**: The extracted context variables (e.g., `MON`, `STAT`, `MOVE`).
 2. **The Key**: The specific combinatorial enum key the formatter resolved to based on `locales/en.ts` (e.g., `ability__ability_neutralizinggas`).
 3. **The Formatted Output**: The final `category` and interpolated `message` string (e.g., `"Neutralizing gas filled the arena!"`).
 
@@ -20,60 +20,96 @@ In order to parse raw strings like `damage|mon:Pikachu,player-1,1|health:120/312
 
 To bypass this without needing to construct a unique battle state for every single test case, `exhaustive.test.ts` initializes a massive **Master Setup State** before running the tests. This mock state registers generic Player IDs and Pokemon for every slot, so that the engine never crashes on initialization.
 
-## The Test Matrix
+## The Test Matrix & Scraper Pipeline
 
-The list of 1,500+ logs is defined in `tests/data/logs-matrix.json`. This file should **not** be edited manually!
+The list of test logs is defined in `tests/data/logs-matrix.json`. **This file is generated automatically and should never be edited manually.**
 
-### How the Matrix is Generated
-Because maintaining 1,500+ string permutations by hand is impossible, we algorithmically scrape them directly from the Rust integration tests!
+### How the Scraper Works (`tests/scraper.ts`)
 
-The script `scraper.ts` performs the following steps:
-1. Recursively scans all 600+ `.rs` files in the `battler/tests` directory.
-2. Extracts every raw string literal that looks like a log.
-3. Groups them by log title (e.g., `move`, `faint`, `activate`).
-4. Algorithmically selects a minimal subset of strings for each title to guarantee that **every single optional key and flag** ever outputted by the Rust engine is covered in at least one test case!
+Because maintaining thousands of string permutations by hand is impossible, `tests/scraper.ts` algorithmically discovers, normalizes, and validates logs from across the codebase:
 
-When `scraper.ts` is run, it also inspects `locales/en.ts` to see if all discovered log patterns are supported. If it finds new combinations that aren't mapped, it automatically injects a key into `locales/en.ts` with the value `"[UNHANDLED]"`.
+1. **Rust Test Suite Scraping**: Recursively scans all `.rs` files in `battler/tests` and extracts all raw string literals matching log structures.
+2. **Fxlang Program Analysis**: Analyzes effect programs in `battle-data/data/` (abilities, items, moves, conditions, clauses) to find programmatic log calls (such as `log_*`, `add_side_condition`, `forme_change`) and delegates.
+3. **Log Masking & Normalization**: Normalizes logs into canonical patterns using `tests/data/scraper-config.json` (tag exclusions, numeric bucketing, rule-based tag/flag stripping, collapsing wildcards, and dimension injection).
+4. **Permutation & Combinatorics Generation**: Computes all fallback combinations for every discovered pattern using `generateCombinatorics()`.
+5. **Locale Key Synchronization**: Automatically injects any newly discovered keys into `locales/en.ts` initialized to `null`.
+6. **Stale Key Detection**: Compares all keys in `locales/en.ts` against the master list of generated fallbacks.
 
-When you subsequently run the tests, these `[UNHANDLED]` values will appear in the generated `message` fields within the `.snap` file, immediately alerting you that a new Rust log output needs a localized translation.
+### Scraper Output Files
 
-**Important**: At runtime, if the `LogFormatter` encounters a key in `en.ts` whose value is exactly `"[UNHANDLED]"`, it will **ignore** that key and continue searching for a more generic fallback. This allows the scraper to be noisy in `en.ts` without breaking the game!
+Running `npm run extract-logs` (or `npx tsx tests/scraper.ts`) generates and updates the following artifacts:
 
-### Scraper Configuration (`scraper-config.json`)
+| Output File | Purpose |
+|---|---|
+| `tests/data/logs-matrix.json` | Sample of raw log strings (up to 3 per unique pattern) used by `exhaustive.test.ts`. |
+| `tests/data/unique-log-patterns.txt` | Master list of all unique masked log patterns extracted from the codebase. |
+| `tests/data/stale-keys.txt` | List of orphaned/dead translation keys currently in `locales/en.ts` that have no corresponding log patterns. |
+| `locales/en.ts` | Injects missing keys set to `null` (alphabetically sorted). |
 
-To prevent combinatorial explosions of automatically generated fallbacks, you can collapse specific dimensions using `tests/data/scraper-config.json`.
+---
 
-For example, the `Forewarn` ability triggers on every single move the opponent has, which would generate hundreds of specific `activate__ability_forewarn__move_x` logs. We can prevent this by conditionally collapsing the `move` tag into a wildcard:
+## Stale Key Lifecycle & Deletion Policy
 
-```json
-{
-  "collapseDimensions": [
-    { "match": { "title": "activate", "ability": "Forewarn" }, "collapse": ["move"] }
-  ]
-}
-```
+> [!IMPORTANT]
+> **Never delete translation keys from `locales/en.ts` manually.**
+>
+> Deleting an active key manually causes it to be immediately re-injected as `null` the next time `npm run extract-logs` is run.
+> Keys should **strictly and exclusively** be deleted only if they appear in `tests/data/stale-keys.txt`.
 
-With this configuration, any log matching `activate` and `Forewarn` will have its specific move thrown away and replaced with `move:*` before permutations are even calculated. This naturally funnels all of them into a single `activate__ability_forewarn__move_any` key, without you having to explicitly ignore anything!
+### How Stale Keys Occur
+As the Rust battle engine evolves (e.g. log tags are renamed, unused flags are removed, or scraping rules change in `scraper-config.json`), old translation keys in `locales/en.ts` become dead code.
 
-You can also use `scraper-config.json` to configure the base scraper engine logic using `excludeTags` and `keepSpecificTags`, or use `injectDimensions` to forcibly generate variations for certain log titles (e.g. injecting `battletype:singles` and `battletype:doubles` for `crit` logs) even if those variations don't explicitly appear in the Rust unit test outputs.
+When the scraper runs, it generates the master set `allGeneratedFallbacks`. Any key in `locales/en.ts` that does not exist in `allGeneratedFallbacks` is written to `tests/data/stale-keys.txt`.
 
-### Stale Key Detection
-As the Rust engine evolves, old translation keys in `en.ts` may become obsolete (dead code).
-When the scraper runs, it generates a master list of **every possible** dynamically and statically generated fallback. Any key currently sitting in `en.ts` that is not in this master list is considered "stale".
+### Handling Stale Keys
+When `tests/data/stale-keys.txt` contains entries:
+1. **If the key is truly obsolete**: Delete the listed keys from `locales/en.ts`.
+2. **If the key should NOT be stale (e.g. it is a valid mechanic)**: Do NOT delete it! Check `tests/data/scraper-config.json` to ensure the relevant title, tag, flag, or effect is not accidentally being stripped, ignored, or excluded.
 
-The scraper outputs all orphaned keys to `tests/data/stale-keys.txt`. You can periodically review this file and delete those dead keys from `en.ts`.
+---
 
-### Updating the Matrix
-Whenever new log types, fields, or flags are added to the Rust engine and tested in the Rust integration tests, you should regenerate the matrix to ensure the formatter supports them.
+## Scraper Configuration (`scraper-config.json`)
 
-To update the matrix and log patterns, simply run:
-```bash
-npx tsx tests/scraper.ts
-```
-This will overwrite `tests/data/logs-matrix.json` and automatically inject any missing keys into `locales/en.ts`.
+To prevent combinatorial explosion of permutations and fine-tune pattern generation, configure `tests/data/scraper-config.json`:
 
-Afterward, you must manually review `locales/en.ts`:
-1. Search for `"[UNHANDLED]"`
-2. Replace them with the desired string template. 
-3. **Important**: If you want a specific permutation to fall back to a generic template (like `weather__weather_any`), do **not** just delete the key (the scraper will re-inject it). Instead, explicitly set its value to `undefined`. This acts as an explicit marker that you've reviewed the key and chosen to fall back!
-4. Run `npm run test -- -u` to update the snapshots with your new translations!
+- **`rules`**: Define transformations for specific log patterns:
+  - `strip`: Removes unnecessary tags or flags (e.g. stripping `noanim`).
+  - `collapse`: Collapses specific tag values into wildcards `*` (e.g. collapsing `move` for `Forewarn` into `move:*` so it generates `activate__ability_forewarn__move_any`).
+  - `inject`: Forcibly generates variations (e.g. injecting `battletype:singles` for `crit` or `supereffective` logs).
+- **`excludeTags`**: Globally ignored metadata tags (e.g. `health`, `gender`, `level`).
+- **`allowKeys`**: Explicitly allows certain fxlang patterns that don't directly occur in unit tests.
+- **`ignoreKeys`**: Explicitly ignores specific patterns.
+- **`manualLogs`**: Injects explicit log patterns that should be included in the test matrix.
+
+---
+
+## How Fallback (`null`) Keys Work in `en.ts`
+
+In `locales/en.ts`:
+- Setting a key to a string template (e.g. `"{{MON}} used {{MOVE}}!"`) provides an explicit message for that permutation.
+- Setting a key to `null` instructs the `LogFormatter` to **skip** this specific permutation and continue down the fallback chain to a more generic template (e.g. `move__from_move_metronome__zpower: null` falls back to `move__zpower` or `move`).
+
+If you review an auto-injected key and want it to inherit from a generic template, leave its value as `null`.
+
+---
+
+## Standard Workflow
+
+Whenever log generation logic or battle engine mechanics change:
+
+1. **Extract logs and synchronize keys**:
+   ```bash
+   npm run extract-logs
+   ```
+2. **Review output**:
+   - Check `tests/data/stale-keys.txt`. If dead keys are found, delete only those keys from `locales/en.ts` (or fix `scraper-config.json` if they should not be stale).
+   - Check `locales/en.ts` for newly added keys set to `null`. If a custom translation string is desired, replace `null` with the translation template.
+3. **Run validation and tests**:
+   ```bash
+   npm run lint:locales
+   npm run test
+   ```
+4. **Update test snapshots if translations changed**:
+   ```bash
+   npm run test -- -u
+   ```
