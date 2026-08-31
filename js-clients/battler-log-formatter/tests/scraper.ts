@@ -654,6 +654,26 @@ function generateMatrix() {
       enTsContent = enTsContent.replace(logsRegex, newBlock);
       fs.writeFileSync(enTsPath, enTsContent);
     }
+
+    const lines = blockContent.split("\n");
+    const staleKeys: string[] = [];
+    for (const line of lines) {
+      const lineMatch = line.match(/^ {4}["']?([a-zA-Z0-9_]+)["']?\s*:/);
+      if (lineMatch) {
+        const k = lineMatch[1];
+        if (!allGeneratedFallbacks.has(k)) {
+          staleKeys.push(k);
+        }
+      }
+    }
+
+    if (staleKeys.length > 0) {
+      fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), staleKeys.join("\n"));
+      console.log(`Found ${staleKeys.length} stale keys. Wrote to data/stale-keys.txt`);
+    } else {
+      fs.writeFileSync(path.resolve(__dirname, "data/stale-keys.txt"), "");
+      console.log("No stale keys found.");
+    }
   } else {
     console.error("Could not parse en.ts logs block");
   }

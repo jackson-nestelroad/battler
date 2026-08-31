@@ -631,6 +631,7 @@ move|from:move:Instruct
 move|from:move:Magic Coat
 move|from:move:Me First
 move|from:move:Metronome
+move|from:move:Metronome|zpower
 move|from:move:Mirror Move
 move|from:move:Nature Power
 move|from:move:Round
@@ -638,6 +639,7 @@ move|from:move:Sleep Talk
 move|from:move:Snatch
 move|from:move:Water Pledge
 move|notarget
+move|zpower
 ohko
 player
 prepare|move:Bounce

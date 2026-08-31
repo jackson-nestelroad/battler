@@ -29421,6 +29421,38 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:Pikachu,player-1,1|name:Belly Drum|target:Pikachu,player-1,1|zpower 1`] = `
+{
+  "rawLog": "move|mon:Pikachu,player-1,1|name:Belly Drum|target:Pikachu,player-1,1|zpower",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Belly Drum",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Pikachu used Belly Drum!",
+        },
+        "key": "move__zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:Pikachu,player-1,1|name:Bloom Doom|target:Eevee,player-2,1|from:move:Metronome 1`] = `
 {
   "rawLog": "move|mon:Pikachu,player-1,1|name:Bloom Doom|target:Eevee,player-2,1|from:move:Metronome",
@@ -29476,6 +29508,70 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         "formatted": {
           "category": "primary",
           "text": "The opposing Pikachu used Mist!",
+        },
+        "key": "move__zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:Pikachu,player-1,1|name:Swords Dance|target:Pikachu,player-1,1|zpower 1`] = `
+{
+  "rawLog": "move|mon:Pikachu,player-1,1|name:Swords Dance|target:Pikachu,player-1,1|zpower",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Swords Dance",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Pikachu used Swords Dance!",
+        },
+        "key": "move__zpower",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:Pikachu,player-1,1|name:Tailwind|zpower 1`] = `
+{
+  "rawLog": "move|mon:Pikachu,player-1,1|name:Tailwind|zpower",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Tailwind",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Pikachu used Tailwind!",
         },
         "key": "move__zpower",
       },
@@ -29732,6 +29828,38 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         "formatted": {
           "category": "primary",
           "text": "The opposing Togepi used Absorb!",
+        },
+        "key": "move",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:Togepi,player-1,2|name:Ice Beam|target:Togepi,player-2,2|from:move:Metronome 1`] = `
+{
+  "rawLog": "move|mon:Togepi,player-1,2|name:Ice Beam|target:Togepi,player-2,2|from:move:Metronome",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Ice Beam",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Togepi",
+                "player": "player-1",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Togepi",
+          },
+        },
+        "formatted": {
+          "category": "primary",
+          "text": "The opposing Togepi used Ice Beam!",
         },
         "key": "move",
       },
