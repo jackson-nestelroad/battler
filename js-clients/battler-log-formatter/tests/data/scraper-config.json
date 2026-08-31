@@ -113,11 +113,7 @@
     "block|move:*|from:Dynamax",
     "fail|from:Choice Lock",
     "item|item:Air Balloon",
-    "fail|what:unboost|from:item:*",
-    "curestatus|status:Sleep|from:move:Uproar",
-    "status|status:Sleep|from:Disobedience",
-    "swapboosts|from:move:Heart Swap",
-    "swapboosts|from:move:Power Swap"
+    "fail|what:unboost|from:item:*"
   ],
   "rules": [
     {
