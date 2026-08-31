@@ -1229,7 +1229,7 @@ export const en = {
     swapsideconditions: null,
     swapsideconditions__from_move_any: null,
     swapsideconditions__from_move_courtchange: null,
-    switch: ["{{PLAYER}} withdrew {{PREV_MON}}!", "{{PLAYER}} sent out {{MON}}!"],
+    switch: "{{PLAYER}} sent out {{MON}}!",
     switchout: "{{MON}} was switched out!",
     switchout__copysubstitute: null,
     switchout__copyvolatile: null,

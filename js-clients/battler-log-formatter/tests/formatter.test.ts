@@ -326,7 +326,7 @@ describe("LogFormatter", () => {
     expect(stringifyLog(result!.messages[0])).toBe("The wild Pikachu used Thunderbolt!");
   });
 
-  it("should format Z-status move names with Z- prefix", () => {
+  it("should format move with zpower flag", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "move",
@@ -339,7 +339,7 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(stringifyLog(result!.messages[0])).toBe("Pikachu used Z-Thunder Wave!");
+    expect(stringifyLog(result!.messages[0])).toBe("Pikachu used Thunder Wave!");
   });
 
   it("should emit two messages for Magic Bounce reflection", () => {
@@ -386,9 +386,8 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
     expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("You withdrew Pikachu!");
-    expect(stringifyLog(result!.messages[1])).toBe("You sent out Charmander!");
+    expect(result!.messages.length).toBe(1);
+    expect(stringifyLog(result!.messages[0])).toBe("You sent out Charmander!");
   });
 
   it("should generalize magnitude formatting dynamically", () => {

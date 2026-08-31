@@ -85,7 +85,12 @@
     "event",
     "error",
     "learned",
-    "silent"
+    "silent",
+    "animate",
+    "animate_only",
+    "animateonly",
+    "notarget",
+    "no_target"
   ],
   "wildcardableTags": [
     "ability",
@@ -106,12 +111,5 @@
     "forgot",
     "disabledmove"
   ],
-  "aliases": {
-    "caught": "catch",
-    "fainted": "faint",
-    "experience": "exp",
-    "sethealth": "sethp",
-    "drag": "switch",
-    "replace": "switch"
-  }
+  "aliases": {}
 }

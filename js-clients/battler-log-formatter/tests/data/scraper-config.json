@@ -58,7 +58,13 @@
     "error",
     "effect",
     "learned",
-    "silent"
+    "silent",
+    "positions",
+    "animate",
+    "animate_only",
+    "animateonly",
+    "notarget",
+    "no_target"
   ],
   "alwaysFromEffectLogs": [
     "cant",

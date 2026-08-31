@@ -1,7 +1,7 @@
 import type { BattleState, EffectData, UiLogEntry, UiMon } from "battler-state";
 import i18next from "i18next";
-import rules from "./config/mapper-rules.json" with { type: "json" };
 import categoryRules from "./config/category-rules.json" with { type: "json" };
+import rules from "./config/mapper-rules.json" with { type: "json" };
 import type {
   AnyMappedLog,
   ContextValue,
@@ -52,17 +52,24 @@ export function getSideRelationship(
   return "foe";
 }
 
-export function isWildPlayer(state: BattleState | undefined, playerId: string | undefined): boolean {
-  if (!playerId) return false;
-  if (playerId.startsWith("wild")) return true;
-  if (state?.field?.sides) {
-    for (const side of state.field.sides) {
-      const player = side?.players?.[playerId];
-      if (player) {
-        const pType = (player as unknown as { player_type?: unknown; type?: unknown }).player_type ??
-                      (player as unknown as { player_type?: unknown; type?: unknown }).type;
-        if (typeof pType === "string" && pType.toLowerCase() === "wild") return true;
-        if (typeof pType === "object" && pType !== null && (("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType)) return true;
+export function isWildPlayer(
+  state: BattleState | undefined,
+  playerId: string | undefined,
+): boolean {
+  if (!playerId || !state?.field?.sides) return false;
+  for (const side of state.field.sides) {
+    const player = side?.players?.[playerId];
+    if (player) {
+      const pType =
+        (player as unknown as { player_type?: unknown; type?: unknown }).player_type ??
+        (player as unknown as { player_type?: unknown; type?: unknown }).type;
+      if (typeof pType === "string" && pType.toLowerCase() === "wild") return true;
+      if (
+        typeof pType === "object" &&
+        pType !== null &&
+        (("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType)
+      ) {
+        return true;
       }
     }
   }
@@ -119,11 +126,6 @@ export function resolveSideContext(
   options: MapperOptions,
 ): { standard: ContextVar; possessive: ContextVar } {
   if (sideIndex == null) return { standard: { text: "Side" }, possessive: { text: "Side's" } };
-
-  let name = `Player ${sideIndex}`;
-  if (state?.field?.sides?.[sideIndex]) {
-    name = state.field.sides[sideIndex].name;
-  }
 
   const rel = getSideRelationship(state, options.localPlayerId, sideIndex);
 
@@ -234,6 +236,77 @@ export function resolveMonContext(
   };
 }
 
+export function bindMonParticipant(
+  role: "mon" | "target" | "source",
+  uiMon: UiMon,
+  state: BattleState | undefined,
+  options: MapperOptions,
+  context: LogContext,
+  metadata: MappedLogMetadata,
+  tags: string[],
+): void {
+  const tagK = role === "source" ? "of" : role;
+  tags.push(`${tagK}:*`);
+
+  const resolved = resolveMonContext(uiMon, state, options);
+  const prefix = role.toUpperCase();
+
+  context[prefix] = resolved.standard;
+  context[`${prefix}_POSSESSIVE`] = resolved.possessive;
+  context[`${prefix}_PLAYER`] = resolved.player;
+  context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
+
+  if (role === "mon") {
+    if (!context.PLAYER) context.PLAYER = resolved.player;
+    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (!context.TARGET) {
+      context.TARGET = resolved.standard;
+      context.TARGET_POSSESSIVE = resolved.possessive;
+      context.TARGET_PLAYER = resolved.player;
+      context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
+    }
+    metadata.mon = {
+      raw: resolved.raw,
+      raw_possessive: resolved.raw_possessive,
+      ref: resolved.ref,
+    };
+    if (!metadata.target) metadata.target = metadata.mon;
+  } else if (role === "target") {
+    if (!context.MON) {
+      context.MON = resolved.standard;
+      context.MON_POSSESSIVE = resolved.possessive;
+      context.MON_PLAYER = resolved.player;
+      context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
+    }
+    if (!context.PLAYER) context.PLAYER = resolved.player;
+    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    metadata.target = {
+      raw: resolved.raw,
+      raw_possessive: resolved.raw_possessive,
+      ref: resolved.ref,
+    };
+    if (!metadata.mon) metadata.mon = metadata.target;
+  } else if (role === "source") {
+    context.OF = resolved.standard;
+    context.OF_POSSESSIVE = resolved.possessive;
+    metadata.source = {
+      raw: resolved.raw,
+      raw_possessive: resolved.raw_possessive,
+      ref: resolved.ref,
+    };
+  }
+
+  context.FOE_SIDE =
+    resolved.rel === "self" || resolved.rel === "ally"
+      ? i18next.t("side.foe")
+      : i18next.t("side.self");
+}
+
+export function normalizeTitle(entry: UiLogEntry): string {
+  const title = entry.title.toLowerCase();
+  return rules.aliases[title as keyof typeof rules.aliases] || title;
+}
+
 export function resolveCategory(title: string, tags: string[], entryTitle: string): LogCategory {
   for (const rule of categoryRules) {
     const condition = rule.condition as {
@@ -246,7 +319,11 @@ export function resolveCategory(title: string, tags: string[], entryTitle: strin
     if (condition.default) {
       return rule.category as LogCategory;
     }
-    if (condition.title && condition.title !== title && condition.title !== entryTitle.toLowerCase()) {
+    if (
+      condition.title &&
+      condition.title !== title &&
+      condition.title !== entryTitle.toLowerCase()
+    ) {
       continue;
     }
     if (
@@ -258,13 +335,13 @@ export function resolveCategory(title: string, tags: string[], entryTitle: strin
     }
     if (condition.withoutTags) {
       const hasAnyExcludedTag = condition.withoutTags.some((prefix: string) =>
-        tags.some((t) => t.startsWith(prefix + ":") || t === prefix)
+        tags.some((t) => t.startsWith(prefix + ":") || t === prefix),
       );
       if (hasAnyExcludedTag) continue;
     }
     if (condition.withTags) {
       const hasAllRequiredTags = condition.withTags.every((prefix: string) =>
-        tags.some((t) => t.startsWith(prefix + ":") || t === prefix)
+        tags.some((t) => t.startsWith(prefix + ":") || t === prefix),
       );
       if (!hasAllRequiredTags) continue;
     }
@@ -296,7 +373,7 @@ export function generateCombinatorics(
     }
 
     const dim = allDimensions[index];
-    
+
     // 1. Include specific dimension
     recurse(index + 1, [...currentDimensions, dim]);
 
@@ -305,7 +382,7 @@ export function generateCombinatorics(
       const parts = dim.split(":");
       k = parts[0];
 
-      // 2. Include generic tag (if applicable)
+      // 2. Include generic wildcard tag (if applicable)
       if (rules.wildcardableTags.includes(k) && parts[1] !== "*") {
         recurse(index + 1, [...currentDimensions, `${k}:*`]);
       }
@@ -314,7 +391,7 @@ export function generateCombinatorics(
       }
     }
 
-    // 3. Omit dimension entirely
+    // 3. Omit dimension entirely (if omittable)
     let canOmit = rules.omittableTags.always.includes(k);
 
     if (dim.includes(":") && !rules.wildcardableTags.includes(k)) {
@@ -345,41 +422,13 @@ export function mapUiLogEntry(
 ): AnyMappedLog | null {
   if (typeof entry === "string") {
     const lower = (entry as string).toLowerCase();
-    const context = {};
-    return { patterns: [lower], category: LogCategory.Primary, context };
+    return { patterns: [lower], category: LogCategory.Primary, context: {} };
   }
 
-  let title = entry.title.toLowerCase();
+  const title = normalizeTitle(entry);
+  if (!title) return null;
+
   const metadata: MappedLogMetadata = {};
-
-  if (rules.aliases[title as keyof typeof rules.aliases]) {
-    title = rules.aliases[title as keyof typeof rules.aliases];
-  } else if (title === "statboost") title = (entry.values?.by as number) < 0 ? "unboost" : "boost";
-  else if (title === "itemend") title = "itemend";
-  else if (title === "clearweather") title = "clearweather";
-  else if (title === "fieldstart") title = "fieldstart";
-  else if (title === "fieldend") title = "fieldend";
-  else if (title === "sidestart") title = "sidestart";
-  else if (title === "sideend") title = "sideend";
-  else if (title === "curestatus") title = "curestatus";
-  else if (title === "updateappearance") {
-    if (entry.values?.title === "specieschange") title = "specieschange";
-  } else if (title === "effect") {
-    if (entry.effect?.effect_type === "Ability") {
-      title = "ability";
-    }
-  } else if (title === "extension") {
-    if (entry.values?.title === "Affection") title = "affection";
-    if (entry.values?.title === "TierChange") title = "tierchange";
-  }
-
-  if (entry.values?.title && typeof entry.values.title === "string") {
-    title = entry.values.title.toLowerCase();
-  }
-
-  if (title === "leave" && entry.values?.title !== "forfeited" && entry.values?.title !== "escaped") return null;
-  if (title === "extension") return null;
-
   const tags: string[] = [];
   const flags: string[] = [];
   const context: LogContext = {};
@@ -400,46 +449,18 @@ export function mapUiLogEntry(
   }
 
   if (entry.target) {
-    tags.push(entry.title.toLowerCase() === "effect" ? "mon:*" : "target:*");
-    const resolved = resolveMonContext(entry.target, state, options);
-    const prefix = entry.title.toLowerCase() === "effect" ? "MON" : "TARGET";
-    context[prefix] = resolved.standard;
-    context[`${prefix}_POSSESSIVE`] = resolved.possessive;
-    context[`${prefix}_PLAYER`] = resolved.player;
-    context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
-
-    if (prefix === "TARGET" && !context.MON) {
-      context.MON = resolved.standard;
-      context.MON_POSSESSIVE = resolved.possessive;
-      context.MON_PLAYER = resolved.player;
-      context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
-    }
-
-    if (!context.PLAYER) context.PLAYER = resolved.player;
-    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-
-    context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
-    metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-    if (!metadata.mon) metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+    bindMonParticipant("target", entry.target, state, options, context, metadata, tags);
   }
 
   if (entry.source) {
-    tags.push("of:*");
-    const resolved = resolveMonContext(entry.source, state, options);
-    context.SOURCE = resolved.standard;
-    context.SOURCE_POSSESSIVE = resolved.possessive;
-    context.SOURCE_PLAYER = resolved.player;
-    context.SOURCE_PLAYER_POSSESSIVE = resolved.player_possessive;
-    context.OF = resolved.standard;
-    context.OF_POSSESSIVE = resolved.possessive;
-    context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
-    metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
+    bindMonParticipant("source", entry.source, state, options, context, metadata, tags);
   }
 
   if (entry.effect) {
-    if (entry.effect.effect_type) tags.push(`${entry.effect.effect_type.toLowerCase()}:${entry.effect.name}`);
+    if (entry.effect.effect_type)
+      tags.push(`${entry.effect.effect_type.toLowerCase()}:${entry.effect.name}`);
     else tags.push(`effect:${entry.effect.name}`);
-    
+
     if (entry.effect.name) {
       context.EFFECT = entry.effect.name;
       if (entry.effect.effect_type) {
@@ -449,8 +470,13 @@ export function mapUiLogEntry(
   }
 
   if (entry.source_effect) {
-    if (entry.source_effect.effect_type) tags.push(`from:${entry.source_effect.effect_type.toLowerCase()}:${entry.source_effect.name}`);
-    else tags.push(`from:${entry.source_effect.name}`);
+    if (entry.source_effect.effect_type) {
+      tags.push(
+        `from:${entry.source_effect.effect_type.toLowerCase()}:${entry.source_effect.name}`,
+      );
+    } else {
+      tags.push(`from:${entry.source_effect.name}`);
+    }
 
     if (entry.source_effect.name) {
       context.FROM = entry.source_effect.name;
@@ -461,76 +487,38 @@ export function mapUiLogEntry(
     }
   }
 
-  // --- Process generic dynamic values ---
+  // --- Process dynamic values map ---
   if (entry.values) {
-    const processValue = (k: string, v: unknown) => {
-      if (v === undefined || v === null) return;
-      if (k === "title" || k === "player" || k === "side") return;
+    // If values specifies mon/name/position/player for switch/appearance, bind mon
+    if (!context.MON && (entry.values.mon || entry.values.name)) {
+      const monName = (entry.values.name as string) || "Mon";
+      const playerId = entry.player || (entry.values.player as string) || "";
+      const position = (entry.values.position as number) || 0;
+      const monObj = (entry.values.mon as UiMon) || {
+        Active: {
+          name: monName,
+          player: playerId,
+          position: position,
+          side: entry.side ?? 0,
+        },
+      };
+      bindMonParticipant("mon", monObj, state, options, context, metadata, tags);
+    }
 
-      if (k === "animate") {
-        if (v === false) flags.push("noanim");
-        return;
-      }
-      if (k === "animate_only") {
-        if (v === true && title === "move") title = "animatemove";
-        return;
-      }
+    for (const [k, v] of Object.entries(entry.values)) {
+      if (v === undefined || v === null) continue;
+      if (k === "title" || k === "player" || k === "side") continue;
 
-      if (k === "learned" && entry.title.toLowerCase() === "moveupdate") {
-        title = v ? "learnedmove" : "didnotlearnmove";
-        return;
-      }
-      
-      // Opportunistic UI context binding: mon context
+      // Participant references in values map
       if (k === "mon" || k === "target" || k === "source" || k === "of") {
         if (typeof v === "object" && v !== null && ("Active" in v || "Inactive" in v)) {
-            const mappedK = (k === "of" || k === "source") ? "source" : (k === "target" ? "target" : "mon");
-            const tagK = mappedK === "source" ? "of" : mappedK;
-            tags.push(`${tagK}:*`);
-            const resolved = resolveMonContext(v as UiMon, state, options);
-            const prefix = mappedK.toUpperCase();
-            context[prefix] = resolved.standard;
-            context[`${prefix}_POSSESSIVE`] = resolved.possessive;
-            context[`${prefix}_PLAYER`] = resolved.player;
-            context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
-
-            if (prefix === "MON") {
-              if (!context.PLAYER) context.PLAYER = resolved.player;
-              if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-              if (!context.TARGET) {
-                context.TARGET = resolved.standard;
-                context.TARGET_POSSESSIVE = resolved.possessive;
-                context.TARGET_PLAYER = resolved.player;
-                context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
-              }
-            } else if (prefix === "TARGET") {
-              if (!context.MON) {
-                context.MON = resolved.standard;
-                context.MON_POSSESSIVE = resolved.possessive;
-                context.MON_PLAYER = resolved.player;
-                context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
-                if (!context.PLAYER) context.PLAYER = resolved.player;
-                if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-              }
-            } else if (prefix === "SOURCE") {
-              context.OF = resolved.standard;
-              context.OF_POSSESSIVE = resolved.possessive;
-            }
-
-            context.FOE_SIDE = (resolved.rel === "self" || resolved.rel === "ally") ? i18next.t("side.foe") : i18next.t("side.self");
-            
-            if (mappedK === "source") metadata.source = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-            else if (mappedK === "target") {
-              metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-              if (!metadata.mon) metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-            } else {
-              metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-              if (!metadata.target) metadata.target = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-            }
-            return;
+          const role = k === "of" || k === "source" ? "source" : k === "target" ? "target" : "mon";
+          bindMonParticipant(role, v as UiMon, state, options, context, metadata, tags);
+          continue;
         }
       }
 
+      // From / Effect references in values map
       if (k === "from" && typeof v === "string") {
         if (v.includes(":")) {
           const parts = v.split(":");
@@ -544,25 +532,26 @@ export function mapUiLogEntry(
         }
       }
 
-      if (k === "move_name" && (title === "learnedmove" || title === "didnotlearnmove" || entry.title.toLowerCase() === "moveupdate")) {
-        tags.push(`move:${v}`);
+      // Move name aliases
+      if (k === "name" && title === "move") {
         context.MOVE = v as ContextValue;
-      } else if (k === "name" && title === "move") {
-        tags.push(`name:*`);
-        context.MOVE = v as ContextValue;
-      } else if (k === "magnitude") {
-        context.MAGNITUDE = String(v);
-        tags.push(`magnitude:${v}`);
       } else if (k === "boosts") {
-        const statsList = String(v).split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+        const statsList = String(v)
+          .split(",")
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean);
         if (statsList.length === 1) {
           const statKey = statsList[0];
-          const statName = i18next.exists(`stats.${statKey}`) ? i18next.t(`stats.${statKey}`) : statKey;
+          const statName = i18next.exists(`stats.${statKey}`)
+            ? i18next.t(`stats.${statKey}`)
+            : statKey;
           context.STAT = statName;
           context.count = 1;
           tags.push(`boosts:${statKey}`);
         } else if (statsList.length > 1) {
-          const statsWord = i18next.exists("vocabulary.stats") ? i18next.t("vocabulary.stats") : "stats";
+          const statsWord = i18next.exists("vocabulary.stats")
+            ? i18next.t("vocabulary.stats")
+            : "stats";
           context.STAT = statsWord;
           context.count = statsList.length;
           tags.push(`boosts:stats`);
@@ -582,181 +571,82 @@ export function mapUiLogEntry(
           flags.push(k.replace(/_/g, ""));
         } else if (v === false) {
           // Do not push false booleans to tags
-        } else {
-          if (["ability", "item", "move", "effect", "condition", "weather", "status", "volatile", "from"].includes(k)) {
-            tags.push(`${k}:${v}`);
-          } else if (k === "by") {
-            const num = Number(v);
-            let appliedBucket = false;
-            if (!isNaN(num)) {
-              for (const bucket of rules.numericBuckets) {
-                if (bucket.tag === k && bucket.titles.includes(title) && num >= bucket.min) {
-                  tags.push(`${k}:${bucket.min}${bucket.suffix}`);
-                  appliedBucket = true;
-                  break;
-                }
+        } else if (k === "by") {
+          const num = Number(v);
+          let appliedBucket = false;
+          if (!isNaN(num)) {
+            for (const bucket of rules.numericBuckets) {
+              if (bucket.tag === k && bucket.titles.includes(title) && num >= bucket.min) {
+                tags.push(`${k}:${bucket.min}${bucket.suffix}`);
+                appliedBucket = true;
+                break;
               }
             }
-            if (!appliedBucket) tags.push(`by:${v}`);
-          } else if (k === "stat") {
-            context.STAT = i18next.t(`stats.${v}`);
-            tags.push(`${k}:*`);
-          } else {
-            tags.push(`${k}:${v}`);
           }
+          if (!appliedBucket) tags.push(`by:${v}`);
+        } else if (k === "stat") {
+          context.STAT = i18next.t(`stats.${v}`);
+          tags.push(`stat:*`);
+        } else {
+          tags.push(`${k}:${v}`);
         }
       } else if (Array.isArray(v)) {
-         tags.push(`${k}:*`);
-         if (k === "health" && v.length === 2) {
-             // For Health Fraction
-             if (options.healthFormat === "percentage") {
-                 context.HEALTH = `${Math.ceil((Number(v[0]) / Number(v[1])) * 100)}%`;
-             } else {
-                 context.HEALTH = `${v[0]}/${v[1]}`;
-             }
-         }
+        tags.push(`${k}:*`);
+        if (k === "health" && v.length === 2) {
+          if (options.healthFormat === "percentage") {
+            context.HEALTH = `${Math.ceil((Number(v[0]) / Number(v[1])) * 100)}%`;
+          } else {
+            context.HEALTH = `${v[0]}/${v[1]}`;
+          }
+        }
       } else {
         tags.push(`${k}:*`);
       }
-    };
-
-    for (const [k, v] of Object.entries(entry.values)) {
-      processValue(k, v);
     }
   }
 
-  // --- Special hardcoded parsing logic ---
-  if (["switch", "drag", "replace", "appear"].includes(title)) {
-    tags.length = 0;
-    ["player", "position", "name", "health", "species", "level", "gender"].forEach((t) => tags.push(`${t}:*`));
-    
-    const monName = (entry.values?.name as string) || "Mon";
-    const playerId = entry.player || (entry.values?.player as string);
-    const position = entry.values?.position as number | undefined;
-
-    // Check if there was an active mon previously on this slot
-    if (state?.field?.sides && playerId !== undefined && position !== undefined) {
-      let sideIndex = entry.side;
-      if (sideIndex === undefined || sideIndex === null) {
-        for (let i = 0; i < state.field.sides.length; i++) {
-          if (state.field.sides[i]?.players?.[playerId]) {
-            sideIndex = i;
-            break;
-          }
-        }
-      }
-      if (sideIndex !== undefined && sideIndex !== null) {
-        const side = state.field.sides[sideIndex];
-        const activeRef = side?.active?.[position];
-        if (activeRef) {
-          let prevName: string | undefined = undefined;
-          let prevPlayer: string | undefined = undefined;
-          if (typeof activeRef === "object") {
-            if ("name" in activeRef && typeof (activeRef as { name?: string }).name === "string") {
-              prevName = (activeRef as { name: string }).name;
-            }
-            if ("player" in activeRef && typeof (activeRef as { player?: string }).player === "string") {
-              prevPlayer = (activeRef as { player: string }).player;
-            }
-            if (!prevName && prevPlayer && "mon_index" in activeRef) {
-              const monIdx = (activeRef as { mon_index: number }).mon_index;
-              const mon = side?.players?.[prevPlayer]?.mons?.[monIdx];
-              if (mon?.physical_appearance?.name) {
-                prevName = mon.physical_appearance.name;
-              }
-            }
-          }
-          if (prevName && prevName !== monName) {
-            const prevUiMon: UiMon = {
-              Active: {
-                name: prevName,
-                player: prevPlayer || playerId,
-                position: position,
-                side: sideIndex,
-              },
-            };
-            const prevResolved = resolveMonContext(prevUiMon, state, options);
-            context.PREV_MON = prevResolved.standard;
-            context.PREV_MON_POSSESSIVE = prevResolved.possessive;
-            context.PREV_MON_PLAYER = prevResolved.player;
-            context.PREV_MON_PLAYER_POSSESSIVE = prevResolved.player_possessive;
-            metadata.prev_mon = { raw: prevResolved.raw, raw_possessive: prevResolved.raw_possessive, ref: prevResolved.ref };
-          }
-        }
-      }
-    }
-
-    const monRefObj = (entry.values?.mon as UiMon) || {
-      Active: {
-        name: monName,
-        player: playerId || "",
-        position: position || 0,
-        side: entry.side ?? 0
-      }
-    };
-    const resolved = resolveMonContext(monRefObj, state, options);
-    context.MON = resolved.standard;
-    context.MON_POSSESSIVE = resolved.possessive;
-    context.MON_PLAYER = resolved.player;
-    context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
-    if (!context.PLAYER) context.PLAYER = resolved.player;
-    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-    if (!metadata.mon) metadata.mon = { raw: resolved.raw, raw_possessive: resolved.raw_possessive, ref: resolved.ref };
-  } else if (title === "switchout") {
-    tags.length = 0;
-    tags.push("mon:*");
-  }
-
-  const combinatoricTags = tags.filter((t) => !rules.excludeTags.includes(t.split(":")[0]));
-  const combinatoricFlags = flags.filter((f) => !rules.excludeTags.includes(f));
+  const combinatoricTags = tags.filter((t) => {
+    const rawTag = t.split(":")[0];
+    return (
+      !rules.excludeTags.includes(rawTag) && !rules.excludeTags.includes(rawTag.replace(/_/g, ""))
+    );
+  });
+  const combinatoricFlags = flags.filter(
+    (f) => !rules.excludeTags.includes(f) && !rules.excludeTags.includes(f.replace(/_/g, "")),
+  );
 
   if (state?.battle_type) {
     combinatoricTags.push(`battletype:${state.battle_type.toLowerCase()}`);
-  }
-
-  let finalFlags = combinatoricFlags;
-  let finalTags = combinatoricTags;
-
-  if (title === "move") {
-    finalFlags = flags.filter((f) => !["notarget"].includes(f));
-    finalTags = combinatoricTags.filter(
-      (t) => !t.startsWith("animate:") && !t.startsWith("animate_only:"),
-    );
-    if (flags.includes("zpower") || entry.values?.zpower === true) {
-      if (typeof context.MOVE === "string" && !context.MOVE.startsWith("Z-")) {
-        context.MOVE = `Z-${context.MOVE}`;
-      }
-    }
   }
 
   const category = resolveCategory(title, tags, entry.title);
 
   const patterns = generateCombinatorics(
     title,
-    Array.from(new Set(finalTags)),
-    Array.from(new Set(finalFlags)),
+    Array.from(new Set(combinatoricTags)),
+    Array.from(new Set(combinatoricFlags)),
   );
 
-  // We need to synthesize an EffectData object for the consumer if there isn't one already available in effect
-  const effectData: EffectData | undefined = entry.effect ? {
-      effect: entry.effect,
-      side: entry.side ?? undefined,
-      slot: entry.slot ?? undefined,
-      player: entry.player ?? undefined,
-      target: entry.target ?? undefined,
-      source: entry.source ?? undefined,
-      source_effect: entry.source_effect ?? undefined,
-      additional: {}
-  } as unknown as EffectData : undefined;
+  const effectData: EffectData | undefined = entry.effect
+    ? ({
+        effect: entry.effect,
+        side: entry.side ?? undefined,
+        slot: entry.slot ?? undefined,
+        player: entry.player ?? undefined,
+        target: entry.target ?? undefined,
+        source: entry.source ?? undefined,
+        source_effect: entry.source_effect ?? undefined,
+        additional: {},
+      } as unknown as EffectData)
+    : undefined;
 
-  const mapped: AnyMappedLog = {
+  return {
     patterns,
     category,
     context,
     effect: effectData,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
   };
-  return mapped;
 }
 
 export function getLogPatterns(entry: UiLogEntry): string[] {
