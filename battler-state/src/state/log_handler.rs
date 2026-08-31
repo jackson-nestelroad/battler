@@ -302,9 +302,9 @@ fn effect_data_from_ui_log(entry: &ui::UiLogEntry) -> ui::EffectData {
             .map(|(k, v)| {
                 let v_str = match v {
                     ui::LogValue::String(s) => s.clone(),
-                    ui::LogValue::Number(n) => alloc::format!("{n}"),
-                    ui::LogValue::Boolean(_) => String::default(), // Emptystring for boolean flags
-                    ui::LogValue::Fraction(n, d) => alloc::format!("{n}/{d}"),
+                    ui::LogValue::Number(n) => format!("{n}"),
+                    ui::LogValue::Boolean(_) => String::default(),
+                    ui::LogValue::Fraction(n, d) => format!("{n}/{d}"),
                     _ => String::default(),
                 };
                 (k.clone(), v_str)
