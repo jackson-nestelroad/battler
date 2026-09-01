@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { generateCombinatorics } from "../src/mapper.js";
+import { matchesRule, parsePattern, patternToKey, serializePattern } from "../src/pattern.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import mapperRules from "../src/config/mapper-rules.json" with { type: "json" };
@@ -55,106 +56,16 @@ export function maskLog(line: string): string[] {
   // Phase 1: Strip
   for (const rule of scraperConfig.rules || []) {
     if (!rule.strip) continue;
-    let isMatch = true;
-    for (const [matchK, matchV] of Object.entries(rule.match)) {
-      if (matchK === "title") {
-        if (title !== matchV) {
-          isMatch = false;
-          break;
-        }
-      } else {
-        const hasTag = tags.some((t) => {
-          if ((matchV as string) === "*") {
-            return t.startsWith(`${matchK}:`);
-          } else if ((matchV as string).endsWith("*")) {
-            return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
-          } else {
-            return t === `${matchK}:${matchV as string}`;
-          }
-        });
-        if (!hasTag) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch && (rule as any).except) {
-      for (const [excK, excV] of Object.entries((rule as any).except)) {
-        const excList = Array.isArray(excV) ? excV : [excV];
-        const hasExc = tags.some((t) => {
-          return excList.some((v: string) => {
-            if (v === "*") {
-              return t.startsWith(`${excK}:`);
-            } else if (v.endsWith("*")) {
-              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
-            } else {
-              return t === `${excK}:${v}`;
-            }
-          });
-        });
-        if (hasExc) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch) {
-      finalTags = finalTags.filter((t) => !rule.strip.includes(t.split(":")[0]));
-      finalFlags = finalFlags.filter((f) => !rule.strip.includes(f));
+    if (matchesRule(tags, title, rule)) {
+      finalTags = finalTags.filter((t) => !rule.strip!.includes(t.split(":")[0]));
+      finalFlags = finalFlags.filter((f) => !rule.strip!.includes(f));
     }
   }
 
   // Phase 2: Collapse
   for (const rule of scraperConfig.rules || []) {
     if (!rule.collapse) continue;
-    let isMatch = true;
-    for (const [matchK, matchV] of Object.entries(rule.match)) {
-      if (matchK === "title") {
-        if (title !== matchV) {
-          isMatch = false;
-          break;
-        }
-      } else {
-        const hasTag = tags.some((t) => {
-          if ((matchV as string) === "*") {
-            return t.startsWith(`${matchK}:`);
-          } else if ((matchV as string).endsWith("*")) {
-            return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
-          } else {
-            return t === `${matchK}:${matchV as string}`;
-          }
-        });
-        if (!hasTag) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch && (rule as any).except) {
-      for (const [excK, excV] of Object.entries((rule as any).except)) {
-        const excList = Array.isArray(excV) ? excV : [excV];
-        const hasExc = tags.some((t) => {
-          return excList.some((v: string) => {
-            if (v === "*") {
-              return t.startsWith(`${excK}:`);
-            } else if (v.endsWith("*")) {
-              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
-            } else {
-              return t === `${excK}:${v}`;
-            }
-          });
-        });
-        if (hasExc) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch) {
+    if (matchesRule(tags, title, rule)) {
       for (let i = 0; i < finalTags.length; i++) {
         const [k] = finalTags[i].split(":");
         if (rule.collapse.includes(k)) {
@@ -175,52 +86,7 @@ export function maskLog(line: string): string[] {
   // Phase 3: Inject
   for (const rule of scraperConfig.rules || []) {
     if (!rule.inject) continue;
-    let isMatch = true;
-    for (const [matchK, matchV] of Object.entries(rule.match)) {
-      if (matchK === "title") {
-        if (title !== matchV) {
-          isMatch = false;
-          break;
-        }
-      } else {
-        const hasTag = tags.some((t) => {
-          if ((matchV as string) === "*") {
-            return t.startsWith(`${matchK}:`);
-          } else if ((matchV as string).endsWith("*")) {
-            return t.startsWith(`${matchK}:${(matchV as string).slice(0, -1)}`);
-          } else {
-            return t === `${matchK}:${matchV as string}`;
-          }
-        });
-        if (!hasTag) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch && (rule as any).except) {
-      for (const [excK, excV] of Object.entries((rule as any).except)) {
-        const excList = Array.isArray(excV) ? excV : [excV];
-        const hasExc = tags.some((t) => {
-          return excList.some((v: string) => {
-            if (v === "*") {
-              return t.startsWith(`${excK}:`);
-            } else if (v.endsWith("*")) {
-              return t.startsWith(`${excK}:${v.slice(0, -1)}`);
-            } else {
-              return t === `${excK}:${v}`;
-            }
-          });
-        });
-        if (hasExc) {
-          isMatch = false;
-          break;
-        }
-      }
-    }
-
-    if (isMatch) {
+    if (matchesRule(tags, title, rule)) {
       for (const injected of rule.inject) {
         results.push([title, ...finalTags, injected, ...finalFlags].join("|"));
       }
@@ -333,6 +199,7 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
     else if (relPath.startsWith("items")) defaultType = "item";
     else if (relPath.startsWith("moves")) defaultType = "move";
     else if (relPath.startsWith("clauses")) defaultType = "clause";
+    else if (relPath.startsWith("mons")) defaultType = "species";
 
     const content = JSON.parse(fs.readFileSync(file, "utf-8"));
 
@@ -380,6 +247,62 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
   }
 
   return effectRegistry;
+}
+
+const LOG_NAME_ALIASES: Record<string, string> = {
+  announceitem: "item",
+  preparemove: "prepare",
+  usemove: "move",
+};
+
+function getConditionPrefix(effect: EffectEntry, isFrom: boolean): string {
+  if (!effect.condition_type) return effect.type;
+  const lower = effect.condition_type.toLowerCase();
+  if (lower === "built-in" || lower === "volatile") {
+    return isFrom ? "" : "condition";
+  }
+  if (lower === "status" || lower === "weather" || lower === "zpower") {
+    return lower;
+  }
+  return "condition";
+}
+
+function synthesizeFxlangLogs(
+  logName: string,
+  typePrefix: string,
+  name: string,
+  isFrom: boolean,
+  fxlangLogs: Set<string>,
+): void {
+  const ALWAYS_NO_TAG = new Set(scraperConfig.alwaysNoTagLogs || []);
+  const NO_TAG_UNLESS_FROM = new Set(scraperConfig.noTagUnlessFromLogs || []);
+  const PREPEND_WILDCARDS = new Set(scraperConfig.prependWildcardTagLogs || []);
+
+  if (logName === "fail") {
+    if (isFrom) {
+      fxlangLogs.add(`fail|from:${typePrefix}${name}`);
+      fxlangLogs.add(`fail|what:*|from:${typePrefix}${name}`);
+    } else {
+      fxlangLogs.add(`fail|what:${typePrefix}${name}`);
+    }
+  } else if (logName === "fail_unboost") {
+    if (isFrom) {
+      fxlangLogs.add(`fail|what:unboost|from:${typePrefix}${name}`);
+    } else {
+      fxlangLogs.add(`fail|what:unboost|${typePrefix}${name}`);
+    }
+  } else if (logName === "fail_heal") {
+    fxlangLogs.add(`fail|what:heal`);
+  } else if (ALWAYS_NO_TAG.has(logName) || (NO_TAG_UNLESS_FROM.has(logName) && !isFrom)) {
+    fxlangLogs.add(logName);
+  } else if (PREPEND_WILDCARDS.has(logName)) {
+    fxlangLogs.add(`${logName}|ability:*|from:${typePrefix}${name}`);
+    fxlangLogs.add(`${logName}|move:*|from:${typePrefix}${name}`);
+  } else if (isFrom) {
+    fxlangLogs.add(`${logName}|from:${typePrefix}${name}`);
+  } else {
+    fxlangLogs.add(`${logName}|${typePrefix}${name}`);
+  }
 }
 
 function extractLogsFromFxlang(): Set<string> {
@@ -436,65 +359,20 @@ function extractLogsFromFxlang(): Set<string> {
     const name = effect.name;
     const logs = getLogsForEffect(effect, new Set());
     for (const rawLog of logs) {
-      const type = effect.type;
       let logName = rawLog.logType.replace(/_/g, "");
-      if (logName === "announceitem") logName = "item";
-
-      if (rawLog.logType === "fail_unboost") {
-        logName = "fail_unboost";
-      } else if (rawLog.logType === "fail_heal") {
-        logName = "fail_heal";
+      if (rawLog.logType === "fail_unboost" || rawLog.logType === "fail_heal") {
+        logName = rawLog.logType;
+      } else if (LOG_NAME_ALIASES[logName]) {
+        logName = LOG_NAME_ALIASES[logName];
       }
 
       const ALWAYS_FROM_EFFECT = new Set(scraperConfig.alwaysFromEffectLogs || []);
       const isFrom = rawLog.fromEffect || ALWAYS_FROM_EFFECT.has(logName);
 
-      let prefix = type;
-      if (effect.condition_type) {
-        const lower = effect.condition_type.toLowerCase();
-        if (lower === "built-in" || lower === "volatile") {
-          prefix = isFrom ? "" : "condition";
-        } else if (lower === "status" || lower === "weather" || lower === "zpower") {
-          prefix = lower;
-        } else {
-          prefix = "condition";
-        }
-      }
+      const prefix = getConditionPrefix(effect, isFrom);
       const typePrefix = prefix ? prefix + ":" : "";
 
-      if (logName === "preparemove") logName = "prepare";
-      if (logName === "usemove") logName = "move";
-
-      const ALWAYS_NO_TAG = new Set(scraperConfig.alwaysNoTagLogs || []);
-      const NO_TAG_UNLESS_FROM = new Set(scraperConfig.noTagUnlessFromLogs || []);
-      const PREPEND_WILDCARDS = new Set(scraperConfig.prependWildcardTagLogs || []);
-      const noTag = ALWAYS_NO_TAG.has(logName);
-
-      if (logName === "fail") {
-        if (isFrom) {
-          fxlangLogs.add(`fail|from:${typePrefix}${name}`);
-          fxlangLogs.add(`fail|what:*|from:${typePrefix}${name}`);
-        } else {
-          fxlangLogs.add(`fail|what:${typePrefix}${name}`);
-        }
-      } else if (logName === "fail_unboost") {
-        if (isFrom) {
-          fxlangLogs.add(`fail|what:unboost|from:${typePrefix}${name}`);
-        } else {
-          fxlangLogs.add(`fail|what:unboost|${typePrefix}${name}`);
-        }
-      } else if (logName === "fail_heal") {
-        fxlangLogs.add(`fail|what:heal`);
-      } else if (noTag || (NO_TAG_UNLESS_FROM.has(logName) && !isFrom)) {
-        fxlangLogs.add(logName);
-      } else if (PREPEND_WILDCARDS.has(logName)) {
-        fxlangLogs.add(`${logName}|ability:*|from:${typePrefix}${name}`);
-        fxlangLogs.add(`${logName}|move:*|from:${typePrefix}${name}`);
-      } else if (isFrom) {
-        fxlangLogs.add(`${logName}|from:${typePrefix}${name}`);
-      } else {
-        fxlangLogs.add(`${logName}|${typePrefix}${name}`);
-      }
+      synthesizeFxlangLogs(logName, typePrefix, name, isFrom, fxlangLogs);
     }
   }
 
@@ -596,33 +474,29 @@ function generateMatrix() {
     const eSig = `${effect.type}:${effect.name}`;
 
     for (const pattern of extracted.patterns) {
+      const parsed = parsePattern(pattern);
       for (const dSig of allDelegates) {
-        // Ensure we only replace complete tags by surrounding with |
-        // But tags can be preceded by | and followed by | or end of line.
-        // Also consider they might be prefixed with `from:`
-        if (pattern.includes(`|${dSig}|`) || pattern.endsWith(`|${dSig}`)) {
-          const clonedPattern = pattern.split(`|${dSig}|`).join(`|${eSig}|`);
-          const finalCloned = clonedPattern.endsWith(`|${dSig}`)
-            ? clonedPattern.slice(0, -`|${dSig}`.length) + `|${eSig}`
-            : clonedPattern;
-          newClonedPatterns.add(finalCloned);
-        }
-        if (pattern.includes(`|from:${dSig}|`) || pattern.endsWith(`|from:${dSig}`)) {
-          const clonedPattern = pattern.split(`|from:${dSig}|`).join(`|from:${eSig}|`);
-          const finalCloned = clonedPattern.endsWith(`|from:${dSig}`)
-            ? clonedPattern.slice(0, -`|from:${dSig}`.length) + `|from:${eSig}`
-            : clonedPattern;
-          newClonedPatterns.add(finalCloned);
+        let modified = false;
+        const newTags = parsed.tags.map((t) => {
+          if (t === dSig) {
+            modified = true;
+            return eSig;
+          }
+          if (t === `from:${dSig}`) {
+            modified = true;
+            return `from:${eSig}`;
+          }
+          return t;
+        });
+
+        if (modified) {
+          newClonedPatterns.add(serializePattern({ ...parsed, tags: newTags }));
         }
       }
     }
   }
 
   for (const cloned of newClonedPatterns) {
-    const tpl = getTemplate(cloned);
-    if (!validTemplates.has(tpl)) {
-      // Do nothing
-    }
     extracted.patterns.add(cloned);
   }
 
@@ -635,35 +509,50 @@ function generateMatrix() {
   }
 
   for (const pattern of Array.from(extracted.patterns)) {
+    const parsed = parsePattern(pattern);
     for (const sName of statusConditionNames) {
-      if (pattern.includes(`|status:${sName}|`) || pattern.endsWith(`|status:${sName}`)) {
-        for (const targetName of statusConditionNames) {
-          if (targetName === sName) continue;
-          const clonedPattern = pattern.split(`|status:${sName}|`).join(`|status:${targetName}|`);
-          const finalCloned = clonedPattern.endsWith(`|status:${sName}`)
-            ? clonedPattern.slice(0, -`|status:${sName}`.length) + `|status:${targetName}`
-            : clonedPattern;
-          extracted.patterns.add(finalCloned);
-        }
-      }
-      if (pattern.includes(`|from:status:${sName}|`) || pattern.endsWith(`|from:status:${sName}`)) {
-        for (const targetName of statusConditionNames) {
-          if (targetName === sName) continue;
-          const clonedPattern = pattern.split(`|from:status:${sName}|`).join(`|from:status:${targetName}|`);
-          const finalCloned = clonedPattern.endsWith(`|from:status:${sName}`)
-            ? clonedPattern.slice(0, -`|from:status:${sName}`.length) + `|from:status:${targetName}`
-            : clonedPattern;
-          extracted.patterns.add(finalCloned);
+      for (const targetName of statusConditionNames) {
+        if (targetName === sName) continue;
+        let modified = false;
+        const newTags = parsed.tags.map((t) => {
+          if (t === `status:${sName}`) {
+            modified = true;
+            return `status:${targetName}`;
+          }
+          if (t === `from:status:${sName}`) {
+            modified = true;
+            return `from:status:${targetName}`;
+          }
+          return t;
+        });
+
+        if (modified) {
+          extracted.patterns.add(serializePattern({ ...parsed, tags: newTags }));
         }
       }
     }
   }
 
-  const finalMatrix: string[] = [];
+  // Build inverted index of pattern -> raw logs in O(N) time
+  const patternToRawLogs = new Map<string, string[]>();
+  for (const rawLog of extracted.raw) {
+    const maskedList = maskLog(rawLog);
+    for (const p of maskedList) {
+      let list = patternToRawLogs.get(p);
+      if (!list) {
+        list = [];
+        patternToRawLogs.set(p, list);
+      }
+      if (list.length < 3) {
+        list.push(rawLog);
+      }
+    }
+  }
 
+  const finalMatrix: string[] = [];
   for (const pattern of Array.from(extracted.patterns).sort()) {
-    const matching = extracted.raw.filter((log) => maskLog(log).includes(pattern));
-    finalMatrix.push(...matching.slice(0, 3));
+    const matching = patternToRawLogs.get(pattern) || [];
+    finalMatrix.push(...matching);
   }
 
   fs.writeFileSync(
@@ -698,14 +587,7 @@ function generateMatrix() {
       const pFlags = pParts.filter((x) => !x.includes(":"));
 
       const rawPatterns = generateCombinatorics(pTitle, pTags, pFlags);
-      const allKeys = rawPatterns.map((rp) =>
-        rp
-          .replace(/\|/g, "__")
-          .replace(/:/g, "_")
-          .replace(/\*/g, "any")
-          .toLowerCase()
-          .replace(/[^a-z0-9_]/g, ""),
-      );
+      const allKeys = rawPatterns.map((rp) => patternToKey(rp));
 
       for (const k of allKeys) {
         if (k.includes("__silent")) continue;

@@ -2,6 +2,7 @@ import type { BattleState, UiLogEntry, UiMon } from "battler-state";
 import i18next from "i18next";
 import categoryRules from "./config/category-rules.json" with { type: "json" };
 import rules from "./config/mapper-rules.json" with { type: "json" };
+import { serializePattern } from "./pattern.js";
 import type {
   AnyMappedLog,
   ContextValue,
@@ -63,13 +64,13 @@ export function isWildPlayer(
       const pType =
         (player as unknown as { player_type?: unknown; type?: unknown }).player_type ??
         (player as unknown as { player_type?: unknown; type?: unknown }).type;
-      if (typeof pType === "string" && pType.toLowerCase() === "wild") return true;
-      if (
-        typeof pType === "object" &&
-        pType !== null &&
-        (("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType)
-      ) {
-        return true;
+      if (typeof pType === "string") {
+        return pType.toLowerCase() === "wild";
+      }
+      if (typeof pType === "object" && pType !== null) {
+        return (
+          ("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType
+        );
       }
     }
   }
@@ -202,8 +203,8 @@ export function resolveMonContext(
     text = i18next.t("mon.self", { name });
     possessiveText = i18next.t("mon.self_possessive", { name });
   } else if (rel === "ally") {
-    text = i18next.t("mon.ally", { name });
-    possessiveText = i18next.t("mon.ally_possessive", { name });
+    text = i18next.t("mon.ally", { name, player: playerName });
+    possessiveText = i18next.t("mon.ally_possessive", { name, player: playerName });
   } else {
     const isWild = isWildPlayer(state, playerId);
     if (isWild) {
@@ -315,7 +316,7 @@ export function bindMonParticipant(
     };
   }
 
-  if (role !== "prev_mon") {
+  if (role === "mon" || (role === "target" && !context.FOE_SIDE)) {
     context.FOE_SIDE =
       resolved.rel === "self" || resolved.rel === "ally"
         ? i18next.t("side.foe")
@@ -324,8 +325,7 @@ export function bindMonParticipant(
 }
 
 export function normalizeTitle(entry: UiLogEntry): string {
-  const title = entry.title.toLowerCase();
-  return rules.aliases[title as keyof typeof rules.aliases] || title;
+  return entry.title.toLowerCase();
 }
 
 export function resolveCategory(title: string, tags: string[], entryTitle: string): LogCategory {
@@ -372,9 +372,7 @@ export function resolveCategory(title: string, tags: string[], entryTitle: strin
 }
 
 function buildPattern(title: string, tags: string[], flags: string[]): string {
-  const sortedTags = [...tags].sort();
-  const sortedFlags = [...flags].sort();
-  return [title, ...sortedTags, ...sortedFlags].join("|");
+  return serializePattern({ title, tags, flags });
 }
 
 export function generateCombinatorics(
@@ -434,6 +432,48 @@ export function generateCombinatorics(
   recurse(0, []);
 
   return Array.from(results).sort((a, b) => b.length - a.length);
+}
+
+function handleBoostsTag(v: unknown, context: LogContext, tags: string[]): void {
+  const statsList = String(v)
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (statsList.length === 1) {
+    const statKey = statsList[0];
+    const statName = i18next.exists(`stats.${statKey}`)
+      ? i18next.t(`stats.${statKey}`)
+      : statKey;
+    context.STAT = statName;
+    context.count = 1;
+    tags.push(`boosts:${statKey}`);
+  } else if (statsList.length > 1) {
+    const statsWord = i18next.exists("vocabulary.stats")
+      ? i18next.t("vocabulary.stats")
+      : "stats";
+    context.STAT = statsWord;
+    context.count = statsList.length;
+    tags.push(`boosts:stats`);
+  } else {
+    tags.push(`boosts:${v}`);
+  }
+}
+
+function handleNumericBucketing(
+  k: string,
+  v: unknown,
+  title: string,
+  tags: string[],
+): boolean {
+  const num = Number(v);
+  if (isNaN(num)) return false;
+  for (const bucket of rules.numericBuckets) {
+    if (bucket.tag === k && bucket.titles.includes(title) && num >= bucket.min) {
+      tags.push(`${k}:${bucket.min}${bucket.suffix}`);
+      return true;
+    }
+  }
+  return false;
 }
 
 export function mapUiLogEntry(
@@ -564,28 +604,7 @@ export function mapUiLogEntry(
       if (k === "name" && title === "move") {
         context.MOVE = v as ContextValue;
       } else if (k === "boosts") {
-        const statsList = String(v)
-          .split(",")
-          .map((s) => s.trim().toLowerCase())
-          .filter(Boolean);
-        if (statsList.length === 1) {
-          const statKey = statsList[0];
-          const statName = i18next.exists(`stats.${statKey}`)
-            ? i18next.t(`stats.${statKey}`)
-            : statKey;
-          context.STAT = statName;
-          context.count = 1;
-          tags.push(`boosts:${statKey}`);
-        } else if (statsList.length > 1) {
-          const statsWord = i18next.exists("vocabulary.stats")
-            ? i18next.t("vocabulary.stats")
-            : "stats";
-          context.STAT = statsWord;
-          context.count = statsList.length;
-          tags.push(`boosts:stats`);
-        } else {
-          tags.push(`boosts:${v}`);
-        }
+        handleBoostsTag(v, context, tags);
       } else if (k === "species") {
         const speciesStr = String(v);
         context.SPECIES = speciesStr;
@@ -599,19 +618,8 @@ export function mapUiLogEntry(
           flags.push(k.replace(/_/g, ""));
         } else if (v === false) {
           // Do not push false booleans to tags
-        } else if (k === "by") {
-          const num = Number(v);
-          let appliedBucket = false;
-          if (!isNaN(num)) {
-            for (const bucket of rules.numericBuckets) {
-              if (bucket.tag === k && bucket.titles.includes(title) && num >= bucket.min) {
-                tags.push(`${k}:${bucket.min}${bucket.suffix}`);
-                appliedBucket = true;
-                break;
-              }
-            }
-          }
-          if (!appliedBucket) tags.push(`by:${v}`);
+        } else if (handleNumericBucketing(k, v, title, tags)) {
+          // Applied bucket
         } else if (k === "stat") {
           context.STAT = i18next.t(`stats.${v}`);
           tags.push(`stat:*`);

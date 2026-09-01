@@ -273,23 +273,23 @@ continue
 copyboosts
 crit
 crit|battletype:singles
+curestatus|from:Affection|status:Burn
+curestatus|from:Affection|status:Freeze
+curestatus|from:Affection|status:Paralysis
+curestatus|from:Affection|status:Poison
+curestatus|from:Affection|status:Sleep
+curestatus|from:move:Uproar|status:Bad Poison
+curestatus|from:move:Uproar|status:Burn
+curestatus|from:move:Uproar|status:Freeze
+curestatus|from:move:Uproar|status:Paralysis
+curestatus|from:move:Uproar|status:Poison
 curestatus|status:Bad Poison
 curestatus|status:Bad Poison|from:Affection
-curestatus|status:Bad Poison|from:move:Uproar
 curestatus|status:Burn
-curestatus|status:Burn|from:Affection
-curestatus|status:Burn|from:move:Uproar
 curestatus|status:Freeze
-curestatus|status:Freeze|from:Affection
-curestatus|status:Freeze|from:move:Uproar
 curestatus|status:Paralysis
-curestatus|status:Paralysis|from:Affection
-curestatus|status:Paralysis|from:move:Uproar
 curestatus|status:Poison
-curestatus|status:Poison|from:Affection
-curestatus|status:Poison|from:move:Uproar
 curestatus|status:Sleep
-curestatus|status:Sleep|from:Affection
 curestatus|status:Sleep|from:move:Uproar
 damage
 damage|from:Confusion
@@ -450,17 +450,25 @@ formechange|from:ability:Tera Shift
 formechange|from:ability:Zen Mode
 formechange|from:ability:Zero to Hero
 formechange|from:move:Relic Song
+formechange|from:species:Dialga
+formechange|from:species:Dialga-Origin
 formechange|from:species:Giratina
 formechange|from:species:Giratina-Origin
 formechange|from:species:Ogerpon
 formechange|from:species:Ogerpon-Cornerstone-Mask
 formechange|from:species:Ogerpon-Hearthflame-Mask
+formechange|from:species:Ogerpon-Teal-Mask-Tera
 formechange|from:species:Ogerpon-Wellspring-Mask
+formechange|from:species:Palkia
+formechange|from:species:Palkia-Origin
 formechange|from:species:Shaymin-Sky
 formechange|from:species:Terapagos-Terastal
+formechange|from:species:Xerneas
 formechange|from:species:Xerneas-Neutral
 formechange|from:species:Zacian
+formechange|from:species:Zacian-Crowned
 formechange|from:species:Zamazenta
+formechange|from:species:Zamazenta-Crowned
 gigantamax
 heal
 heal|from:Drain
@@ -499,14 +507,15 @@ info|battletype:*
 info|environment:*
 info|rule:*
 invertboosts
+itemend|from:move:Bug Bite|item:*
+itemend|from:move:Covet|item:*
+itemend|from:move:Switcheroo|item:*
 itemend|item:*|from:ability:Magician
 itemend|item:*|from:ability:Pickpocket
 itemend|item:*|from:ability:Symbiosis
 itemend|item:*|from:item:Sticky Barb
 itemend|item:*|from:move:Bestow
-itemend|item:*|from:move:Bug Bite
 itemend|item:*|from:move:Corrosive Gas
-itemend|item:*|from:move:Covet
 itemend|item:*|from:move:Fling|silent
 itemend|item:*|from:move:Incinerate
 itemend|item:*|from:move:Knock Off
@@ -556,6 +565,8 @@ itemend|item:Starf Berry|eat
 itemend|item:Throat Spray
 itemend|item:Weakness Policy
 itemend|item:White Herb
+itemstart|from:move:Covet|item:*
+itemstart|from:move:Switcheroo|item:*
 itemstart|item:*|from:ability:Ball Fetch
 itemstart|item:*|from:ability:Harvest
 itemstart|item:*|from:ability:Magician
@@ -564,7 +575,6 @@ itemstart|item:*|from:ability:Pickup
 itemstart|item:*|from:ability:Symbiosis
 itemstart|item:*|from:item:Sticky Barb
 itemstart|item:*|from:move:Bestow
-itemstart|item:*|from:move:Covet
 itemstart|item:*|from:move:G-Max Replenish
 itemstart|item:*|from:move:Recycle
 itemstart|item:*|from:move:Switcheroo
@@ -701,6 +711,7 @@ singlemove|move:Glaive Rush
 singlemove|move:Grudge
 singleturn|condition:Protect Move Condition Base
 singleturn|condition:Z-Power
+singleturn|from:Z-Power|move:Spotlight
 singleturn|move:Beak Blast
 singleturn|move:Crafty Shield
 singleturn|move:Detect
@@ -721,7 +732,6 @@ singleturn|move:Roost
 singleturn|move:Shell Trap
 singleturn|move:Snatch
 singleturn|move:Spotlight
-singleturn|move:Spotlight|from:Z-Power
 singleturn|move:Wide Guard
 specieschange
 specieschange|status:Bad Poison
@@ -791,16 +801,16 @@ start|move:Torment
 start|move:Uproar
 start|move:Uproar|residual
 start|move:Yawn
+status|from:Disobedience|status:Bad Poison
+status|from:Disobedience|status:Burn
+status|from:Disobedience|status:Freeze
+status|from:Disobedience|status:Paralysis
+status|from:Disobedience|status:Poison
 status|status:Bad Poison
-status|status:Bad Poison|from:Disobedience
 status|status:Burn
-status|status:Burn|from:Disobedience
 status|status:Freeze
-status|status:Freeze|from:Disobedience
 status|status:Paralysis
-status|status:Paralysis|from:Disobedience
 status|status:Poison
-status|status:Poison|from:Disobedience
 status|status:Sleep
 status|status:Sleep|from:Disobedience
 supereffective

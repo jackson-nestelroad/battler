@@ -4,6 +4,7 @@ import type { LogToken } from "./engine.js";
 import { parseTemplateToTokens } from "./engine.js";
 import i18next from "./i18n.js";
 import { mapUiLogEntry } from "./mapper.js";
+import { parsePattern, patternToKey, serializePattern } from "./pattern.js";
 import type {
   ContextValue,
   ContextVar,
@@ -123,20 +124,9 @@ function findTemplateKey(
 ): string | undefined {
   if (!patterns || patterns.length === 0) return undefined;
   for (const pattern of patterns) {
-    const parts = pattern.split("|");
-    const title = parts.shift()!;
-    const tags = parts.filter((x) => x.includes(":"));
-    const flags = parts.filter((x) => !x.includes(":"));
-    tags.sort();
-    flags.sort();
-    const p = [title, ...tags, ...flags].join("|");
-
-    const safePattern = p
-      .replace(/\|/g, "__")
-      .replace(/:/g, "_")
-      .replace(/\*/g, "any")
-      .toLowerCase()
-      .replace(/[^a-z0-9_]/g, "");
+    const parsed = parsePattern(pattern);
+    const serialized = serializePattern(parsed);
+    const safePattern = patternToKey(serialized);
 
     const fullKey = `logs.${safePattern}`;
     if (i18next.exists(fullKey) && i18next.t(fullKey, templateArgs) !== null) {

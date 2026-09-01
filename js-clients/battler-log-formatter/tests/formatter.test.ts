@@ -540,4 +540,53 @@ describe("LogFormatter", () => {
     expect(getMagnitudeLog(7)).toBe("Magnitude 7!");
     expect(getMagnitudeLog(10)).toBe("Magnitude 10!");
   });
+
+  it("should format ally Mon with player and name interpolated", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "faint",
+      values: {
+        mon: { Active: { side: 0, position: 1, name: "Pikachu", player: "p2" } }
+      }
+    };
+    const state = {
+      field: {
+        sides: [
+          {
+            players: {
+              p1: { name: "Alice" },
+              p2: { name: "Bob" }
+            }
+          }
+        ]
+      }
+    };
+    const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    const log = result!.messages[0];
+    expect(stringifyLog(log)).toBe("Bob's Pikachu fainted!");
+  });
+
+  it("should preserve FOE_SIDE based on the primary mon actor", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+        target: { Active: { side: 1, position: 0, name: "Charmander", player: "p2" } }
+      }
+    };
+    const state = {
+      field: {
+        sides: [
+          { players: { p1: { name: "Alice" } } },
+          { players: { p2: { name: "Bob" } } }
+        ]
+      }
+    };
+    const mapped = mapUiLogEntry(entry as UiLogEntry, state as unknown as BattleState, { localPlayerId: "p1" });
+    expect(mapped).not.toBeNull();
+    expect(mapped!.context.FOE_SIDE).toBe("the opposing team");
+  });
 });
+
