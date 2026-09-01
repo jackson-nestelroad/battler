@@ -14,7 +14,10 @@
     "move|from:move:Copycat|zpower",
     "move|from:move:Me First|zpower",
     "move|from:move:Mirror Move|zpower",
-    "move|from:move:Sleep Talk|zpower"
+    "move|from:move:Sleep Talk|zpower",
+    "damage|from:move:G-Max Vine Lash",
+    "damage|from:move:G-Max Volcalith",
+    "damage|from:move:G-Max Wildfire"
   ],
   "excludeTags": [
     "mon",

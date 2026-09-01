@@ -319,6 +319,9 @@ damage|from:move:Fire Pledge
 damage|from:move:Flame Burst
 damage|from:move:G-Max Cannonade
 damage|from:move:G-Max Steelsurge
+damage|from:move:G-Max Vine Lash
+damage|from:move:G-Max Volcalith
+damage|from:move:G-Max Wildfire
 damage|from:move:High Jump Kick
 damage|from:move:Jump Kick
 damage|from:move:Leech Seed
