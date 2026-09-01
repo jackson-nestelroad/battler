@@ -9524,6 +9524,25 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearweat
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: clearweather|weather:Strong Winds 1`] = `
+{
+  "rawLog": "clearweather|weather:Strong Winds",
+  "result": {
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "The mysterious strong winds have dissipated!",
+        },
+        "key": "clearweather__weather_strongwinds",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: combine 1`] = `
 {
   "rawLog": "combine",

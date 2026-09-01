@@ -269,6 +269,7 @@ clearweather|weather:Heavy Rain
 clearweather|weather:Rain
 clearweather|weather:Sandstorm
 clearweather|weather:Snow
+clearweather|weather:Strong Winds
 combine
 continue
 copyboosts

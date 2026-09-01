@@ -34,6 +34,15 @@ fn rayquaza_pidgeot() -> Result<TeamData> {
                     "nature": "Hardy",
                     "gender": "M",
                     "level": 50
+                },
+                {
+                    "name": "Pidgeot",
+                    "species": "Pidgeot",
+                    "ability": "No Ability",
+                    "moves": [],
+                    "nature": "Hardy",
+                    "gender": "M",
+                    "level": 50
                 }
             ]
         }"#,
@@ -84,6 +93,11 @@ fn strong_winds_negate_flying_type_super_effectiveness() {
 
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,2"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "switch 2;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
@@ -106,7 +120,14 @@ fn strong_winds_negate_flying_type_super_effectiveness() {
                 "damage|mon:Pidgeot,player-1,2|health:69/100",
                 "residual",
                 "weather|weather:Strong Winds|residual",
-                "turn|turn:2"
+                "turn|turn:2",
+                "continue",
+                "clearweather|weather:Strong Winds",
+                "split|side:0",
+                "switch|player:player-1|position:1|name:Pidgeot|health:143/143|species:Pidgeot|level:50|gender:M",
+                "switch|player:player-1|position:1|name:Pidgeot|health:100/100|species:Pidgeot|level:50|gender:M",
+                "residual",
+                "turn|turn:3"
             ]"#,
     )
     .unwrap();

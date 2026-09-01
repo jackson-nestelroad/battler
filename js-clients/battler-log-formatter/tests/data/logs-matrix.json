@@ -339,6 +339,7 @@
   "clearweather|weather:Rain",
   "clearweather|weather:Sandstorm",
   "clearweather|weather:Snow",
+  "clearweather|weather:Strong Winds",
   "combine",
   "continue",
   "copyboosts|mon:Flamigo,player-1,1|source:Cetoddle,player-1,2|from:ability:Costar",
