@@ -588,5 +588,43 @@ describe("LogFormatter", () => {
     expect(mapped).not.toBeNull();
     expect(mapped!.context.FOE_SIDE).toBe("the opposing team");
   });
+
+  it("should format item damage with OF_OR_MON_POSSESSIVE when of is omitted vs present", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const state = {
+      field: {
+        sides: [
+          { players: { p1: { name: "Alice" } } },
+          { players: { p2: { name: "Bob" } } }
+        ]
+      }
+    };
+
+    // Case 1: Holder takes damage from its own item (no "of" source)
+    const selfItemEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Staraptor", player: "p2" } },
+        from: "item:Black Sludge",
+      }
+    };
+    const selfResult = formatter.format(selfItemEntry as UiLogEntry, state as unknown as BattleState);
+    expect(selfResult).not.toBeNull();
+    expect(stringifyLog(selfResult!.messages[0])).toBe("The opposing Staraptor was hurt by its Black Sludge!");
+
+    // Case 2: Attacker takes damage from opponent's item ("of" source present)
+    const opponentItemEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Garchomp", player: "p1" } },
+        from: "item:Rocky Helmet",
+        of: { Active: { side: 1, position: 0, name: "Ferrothorn", player: "p2" } },
+      }
+    };
+    const opponentResult = formatter.format(opponentItemEntry as UiLogEntry, state as unknown as BattleState);
+    expect(opponentResult).not.toBeNull();
+    expect(stringifyLog(opponentResult!.messages[0])).toBe("Garchomp was hurt by the opposing Ferrothorn's Rocky Helmet!");
+  });
 });
+
 

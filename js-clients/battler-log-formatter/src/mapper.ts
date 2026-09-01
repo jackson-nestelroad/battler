@@ -154,6 +154,7 @@ export function resolveMonContext(
 ): {
   standard: ContextVar;
   possessive: ContextVar;
+  its: ContextVar;
   player: ContextVar;
   player_possessive: ContextVar;
   playerId?: string;
@@ -166,6 +167,7 @@ export function resolveMonContext(
     return {
       standard: { text: "Mon" },
       possessive: { text: "Mon's" },
+      its: { text: i18next.t("mon.its") },
       player: { text: "Player" },
       player_possessive: { text: "Player's" },
       raw: "Mon",
@@ -224,9 +226,12 @@ export function resolveMonContext(
     }
   }
 
+  const itsText = i18next.t("mon.its");
+
   return {
     standard: { text, monRef, noAutoCapitalize },
     possessive: { text: possessiveText, monRef, noAutoCapitalize: possessiveNoAutoCapitalize },
+    its: { text: itsText, monRef, noAutoCapitalize: false },
     player: playerResolved.standard,
     player_possessive: playerResolved.possessive,
     playerId,
@@ -279,6 +284,9 @@ export function bindMonParticipant(
       context.TARGET_PLAYER = resolved.player;
       context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
     }
+    if (!context.OF_OR_MON_POSSESSIVE) {
+      context.OF_OR_MON_POSSESSIVE = resolved.its;
+    }
     metadata.mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
@@ -294,6 +302,9 @@ export function bindMonParticipant(
     }
     if (!context.PLAYER) context.PLAYER = resolved.player;
     if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (!context.OF_OR_MON_POSSESSIVE) {
+      context.OF_OR_MON_POSSESSIVE = resolved.its;
+    }
     metadata.target = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
@@ -303,6 +314,7 @@ export function bindMonParticipant(
   } else if (role === "source") {
     context.OF = resolved.standard;
     context.OF_POSSESSIVE = resolved.possessive;
+    context.OF_OR_MON_POSSESSIVE = resolved.possessive;
     metadata.source = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,

@@ -8162,7 +8162,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Baltoy can't use the sealed Tackle!",
+          "text": "The opposing Baltoy can't use its sealed Tackle!",
         },
         "key": "cant__from_move_imprison__move_any",
       },
@@ -8194,9 +8194,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Blacephalon cannot use Mind Blown!",
+          "text": "The opposing Blacephalon can't use Mind Blown!",
         },
-        "key": "cant__from_ability_damp__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8226,9 +8226,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Decidueye cannot use Growl!",
+          "text": "The opposing Decidueye can't use Growl!",
         },
-        "key": "cant__from_ability_dazzling__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8258,9 +8258,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Decidueye cannot use Quick Attack!",
+          "text": "The opposing Decidueye can't use Quick Attack!",
         },
-        "key": "cant__from_ability_dazzling__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8290,9 +8290,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Decidueye cannot use Thunder Wave!",
+          "text": "The opposing Decidueye can't use Thunder Wave!",
         },
-        "key": "cant__from_ability_dazzling__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8447,9 +8447,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Incineroar can't use Growl due to Throat Chop!",
+          "text": "The opposing Incineroar can't use Growl!",
         },
-        "key": "cant__from_move_throatchop__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8479,9 +8479,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Kecleon cannot use Aura Wheel!",
+          "text": "The opposing Kecleon can't use Aura Wheel!",
         },
-        "key": "cant__from_move_aurawheel__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8651,7 +8651,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MOVE": "Swords Dance",
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Oricorio",
@@ -8660,14 +8661,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
                 "side": 0,
               },
             },
-            "text": "The opposing Oricorio's",
+            "text": "The opposing Oricorio",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Oricorio's Petal Dance is restricted!",
+          "text": "The opposing Oricorio can't use Swords Dance!",
         },
-        "key": "cant__from_move_petaldance__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -8884,9 +8885,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Squirtle cannot use Explosion!",
+          "text": "The opposing Squirtle can't use Explosion!",
         },
-        "key": "cant__from_ability_damp__move_any",
+        "key": "cant__move_any",
       },
     ],
     "notices": [],
@@ -9055,8 +9056,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Bidoof,wild,1|item:Poké Ball|shakes:4",
   "result": {
-    "key": "catch__item_any__shakes_4",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Bidoof",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Bidoof",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Bidoof was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9066,8 +9087,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Friend Ball|shakes:4",
   "result": {
-    "key": "catch__item_any__shakes_4",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Graveler",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Graveler",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Graveler was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9077,8 +9118,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Graveler,wild,1|item:Level Ball|shakes:4",
   "result": {
-    "key": "catch__item_any__shakes_4",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Graveler",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Graveler",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Graveler was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9088,8 +9149,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Master Ball|shakes:1|critical",
   "result": {
-    "key": "catch__item_any__shakes_1__critical",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Magikarp",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Magikarp",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Magikarp was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9099,8 +9180,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1|critical",
   "result": {
-    "key": "catch__item_any__shakes_1__critical",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Magikarp",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Magikarp",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Magikarp was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9110,8 +9211,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
 {
   "rawLog": "catch|player:protagonist|mon:Metagross,wild,1|item:Master Ball|shakes:1|critical",
   "result": {
-    "key": "catch__item_any__shakes_1__critical",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Metagross",
+                "player": "wild",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Metagross",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Gotcha! the opposing Metagross was caught!",
+        },
+        "key": "catch__item_any",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9121,8 +9242,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:player-1|mon:Eternatus,player-2,1|item:Poké Ball|shakes:0",
   "result": {
-    "key": "catchfailed__item_any__shakes_0",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Oh no! The Mon broke free!",
+        },
+        "key": "catchfailed__item_any__shakes_0",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9132,8 +9261,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Bulbasaur,wild,1|item:Poké Ball|shakes:3",
   "result": {
-    "key": "catchfailed__item_any__shakes_3",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Gah! It was so close, too!",
+        },
+        "key": "catchfailed__item_any__shakes_3",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9143,8 +9280,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Fast Ball|shakes:3",
   "result": {
-    "key": "catchfailed__item_any__shakes_3",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Gah! It was so close, too!",
+        },
+        "key": "catchfailed__item_any__shakes_3",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9154,8 +9299,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Electrode,wild,1|item:Poké Ball|shakes:3",
   "result": {
-    "key": "catchfailed__item_any__shakes_3",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Gah! It was so close, too!",
+        },
+        "key": "catchfailed__item_any__shakes_3",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9165,8 +9318,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Dusk Ball|shakes:1",
   "result": {
-    "key": "catchfailed__item_any__shakes_1",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Aww! It appeared to be caught!",
+        },
+        "key": "catchfailed__item_any__shakes_1",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9176,8 +9337,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Graveler,wild,1|item:Repeat Ball|shakes:1",
   "result": {
-    "key": "catchfailed__item_any__shakes_1",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Aww! It appeared to be caught!",
+        },
+        "key": "catchfailed__item_any__shakes_1",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9187,8 +9356,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
 {
   "rawLog": "catchfailed|player:protagonist|mon:Magikarp,wild,1|item:Poké Ball|shakes:1",
   "result": {
-    "key": "catchfailed__item_any__shakes_1",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Aww! It appeared to be caught!",
+        },
+        "key": "catchfailed__item_any__shakes_1",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9198,8 +9375,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearallb
 {
   "rawLog": "clearallboosts",
   "result": {
-    "key": "clearallboosts",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "All stat changes were eliminated!",
+        },
+        "key": "clearallboosts",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9288,7 +9473,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearnega
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Ambipom's negative stat changes were removed!",
+          "text": "The opposing Ambipom's returned its decreased stats to normal!",
         },
         "key": "clearnegativeboosts",
       },
@@ -9319,7 +9504,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearnega
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mudkip's negative stat changes were removed!",
+          "text": "The opposing Mudkip's returned its decreased stats to normal!",
         },
         "key": "clearnegativeboosts",
       },
@@ -9400,7 +9585,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearweat
         "context": {},
         "formatted": {
           "category": "secondary",
-          "text": "The harsh sunlight faded.",
+          "text": "The extremely harsh sunlight faded!",
         },
         "key": "clearweather__weather_extremelyharshsunlight",
       },
@@ -9438,9 +9623,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearweat
         "context": {},
         "formatted": {
           "category": "secondary",
-          "text": "The weather cleared.",
+          "text": "The harsh sunlight faded.",
         },
-        "key": "clearweather__weather_any",
+        "key": "clearweather__weather_harshsunlight",
       },
     ],
     "notices": [],
@@ -9457,7 +9642,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: clearweat
         "context": {},
         "formatted": {
           "category": "secondary",
-          "text": "The heavy rain stopped.",
+          "text": "The heavy rain has lifted!",
         },
         "key": "clearweather__weather_heavyrain",
       },
@@ -9547,8 +9732,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: combine 1
 {
   "rawLog": "combine",
   "result": {
-    "key": "combine",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "The two moves have become one! It's a combined move!",
+        },
+        "key": "combine",
+      },
+    ],
     "notices": [],
   },
 }
@@ -9907,7 +10100,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Linoone's burn was healed!",
+          "text": "The opposing Linoone's burn was cured!",
         },
         "key": "curestatus__status_burn",
       },
@@ -9969,7 +10162,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Linoone's burn was healed!",
+          "text": "The opposing Linoone's burn was cured!",
         },
         "key": "curestatus__status_burn",
       },
@@ -10155,7 +10348,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: curestatu
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Roselia's burn was healed!",
+          "text": "The opposing Roselia's burn was cured!",
         },
         "key": "curestatus__status_burn",
       },
@@ -10362,13 +10555,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
+          "FROM_ITEM": "Jaboca Berry",
+          "OF_OR_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Applin",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Applin's",
@@ -10389,7 +10583,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Applin was hurt by the opposing Applin's Jaboca Berry!",
         },
-        "key": "damage__from_item_jabocaberry",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -10747,9 +10941,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Cramorant was hurt by the Gulp Missile!",
+          "text": "The opposing Cramorant was hurt!",
         },
-        "key": "damage__from_ability_gulpmissile",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -10792,9 +10986,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Cramorant was hurt by the Gulp Missile!",
+          "text": "The opposing Cramorant was hurt!",
         },
-        "key": "damage__from_ability_gulpmissile",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -10837,9 +11031,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Cramorant was hurt by the Gulp Missile!",
+          "text": "The opposing Cramorant was hurt!",
         },
-        "key": "damage__from_ability_gulpmissile",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -10882,7 +11076,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Darkrai is tormented by Bad Dreams!",
+          "text": "The opposing Darkrai is tormented!",
         },
         "key": "damage__from_ability_baddreams",
       },
@@ -10927,7 +11121,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Darkrai is tormented by Bad Dreams!",
+          "text": "The opposing Darkrai is tormented!",
         },
         "key": "damage__from_ability_baddreams",
       },
@@ -11183,17 +11377,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Drifblim",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Drifblim's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -11208,9 +11391,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Drifblim was hurt by the opposing Drifblim's Aftermath!",
+          "text": "The opposing Drifblim was hurt!",
         },
-        "key": "damage__from_ability_aftermath",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -11239,17 +11422,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Drifblim",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Drifblim's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -11264,9 +11436,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Drifblim was hurt by the opposing Drifblim's Aftermath!",
+          "text": "The opposing Drifblim was hurt!",
         },
-        "key": "damage__from_ability_aftermath",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -12136,17 +12308,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Golisopod",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Golisopod's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -12161,9 +12322,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Golisopod was hurt by the opposing Golisopod's Rough Skin!",
+          "text": "The opposing Golisopod was hurt!",
         },
-        "key": "damage__from_ability_roughskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -12703,7 +12864,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -12712,14 +12873,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu's",
+            "text": "The opposing Mimikyu",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu's disguise was busted!",
+          "text": "The opposing Mimikyu was hurt!",
         },
-        "key": "damage__from_ability_disguise",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -12748,7 +12909,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -12757,14 +12918,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu's",
+            "text": "The opposing Mimikyu",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu's disguise was busted!",
+          "text": "The opposing Mimikyu was hurt!",
         },
-        "key": "damage__from_ability_disguise",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -12793,7 +12954,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -12802,14 +12963,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu's",
+            "text": "The opposing Mimikyu",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu's disguise was busted!",
+          "text": "The opposing Mimikyu was hurt!",
         },
-        "key": "damage__from_ability_disguise",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -12961,13 +13122,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
+          "FROM_ITEM": "Jaboca Berry",
+          "OF_OR_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Oshawott",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Oshawott's",
@@ -12988,7 +13150,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Oshawott was hurt by the opposing Oshawott's Jaboca Berry!",
         },
-        "key": "damage__from_item_jabocaberry",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13017,13 +13179,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
+          "FROM_ITEM": "Jaboca Berry",
+          "OF_OR_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Oshawott",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Oshawott's",
@@ -13044,7 +13207,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Oshawott was hurt by the opposing Oshawott's Jaboca Berry!",
         },
-        "key": "damage__from_item_jabocaberry",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13073,13 +13236,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
+          "FROM_ITEM": "Rowap Berry",
+          "OF_OR_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Oshawott",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Oshawott's",
@@ -13100,7 +13264,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Oshawott was hurt by the opposing Oshawott's Rowap Berry!",
         },
-        "key": "damage__from_item_rowapberry",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13129,13 +13293,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
+          "FROM_ITEM": "Rowap Berry",
+          "OF_OR_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Oshawott",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Oshawott's",
@@ -13156,7 +13321,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Oshawott was hurt by the opposing Oshawott's Rowap Berry!",
         },
-        "key": "damage__from_item_rowapberry",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13185,6 +13350,18 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
+          "FROM_ITEM": "Sticky Barb",
+          "OF_OR_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pachirisu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "its",
+          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13201,7 +13378,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Pachirisu was hurt by its Sticky Barb!",
         },
-        "key": "damage__from_item_stickybarb",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13230,6 +13407,18 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
+          "FROM_ITEM": "Sticky Barb",
+          "OF_OR_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pachirisu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "its",
+          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13246,7 +13435,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Pachirisu was hurt by its Sticky Barb!",
         },
-        "key": "damage__from_item_stickybarb",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -13407,16 +13596,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Pikachu,protagonist,1|from:Disobedience|health:75/100",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "It hurt itself in its confusion!",
-        },
-        "key": "damage__from_disobedience",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Pikachu",
@@ -13440,16 +13620,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Pikachu,protagonist,1|from:Disobedience|health:135/180",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "It hurt itself in its confusion!",
-        },
-        "key": "damage__from_disobedience",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Pikachu",
@@ -13476,17 +13647,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Pyukumuku",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Pyukumuku's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13501,9 +13661,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pyukumuku was hurt by the opposing Pyukumuku's Innards Out!",
+          "text": "The opposing Pyukumuku was hurt!",
         },
-        "key": "damage__from_ability_innardsout",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -13532,17 +13692,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Pyukumuku",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Pyukumuku's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13557,9 +13706,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pyukumuku was hurt by the opposing Pyukumuku's Innards Out!",
+          "text": "The opposing Pyukumuku was hurt!",
         },
-        "key": "damage__from_ability_innardsout",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -13588,17 +13737,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Pyukumuku",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Pyukumuku's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13613,9 +13751,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pyukumuku was hurt by the opposing Pyukumuku's Innards Out!",
+          "text": "The opposing Pyukumuku was hurt!",
         },
-        "key": "damage__from_ability_innardsout",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -13751,17 +13889,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Sharpedo",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Sharpedo's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13776,9 +13903,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Sharpedo was hurt by the opposing Sharpedo's Rough Skin!",
+          "text": "The opposing Sharpedo was hurt!",
         },
-        "key": "damage__from_ability_roughskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -13807,17 +13934,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
-          "TARGET_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Sharpedo",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Sharpedo's",
-          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13832,9 +13948,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Sharpedo was hurt by the opposing Sharpedo's Rough Skin!",
+          "text": "The opposing Sharpedo was hurt!",
         },
-        "key": "damage__from_ability_roughskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -13863,6 +13979,18 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
+          "FROM_ITEM": "Sticky Barb",
+          "OF_OR_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Shedinja",
+                "player": "player-2",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "its",
+          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -13879,7 +14007,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Shedinja was hurt by its Sticky Barb!",
         },
-        "key": "damage__from_item_stickybarb",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [],
@@ -14001,6 +14129,18 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
+          "FROM_ITEM": "Black Sludge",
+          "OF_OR_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Staraptor",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "its",
+          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -14017,7 +14157,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Staraptor was hurt by its Black Sludge!",
         },
-        "key": "damage__from_item_blacksludge",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -14046,6 +14186,18 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
     "messages": [
       {
         "context": {
+          "FROM_ITEM": "Black Sludge",
+          "OF_OR_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Staraptor",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "its",
+          },
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -14062,7 +14214,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
           "category": "secondary",
           "text": "The opposing Staraptor was hurt by its Black Sludge!",
         },
-        "key": "damage__from_item_blacksludge",
+        "key": "damage__from_item_any",
       },
     ],
     "notices": [
@@ -14375,9 +14527,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Toxicroak was hurt by its Dry Skin!",
+          "text": "The opposing Toxicroak was hurt!",
         },
-        "key": "damage__from_ability_dryskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -14420,9 +14572,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Toxicroak was hurt by its Dry Skin!",
+          "text": "The opposing Toxicroak was hurt!",
         },
-        "key": "damage__from_ability_dryskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -14465,9 +14617,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Toxicroak was hurt by its Dry Skin!",
+          "text": "The opposing Toxicroak was hurt!",
         },
-        "key": "damage__from_ability_dryskin",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -14510,9 +14662,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Tropius was hurt by its Solar Power!",
+          "text": "The opposing Tropius was hurt!",
         },
-        "key": "damage__from_ability_solarpower",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -14555,9 +14707,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Tropius was hurt by its Solar Power!",
+          "text": "The opposing Tropius was hurt!",
         },
-        "key": "damage__from_ability_solarpower",
+        "key": "damage__from_ability_any",
       },
     ],
     "notices": [
@@ -18406,7 +18558,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -18415,14 +18567,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu",
+            "text": "The opposing Mimikyu's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu transformed!",
+          "text": "The opposing Mimikyu's disguise was busted!",
         },
-        "key": "formechange",
+        "key": "formechange__from_ability_disguise",
       },
     ],
     "notices": [],
@@ -18437,7 +18589,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -18446,14 +18598,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu",
+            "text": "The opposing Mimikyu's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu transformed!",
+          "text": "The opposing Mimikyu's disguise was busted!",
         },
-        "key": "formechange",
+        "key": "formechange__from_ability_disguise",
       },
     ],
     "notices": [],
@@ -18468,7 +18620,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Mimikyu",
@@ -18477,14 +18629,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
                 "side": 0,
               },
             },
-            "text": "The opposing Mimikyu",
+            "text": "The opposing Mimikyu's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Mimikyu transformed!",
+          "text": "The opposing Mimikyu's disguise was busted!",
         },
-        "key": "formechange",
+        "key": "formechange__from_ability_disguise",
       },
     ],
     "notices": [],
