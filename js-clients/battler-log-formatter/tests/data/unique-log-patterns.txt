@@ -105,7 +105,6 @@ activate|condition:Affection|tough
 activate|condition:Break Protect
 activate|condition:Break Protect|broken
 activate|condition:Confusion
-activate|condition:Damage-Reducing Berry Item Base
 activate|condition:Disobedience
 activate|condition:Disobedience|confusion
 activate|condition:Heal Replacement
@@ -572,23 +571,36 @@ itemend|item:*|from:move:Pluck
 itemend|item:*|from:move:Switcheroo
 itemend|item:*|from:move:Thief
 itemend|item:*|from:move:Trick
+itemend|item:Absorb Bulb
 itemend|item:Aguav Berry|eat
 itemend|item:Air Balloon
 itemend|item:Berry Juice
 itemend|item:Blunder Policy
 itemend|item:Booster Energy
+itemend|item:Bug Gem
 itemend|item:Cell Battery
 itemend|item:Cheri Berry|eat
 itemend|item:Chilan Berry|eat
 itemend|item:Custap Berry|eat
+itemend|item:Dark Gem
+itemend|item:Dragon Gem
 itemend|item:Eject Button
 itemend|item:Eject Pack
+itemend|item:Electric Gem
 itemend|item:Electric Seed
 itemend|item:Enigma Berry|eat
+itemend|item:Fairy Gem
+itemend|item:Fighting Gem
 itemend|item:Fire Gem
+itemend|item:Flying Gem
 itemend|item:Focus Sash
 itemend|item:Ganlon Berry|eat
+itemend|item:Ghost Gem
+itemend|item:Grass Gem
+itemend|item:Grassy Seed
+itemend|item:Ground Gem
 itemend|item:Haban Berry|eat
+itemend|item:Ice Gem
 itemend|item:Jaboca Berry|eat
 itemend|item:Kasib Berry|eat
 itemend|item:Kee Berry|eat
@@ -600,18 +612,26 @@ itemend|item:Maranga Berry|eat
 itemend|item:Mental Herb
 itemend|item:Micle Berry|eat
 itemend|item:Mirror Herb
+itemend|item:Misty Seed
 itemend|item:Normal Gem
 itemend|item:Occa Berry|eat
 itemend|item:Oran Berry|eat
 itemend|item:Passho Berry|eat
+itemend|item:Poison Gem
 itemend|item:Power Herb
+itemend|item:Psychic Gem
+itemend|item:Psychic Seed
 itemend|item:Rawst Berry|eat
 itemend|item:Red Card
+itemend|item:Rock Gem
 itemend|item:Room Service
 itemend|item:Rowap Berry|eat
 itemend|item:Sitrus Berry|eat
+itemend|item:Snowball
 itemend|item:Starf Berry|eat
+itemend|item:Steel Gem
 itemend|item:Throat Spray
+itemend|item:Water Gem
 itemend|item:Weakness Policy
 itemend|item:White Herb
 itemstart|from:move:Covet|item:*

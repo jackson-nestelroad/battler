@@ -379,6 +379,12 @@ function extractLogsFromFxlang(): Set<string> {
     if (formeChangeRegex.test(effect.program)) {
       logs.push({ logType: "formechange", fromEffect: true, withMove: false });
     }
+    if (effect.type === "item" || effect.type === "built-in" || effect.type === "condition") {
+      const useItemRegex = /\buse_item\b/g;
+      if (useItemRegex.test(effect.program)) {
+        logs.push({ logType: "itemend", fromEffect: false, withMove: false });
+      }
+    }
 
     for (const delegateId of effect.delegates || []) {
       const delegateEffect = registry.get(delegateId);
@@ -712,7 +718,8 @@ function generateMatrix() {
       }
 
       for (const k of newKeys) {
-        entries.set(k, `    "${k}": null,`);
+        const keyRepr = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k) ? k : `"${k}"`;
+        entries.set(k, `    ${keyRepr}: null,`);
       }
 
       const sortedKeys = Array.from(entries.keys()).sort((a, b) => a.localeCompare(b));

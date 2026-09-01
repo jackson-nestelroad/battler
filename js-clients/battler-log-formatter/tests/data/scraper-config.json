@@ -110,6 +110,8 @@
     "sideend|condition:Break Protect",
     "sidestart|item:Guard Spec.",
     "prepare|condition:Charge Move Base",
+    "activate|condition:Damage-Reducing Berry Item Base",
+    "itemend|condition:Gem Item Base",
     "sideend|condition:Defog Move Base",
     "sidestart|condition:Side Screen Move Base",
     "sideend|condition:Side Screen Move Base",
