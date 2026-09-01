@@ -156,7 +156,6 @@ activate|move:Celebrate
 activate|move:Court Change
 activate|move:Crafty Shield
 activate|move:Destiny Bond
-activate|move:Detect
 activate|move:Electric Terrain
 activate|move:Endure
 activate|move:Fickle Beam
@@ -714,7 +713,6 @@ singleturn|condition:Z-Power
 singleturn|from:Z-Power|move:Spotlight
 singleturn|move:Beak Blast
 singleturn|move:Crafty Shield
-singleturn|move:Detect
 singleturn|move:Electrify
 singleturn|move:Endure
 singleturn|move:Focus Punch

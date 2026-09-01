@@ -751,7 +751,7 @@
       }
     },
     "effect": {
-      "delegates": ["move:protect"]
+      "delegates": ["condition:protectmovebase"]
     }
   },
   "bonerush": {
