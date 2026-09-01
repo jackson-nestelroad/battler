@@ -8140,13 +8140,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Baltoy,player-2,1|from:move:Imprison 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Baltoy,player-2,1|move:Tackle|from:move:Imprison 1`] = `
 {
-  "rawLog": "cant|mon:Baltoy,player-2,1|from:move:Imprison",
+  "rawLog": "cant|mon:Baltoy,player-2,1|move:Tackle|from:move:Imprison",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Tackle",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8161,7 +8162,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Baltoy can't move due to Imprison!",
+          "text": "The opposing Baltoy can't use the sealed Tackle!",
         },
         "key": "cant__from_move_imprison",
       },
@@ -8171,13 +8172,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Blacephalon,player-1,1|move:Mind Blown|from:ability:Damp|of:Blacephalon,player-2,1 1`] = `
 {
-  "rawLog": "cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1",
+  "rawLog": "cant|mon:Blacephalon,player-1,1|move:Mind Blown|from:ability:Damp|of:Blacephalon,player-2,1",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Mind Blown",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8192,9 +8194,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Blacephalon can't move!",
+          "text": "The opposing Blacephalon cannot use Mind Blown!",
         },
-        "key": "cant",
+        "key": "cant__from_ability_damp",
       },
     ],
     "notices": [],
@@ -8202,13 +8204,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|move:Growl|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `
 {
-  "rawLog": "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+  "rawLog": "cant|mon:Decidueye,player-1,2|move:Growl|from:ability:Dazzling|of:Bruxish,player-2,1",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Growl",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8223,9 +8226,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Decidueye can't move!",
+          "text": "The opposing Decidueye cannot use Growl!",
         },
-        "key": "cant",
+        "key": "cant__from_ability_dazzling",
       },
     ],
     "notices": [],
@@ -8233,18 +8236,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|move:Quick Attack|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `
 {
-  "rawLog": "cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1",
+  "rawLog": "cant|mon:Decidueye,player-1,2|move:Quick Attack|from:ability:Dazzling|of:Bruxish,player-2,1",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Quick Attack",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Decidueye",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 1,
                 "side": 0,
               },
@@ -8254,9 +8258,41 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Decidueye can't move!",
+          "text": "The opposing Decidueye cannot use Quick Attack!",
         },
-        "key": "cant",
+        "key": "cant__from_ability_dazzling",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Decidueye,player-1,2|move:Thunder Wave|from:ability:Dazzling|of:Bruxish,player-2,1 1`] = `
+{
+  "rawLog": "cant|mon:Decidueye,player-1,2|move:Thunder Wave|from:ability:Dazzling|of:Bruxish,player-2,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Thunder Wave",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Decidueye",
+                "player": "player-1",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Decidueye",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Decidueye cannot use Thunder Wave!",
+        },
+        "key": "cant__from_ability_dazzling",
       },
     ],
     "notices": [],
@@ -8357,13 +8393,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Guzzlord,player-2,1|from:move:Gravity 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Guzzlord,player-2,1|move:Splash|from:move:Gravity 1`] = `
 {
-  "rawLog": "cant|mon:Guzzlord,player-2,1|from:move:Gravity",
+  "rawLog": "cant|mon:Guzzlord,player-2,1|move:Splash|from:move:Gravity",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Splash",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8378,7 +8415,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Guzzlord can't move because of gravity!",
+          "text": "The opposing Guzzlord can't use Splash because of gravity!",
         },
         "key": "cant__from_move_gravity",
       },
@@ -8388,13 +8425,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Incineroar,player-2,1|from:move:Throat Chop 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Incineroar,player-2,1|move:Growl|from:move:Throat Chop 1`] = `
 {
-  "rawLog": "cant|mon:Incineroar,player-2,1|from:move:Throat Chop",
+  "rawLog": "cant|mon:Incineroar,player-2,1|move:Growl|from:move:Throat Chop",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Growl",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8409,7 +8447,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Incineroar can't use sound-based moves due to Throat Chop!",
+          "text": "The opposing Incineroar can't use Growl due to Throat Chop!",
         },
         "key": "cant__from_move_throatchop",
       },
@@ -8419,13 +8457,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Kecleon,player-2,1|from:move:Aura Wheel 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Kecleon,player-2,1|move:Aura Wheel|from:move:Aura Wheel 1`] = `
 {
-  "rawLog": "cant|mon:Kecleon,player-2,1|from:move:Aura Wheel",
+  "rawLog": "cant|mon:Kecleon,player-2,1|move:Aura Wheel|from:move:Aura Wheel",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Aura Wheel",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8440,9 +8479,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Kecleon can't move!",
+          "text": "The opposing Kecleon cannot use Aura Wheel!",
         },
-        "key": "cant",
+        "key": "cant__from_move_aurawheel",
       },
     ],
     "notices": [],
@@ -8605,9 +8644,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Oricorio,player-2,1|from:move:Petal Dance 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Oricorio,player-2,1|move:Swords Dance|from:move:Petal Dance 1`] = `
 {
-  "rawLog": "cant|mon:Oricorio,player-2,1|from:move:Petal Dance",
+  "rawLog": "cant|mon:Oricorio,player-2,1|move:Swords Dance|from:move:Petal Dance",
   "result": {
     "messages": [
       {
@@ -8791,14 +8830,15 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slowbro,player-2,1|from:move:Disable 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Slowbro,player-2,1|move:Thrash|from:move:Disable 1`] = `
 {
-  "rawLog": "cant|mon:Slowbro,player-2,1|from:move:Disable",
+  "rawLog": "cant|mon:Slowbro,player-2,1|move:Thrash|from:move:Disable",
   "result": {
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MOVE": "Thrash",
+          "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
               "Active": {
                 "name": "Slowbro",
@@ -8807,12 +8847,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
                 "side": 0,
               },
             },
-            "text": "The opposing Slowbro",
+            "text": "The opposing Slowbro's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Slowbro can't move due to Disable!",
+          "text": "The opposing Slowbro's Thrash is disabled!",
         },
         "key": "cant__from_move_disable",
       },
@@ -8822,13 +8862,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Squirtle,player-2,1|move:Explosion|from:ability:Damp|of:Squirtle,player-1,1 1`] = `
 {
-  "rawLog": "cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1",
+  "rawLog": "cant|mon:Squirtle,player-2,1|move:Explosion|from:ability:Damp|of:Squirtle,player-1,1",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Explosion",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8843,9 +8884,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Squirtle can't move!",
+          "text": "The opposing Squirtle cannot use Explosion!",
         },
-        "key": "cant",
+        "key": "cant__from_ability_damp",
       },
     ],
     "notices": [],
@@ -8853,13 +8894,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Staraptor,player-2,1|from:move:Gravity 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Staraptor,player-2,1|move:Fly|from:move:Gravity 1`] = `
 {
-  "rawLog": "cant|mon:Staraptor,player-2,1|from:move:Gravity",
+  "rawLog": "cant|mon:Staraptor,player-2,1|move:Fly|from:move:Gravity",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Fly",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8874,7 +8916,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Staraptor can't move because of gravity!",
+          "text": "The opposing Staraptor can't use Fly because of gravity!",
         },
         "key": "cant__from_move_gravity",
       },
@@ -8884,13 +8926,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Treecko,player-2,1|from:move:Taunt 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:Treecko,player-2,1|move:Taunt|from:move:Taunt 1`] = `
 {
-  "rawLog": "cant|mon:Treecko,player-2,1|from:move:Taunt",
+  "rawLog": "cant|mon:Treecko,player-2,1|move:Taunt|from:move:Taunt",
   "result": {
     "messages": [
       {
         "context": {
+          "MOVE": "Taunt",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8905,7 +8948,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Treecko can't move after the taunt!",
+          "text": "The opposing Treecko can't use Taunt after the taunt!",
         },
         "key": "cant__from_move_taunt",
       },

@@ -528,7 +528,7 @@
           "priority": 5,
           "program": [
             "if !$move.upgraded and $move.category == status and $move.id != mefirst:",
-            ["log_cant", "return stopfail"]
+            ["log_cant: with_move", "return stopfail"]
           ]
         }
       }
@@ -987,7 +987,7 @@
         ],
         "on_foe_before_move": [
           "if !$move.upgraded and $move.id != struggle and func_call(has_move: $effect_state.source $move.id) and !$move.upgraded:",
-          ["log_cant", "return false"]
+          ["log_cant: with_move", "return false"]
         ]
       }
     }

@@ -66,7 +66,7 @@ fn throat_chop_prevents_sounds_moves() {
             "damage|mon:Incineroar,player-2,1|health:237/300",
             "damage|mon:Incineroar,player-2,1|health:79/100",
             "start|mon:Incineroar,player-2,1|move:Throat Chop|silent",
-            "cant|mon:Incineroar,player-2,1|from:move:Throat Chop",
+            "cant|mon:Incineroar,player-2,1|move:Growl|from:move:Throat Chop",
             "residual",
             "turn|turn:2"
         ]"#,

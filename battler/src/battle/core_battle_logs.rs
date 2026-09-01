@@ -336,9 +336,13 @@ pub fn revert_terastallization(context: &mut ApplyingEffectContext) -> Result<()
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
+    with_move: bool,
     source: Option<MonHandle>,
 ) -> Result<()> {
     let activation = EffectActivationContext {
+        effect: with_move
+            .then(|| context.mon().active_move.map(|handle| handle.into()))
+            .flatten(),
         target: Some(context.mon_handle()),
         source_effect: Some(effect),
         source,

@@ -115,7 +115,7 @@ fn aura_wheel_cannot_be_used_by_non_morpeko() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Kecleon,player-2,1|name:Aura Wheel|noanim",
-                "cant|mon:Kecleon,player-2,1|from:move:Aura Wheel",
+                "cant|mon:Kecleon,player-2,1|move:Aura Wheel|from:move:Aura Wheel",
                 "residual",
                 "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
                 "turn|turn:2"

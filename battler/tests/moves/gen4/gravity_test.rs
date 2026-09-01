@@ -274,7 +274,7 @@ fn gravity_cancels_fly_before_first_use() {
             "fieldstart|move:Gravity",
             "activate|mon:Probopass,player-1,1|move:Gravity",
             "activate|mon:Staraptor,player-2,1|move:Gravity",
-            "cant|mon:Staraptor,player-2,1|from:move:Gravity",
+            "cant|mon:Staraptor,player-2,1|move:Fly|from:move:Gravity",
             "residual",
             "turn|turn:2"
         ]"#,

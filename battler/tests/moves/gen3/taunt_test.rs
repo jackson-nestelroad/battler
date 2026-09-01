@@ -73,7 +73,7 @@ fn taunt_disables_status_moves() {
         r#"[
             "move|mon:Treecko,player-1,1|name:Taunt|target:Treecko,player-2,1",
             "start|mon:Treecko,player-2,1|move:Taunt",
-            "cant|mon:Treecko,player-2,1|from:move:Taunt",
+            "cant|mon:Treecko,player-2,1|move:Taunt|from:move:Taunt",
             "residual",
             "turn|turn:2",
             "continue",

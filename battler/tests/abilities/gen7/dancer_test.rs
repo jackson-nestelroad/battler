@@ -286,7 +286,7 @@ fn dancer_fails_when_locked_into_move() {
             "move|mon:Oricorio,player-1,1|name:Swords Dance|target:Oricorio,player-1,1",
             "boost|mon:Oricorio,player-1,1|stat:atk|by:2",
             "activate|mon:Oricorio,player-2,1|ability:Dancer",
-            "cant|mon:Oricorio,player-2,1|from:move:Petal Dance",
+            "cant|mon:Oricorio,player-2,1|move:Swords Dance|from:move:Petal Dance",
             "move|mon:Oricorio,player-2,1|name:Petal Dance|target:Oricorio,player-1,1",
             "resisted|mon:Oricorio,player-1,1",
             "split|side:0",

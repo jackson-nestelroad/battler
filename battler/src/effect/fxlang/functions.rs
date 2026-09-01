@@ -634,6 +634,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
         self.set_flag("use_target_as_source", val)
     }
 
+    fn with_move(&mut self) -> bool {
+        self.has_flag("with_move")
+    }
+
     fn with_source(&mut self) -> bool {
         self.has_flag("with_source")
     }
@@ -1314,12 +1318,13 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_cant(mut context: FunctionContext) -> Result<()> {
     let effect = context.effect_handle()?;
+    let with_move = context.with_move();
     let source = if context.with_source() {
         context.source_handle_no_forwarding()
     } else {
         None
     };
-    core_battle_logs::cant(&mut context.target_context()?, effect, source)
+    core_battle_logs::cant(&mut context.target_context()?, effect, with_move, source)
 }
 
 /// Logs a status change to the battle log.

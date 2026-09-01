@@ -582,6 +582,7 @@ fn do_move_internal(
         core_battle_logs::cant(
             context.as_mon_context_mut(),
             EffectHandle::NonExistent(NonExistentEffect::new(Id::from_known("nopp"))),
+            false,
             None,
         )?;
         return Ok(());
@@ -876,7 +877,7 @@ fn use_active_move_with_using_move_state(
                 .battle_mut()
                 .get_effect_handle_by_id(&Id::from(locked_move.as_str()))?
                 .clone();
-            core_battle_logs::cant(context.as_mon_context_mut(), effect, None)?;
+            core_battle_logs::cant(context.as_mon_context_mut(), effect, true, None)?;
             return Ok(UseActiveMoveResult::new_unused(MoveOutcome::Skipped));
         }
 

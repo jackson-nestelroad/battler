@@ -496,6 +496,12 @@
       },
       "strip": ["from"],
       "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "cant"
+      },
+      "strip": ["move"]
     }
   ]
 }

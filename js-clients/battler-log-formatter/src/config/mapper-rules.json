@@ -40,7 +40,6 @@
         "excludeTitles": [
           "move",
           "prepare",
-          "cant",
           "deductpp",
           "restorepp",
           "setpp",

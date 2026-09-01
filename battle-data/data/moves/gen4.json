@@ -62,7 +62,7 @@
         },
         "on_before_move": [
           "if !$move.upgraded_z_move and func_call(move_has_flag: $move.id gravity):",
-          ["log_cant", "return stopfail"]
+          ["log_cant: with_move", "return stopfail"]
         ],
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],
         "on_field_end": ["log_field_end"]
@@ -563,7 +563,7 @@
           "priority": 6,
           "program": [
             "if !$move.upgraded: and func_call(move_has_flag: $move.id heal):",
-            ["log_cant", "return stopfail"]
+            ["log_cant: with_move", "return stopfail"]
           ]
         },
         "on_try_move": ["return func_call(run_event_on_move: BeforeMove)"],

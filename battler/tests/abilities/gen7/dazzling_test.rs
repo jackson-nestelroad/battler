@@ -78,7 +78,7 @@ fn dazzling_prevents_single_target_attacking_priority_move() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Quick Attack|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Quick Attack|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -101,7 +101,7 @@ fn dazzling_prevents_prankster_boosted_move() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Thunder Wave|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Thunder Wave|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -121,7 +121,7 @@ fn dazzling_prevents_multi_target_priority_move() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Growl|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Growl|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -141,7 +141,7 @@ fn dazzling_prevents_perish_song() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Perish Song|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Perish Song|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -161,7 +161,7 @@ fn dazzling_prevents_flower_shield() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Flower Shield|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Flower Shield|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -181,7 +181,7 @@ fn dazzling_prevents_field_targeting_move() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Fairy Lock|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Fairy Lock|from:ability:Dazzling|of:Bruxish,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -282,9 +282,9 @@ fn dazzling_prevents_move_called_by_instruct() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Decidueye,player-1,2|name:Thunder Wave|noanim",
-            "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
+            "cant|mon:Decidueye,player-1,2|move:Thunder Wave|from:ability:Dazzling|of:Bruxish,player-2,1",
             "move|mon:Decidueye,player-2,2|name:Instruct|noanim",
-            "cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1",
+            "cant|mon:Decidueye,player-2,2|move:Instruct|from:ability:Dazzling|of:Bruxish,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

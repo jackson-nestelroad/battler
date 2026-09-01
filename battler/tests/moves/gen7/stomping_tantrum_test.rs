@@ -481,7 +481,7 @@ fn stomping_tantrum_doubles_power_if_move_fails_due_to_gravity() {
         r#"[
             "move|mon:Guzzlord,player-1,1|name:Gravity",
             "fieldstart|move:Gravity",
-            "cant|mon:Guzzlord,player-2,1|from:move:Gravity",
+            "cant|mon:Guzzlord,player-2,1|move:Splash|from:move:Gravity",
             "residual",
             "turn|turn:2",
             "continue",

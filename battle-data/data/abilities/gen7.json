@@ -512,7 +512,7 @@
           "require $move.target != field or !($target_field_exceptions has $move.id) else return",
           "require $move.priority != 0 else return",
           "require !func_call(is_ally: $user $effect_state.target) else return",
-          "log_cant: with_source use_effect_state_target_as_source",
+          "log_cant: with_move with_source use_effect_state_target_as_source",
           "return stopfail"
         ]
       }

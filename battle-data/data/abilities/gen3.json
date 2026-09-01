@@ -75,7 +75,7 @@
       "callbacks": {
         "on_any_try_move": [
           "if [explosion, mindblown, mistyexplosion, selfdestruct] has $move.id:",
-          ["log_cant: with_source use_effect_state_target_as_source", "return stopfail"]
+          ["log_cant: with_move with_source use_effect_state_target_as_source", "return stopfail"]
         ],
         "on_any_damage": ["if $effect.id == aftermath:", ["return 0"]]
       }

@@ -205,7 +205,7 @@ fn disable_ends_locked_move_and_forces_struggle() {
             "continue",
             "move|mon:Alakazam,player-1,1|name:Disable|target:Slowbro,player-2,1",
             "start|mon:Slowbro,player-2,1|move:Disable|disabledmove:Thrash",
-            "cant|mon:Slowbro,player-2,1|from:move:Disable",
+            "cant|mon:Slowbro,player-2,1|move:Thrash|from:move:Disable",
             "residual",
             "turn|turn:4",
             "continue",

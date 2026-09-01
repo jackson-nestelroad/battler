@@ -120,7 +120,7 @@ fn mind_blown_does_not_deal_recoil_if_canceled_by_damp() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Blacephalon,player-1,1|name:Mind Blown|noanim",
-            "cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1",
+            "cant|mon:Blacephalon,player-1,1|move:Mind Blown|from:ability:Damp|of:Blacephalon,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,
