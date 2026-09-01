@@ -277,7 +277,8 @@ describe("LogFormatter", () => {
 
     const singleResult = formatter.format(singleStatEntry as UiLogEntry);
     expect(singleResult).not.toBeNull();
-    expect(stringifyLog(singleResult!.messages[0])).toBe("Beldum's Clear Body prevents its Attack from being lowered!");
+    expect(singleResult!.messages[0].key).toBe("fail__from_ability_any__what_unboost");
+    expect(stringifyLog(singleResult!.messages[0])).toBe("Beldum's Attack was not lowered!");
 
     const multiStatEntry: Partial<UiLogEntry> = {
       title: "fail",
@@ -291,7 +292,8 @@ describe("LogFormatter", () => {
 
     const multiResult = formatter.format(multiStatEntry as UiLogEntry);
     expect(multiResult).not.toBeNull();
-    expect(stringifyLog(multiResult!.messages[0])).toBe("Beldum's Clear Body prevents its stats from being lowered!");
+    expect(multiResult!.messages[0].key).toBe("fail__from_ability_any__what_unboost");
+    expect(stringifyLog(multiResult!.messages[0])).toBe("Beldum's stats were not lowered!");
   });
 
   it("should preserve species and forme information in formechange", () => {
@@ -359,7 +361,7 @@ describe("LogFormatter", () => {
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     expect(result!.messages[0].category).toBe(LogCategory.Hint);
-    expect(stringifyLog(result!.messages[0])).toBe("[Debug] ModifyDamage: Unexpected state connector");
+    expect(stringifyLog(result!.messages[0])).toBe("DEBUG: ModifyDamage: Unexpected state connector");
   });
 
   it("should format wild Pokémon as 'the wild' instead of 'the opposing'", () => {

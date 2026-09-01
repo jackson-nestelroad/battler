@@ -124,8 +124,8 @@ describe("Exhaustive Log Coverage", () => {
               .toLowerCase()
               .replace(/[^a-z0-9_]/g, "");
 
-            const fullKey = `logs.${safePattern}`;
-            if (fullKey.replace("logs.", "") in en.logs) {
+            const logKey = safePattern;
+            if (logKey in en.logs || Object.keys(en.logs).some((k) => k.startsWith(`${logKey}___`))) {
               matchedKey = safePattern;
               break;
             }

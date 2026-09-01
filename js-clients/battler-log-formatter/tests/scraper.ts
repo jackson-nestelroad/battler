@@ -673,7 +673,12 @@ function generateMatrix() {
         if (k.includes("__silent")) continue;
 
         allGeneratedFallbacks.add(k);
-        if (!blockContent.includes(`"${k}":`) && !blockContent.includes(` ${k}:`)) {
+        if (
+          !blockContent.includes(`"${k}":`) &&
+          !blockContent.includes(` ${k}:`) &&
+          !blockContent.includes(`"${k}___`) &&
+          !blockContent.includes(` ${k}___`)
+        ) {
           if (!newKeys.includes(k)) {
             newKeys.push(k);
             added = true;
@@ -724,7 +729,8 @@ function generateMatrix() {
       const lineMatch = line.match(/^ {4}["']?([a-zA-Z0-9_]+)["']?\s*:/);
       if (lineMatch) {
         const k = lineMatch[1];
-        if (!allGeneratedFallbacks.has(k)) {
+        const baseKey = k.includes("___") ? k.split("___")[0] : k;
+        if (!allGeneratedFallbacks.has(k) && !allGeneratedFallbacks.has(baseKey)) {
           staleKeys.push(k);
         }
       }

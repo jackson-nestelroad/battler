@@ -5,6 +5,7 @@ i18next.init({
   lng: "en",
   fallbackLng: "en",
   returnNull: true,
+  pluralSeparator: "___",
   resources: {
     en: { translation: en }
   },

@@ -129,7 +129,7 @@ function findTemplateKey(
     const safePattern = patternToKey(serialized);
 
     const fullKey = `logs.${safePattern}`;
-    if (i18next.exists(fullKey) && i18next.t(fullKey, templateArgs) !== null) {
+    if (i18next.exists(fullKey, templateArgs) && i18next.t(fullKey, templateArgs) !== null) {
       return fullKey;
     }
   }
@@ -283,7 +283,7 @@ export class LogFormatter {
       resolvedKey = findTemplateKey(mapped.patterns, templateArgs);
     }
 
-    if (resolvedKey && i18next.exists(resolvedKey)) {
+    if (resolvedKey && i18next.exists(resolvedKey, templateArgs)) {
       const rawTemplate = i18next.t(resolvedKey, { ...templateArgs, returnObjects: true });
       if (typeof rawTemplate === "string") {
         const msg = createFormattedUiLog(resolvedKey, rawTemplate, mapped.category, mapped.context);

@@ -632,6 +632,7 @@ export function mapUiLogEntry(
           // Applied bucket
         } else if (k === "stat") {
           context.STAT = i18next.t(`stats.${v}`);
+          context.count = 1;
           tags.push(`stat:*`);
         } else {
           tags.push(`${k}:${v}`);

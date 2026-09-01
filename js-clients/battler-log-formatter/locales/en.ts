@@ -580,8 +580,8 @@ export const en = {
     fail: "But it failed!",
     fail__from_ability_any: null,
     fail__from_ability_any__what_any: null,
-    fail__from_ability_any__what_unboost:
-      "{{MON_POSSESSIVE}} {{FROM_ABILITY}} prevents its {{STAT}} from being lowered!",
+    fail__from_ability_any__what_unboost___one: "{{MON_POSSESSIVE}} {{STAT}} was not lowered!",
+    fail__from_ability_any__what_unboost___other: "{{MON_POSSESSIVE}} {{STAT}} were not lowered!",
     fail__from_choicelock: null,
     fail__from_item_any: null,
     fail__from_item_any__what_any: null,
