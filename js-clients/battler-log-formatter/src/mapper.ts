@@ -542,7 +542,6 @@ export function mapUiLogEntry(
     if (entry.source_effect.name) {
       context.FROM = entry.source_effect.name;
       if (entry.source_effect.effect_type) {
-        context[entry.source_effect.effect_type.toUpperCase()] = entry.source_effect.name;
         context[`FROM_${entry.source_effect.effect_type.toUpperCase()}`] = entry.source_effect.name;
       }
     }
@@ -593,7 +592,6 @@ export function mapUiLogEntry(
           const fromType = parts[0];
           const fromName = parts.slice(1).join(":");
           context.FROM = fromName;
-          context[fromType.toUpperCase()] = fromName;
           context[`FROM_${fromType.toUpperCase()}`] = fromName;
         } else {
           context.FROM = v;

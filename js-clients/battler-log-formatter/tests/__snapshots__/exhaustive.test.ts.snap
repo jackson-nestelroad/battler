@@ -2621,8 +2621,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Aegislash,player-1,1|ability:Stance Change|blade",
   "result": {
-    "key": "activate__ability_stancechange__blade",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Changed to Blade Forme!",
+        },
+        "key": "activate__ability_stancechange__blade",
+      },
+    ],
     "notices": [],
   },
 }
@@ -2632,8 +2640,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Aegislash,player-1,1|ability:Stance Change|shield",
   "result": {
-    "key": "activate__ability_stancechange__shield",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Changed to Shield Forme!",
+        },
+        "key": "activate__ability_stancechange__shield",
+      },
+    ],
     "notices": [],
   },
 }
@@ -2840,7 +2856,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Blastoise became shrouded in mist!",
+          "text": "The opposing Blastoise is protected by the mist!",
         },
         "key": "activate__move_mist",
       },
@@ -2978,7 +2994,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "category": "secondary",
           "text": "The opposing Castform flung its Utility Umbrella!",
         },
-        "key": "activate__item_any__move_fling",
+        "key": "activate__move_fling",
       },
     ],
     "notices": [],
@@ -3007,7 +3023,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Charizard became shrouded in mist!",
+          "text": "The opposing Charizard is protected by the mist!",
         },
         "key": "activate__move_mist",
       },
@@ -3209,7 +3225,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "category": "secondary",
           "text": "The opposing Drifblim flung its Cheri Berry!",
         },
-        "key": "activate__item_any__move_fling",
+        "key": "activate__move_fling",
       },
     ],
     "notices": [],
@@ -3243,28 +3259,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Espeon,player-2,1|move:Pursuit",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Espeon",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Espeon",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Espeon is being pursued!",
-        },
-        "key": "activate__move_pursuit",
-      },
-    ],
+    "key": "activate__move_pursuit",
+    "messages": [],
     "notices": [],
   },
 }
@@ -3344,7 +3340,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Forretress is squeezed by Bind!",
+          "text": "The opposing Forretress was squeezed by Bind!",
         },
         "key": "activate__move_bind",
       },
@@ -3360,10 +3356,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Furfrou",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Furfrou",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "An electric current runs across the battlefield!",
+          "text": "The opposing Furfrou is protected by the Electric Terrain!",
         },
         "key": "activate__move_electricterrain",
       },
@@ -3379,10 +3387,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Furfrou",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Furfrou",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "Mist swirls about the battlefield!",
+          "text": "The opposing Furfrou surrounds itself with a protective mist!",
         },
         "key": "activate__move_mistyterrain",
       },
@@ -3398,10 +3418,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Furfrou",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Furfrou",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "The battlefield got weird!",
+          "text": "The opposing Furfrou is protected by the Psychic Terrain!",
         },
         "key": "activate__move_psychicterrain",
       },
@@ -3466,7 +3498,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "category": "secondary",
           "text": "The opposing Gengar flung its Venusaurite!",
         },
-        "key": "activate__item_any__move_fling",
+        "key": "activate__move_fling",
       },
     ],
     "notices": [],
@@ -3571,28 +3603,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Giratina,player-2,1|move:Magic Coat",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Giratina",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Giratina",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Giratina shrouded itself with Magic Coat!",
-        },
-        "key": "activate__move_magiccoat",
-      },
-    ],
+    "key": "activate__move_magiccoat",
+    "messages": [],
     "notices": [],
   },
 }
@@ -3624,28 +3636,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Golisopod,player-1,1|move:Pursuit",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Golisopod",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Golisopod",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Golisopod is being pursued!",
-        },
-        "key": "activate__move_pursuit",
-      },
-    ],
+    "key": "activate__move_pursuit",
+    "messages": [],
     "notices": [],
   },
 }
@@ -3798,7 +3790,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Greninja intends to flip up a mat and block incoming attacks!",
+          "text": "The opposing Greninja was blocked by the kicked-up mat!",
         },
         "key": "activate__move_matblock",
       },
@@ -3854,28 +3846,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Grumpig,player-1,1|move:Magic Coat",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Grumpig",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Grumpig",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Grumpig shrouded itself with Magic Coat!",
-        },
-        "key": "activate__move_magiccoat",
-      },
-    ],
+    "key": "activate__move_magiccoat",
+    "messages": [],
     "notices": [],
   },
 }
@@ -3972,10 +3944,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Guzzlord",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Guzzlord",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "An electric current runs across the battlefield!",
+          "text": "The opposing Guzzlord is protected by the Electric Terrain!",
         },
         "key": "activate__move_electricterrain",
       },
@@ -4006,7 +3990,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Gyarados is squeezed by Bind!",
+          "text": "The opposing Gyarados was squeezed by Bind!",
         },
         "key": "activate__move_bind",
       },
@@ -4037,7 +4021,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Heracross braced itself!",
+          "text": "The opposing Heracross endured the hit!",
         },
         "key": "activate__move_endure",
       },
@@ -4054,7 +4038,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Hitmonchan",
@@ -4063,12 +4047,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
                 "side": 0,
               },
             },
-            "text": "The opposing Hitmonchan",
+            "text": "the opposing Hitmonchan",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Hitmonchan protected itself with Quick Guard!",
+          "text": "Quick Guard protected the opposing Hitmonchan!",
         },
         "key": "activate__move_quickguard",
       },
@@ -4085,7 +4069,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Hitmonchan",
@@ -4094,12 +4078,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
                 "side": 0,
               },
             },
-            "text": "The opposing Hitmonchan",
+            "text": "the opposing Hitmonchan",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Hitmonchan protected itself with Wide Guard!",
+          "text": "Wide Guard protected the opposing Hitmonchan!",
         },
         "key": "activate__move_wideguard",
       },
@@ -4116,7 +4100,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Hitmonchan",
@@ -4125,12 +4109,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
                 "side": 0,
               },
             },
-            "text": "The opposing Hitmonchan",
+            "text": "the opposing Hitmonchan",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Hitmonchan protected itself with Wide Guard!",
+          "text": "Wide Guard protected the opposing Hitmonchan!",
         },
         "key": "activate__move_wideguard",
       },
@@ -4206,28 +4190,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Incineroar,player-1,1|move:Magic Coat",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Incineroar",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Incineroar",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Incineroar shrouded itself with Magic Coat!",
-        },
-        "key": "activate__move_magiccoat",
-      },
-    ],
+    "key": "activate__move_magiccoat",
+    "messages": [],
     "notices": [],
   },
 }
@@ -4397,7 +4361,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Klefki",
@@ -4406,12 +4370,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
                 "side": 0,
               },
             },
-            "text": "The opposing Klefki",
+            "text": "the opposing Klefki",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Klefki protected itself with Crafty Shield!",
+          "text": "Crafty Shield protected the opposing Klefki!",
         },
         "key": "activate__move_craftyshield",
       },
@@ -4717,8 +4681,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Minior,player-1,1|ability:Shields Down|deactivated",
   "result": {
-    "key": "activate__ability_shieldsdown__deactivated",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Shields Down deactivated!",
+        },
+        "key": "activate__ability_shieldsdown__deactivated",
+      },
+    ],
     "notices": [],
   },
 }
@@ -4728,8 +4700,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Minior,player-2,1|ability:Shields Down|activated",
   "result": {
-    "key": "activate__ability_shieldsdown__activated",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Shields Down activated!",
+        },
+        "key": "activate__ability_shieldsdown__activated",
+      },
+    ],
     "notices": [],
   },
 }
@@ -4739,8 +4719,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Minior,player-2,1|ability:Shields Down|deactivated",
   "result": {
-    "key": "activate__ability_shieldsdown__deactivated",
-    "messages": [],
+    "messages": [
+      {
+        "context": {},
+        "formatted": {
+          "category": "secondary",
+          "text": "Shields Down deactivated!",
+        },
+        "key": "activate__ability_shieldsdown__deactivated",
+      },
+    ],
     "notices": [],
   },
 }
@@ -4860,13 +4848,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "TARGET": {
+          "OF": {
             "monRef": {
               "Active": {
                 "name": "Nosepass",
-                "player": "player-1",
+                "player": "player-2",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "the opposing Nosepass",
@@ -5282,7 +5270,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu protected itself with Max Guard!",
+          "text": "The opposing Pikachu protected itself!",
         },
         "key": "activate__move_maxguard",
       },
@@ -5313,7 +5301,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu became shrouded in mist!",
+          "text": "The opposing Pikachu is protected by the mist!",
         },
         "key": "activate__move_mist",
       },
@@ -5596,7 +5584,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "category": "secondary",
           "text": "The opposing Polteageist is about to be attacked by its Kasib Berry!",
         },
-        "key": "activate__item_any__move_poltergeist",
+        "key": "activate__move_poltergeist",
       },
     ],
     "notices": [],
@@ -5625,7 +5613,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Primeape is squeezed by Bind!",
+          "text": "The opposing Primeape was squeezed by Bind!",
         },
         "key": "activate__move_bind",
       },
@@ -5641,10 +5629,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Probopass",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Probopass",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "Gravity intensified!",
+          "text": "The opposing Probopass fell from the sky due to the gravity!",
         },
         "key": "activate__move_gravity",
       },
@@ -5660,10 +5660,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Probopass",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Probopass",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "Gravity intensified!",
+          "text": "The opposing Probopass fell from the sky due to the gravity!",
         },
         "key": "activate__move_gravity",
       },
@@ -5736,7 +5748,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Roselia planted its roots!",
+          "text": "The opposing Roselia is anchored in place with its roots!",
         },
         "key": "activate__move_ingrain",
       },
@@ -5814,8 +5826,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Slurpuff,player-2,1|move:Sticky Web",
   "result": {
-    "key": "activate__move_stickyweb",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Slurpuff",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Slurpuff",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Slurpuff was caught in a sticky web!",
+        },
+        "key": "activate__move_stickyweb",
+      },
+    ],
     "notices": [],
   },
 }
@@ -5828,7 +5860,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "MOVE": "Sketch",
+          "NEWMOVE": "Flamethrower",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -5843,7 +5875,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Smeargle sketched Sketch!",
+          "text": "The opposing Smeargle sketched Flamethrower!",
         },
         "key": "activate__move_sketch",
       },
@@ -5996,10 +6028,22 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Staraptor",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Staraptor",
+          },
+        },
         "formatted": {
           "category": "secondary",
-          "text": "Gravity intensified!",
+          "text": "The opposing Staraptor fell from the sky due to the gravity!",
         },
         "key": "activate__move_gravity",
       },
@@ -6306,7 +6350,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Venusaur protected itself with Max Guard!",
+          "text": "The opposing Venusaur protected itself!",
         },
         "key": "activate__move_maxguard",
       },
@@ -6384,22 +6428,10 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
   "result": {
     "messages": [
       {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Vivillon",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Vivillon",
-          },
-        },
+        "context": {},
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Vivillon is covered in powder!",
+          "text": "When the flame touched the powder on the Mon, it exploded!",
         },
         "key": "activate__move_powder",
       },
@@ -6444,8 +6476,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Wishiwashi,player-1,1|ability:Schooling|started",
   "result": {
-    "key": "activate__ability_schooling__started",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Wishiwashi formed a school!",
+        },
+        "key": "activate__ability_schooling__started",
+      },
+    ],
     "notices": [],
   },
 }
@@ -6455,8 +6507,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Wishiwashi,player-2,1|ability:Schooling|started",
   "result": {
-    "key": "activate__ability_schooling__started",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Wishiwashi formed a school!",
+        },
+        "key": "activate__ability_schooling__started",
+      },
+    ],
     "notices": [],
   },
 }
@@ -6466,8 +6538,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Wishiwashi,player-2,1|ability:Schooling|stopped",
   "result": {
-    "key": "activate__ability_schooling__stopped",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Wishiwashi stopped schooling!",
+        },
+        "key": "activate__ability_schooling__stopped",
+      },
+    ],
     "notices": [],
   },
 }
@@ -6494,7 +6586,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Wobbuffet is trying to take its foe down with it!",
+          "text": "The opposing Wobbuffet took its attacker down with it!",
         },
         "key": "activate__move_destinybond",
       },
@@ -6798,8 +6890,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
     "messages": [
       {
         "context": {
-          "TYPE": "Ghost",
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Chesnaught",
@@ -6808,12 +6899,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
                 "side": 0,
               },
             },
-            "text": "The opposing Chesnaught's",
+            "text": "the opposing Chesnaught",
           },
+          "TYPE": "Ghost",
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Chesnaught's type changed to Ghost!",
+          "text": "Ghost type was added to the opposing Chesnaught!",
         },
         "key": "addedtype__type_any",
       },
@@ -6830,8 +6922,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
     "messages": [
       {
         "context": {
-          "TYPE": "Ghost",
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Chesnaught",
@@ -6840,12 +6931,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
                 "side": 0,
               },
             },
-            "text": "The opposing Chesnaught's",
+            "text": "the opposing Chesnaught",
           },
+          "TYPE": "Ghost",
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Chesnaught's type changed to Ghost!",
+          "text": "Ghost type was added to the opposing Chesnaught!",
         },
         "key": "addedtype__type_any",
       },
@@ -6862,8 +6954,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
     "messages": [
       {
         "context": {
-          "TYPE": "Grass",
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Stunfisk",
@@ -6872,12 +6963,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addedtype
                 "side": 0,
               },
             },
-            "text": "The opposing Stunfisk's",
+            "text": "the opposing Stunfisk",
           },
+          "TYPE": "Grass",
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Stunfisk's type changed to Grass!",
+          "text": "Grass type was added to the opposing Stunfisk!",
         },
         "key": "addedtype__type_any",
       },
@@ -6891,29 +6983,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addvolati
 {
   "rawLog": "addvolatile|mon:Pidgeot,player-1,1|volatile:Fly|from:Two Turn Move",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "VOLATILE": "Fly",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Pidgeot",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Pidgeot",
-          },
-        },
-        "formatted": {
-          "category": "hint",
-          "text": "The opposing Pidgeot was afflicted with Fly!",
-        },
-        "key": "addvolatile__volatile_any",
-      },
-    ],
+    "key": "addvolatile__volatile_any",
+    "messages": [],
     "notices": [],
   },
 }
@@ -6923,29 +6994,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addvolati
 {
   "rawLog": "addvolatile|mon:Pidgeot,player-1,1|volatile:Razor Wind|from:Two Turn Move",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "VOLATILE": "Razor Wind",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Pidgeot",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Pidgeot",
-          },
-        },
-        "formatted": {
-          "category": "hint",
-          "text": "The opposing Pidgeot was afflicted with Razor Wind!",
-        },
-        "key": "addvolatile__volatile_any",
-      },
-    ],
+    "key": "addvolatile__volatile_any",
+    "messages": [],
     "notices": [],
   },
 }
@@ -6955,29 +7005,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: addvolati
 {
   "rawLog": "addvolatile|mon:Pidgeot,player-1,1|volatile:Two Turn Move|from:move:Razor Wind",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "VOLATILE": "Two Turn Move",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Pidgeot",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Pidgeot",
-          },
-        },
-        "formatted": {
-          "category": "hint",
-          "text": "The opposing Pidgeot was afflicted with Two Turn Move!",
-        },
-        "key": "addvolatile__volatile_any",
-      },
-    ],
+    "key": "addvolatile__volatile_any",
+    "messages": [],
     "notices": [],
   },
 }
@@ -7113,16 +7142,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: battlesta
 {
   "rawLog": "battlestart",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "hint",
-          "text": "Battle started!",
-        },
-        "key": "battlestart",
-      },
-    ],
+    "key": "battlestart",
+    "messages": [],
     "notices": [],
   },
 }
@@ -7135,7 +7156,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Aromatisse",
@@ -7144,14 +7165,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Aromatisse's",
+            "text": "The opposing Aromatisse",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Aromatisse's Aroma Veil protected it!",
+          "text": "The opposing Aromatisse is protected by an aromatic veil!",
         },
-        "key": "block__from_ability_aromaveil__move_any",
+        "key": "block__from_ability_aromaveil",
       },
     ],
     "notices": [],
@@ -7166,7 +7187,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Chespin",
@@ -7175,14 +7196,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Chespin's",
+            "text": "The opposing Chespin",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Chespin's Flower Veil protected it!",
+          "text": "The opposing Chespin surrounded itself with a veil of petals!",
         },
-        "key": "block__from_ability_flowerveil__move_any",
+        "key": "block__from_ability_flowerveil",
       },
     ],
     "notices": [],
@@ -7197,7 +7218,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Chespin",
@@ -7206,14 +7227,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Chespin's",
+            "text": "The opposing Chespin",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Chespin's Flower Veil protected it!",
+          "text": "The opposing Chespin surrounded itself with a veil of petals!",
         },
-        "key": "block__from_ability_flowerveil__move_any",
+        "key": "block__from_ability_flowerveil",
       },
     ],
     "notices": [],
@@ -7228,7 +7249,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "MON": {
             "monRef": {
               "Active": {
                 "name": "Darmanitan",
@@ -7237,14 +7258,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Darmanitan's",
+            "text": "the opposing Darmanitan",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Darmanitan's Pastel Veil protected it!",
+          "text": "It doesn't affect the opposing Darmanitan...",
         },
-        "key": "block__from_ability_pastelveil__move_any",
+        "key": "block__from_ability_pastelveil",
       },
     ],
     "notices": [],
@@ -7273,9 +7294,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Grafaiai's Ability Shield protected its Ability!",
+          "text": "The opposing Grafaiai's Ability is protected by the effects of its Ability Shield!",
         },
-        "key": "block__from_item_abilityshield__move_any",
+        "key": "block__from_item_abilityshield",
       },
     ],
     "notices": [],
@@ -7304,9 +7325,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Grafaiai's Ability Shield protected its Ability!",
+          "text": "The opposing Grafaiai's Ability is protected by the effects of its Ability Shield!",
         },
-        "key": "block__from_item_abilityshield__move_any",
+        "key": "block__from_item_abilityshield",
       },
     ],
     "notices": [],
@@ -7335,9 +7356,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Ralts's Ability Shield protected its Ability!",
+          "text": "The opposing Ralts's Ability is protected by the effects of its Ability Shield!",
         },
-        "key": "block__ability_any__from_item_abilityshield",
+        "key": "block__from_item_abilityshield",
       },
     ],
     "notices": [],
@@ -7366,9 +7387,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Rampardos's Ability Shield protected its Ability!",
+          "text": "The opposing Rampardos's Ability is protected by the effects of its Ability Shield!",
         },
-        "key": "block__from_item_abilityshield__move_any",
+        "key": "block__from_item_abilityshield",
       },
     ],
     "notices": [],
@@ -7383,7 +7404,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Slurpuff",
@@ -7392,14 +7413,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Slurpuff's",
+            "text": "The opposing Slurpuff",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Slurpuff's Sweet Veil protected it!",
+          "text": "The opposing Slurpuff can't fall asleep due to a veil of sweetness!",
         },
-        "key": "block__from_ability_sweetveil__move_any",
+        "key": "block__from_ability_sweetveil",
       },
     ],
     "notices": [],
@@ -7414,7 +7435,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Slurpuff",
@@ -7423,14 +7444,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Slurpuff's",
+            "text": "The opposing Slurpuff",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Slurpuff's Sweet Veil protected it!",
+          "text": "The opposing Slurpuff can't fall asleep due to a veil of sweetness!",
         },
-        "key": "block__from_ability_sweetveil__move_any",
+        "key": "block__from_ability_sweetveil",
       },
     ],
     "notices": [],
@@ -7445,7 +7466,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Slurpuff",
@@ -7454,14 +7475,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: block|mon
                 "side": 0,
               },
             },
-            "text": "The opposing Slurpuff's",
+            "text": "The opposing Slurpuff",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Slurpuff's Sweet Veil protected it!",
+          "text": "The opposing Slurpuff can't fall asleep due to a veil of sweetness!",
         },
-        "key": "block__from_ability_sweetveil__move_any",
+        "key": "block__from_ability_sweetveil",
       },
     ],
     "notices": [],
@@ -8126,7 +8147,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Imprison",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8141,7 +8161,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Baltoy can't use its sealed Imprison!",
+          "text": "The opposing Baltoy can't move due to Imprison!",
         },
         "key": "cant__from_move_imprison",
       },
@@ -8155,8 +8175,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 {
   "rawLog": "cant|mon:Blacephalon,player-1,1|from:ability:Damp|of:Blacephalon,player-2,1",
   "result": {
-    "key": "cant__from_ability_damp",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Blacephalon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Blacephalon",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Blacephalon can't move!",
+        },
+        "key": "cant",
+      },
+    ],
     "notices": [],
   },
 }
@@ -8166,8 +8206,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 {
   "rawLog": "cant|mon:Decidueye,player-1,2|from:ability:Dazzling|of:Bruxish,player-2,1",
   "result": {
-    "key": "cant__from_ability_dazzling",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Decidueye",
+                "player": "player-1",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Decidueye",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Decidueye can't move!",
+        },
+        "key": "cant",
+      },
+    ],
     "notices": [],
   },
 }
@@ -8177,8 +8237,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 {
   "rawLog": "cant|mon:Decidueye,player-2,2|from:ability:Dazzling|of:Bruxish,player-1,1",
   "result": {
-    "key": "cant__from_ability_dazzling",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Decidueye",
+                "player": "player-2",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Decidueye",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Decidueye can't move!",
+        },
+        "key": "cant",
+      },
+    ],
     "notices": [],
   },
 }
@@ -8284,7 +8364,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Gravity",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8299,7 +8378,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Guzzlord can't use Gravity because of gravity!",
+          "text": "The opposing Guzzlord can't move because of gravity!",
         },
         "key": "cant__from_move_gravity",
       },
@@ -8316,7 +8395,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Throat Chop",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8331,7 +8409,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Incineroar can't use Throat Chop due to Throat Chop!",
+          "text": "The opposing Incineroar can't use sound-based moves due to Throat Chop!",
         },
         "key": "cant__from_move_throatchop",
       },
@@ -8362,9 +8440,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Kecleon cannot use Aura Wheel!",
+          "text": "The opposing Kecleon can't move!",
         },
-        "key": "cant__from_move_aurawheel",
+        "key": "cant",
       },
     ],
     "notices": [],
@@ -8720,8 +8798,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Disable",
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Slowbro",
@@ -8730,12 +8807,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
                 "side": 0,
               },
             },
-            "text": "The opposing Slowbro's",
+            "text": "The opposing Slowbro",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Slowbro's Disable is disabled!",
+          "text": "The opposing Slowbro can't move due to Disable!",
         },
         "key": "cant__from_move_disable",
       },
@@ -8749,8 +8826,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
 {
   "rawLog": "cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1",
   "result": {
-    "key": "cant__from_ability_damp",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Squirtle",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Squirtle",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Squirtle can't move!",
+        },
+        "key": "cant",
+      },
+    ],
     "notices": [],
   },
 }
@@ -8763,7 +8860,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Gravity",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8778,7 +8874,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Staraptor can't use Gravity because of gravity!",
+          "text": "The opposing Staraptor can't move because of gravity!",
         },
         "key": "cant__from_move_gravity",
       },
@@ -8795,7 +8891,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
     "messages": [
       {
         "context": {
-          "MOVE": "Taunt",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -8810,7 +8905,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: cant|mon:
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Treecko can't use Taunt after the taunt!",
+          "text": "The opposing Treecko can't move after the taunt!",
         },
         "key": "cant__from_move_taunt",
       },
@@ -14518,12 +14613,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "FROM_MOVE": "Powder",
+        },
         "formatted": {
           "category": "secondary",
-          "text": "The powder exploded!",
+          "text": "It was hurt by Powder!",
         },
-        "key": "damage__from_move_powder",
+        "key": "damage__from_move_any",
       },
     ],
     "notices": [
@@ -14551,12 +14648,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
   "result": {
     "messages": [
       {
-        "context": {},
+        "context": {
+          "FROM_MOVE": "Powder",
+        },
         "formatted": {
           "category": "secondary",
-          "text": "The powder exploded!",
+          "text": "It was hurt by Powder!",
         },
-        "key": "damage__from_move_powder",
+        "key": "damage__from_move_any",
       },
     ],
     "notices": [
@@ -16471,7 +16570,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
     "messages": [
       {
         "context": {
-          "ABILITY": "Clear Body",
+          "FROM_ABILITY": "Clear Body",
           "STAT": "accuracy",
           "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
@@ -16504,7 +16603,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
     "messages": [
       {
         "context": {
-          "ABILITY": "Clear Body",
+          "FROM_ABILITY": "Clear Body",
           "STAT": "Attack",
           "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
@@ -16632,7 +16731,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fail|mon:
     "messages": [
       {
         "context": {
-          "ABILITY": "Hyper Cutter",
+          "FROM_ABILITY": "Hyper Cutter",
           "STAT": "Attack",
           "__CAPITALIZED_MON_POSSESSIVE": {
             "monRef": {
@@ -29513,9 +29612,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Giratina used Dark Void!",
+          "text": "The opposing Giratina bounced the Dark Void back!",
         },
-        "key": "move",
+        "key": "move__from_move_magiccoat",
       },
     ],
     "notices": [],
@@ -29598,9 +29697,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Grumpig used Spikes!",
+          "text": "The opposing Grumpig bounced the Spikes back!",
         },
-        "key": "move",
+        "key": "move__from_move_magiccoat",
       },
     ],
     "notices": [],
@@ -29683,9 +29782,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Grumpig used Will-O-Wisp!",
+          "text": "The opposing Grumpig bounced the Will-O-Wisp back!",
         },
-        "key": "move",
+        "key": "move__from_move_magiccoat",
       },
     ],
     "notices": [],
@@ -33510,7 +33609,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singlemov
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Chansey is trying to take its foe down with it!",
+          "text": "The opposing Chansey is hoping to take its attacker down with it!",
         },
         "key": "singlemove__move_destinybond",
       },
@@ -33572,7 +33671,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singlemov
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Pikachu is trying to take its foe down with it!",
+          "text": "The opposing Pikachu is hoping to take its attacker down with it!",
         },
         "key": "singlemove__move_destinybond",
       },
@@ -33603,7 +33702,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singlemov
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Wobbuffet is trying to take its foe down with it!",
+          "text": "The opposing Wobbuffet is hoping to take its attacker down with it!",
         },
         "key": "singlemove__move_destinybond",
       },
@@ -33713,6 +33812,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
     "messages": [
       {
         "context": {
+          "MOVE": "Protect",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -33727,9 +33827,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Excadrill protected itself!",
+          "text": "The opposing Excadrill is preparing Protect!",
         },
-        "key": "singleturn__move_protect",
+        "key": "singleturn__move_any",
       },
     ],
     "notices": [],
@@ -34211,6 +34311,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
     "messages": [
       {
         "context": {
+          "MOVE": "Protect",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -34225,9 +34326,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Oricorio protected itself!",
+          "text": "The opposing Oricorio is preparing Protect!",
         },
-        "key": "singleturn__move_protect",
+        "key": "singleturn__move_any",
       },
     ],
     "notices": [],
@@ -34242,6 +34343,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
     "messages": [
       {
         "context": {
+          "MOVE": "Protect",
           "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
@@ -34256,9 +34358,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Patrat protected itself!",
+          "text": "The opposing Patrat is preparing Protect!",
         },
-        "key": "singleturn__move_protect",
+        "key": "singleturn__move_any",
       },
     ],
     "notices": [],
