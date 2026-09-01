@@ -153,23 +153,29 @@ activate|move:Beat Up
 activate|move:Bide
 activate|move:Bind
 activate|move:Celebrate
+activate|move:Clamp
 activate|move:Court Change
 activate|move:Crafty Shield
 activate|move:Destiny Bond
 activate|move:Electric Terrain
 activate|move:Endure
 activate|move:Fickle Beam
+activate|move:Fire Spin
 activate|move:Fling
 activate|move:Fling|item:*
+activate|move:G-Max Centiferno
+activate|move:G-Max Sandblast
 activate|move:Gravity
 activate|move:Guard Split
 activate|move:Happy Hour
 activate|move:Heal Bell
 activate|move:Healing Wish
+activate|move:Infestation
 activate|move:Ingrain
 activate|move:Lock-On
 activate|move:Lunar Dance
 activate|move:Magic Coat
+activate|move:Magma Storm
 activate|move:Magnitude
 activate|move:Mat Block
 activate|move:Max Guard
@@ -185,9 +191,11 @@ activate|move:Pursuit
 activate|move:Quash
 activate|move:Quick Guard
 activate|move:Safeguard
+activate|move:Sand Tomb
 activate|move:Sketch
 activate|move:Skill Swap
 activate|move:Smack Down
+activate|move:Snap Trap
 activate|move:Snatch
 activate|move:Spectral Thief
 activate|move:Speed Swap
@@ -195,7 +203,10 @@ activate|move:Splash
 activate|move:Sticky Web
 activate|move:Substitute
 activate|move:Substitute|damage
+activate|move:Thunder Cage
+activate|move:Whirlpool
 activate|move:Wide Guard
+activate|move:Wrap
 addedtype|type:*
 addpseudoweather|condition:*
 addsidecondition|condition:*
@@ -314,24 +325,35 @@ damage|from:item:Rowap Berry
 damage|from:item:Sticky Barb
 damage|from:move:Axe Kick
 damage|from:move:Bind
+damage|from:move:Clamp
 damage|from:move:Curse
 damage|from:move:Fire Pledge
+damage|from:move:Fire Spin
 damage|from:move:Flame Burst
 damage|from:move:G-Max Cannonade
+damage|from:move:G-Max Centiferno
+damage|from:move:G-Max Sandblast
 damage|from:move:G-Max Steelsurge
 damage|from:move:G-Max Vine Lash
 damage|from:move:G-Max Volcalith
 damage|from:move:G-Max Wildfire
 damage|from:move:High Jump Kick
+damage|from:move:Infestation
 damage|from:move:Jump Kick
 damage|from:move:Leech Seed
+damage|from:move:Magma Storm
 damage|from:move:Nightmare
 damage|from:move:Powder
 damage|from:move:Salt Cure
+damage|from:move:Sand Tomb
+damage|from:move:Snap Trap
 damage|from:move:Spikes
 damage|from:move:Spiky Shield
 damage|from:move:Stealth Rock
 damage|from:move:Supercell Slam
+damage|from:move:Thunder Cage
+damage|from:move:Whirlpool
+damage|from:move:Wrap
 damage|from:status:Bad Poison
 damage|from:status:Burn
 damage|from:status:Freeze
@@ -367,21 +389,37 @@ end|move:Bind
 end|move:Bind|silent
 end|move:Charge
 end|move:Charge|silent
+end|move:Clamp
+end|move:Clamp|silent
 end|move:Disable
 end|move:Doom Desire
 end|move:Embargo
 end|move:Encore
+end|move:Fire Spin
+end|move:Fire Spin|silent
 end|move:Future Sight
+end|move:G-Max Centiferno
+end|move:G-Max Centiferno|silent
+end|move:G-Max Sandblast
+end|move:G-Max Sandblast|silent
 end|move:Heal Block
+end|move:Infestation
+end|move:Infestation|silent
 end|move:Laser Focus
 end|move:Laser Focus|silent
 end|move:Leech Seed
+end|move:Magma Storm
+end|move:Magma Storm|silent
 end|move:Magnet Rise
 end|move:Octolock
 end|move:Octolock|silent
 end|move:Power Trick
 end|move:Salt Cure
+end|move:Sand Tomb
+end|move:Sand Tomb|silent
 end|move:Sky Drop
+end|move:Snap Trap
+end|move:Snap Trap|silent
 end|move:Stockpile
 end|move:Substitute
 end|move:Syrup Bomb
@@ -389,8 +427,14 @@ end|move:Syrup Bomb|silent
 end|move:Taunt
 end|move:Telekinesis
 end|move:Throat Chop
+end|move:Thunder Cage
+end|move:Thunder Cage|silent
 end|move:Torment
 end|move:Uproar
+end|move:Whirlpool
+end|move:Whirlpool|silent
+end|move:Wrap
+end|move:Wrap|silent
 end|move:Yawn
 end|move:Yawn|silent
 escaped

@@ -151,6 +151,7 @@ interface EffectEntry {
   program: string;
   delegates: string[];
   condition_type?: string;
+  volatiles?: string[];
 }
 let effectRegistry: Map<string, EffectEntry> | null = null;
 
@@ -220,12 +221,39 @@ function buildEffectRegistry(): Map<string, EffectEntry> {
         (obj.condition as Record<string, unknown>)?.delegates ||
         [];
 
-      const entry = {
+      const volatiles: string[] = [];
+      const checkVolatileObj = (e: unknown) => {
+        if (!e || typeof e !== "object") return;
+        const vStatus = (e as Record<string, unknown>).volatile_status;
+        if (typeof vStatus === "string") {
+          volatiles.push(vStatus.toLowerCase());
+        }
+      };
+
+      checkVolatileObj(obj.hit_effect);
+      checkVolatileObj(obj.target_effect);
+      checkVolatileObj(obj.user_effect);
+      checkVolatileObj(obj.effect);
+
+      if (Array.isArray(obj.secondary_effects)) {
+        for (const sec of obj.secondary_effects) {
+          checkVolatileObj(sec);
+        }
+      }
+
+      const addVolatileRegex = /add_volatile:\s*\$[a-zA-Z0-9_]+\s+([a-zA-Z0-9_]+)/g;
+      let vMatch;
+      while ((vMatch = addVolatileRegex.exec(programStr)) !== null) {
+        volatiles.push(vMatch[1].toLowerCase());
+      }
+
+      const entry: EffectEntry = {
         type,
         condition_type: obj.condition_type as string | undefined,
         name,
         program: programStr,
         delegates: delegates,
+        volatiles: volatiles,
       };
 
       effectRegistry!.set(name, entry);
@@ -359,6 +387,15 @@ function extractLogsFromFxlang(): Set<string> {
       }
     }
 
+    for (const volatileId of effect.volatiles || []) {
+      if (volatileId === "partiallytrapped") {
+        const volatileEffect = registry.get(volatileId) || registry.get(`condition:${volatileId}`);
+        if (volatileEffect) {
+          logs.push(...getLogsForEffect(volatileEffect, visited));
+        }
+      }
+    }
+
     return logs;
   }
 
@@ -456,7 +493,7 @@ function generateMatrix() {
   }
 
   const registry = buildEffectRegistry();
-  const uniqueEffects = new Set(registry.values());
+  const uniqueEffects = Array.from(new Set(registry.values()));
   const newClonedPatterns = new Set<string>();
 
   for (const effect of uniqueEffects) {
@@ -507,6 +544,40 @@ function generateMatrix() {
 
   for (const cloned of newClonedPatterns) {
     extracted.patterns.add(cloned);
+  }
+
+  // Volatile condition move expansion for partiallytrapped moves (e.g. Wrap, Fire Spin inheriting damage|from:move:Bind, etc.)
+  const partiallyTrappedMoves = uniqueEffects.filter(
+    (entry) => entry.type === "move" && entry.volatiles?.includes("partiallytrapped"),
+  );
+
+  if (partiallyTrappedMoves.length > 1) {
+    const moveSignatures = partiallyTrappedMoves.map((m) => `move:${m.name}`);
+    for (const pattern of Array.from(extracted.patterns)) {
+      const parsed = parsePattern(pattern);
+      for (const srcSig of moveSignatures) {
+        if (parsed.tags.includes(srcSig) || parsed.tags.includes(`from:${srcSig}`)) {
+          for (const targetSig of moveSignatures) {
+            if (targetSig === srcSig) continue;
+            let modified = false;
+            const newTags = parsed.tags.map((t) => {
+              if (t === srcSig) {
+                modified = true;
+                return targetSig;
+              }
+              if (t === `from:${srcSig}`) {
+                modified = true;
+                return `from:${targetSig}`;
+              }
+              return t;
+            });
+            if (modified) {
+              extracted.patterns.add(serializePattern({ ...parsed, tags: newTags }));
+            }
+          }
+        }
+      }
+    }
   }
 
   // Dynamic status condition expansion from conditions.json
