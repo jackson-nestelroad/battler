@@ -1,5 +1,5 @@
 import { en } from "../locales/en.js";
-import type { UiMon, EffectData } from "battler-state";
+import type { UiMon, Effect } from "battler-state";
 import type { FormattedUiLog } from "./formatter.js";
 import type { LogToken } from "./engine.js";
 
@@ -60,7 +60,7 @@ export interface AnyMappedLog {
   patterns: string[];
   category: LogCategory;
   context: LogContext;
-  effect?: EffectData;
+  effect?: Effect;
   metadata?: MappedLogMetadata;
 }
 

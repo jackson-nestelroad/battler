@@ -157,7 +157,7 @@ export class LogFormatter {
     const mapped = mapUiLogEntry(entry, state, this.options);
     if (!mapped) return null;
 
-    if (mapped.effect?.additional?.silent !== undefined) {
+    if (entry.values?.silent !== undefined) {
       return null;
     }
 
@@ -185,7 +185,7 @@ export class LogFormatter {
       let match = true;
       if (
         rule.condition.hasEffectType &&
-        mapped.effect?.effect?.effect_type !== rule.condition.hasEffectType
+        mapped.effect?.effect_type !== rule.condition.hasEffectType
       ) {
         match = false;
       }
@@ -229,8 +229,8 @@ export class LogFormatter {
         }
 
         let name = "";
-        if (rule.notice.nameFromPath === "effect.effect.name" && mapped.effect?.effect?.name) {
-          name = mapped.effect.effect.name;
+        if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
+          name = mapped.effect.name;
         } else if (rule.notice.nameFromContext && mapped.context[rule.notice.nameFromContext]) {
           name = String(mapped.context[rule.notice.nameFromContext]);
         }

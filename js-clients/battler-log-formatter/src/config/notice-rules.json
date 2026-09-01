@@ -5,7 +5,7 @@
     },
     "notice": {
       "type": "Ability",
-      "nameFromPath": "effect.effect.name"
+      "nameFromPath": "effect.name"
     }
   },
   {
@@ -24,7 +24,7 @@
     },
     "notice": {
       "type": "Item",
-      "nameFromPath": "effect.effect.name"
+      "nameFromPath": "effect.name"
     }
   },
   {

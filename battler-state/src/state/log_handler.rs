@@ -287,30 +287,20 @@ fn ui_log_entry_from_log_entry(
     })
 }
 
-fn effect_data_from_ui_log(entry: &ui::UiLogEntry) -> ui::EffectData {
-    ui::EffectData {
-        effect: entry.effect.clone(),
-        side: entry.side,
-        slot: entry.slot,
-        player: entry.player.clone(),
-        target: entry.target.clone(),
-        source: entry.source.clone(),
-        source_effect: entry.source_effect.clone(),
-        additional: entry
-            .values
-            .iter()
-            .map(|(k, v)| {
-                let v_str = match v {
-                    ui::LogValue::String(s) => s.clone(),
-                    ui::LogValue::Number(n) => format!("{n}"),
-                    ui::LogValue::Boolean(_) => String::default(),
-                    ui::LogValue::Fraction(n, d) => format!("{n}/{d}"),
-                    _ => String::default(),
-                };
-                (k.clone(), v_str)
-            })
-            .collect(),
-    }
+fn values_to_condition_data_map(values: &HashMap<String, ui::LogValue>) -> HashMap<String, String> {
+    values
+        .iter()
+        .map(|(k, v)| {
+            let v_str = match v {
+                ui::LogValue::String(s) => s.clone(),
+                ui::LogValue::Number(n) => format!("{n}"),
+                ui::LogValue::Boolean(_) => String::default(),
+                ui::LogValue::Fraction(n, d) => format!("{n}/{d}"),
+                _ => String::default(),
+            };
+            (k.clone(), v_str)
+        })
+        .collect()
 }
 
 fn mons_by_mon_name(
@@ -450,9 +440,9 @@ fn record_effect_from_mon(
 fn modify_state_from_effect(
     state: &mut BattleState,
     entry: &LogEntry,
-    effect_data: &ui::EffectData,
+    ui_entry: &ui::UiLogEntry,
 ) -> Result<()> {
-    if let Some(source_effect) = &effect_data.source_effect {
+    if let Some(source_effect) = &ui_entry.source_effect {
         if let Some(source) = entry.value::<MonName>("of") {
             record_effect_from_mon(state, source_effect, &source)?;
         } else if let Some(target) = entry.value::<MonName>("mon") {
@@ -463,7 +453,7 @@ fn modify_state_from_effect(
     match entry.title() {
         "ability" | "abilitystart" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
             }
         }
@@ -471,7 +461,7 @@ fn modify_state_from_effect(
             let mon = entry.value_or_else("mon")?;
 
             // We get to see the ability as it ends.
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
             }
 
@@ -479,7 +469,7 @@ fn modify_state_from_effect(
                 mon.volatile_data.record_ability(String::default());
             })?;
         }
-        "activate" => match (&effect_data.effect, entry.value::<MonName>("mon")) {
+        "activate" => match (&ui_entry.effect, entry.value::<MonName>("mon")) {
             (Some(effect), Some(mon)) => record_effect_from_mon(state, effect, &mon)?,
             _ => (),
         },
@@ -602,14 +592,14 @@ fn modify_state_from_effect(
                     "Dynamax".to_owned(),
                     ConditionData {
                         since_turn: turn,
-                        data: effect_data.additional.clone(),
+                        data: values_to_condition_data_map(&ui_entry.values),
                     },
                 );
             })?;
         }
         "end" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.remove_condition(&effect.name);
                 })?;
@@ -618,17 +608,17 @@ fn modify_state_from_effect(
             }
         }
         "fieldend" => {
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 state.field.conditions.remove(&effect.name);
             }
         }
         "fieldstart" => {
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 state.field.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        data: effect_data.additional.clone(),
+                        data: values_to_condition_data_map(&ui_entry.values),
                     },
                 );
             }
@@ -643,7 +633,7 @@ fn modify_state_from_effect(
         }
         "item" | "itemstart" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                     mon.record_item(effect.name.clone().into(), ambiguity);
                 })?;
@@ -657,14 +647,14 @@ fn modify_state_from_effect(
         }
         "prepare" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 let turn = state.turn;
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
                         ConditionData {
                             since_turn: turn,
-                            data: effect_data.additional.clone(),
+                            data: values_to_condition_data_map(&ui_entry.values),
                         },
                     );
                 })?;
@@ -699,28 +689,28 @@ fn modify_state_from_effect(
         "sideend" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 side.conditions.remove(&effect.name);
             }
         }
         "sidestart" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 side.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        data: effect_data.additional.clone(),
+                        data: values_to_condition_data_map(&ui_entry.values),
                     },
                 );
             }
         }
         "singlemove" | "singleturn" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 let turn = state.turn;
-                let mut data = effect_data.additional.clone();
+                let mut data = values_to_condition_data_map(&ui_entry.values);
                 data.insert(entry.title().to_owned(), "".to_owned());
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
@@ -745,7 +735,7 @@ fn modify_state_from_effect(
         }
         "status" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
                     mon.record_status(effect.name.clone().into(), ambiguity);
                 })?;
@@ -753,14 +743,14 @@ fn modify_state_from_effect(
         }
         "start" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 let turn = state.turn;
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         effect.name.clone(),
                         ConditionData {
                             since_turn: turn,
-                            data: effect_data.additional.clone(),
+                            data: values_to_condition_data_map(&ui_entry.values),
                         },
                     );
                 })?;
@@ -867,7 +857,7 @@ fn modify_state_from_effect(
             })?;
         }
         "weather" => {
-            if let Some(effect) = &effect_data.effect {
+            if let Some(effect) = &ui_entry.effect {
                 state.field.weather = Some(effect.name.clone());
             }
         }
@@ -958,8 +948,7 @@ fn alter_battle_state_for_entry(
                 None
             };
 
-            let effect = effect_data_from_ui_log(&ui_entry);
-            modify_state_from_effect(state, entry, &effect)?;
+            modify_state_from_effect(state, entry, &ui_entry)?;
 
             // Generate UI log for the effect. Some effects may have special logs.
             match title {
@@ -980,14 +969,6 @@ fn alter_battle_state_for_entry(
                         }
                     }
                 }
-                "formechange" | "gigantamax" | "mega" | "revertgigantamax" | "revertmega"
-                | "specieschange" | "transform" | "primal" | "revertprimal" | "ultra"
-                | "revertultra" => {
-                    let species = entry.value_or_else("species")?;
-                    ui_entry
-                        .values
-                        .insert("species".to_owned(), ui::LogValue::String(species));
-                }
                 _ => {}
             }
         }
@@ -1004,11 +985,6 @@ fn alter_battle_state_for_entry(
             apply_for_each_mon(state, &mon, |mon, _| {
                 mon.volatile_data.record_stat_boost(stat.clone(), by);
             })?;
-        }
-        "didnotlearnmove" => {
-            ui_entry
-                .values
-                .insert("learned".to_owned(), ui::LogValue::Boolean(false));
         }
         "escaped" | "forfeited" => {
             let player: String = entry.value_or_else("player")?;
@@ -1068,18 +1044,6 @@ fn alter_battle_state_for_entry(
                     mon.forget_move(forgot.clone(), ambiguity);
                 }
             })?;
-
-            ui_entry
-                .values
-                .insert("move_name".to_owned(), ui::LogValue::String(move_name));
-            ui_entry
-                .values
-                .insert("learned".to_owned(), ui::LogValue::Boolean(true));
-            if let Some(forgot) = forgot {
-                ui_entry
-                    .values
-                    .insert("forgot".to_owned(), ui::LogValue::String(forgot));
-            }
         }
         "levelup" => {
             let mon = entry.value_or_else("mon")?;
@@ -1106,10 +1070,6 @@ fn alter_battle_state_for_entry(
             let name: String = entry.value_or_else("name")?;
             let used_directly = entry.title() == "move";
             let from: Option<EffectName> = entry.value("from");
-            let animate = entry.value_ref("noanim").is_none();
-            let animate_only = entry.title() == "animatemove";
-            let z_power = entry.value_ref("zpower").is_some();
-            let no_target = entry.value_ref("notarget").is_some();
 
             if used_directly && from.is_none() && name != "Struggle" {
                 apply_for_each_mon_reference(state, &mon, |state, mon_reference, ambiguity| {
@@ -1179,26 +1139,6 @@ fn alter_battle_state_for_entry(
                     mon.volatile_data.remove_condition(&name);
                 }
             })?;
-
-            ui_entry
-                .values
-                .insert("name".to_owned(), ui::LogValue::String(name));
-            ui_entry
-                .values
-                .insert("animate".to_owned(), ui::LogValue::Boolean(animate));
-            ui_entry.values.insert(
-                "animate_only".to_owned(),
-                ui::LogValue::Boolean(animate_only),
-            );
-            ui_entry
-                .values
-                .insert("z_power".to_owned(), ui::LogValue::Boolean(z_power));
-            ui_entry
-                .values
-                .insert("no_target".to_owned(), ui::LogValue::Boolean(no_target));
-
-            // `spread` or `target` are already in `ui_entry.values` via `parse_log_value`!
-            // `from` is already in `source_effect`!
         }
         "player" => {
             let id: String = entry.value_or_else("id")?;
@@ -1357,18 +1297,6 @@ fn alter_battle_state_for_entry(
                 .side_mut_or_else(side_index)?
                 .switched_out
                 .insert(pos_idx);
-
-            let copy_substitute = entry.value_ref("copysubstitute").is_some();
-            let copy_volatile = entry.value_ref("copyvolatile").is_some();
-
-            ui_entry.values.insert(
-                "copy_substitute".to_owned(),
-                ui::LogValue::Boolean(copy_substitute),
-            );
-            ui_entry.values.insert(
-                "copy_volatile".to_owned(),
-                ui::LogValue::Boolean(copy_volatile),
-            );
         }
         "teampreviewstart" => {
             state.phase = BattlePhase::PreTeamPreview;

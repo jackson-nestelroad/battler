@@ -213,7 +213,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), "name" => "Scratch", "no_target" => false, "animate" => true, "animate_only" => false, "z_power" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), "name" => "Scratch" }),
                 ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100), "damage" => (20, 100) }),
             ]
         );
@@ -614,7 +614,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "z_power" => false, "no_target" => false, "animate_only" => false, "name" => "Skill Swap" }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Skill Swap" }),
                 ui_log!(title = "activate", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), source = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "move" => "Skill Swap" }),
                 ui_log!(title = "abilityend", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Torrent".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Torrent" }),
                 ui_log!(title = "ability", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("ability".to_owned()), name: "Blaze".to_owned() }, source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Skill Swap".to_owned() }, values = { "ability" => "Blaze" }),
@@ -975,16 +975,16 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate_only" => false, "no_target" => false, "name" => "Metronome", "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "animate" => true, "z_power" => false }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "no_target" => false, "z_power" => false, "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Ice Beam", "animate_only" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "name" => "Metronome", "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }) }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Ice Beam" }),
             ]
         );
         assert_eq!(
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "z_power" => false, "no_target" => false, "name" => "Metronome", "animate" => true, "animate_only" => false }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "z_power" => false, "animate" => true, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "animate_only" => false, "name" => "Ice Beam", "no_target" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Metronome" }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), source_effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Metronome".to_owned() }, values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Ice Beam" }),
             ]
         );
     }
@@ -1102,7 +1102,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate_only" => false, "name" => "Pound", "no_target" => false, "z_power" => false, "animate" => true }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "name" => "Pound" }),
             ]
         );
     }
@@ -1124,7 +1124,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "animate" => true, "no_target" => false, "z_power" => false, "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Double Slap", "animate_only" => false }),
+                ui_log!(title = "move", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "target" => ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), "name" => "Double Slap" }),
                 ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (90, 100), "damage" => (10, 100) }),
                 ui_log!(title = "damage", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "health" => (80, 100), "damage" => (10, 100) }),
                 ui_log!(title = "hitcount", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 1usize, position: 0usize }, reference: ui::MonReference { player: "player-2".to_owned(), name: "Charmander".to_owned() } }), values = { "count" => 2 }),
@@ -2077,7 +2077,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "didnotlearnmove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "move" => "Tackle", "learned" => false }),
+                ui_log!(title = "didnotlearnmove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Tackle".to_owned() }, values = { "move" => "Tackle" }),
             ]
         );
     }
@@ -2400,7 +2400,7 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "animatemove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "no_target" => false, "animate_only" => true, "animate" => true, "name" => "Tackle", "z_power" => false }),
+                ui_log!(title = "animatemove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "name" => "Tackle" }),
             ]
         );
     }
@@ -2449,7 +2449,19 @@ mod state_test {
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
-                ui_log!(title = "switchout", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), values = { "copy_substitute" => false, "copy_volatile" => false }),
+                ui_log!(
+                    title = "switchout",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned()
+                        }
+                    })
+                ),
             ]
         );
     }

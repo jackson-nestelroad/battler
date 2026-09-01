@@ -15083,29 +15083,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:B
 {
   "rawLog": "end|mon:Budew,player-2,1|move:Yawn|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Yawn",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Budew",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Budew",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Budew was freed from Yawn!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_yawn",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15115,29 +15094,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:C
 {
   "rawLog": "end|mon:Chespin,player-1,2|move:Yawn|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Yawn",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Chespin",
-                "player": "player-1",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Chespin",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Chespin was freed from Yawn!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_yawn",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15303,29 +15261,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:G
 {
   "rawLog": "end|mon:Grapploct,player-2,1|move:Octolock|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Octolock",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Grapploct",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Grapploct",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Grapploct was freed from Octolock!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_octolock",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15428,28 +15365,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:G
 {
   "rawLog": "end|mon:Gyarados,player-2,1|move:Bind|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Gyarados",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Gyarados",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Gyarados was freed from Bind!",
-        },
-        "key": "end__move_bind",
-      },
-    ],
+    "key": "end__move_bind",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15521,29 +15438,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:H
 {
   "rawLog": "end|mon:Hydrapple,player-2,1|move:Syrup Bomb|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Syrup Bomb",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Hydrapple",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Hydrapple",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Hydrapple was freed from Syrup Bomb!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_syrupbomb",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15615,29 +15511,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:K
 {
   "rawLog": "end|mon:Kartana,player-1,1|move:Laser Focus|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Laser Focus",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Kartana",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Kartana",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Kartana was freed from Laser Focus!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_laserfocus",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15647,29 +15522,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:K
 {
   "rawLog": "end|mon:Kingambit,player-1,1|ability:Supreme Overlord|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Supreme Overlord",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Kingambit",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Kingambit's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Kingambit's Supreme Overlord ended!",
-        },
-        "key": "end__ability_any",
-      },
-    ],
+    "key": "end__ability_supremeoverlord",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15679,29 +15533,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:L
 {
   "rawLog": "end|mon:Ledian,player-1,1|move:Yawn|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Yawn",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Ledian",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ledian",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ledian was freed from Yawn!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_yawn",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15897,29 +15730,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:N
 {
   "rawLog": "end|mon:Ninetales,player-1,1|ability:Flash Fire|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Flash Fire",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Ninetales",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ninetales's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ninetales's Flash Fire ended!",
-        },
-        "key": "end__ability_any",
-      },
-    ],
+    "key": "end__ability_flashfire",
+    "messages": [],
     "notices": [],
   },
 }
@@ -15929,29 +15741,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:N
 {
   "rawLog": "end|mon:Ninetales,player-2,1|ability:Flash Fire|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Flash Fire",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Ninetales",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ninetales's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ninetales's Flash Fire ended!",
-        },
-        "key": "end__ability_any",
-      },
-    ],
+    "key": "end__ability_flashfire",
+    "messages": [],
     "notices": [],
   },
 }
@@ -16464,29 +16255,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Z
 {
   "rawLog": "end|mon:Zigzagoon,player-1,1|move:Charge|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Charge",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Zigzagoon",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Zigzagoon",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Zigzagoon was freed from Charge!",
-        },
-        "key": "end__move_any",
-      },
-    ],
+    "key": "end__move_charge",
+    "messages": [],
     "notices": [],
   },
 }
@@ -23620,44 +23390,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 {
   "rawLog": "itemend|mon:Castform,player-1,1|item:Utility Umbrella|silent|from:move:Fling",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ITEM": "Utility Umbrella",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Castform",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Castform's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Castform's Utility Umbrella was removed!",
-        },
-        "key": "itemend__from_move_any__item_any",
-      },
-    ],
-    "notices": [
-      {
-        "mon": "Castform's",
-        "monRef": {
-          "Active": {
-            "name": "Castform",
-            "player": "player-1",
-            "position": 0,
-            "side": 0,
-          },
-        },
-        "name": "Utility Umbrella",
-        "type": "Item",
-      },
-    ],
+    "key": "itemend__from_move_any__item_any",
+    "messages": [],
+    "notices": [],
   },
 }
 `;
@@ -24284,44 +24019,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 {
   "rawLog": "itemend|mon:Drifblim,player-1,1|item:Cheri Berry|silent|from:move:Fling",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ITEM": "Cheri Berry",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Drifblim",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Drifblim's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Drifblim's Cheri Berry was removed!",
-        },
-        "key": "itemend__from_move_any__item_any",
-      },
-    ],
-    "notices": [
-      {
-        "mon": "Drifblim's",
-        "monRef": {
-          "Active": {
-            "name": "Drifblim",
-            "player": "player-1",
-            "position": 0,
-            "side": 0,
-          },
-        },
-        "name": "Cheri Berry",
-        "type": "Item",
-      },
-    ],
+    "key": "itemend__from_move_any__item_any",
+    "messages": [],
+    "notices": [],
   },
 }
 `;
@@ -24801,44 +24501,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemend|m
 {
   "rawLog": "itemend|mon:Gengar,player-1,1|item:Venusaurite|silent|from:move:Fling",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ITEM": "Venusaurite",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Gengar",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Gengar's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Gengar's Venusaurite was removed!",
-        },
-        "key": "itemend__from_move_any__item_any",
-      },
-    ],
-    "notices": [
-      {
-        "mon": "Gengar's",
-        "monRef": {
-          "Active": {
-            "name": "Gengar",
-            "player": "player-1",
-            "position": 0,
-            "side": 0,
-          },
-        },
-        "name": "Venusaurite",
-        "type": "Item",
-      },
-    ],
+    "key": "itemend__from_move_any__item_any",
+    "messages": [],
+    "notices": [],
   },
 }
 `;
@@ -35758,28 +35423,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Ditto,player-1,1|move:Focus Energy|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Ditto",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ditto",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ditto is getting pumped!",
-        },
-        "key": "start__move_focusenergy",
-      },
-    ],
+    "key": "start__move_focusenergy",
+    "messages": [],
     "notices": [],
   },
 }
@@ -35789,28 +35434,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Ditto,player-2,1|move:Dragon Cheer|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Ditto",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Ditto",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Ditto is surrounded by a cheering aura!",
-        },
-        "key": "start__move_dragoncheer",
-      },
-    ],
+    "key": "start__move_dragoncheer",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36038,28 +35663,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Flamigo,player-1,1|move:Focus Energy|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Flamigo",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Flamigo",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Flamigo is getting pumped!",
-        },
-        "key": "start__move_focusenergy",
-      },
-    ],
+    "key": "start__move_focusenergy",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36599,29 +36204,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Incineroar,player-2,1|move:Throat Chop|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Throat Chop",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Incineroar",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Incineroar",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Incineroar is affected by Throat Chop!",
-        },
-        "key": "start__move_any",
-      },
-    ],
+    "key": "start__move_throatchop",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36786,29 +36370,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Kingambit,player-1,1|ability:Supreme Overlord|fallen:2|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Supreme Overlord",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Kingambit",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Kingambit's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Kingambit's Supreme Overlord activated!",
-        },
-        "key": "start__ability_any",
-      },
-    ],
+    "key": "start__ability_supremeoverlord",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36818,29 +36381,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Kingambit,player-1,1|ability:Supreme Overlord|fallen:4|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "ABILITY": "Supreme Overlord",
-          "__CAPITALIZED_MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Kingambit",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Kingambit's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Kingambit's Supreme Overlord activated!",
-        },
-        "key": "start__ability_any",
-      },
-    ],
+    "key": "start__ability_supremeoverlord",
+    "messages": [],
     "notices": [],
   },
 }
@@ -37132,28 +36674,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 {
   "rawLog": "start|mon:Ninetales,player-1,1|ability:Flash Fire|silent",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "MON_POSSESSIVE": {
-            "monRef": {
-              "Active": {
-                "name": "Ninetales",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "the opposing Ninetales's",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The power of the opposing Ninetales's Fire-type moves rose!",
-        },
-        "key": "start__ability_flashfire",
-      },
-    ],
+    "key": "start__ability_flashfire",
+    "messages": [],
     "notices": [],
   },
 }

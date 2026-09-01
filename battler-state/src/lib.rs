@@ -64,7 +64,6 @@ mod export_ts_bindings {
         ui::Mon::export().unwrap();
         ui::MoveTarget::export().unwrap();
         ui::Effect::export().unwrap();
-        ui::EffectData::export().unwrap();
         ui::UiLogEntry::export().unwrap();
     }
 }

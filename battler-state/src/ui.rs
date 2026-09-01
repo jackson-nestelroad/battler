@@ -72,33 +72,6 @@ pub struct Effect {
     pub name: String,
 }
 
-/// Data for an activated effect in a battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(export))]
-pub struct EffectData {
-    /// The effect that activated.
-    pub effect: Option<Effect>,
-    /// The side targeted by the effect.
-    pub side: Option<usize>,
-    /// The slot targeted by the effect.
-    pub slot: Option<usize>,
-    /// The player targeted by the effect.
-    pub player: Option<String>,
-    /// The Mon targeted by the effect.
-    pub target: Option<Mon>,
-    /// The Mon that triggered the effect.
-    pub source: Option<Mon>,
-    /// The effect that triggered the effect.
-    pub source_effect: Option<Effect>,
-    /// Any additional data from the battle log.
-    #[cfg_attr(
-        feature = "typescript",
-        ts(as = "std::collections::BTreeMap<String, String>")
-    )]
-    pub additional: HashMap<String, String>,
-}
-
 /// A generic, domain-agnostic parsed value.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]

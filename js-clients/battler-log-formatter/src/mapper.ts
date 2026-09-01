@@ -1,4 +1,4 @@
-import type { BattleState, EffectData, UiLogEntry, UiMon } from "battler-state";
+import type { BattleState, UiLogEntry, UiMon } from "battler-state";
 import i18next from "i18next";
 import categoryRules from "./config/category-rules.json" with { type: "json" };
 import rules from "./config/mapper-rules.json" with { type: "json" };
@@ -651,24 +651,11 @@ export function mapUiLogEntry(
     Array.from(new Set(combinatoricFlags)),
   );
 
-  const effectData: EffectData | undefined = entry.effect
-    ? ({
-        effect: entry.effect,
-        side: entry.side ?? undefined,
-        slot: entry.slot ?? undefined,
-        player: entry.player ?? undefined,
-        target: entry.target ?? undefined,
-        source: entry.source ?? undefined,
-        source_effect: entry.source_effect ?? undefined,
-        additional: {},
-      } as unknown as EffectData)
-    : undefined;
-
   return {
     patterns,
     category,
     context,
-    effect: effectData,
+    effect: entry.effect ?? undefined,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
   };
 }
