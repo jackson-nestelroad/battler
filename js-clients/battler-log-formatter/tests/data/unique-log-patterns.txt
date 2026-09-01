@@ -226,29 +226,31 @@ boost|by:3plus|max
 cannotescape
 cant|from:Flinch
 cant|from:Must Recharge
-cant|from:ability:Armor Tail
-cant|from:ability:Damp
-cant|from:ability:Dazzling
-cant|from:ability:Queenly Majesty
+cant|from:ability:Armor Tail|move:*
+cant|from:ability:Queenly Majesty|move:*
 cant|from:ability:Truant
 cant|from:move:Attract
-cant|from:move:Aura Wheel
-cant|from:move:Disable
 cant|from:move:Focus Punch
-cant|from:move:Gravity
-cant|from:move:Heal Block
-cant|from:move:Imprison
-cant|from:move:Petal Dance
 cant|from:move:Shell Trap
-cant|from:move:Taunt
-cant|from:move:Telekinesis
-cant|from:move:Throat Chop
 cant|from:status:Bad Poison
 cant|from:status:Burn
 cant|from:status:Freeze
 cant|from:status:Paralysis
 cant|from:status:Poison
 cant|from:status:Sleep
+cant|move:*|from:ability:Armor Tail
+cant|move:*|from:ability:Damp
+cant|move:*|from:ability:Dazzling
+cant|move:*|from:ability:Queenly Majesty
+cant|move:*|from:move:Aura Wheel
+cant|move:*|from:move:Disable
+cant|move:*|from:move:Gravity
+cant|move:*|from:move:Heal Block
+cant|move:*|from:move:Imprison
+cant|move:*|from:move:Petal Dance
+cant|move:*|from:move:Taunt
+cant|move:*|from:move:Telekinesis
+cant|move:*|from:move:Throat Chop
 catchfailed|item:*|shakes:0
 catchfailed|item:*|shakes:1
 catchfailed|item:*|shakes:2

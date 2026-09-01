@@ -501,7 +501,7 @@
       "match": {
         "title": "cant"
       },
-      "strip": ["move"]
+      "collapse": ["move"]
     }
   ]
 }

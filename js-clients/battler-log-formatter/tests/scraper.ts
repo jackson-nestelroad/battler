@@ -272,6 +272,7 @@ function synthesizeFxlangLogs(
   typePrefix: string,
   name: string,
   isFrom: boolean,
+  withMove: boolean,
   fxlangLogs: Set<string>,
 ): void {
   const ALWAYS_NO_TAG = new Set(scraperConfig.alwaysNoTagLogs || []);
@@ -299,7 +300,11 @@ function synthesizeFxlangLogs(
     fxlangLogs.add(`${logName}|ability:*|from:${typePrefix}${name}`);
     fxlangLogs.add(`${logName}|move:*|from:${typePrefix}${name}`);
   } else if (isFrom) {
-    fxlangLogs.add(`${logName}|from:${typePrefix}${name}`);
+    if (withMove) {
+      fxlangLogs.add(`${logName}|move:*|from:${typePrefix}${name}`);
+    } else {
+      fxlangLogs.add(`${logName}|from:${typePrefix}${name}`);
+    }
   } else {
     fxlangLogs.add(`${logName}|${typePrefix}${name}`);
   }
@@ -312,11 +317,11 @@ function extractLogsFromFxlang(): Set<string> {
   function getLogsForEffect(
     effect: EffectEntry,
     visited: Set<EffectEntry>,
-  ): { logType: string; fromEffect: boolean }[] {
+  ): { logType: string; fromEffect: boolean; withMove: boolean }[] {
     if (visited.has(effect)) return [];
     visited.add(effect);
 
-    const logs: { logType: string; fromEffect: boolean }[] = [];
+    const logs: { logType: string; fromEffect: boolean; withMove: boolean }[] = [];
     const regex = /log_([a-z_]+)(?:\:\s*([^"'\n\]]+))?/g;
     let match;
     while ((match = regex.exec(effect.program)) !== null) {
@@ -324,23 +329,27 @@ function extractLogsFromFxlang(): Set<string> {
       const customArg = match[2];
 
       if (logType === "custom_effect" && customArg) {
-        logs.push({ logType: customArg.split(" ")[0], fromEffect: false });
+        logs.push({ logType: customArg.split(" ")[0], fromEffect: false, withMove: false });
       } else {
-        logs.push({ logType, fromEffect: Boolean(customArg && customArg.includes("from_effect")) });
+        logs.push({
+          logType,
+          fromEffect: Boolean(customArg && customArg.includes("from_effect")),
+          withMove: Boolean(customArg && customArg.includes("with_move")),
+        });
       }
     }
 
     const sideAddRegex = /add_side_condition/g;
     if (sideAddRegex.test(effect.program)) {
-      logs.push({ logType: "sidestart", fromEffect: false });
+      logs.push({ logType: "sidestart", fromEffect: false, withMove: false });
     }
     const sideRemoveRegex = /remove_side_condition/g;
     if (sideRemoveRegex.test(effect.program)) {
-      logs.push({ logType: "sideend", fromEffect: false });
+      logs.push({ logType: "sideend", fromEffect: false, withMove: false });
     }
     const formeChangeRegex = /forme_change\:\s*([^"'\n\]]+)/g;
     if (formeChangeRegex.test(effect.program)) {
-      logs.push({ logType: "formechange", fromEffect: true });
+      logs.push({ logType: "formechange", fromEffect: true, withMove: false });
     }
 
     for (const delegateId of effect.delegates || []) {
@@ -372,7 +381,7 @@ function extractLogsFromFxlang(): Set<string> {
       const prefix = getConditionPrefix(effect, isFrom);
       const typePrefix = prefix ? prefix + ":" : "";
 
-      synthesizeFxlangLogs(logName, typePrefix, name, isFrom, fxlangLogs);
+      synthesizeFxlangLogs(logName, typePrefix, name, isFrom, rawLog.withMove, fxlangLogs);
     }
   }
 

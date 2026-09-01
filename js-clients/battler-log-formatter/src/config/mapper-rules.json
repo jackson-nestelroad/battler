@@ -38,6 +38,7 @@
       "ability": { "excludeTitles": ["ability", "abilitystart", "abilityend"] },
       "move": {
         "excludeTitles": [
+          "cant",
           "move",
           "prepare",
           "deductpp",
