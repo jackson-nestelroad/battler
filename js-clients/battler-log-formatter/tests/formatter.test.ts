@@ -627,6 +627,30 @@ describe("LogFormatter", () => {
     expect(opponentResult).not.toBeNull();
     expect(stringifyLog(opponentResult!.messages[0])).toBe("Garchomp was hurt by the opposing Ferrothorn's Rocky Helmet!");
   });
+
+  it("should format Red Card activation with mon and target", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const state = {
+      field: {
+        sides: [
+          { players: { p1: { name: "Alice" } } },
+          { players: { p2: { name: "Bob" } } }
+        ]
+      }
+    };
+
+    const redCardEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Snivy", player: "p2" } },
+        item: "Red Card",
+        target: { Active: { side: 0, position: 0, name: "Snivy", player: "p1" } },
+      }
+    };
+
+    const result = formatter.format(redCardEntry as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    expect(stringifyLog(result!.messages[0])).toBe("The opposing Snivy held up its Red Card against Snivy!");
+  });
 });
-
-

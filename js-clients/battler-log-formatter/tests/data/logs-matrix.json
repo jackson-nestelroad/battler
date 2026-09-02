@@ -161,6 +161,8 @@
   "activate|mon:Snivy,player-1,1|item:Occa Berry|weaken",
   "activate|mon:Tepig,player-1,1|item:Passho Berry|weaken",
   "activate|mon:Totodile,player-2,1|item:Quick Claw",
+  "activate|mon:Snivy,player-2,1|item:Red Card|target:Snivy,player-1,1",
+  "activate|mon:Tepig,player-1,1|item:Red Card|target:Snivy,player-2,1",
   "activate|mon:Pikachu,protagonist,1|item:Smoke Ball",
   "activate|mon:Patrat,player-1,2|move:After You",
   "activate|mon:Patrat,player-2,2|move:After You",

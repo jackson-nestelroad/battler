@@ -2047,6 +2047,7 @@
           "require func_call(can_switch: $source.player) else return",
           "require !$source.force_switch else return",
           "require !$target.force_switch else return",
+          "log_activate: with_target str('target:{}', $source.position_details)",
           "if func_call(use_item: $target):",
           ["force_switch: $source"]
         ]

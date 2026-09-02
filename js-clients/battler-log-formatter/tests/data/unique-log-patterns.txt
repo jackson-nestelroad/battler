@@ -138,6 +138,7 @@ activate|item:Passho Berry
 activate|item:Passho Berry|weaken
 activate|item:Payapa Berry
 activate|item:Quick Claw
+activate|item:Red Card
 activate|item:Rindo Berry
 activate|item:Roseli Berry
 activate|item:Shuca Berry
