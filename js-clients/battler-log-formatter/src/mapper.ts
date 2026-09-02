@@ -733,7 +733,12 @@ export function mapUiLogEntry(
         context.SPECIES = speciesStr;
         context.FORME = speciesStr;
         tags.push(`species:${speciesStr.toLowerCase().replace(/[^a-z0-9]/g, "")}`);
-      } else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+      } else if (
+        typeof v === "string" ||
+        typeof v === "number" ||
+        typeof v === "boolean" ||
+        typeof v === "bigint"
+      ) {
         const upperK = k.toUpperCase();
         context[upperK] = String(v);
 

@@ -200,7 +200,7 @@ describe("LogFormatter", () => {
         values: {
           mon: { Active: { position: 0, name: "Snorlax", player: "p1", side: 0 } },
           stat: "atk",
-          by: by
+          by: BigInt(by)
         }
       };
       if (max) entry.values!["max"] = true;
@@ -234,7 +234,7 @@ describe("LogFormatter", () => {
         values: {
           mon: { Active: { position: 0, name: "Snorlax", player: "p1", side: 0 } },
           stat: "def",
-          by: by
+          by: BigInt(by)
         }
       };
       if (min) entry.values!["min"] = true;
@@ -256,8 +256,8 @@ describe("LogFormatter", () => {
       title: "damage",
       values: {
         mon: { Active: { position: 0, name: "Charmander", player: "p2", side: 1 } },
-        health: [0, 100],
-        damage: [100, 100]
+        health: [0n, 100n],
+        damage: [100n, 100n]
       }
     };
 
@@ -277,8 +277,8 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { position: 0, name: "Charizard", player: "p2", side: 1 } },
         from: "move:Stealth Rock",
-        health: [50, 100],
-        damage: [50, 100]
+        health: [50n, 100n],
+        damage: [50n, 100n]
       }
     };
 
@@ -303,8 +303,8 @@ describe("LogFormatter", () => {
       title: "damage",
       values: {
         mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
-        health: [75, 100],
-        damage: [25, 100]
+        health: [75n, 100n],
+        damage: [25n, 100n]
       }
     };
 
@@ -322,8 +322,8 @@ describe("LogFormatter", () => {
       title: "heal",
       values: {
         mon: { Active: { position: 0, name: "Squirtle", player: "p2", side: 1 } },
-        health: [90, 100],
-        heal: [15, 100]
+        health: [90n, 100n],
+        heal: [15n, 100n]
       }
     };
 
@@ -581,7 +581,7 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { side: 0, position: 0, name: "Mimikyu", player: "p1" } },
         from: "ability:Disguise",
-        damage: [12, 100],
+        damage: [12n, 100n],
       }
     };
 
@@ -619,7 +619,7 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } },
         from: "move:Powder",
-        damage: [25, 100],
+        damage: [25n, 100n],
       }
     };
 
@@ -665,7 +665,7 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } },
         stat: "atk",
-        by: 1,
+        by: 1n,
         from: "ability:Intimidate",
         of: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } }
       }
@@ -689,8 +689,8 @@ describe("LogFormatter", () => {
       title: "heal",
       values: {
         mon: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } },
-        health: [100, 100],
-        heal: [6, 100],
+        health: [100n, 100n],
+        heal: [6n, 100n],
         from: "item:Leftovers"
       }
     };
@@ -719,8 +719,8 @@ describe("LogFormatter", () => {
       title: "damage",
       values: {
         mon: { Active: { side: 1, position: 0, name: "Walking Wake", player: "p2" } },
-        health: [90, 100],
-        damage: [10, 100],
+        health: [90n, 100n],
+        damage: [10n, 100n],
         from: "item:Life Orb"
       }
     };
@@ -778,8 +778,8 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } },
         of: { Active: { side: 1, position: 0, name: "Garchomp", player: "p2" } },
-        health: [88, 100],
-        damage: [12, 100],
+        health: [88n, 100n],
+        damage: [12n, 100n],
         from: "ability:Rough Skin"
       }
     };
@@ -811,8 +811,8 @@ describe("LogFormatter", () => {
       values: {
         mon: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } },
         of: { Active: { side: 1, position: 0, name: "Ferrothorn", player: "p2" } },
-        health: [84, 100],
-        damage: [16, 100],
+        health: [84n, 100n],
+        damage: [16n, 100n],
         from: "item:Rocky Helmet"
       }
     };
@@ -980,12 +980,12 @@ describe("LogFormatter", () => {
   });
 
   it("should preserve lowercase player handles in multi-battle ability notices and messages", () => {
-    const multiState: Partial<BattleState> = {
+    const multiState = {
       battle_type: "Multi",
       field: {
         sides: [
-          { name: "Side 1", players: { p1: { name: "Player 1" } } } as any,
-          { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } } as any,
+          { name: "Side 1", players: { p1: { name: "Player 1" } } },
+          { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } },
         ]
       }
     };
@@ -998,7 +998,7 @@ describe("LogFormatter", () => {
       }
     };
 
-    const result = formatter.format(entry as UiLogEntry, multiState as BattleState);
+    const result = formatter.format(entry as UiLogEntry, multiState as unknown as BattleState);
     expect(result).not.toBeNull();
     expect(result!.notices.length).toBe(1);
     expect(result!.notices[0]).toEqual({
