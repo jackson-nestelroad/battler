@@ -10,7 +10,6 @@ interface MoveSelectorProps {
     moves: MonMoveSlotData[];
     z_moves?: (MonMoveSlotData | null)[];
     max_moves?: MonMoveSlotData[];
-    trapped?: boolean;
     can_mega_evolve?: boolean;
     can_terastallize?: boolean;
     can_z_move?: boolean;
@@ -126,7 +125,6 @@ export default function MoveSelector({
             htmlTitle="Shift position to the center slot"
           />
         )}
-        {activeReq.trapped && <div className="alert alert-warning">Trapped</div>}
       </div>
     </div>
   );
