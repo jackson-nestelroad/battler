@@ -1,4 +1,38 @@
 import { type BattleState, stateSelectors } from "battler-state";
+import type { PlayerBattleData } from "battler-types";
+
+export function isMonFaintedInState(
+  battleState: BattleState | null | undefined,
+  sideIndex: number,
+  activePosition: number,
+  playerData?: PlayerBattleData | null,
+): boolean {
+  if (sideIndex === 0 && playerData?.mons) {
+    const mon = playerData.mons.find((m) => m.player_active_position === activePosition);
+    if (!mon || !mon.active || (mon.hp ?? 0) <= 0) {
+      return true;
+    }
+  }
+
+  if (battleState) {
+    try {
+      const activeRef = stateSelectors.activeMonByPosition(battleState, sideIndex, activePosition);
+      if (!activeRef) return true;
+      return stateSelectors.monIsFainted(battleState, activeRef);
+    } catch {
+      const side = battleState.field?.sides?.[sideIndex];
+      const activeRef = side?.active?.[activePosition];
+      if (!activeRef) return true;
+      const player = side?.players?.[activeRef.player];
+      const mon = player?.mons?.[activeRef.mon_index];
+      if (!mon || mon.fainted) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 export function isMonDynamaxedInState(
   battleState: BattleState | null | undefined,

@@ -22842,7 +22842,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Applin,player-1,1|from:item:Oran Berry|health:64/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Applin",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Applin",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Applin had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Applin's",
@@ -22879,7 +22900,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:127/138",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Arboliva",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Arboliva",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Arboliva had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Arboliva",
@@ -22903,7 +22945,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:19/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Archeops",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Archeops",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Archeops had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Archeops's",
@@ -22940,7 +23003,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Archeops,player-2,1|from:item:Oran Berry|health:49/260",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Archeops",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Archeops",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Archeops had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Archeops's",
@@ -23112,7 +23196,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:46/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Blaziken",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Blaziken",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Blaziken had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Blaziken's",
@@ -23149,7 +23254,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:64/140",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Blaziken",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Blaziken",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Blaziken had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Blaziken's",
@@ -23186,7 +23312,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Blaziken,player-1,1|from:item:Aguav Berry|health:72/140",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Blaziken",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Blaziken",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Blaziken had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Blaziken's",
@@ -23313,7 +23460,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Conkeldurr,player-2,1|health:146/165",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Conkeldurr",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Conkeldurr",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Conkeldurr had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Conkeldurr",
@@ -23337,7 +23505,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cresselia",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cresselia",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Cresselia had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cresselia",
@@ -23361,7 +23550,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:180/180",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cresselia",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cresselia",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Cresselia had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cresselia",
@@ -23385,7 +23595,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Diggersby",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Diggersby",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Diggersby had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Diggersby's",
@@ -23422,7 +23653,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Diggersby,player-1,1|from:ability:Cheek Pouch|health:280/280",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Diggersby",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Diggersby",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Diggersby had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Diggersby's",
@@ -23459,7 +23711,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:71/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Drampa",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Drampa",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Drampa had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Drampa's",
@@ -23496,7 +23769,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:176/266",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Drampa",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Drampa",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Drampa had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Drampa's",
@@ -23533,7 +23827,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:188/266",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Drampa",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Drampa",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Drampa had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Drampa's",
@@ -23570,7 +23885,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Eevee,player-1,1|from:move:Leech Seed|of:Eevee,player-2,1|health:61/115",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eevee",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eevee",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Eevee had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Eevee",
@@ -23594,7 +23930,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:92/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Gliscor",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Gliscor",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Gliscor had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Gliscor's",
@@ -23631,7 +23988,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:124/135",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Gliscor",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Gliscor",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Gliscor had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Gliscor's",
@@ -23806,7 +24184,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Lopunny",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Lopunny",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Lopunny had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Lopunny",
@@ -23830,7 +24229,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:125/125",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Lopunny",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Lopunny",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Lopunny had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Lopunny",
@@ -23854,7 +24274,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Lotad,player-1,1|from:ability:Rain Dish|health:88/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Lotad",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Lotad",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Lotad had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Lotad's",
@@ -23981,7 +24422,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:37/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Mienshao",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Mienshao",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Mienshao had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Mienshao's",
@@ -24018,7 +24480,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Mienshao,player-2,1|from:ability:Regenerator|health:46/125",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Mienshao",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Mienshao",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Mienshao had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Mienshao's",
@@ -24055,7 +24538,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:94/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Orthworm",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Orthworm",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Orthworm had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Orthworm's",
@@ -24092,7 +24596,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Orthworm,player-2,1|from:ability:Earth Eater|health:122/130",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Orthworm",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Orthworm",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Orthworm had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Orthworm's",
@@ -24219,7 +24744,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:95/95",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24256,7 +24802,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-1,1|from:ability:Volt Absorb|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24293,7 +24860,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:95/95",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24330,7 +24918,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-1,1|from:item:Full Restore|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24367,7 +24976,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-2,1|from:move:Leech Seed|of:Incineroar,player-1,2|health:94/95",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu",
@@ -24391,7 +25021,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,player-2,1|from:move:Leech Seed|of:Incineroar,player-1,2|health:99/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu",
@@ -24415,7 +25066,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,protagonist,1|from:item:Potion|health:91/95",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "protagonist",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24452,7 +25124,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,protagonist,1|from:item:Potion|health:96/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "protagonist",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24489,7 +25182,26 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Pikachu,protagonist|from:item:Potion|health:91/95",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Inactive": {
+                "name": "Pikachu",
+                "player": "protagonist",
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pikachu had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Pikachu's",
@@ -24868,7 +25580,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Seedot,player-1,1|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Seedot",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Seedot",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Seedot had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Seedot",
@@ -24892,7 +25625,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Seedot,player-2,1|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Seedot",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Seedot",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Seedot had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Seedot",
@@ -24916,7 +25670,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Seel",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Seel",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Seel had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Seel's",
@@ -24953,7 +25728,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Seel",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Seel",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Seel had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Seel's",
@@ -24990,7 +25786,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Shiinotic,player-1,1|from:Heal|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Shiinotic",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Shiinotic",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Shiinotic had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Shiinotic",
@@ -25014,7 +25831,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Shiinotic,player-1,1|from:Heal|health:230/230",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Shiinotic",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Shiinotic",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Shiinotic had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Shiinotic",
@@ -25097,7 +25935,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Stunfisk,player-2,1|from:move:Grassy Terrain|health:71/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Stunfisk",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Stunfisk",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Stunfisk had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Stunfisk",
@@ -25121,7 +25980,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Stunfisk,player-2,1|from:move:Grassy Terrain|health:230/328",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Stunfisk",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Stunfisk",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Stunfisk had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Stunfisk",
@@ -25145,7 +26025,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:53/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Totodile",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Totodile",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Totodile had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Totodile's",
@@ -25182,7 +26083,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Totodile,player-1,1|from:item:Berry Juice|health:58/110",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Totodile",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Totodile",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Totodile had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Totodile's",
@@ -25337,7 +26259,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Toxicroak",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Toxicroak",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Toxicroak had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Toxicroak's",
@@ -25374,7 +26317,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:132/143",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Toxicroak",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Toxicroak",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Toxicroak had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Toxicroak's",
@@ -25411,7 +26375,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Toxicroak,player-2,1|from:ability:Dry Skin|health:143/143",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Toxicroak",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Toxicroak",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Toxicroak had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Toxicroak's",
@@ -25566,7 +26551,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Zekrom,player-1,1|from:item:Max Potion|health:100/100",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zekrom",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zekrom",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Zekrom had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Zekrom's",
@@ -25603,7 +26609,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Zekrom,player-1,1|from:item:Max Potion|health:310/310",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zekrom",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zekrom",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Zekrom had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Zekrom's",
@@ -25640,7 +26667,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
 {
   "rawLog": "heal|mon:Zekrom,player-2,1|from:item:Max Potion|health:310/310",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zekrom",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zekrom",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Zekrom had its HP restored!",
+        },
+        "key": "heal",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Zekrom's",

@@ -2,6 +2,7 @@ import type { Request } from "battler-types";
 import { describe, expect, it } from "vitest";
 import {
   canSlotShift,
+  canSlotSwitch,
   getMonDisplayName,
   getMonForSlot,
   getMonTeamPosition,
@@ -94,5 +95,33 @@ describe("monHelpers", () => {
 
     // Trapped mon cannot shift
     expect(canSlotShift(0, 3, true)).toBe(false);
+  });
+
+  it("determines canSlotSwitch correctly including trapped mon attempts", () => {
+    expect(canSlotSwitch(null, 0, null)).toBe(false);
+
+    // Turn request without trapped
+    const normalTurnReq = {
+      type: "turn",
+      active: [{ team_position: 0, trapped: false }],
+    } as unknown as Request;
+    expect(canSlotSwitch(normalTurnReq, 0, null)).toBe(true);
+    // When a move is selected, cannot switch
+    expect(canSlotSwitch(normalTurnReq, 0, { id: "thunderbolt" } as any)).toBe(false);
+
+    // Turn request WITH trapped mon: should return true to allow user to try switching
+    const trappedTurnReq = {
+      type: "turn",
+      active: [{ team_position: 0, trapped: true }],
+    } as unknown as Request;
+    expect(canSlotSwitch(trappedTurnReq, 0, null)).toBe(true);
+
+    // Switch request
+    const switchReq = {
+      type: "switch",
+      needs_switch: [0],
+    } as unknown as Request;
+    expect(canSlotSwitch(switchReq, 0, null)).toBe(true);
+    expect(canSlotSwitch(switchReq, 1, null)).toBe(false);
   });
 });

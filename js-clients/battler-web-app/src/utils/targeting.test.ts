@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getMoveTargetInfo, getValidTargets, isAdjacent } from "./targeting";
+import type { BattleState } from "battler-state";
+import type { PlayerBattleData } from "battler-types";
 
 describe("targeting utility", () => {
   describe("getMoveTargetInfo", () => {
@@ -111,6 +113,130 @@ describe("targeting utility", () => {
 
       // Any targets all foes [1, 2, 3] and allies except self [-2, -3]
       expect(targets.map((t) => t.value)).toEqual([1, 2, 3, -2, -3]);
+    });
+
+    it("excludes fainted foes from targeting options in Doubles", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              id: 0,
+              players: {
+                "player-1": {
+                  mons: [{ fainted: false, physical_appearance: { name: "Pikachu" } }],
+                },
+              },
+              active: [{ player: "player-1", mon_index: 0, battle_appearance_index: 0 }],
+            },
+            {
+              id: 1,
+              players: {
+                "player-2": {
+                  mons: [
+                    { fainted: false, physical_appearance: { name: "Gengar" } },
+                    { fainted: true, physical_appearance: { name: "Dragonite" } },
+                  ],
+                },
+              },
+              active: [
+                { player: "player-2", mon_index: 0, battle_appearance_index: 0 },
+                { player: "player-2", mon_index: 1, battle_appearance_index: 0 },
+              ],
+            },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const targets = getValidTargets({
+        moveTarget: "AdjacentFoe",
+        currentSlotIndex: 0,
+        battleType: "Doubles",
+        battleState: mockState,
+      });
+
+      // Dragonite (slot 1) is fainted, so only Gengar (slot 0 -> value 1) is a valid target
+      expect(targets.map((t) => t.value)).toEqual([1]);
+      expect(targets[0].monName).toBe("Gengar");
+    });
+
+    it("excludes fainted allies from targeting options in Doubles", () => {
+      const playerData: PlayerBattleData = {
+        name: "Ash",
+        side: 0,
+        mons: [
+          {
+            name: "Pikachu",
+            species: "Pikachu",
+            hp: 100,
+            max_hp: 100,
+            active: true,
+            player_active_position: 0,
+          },
+          {
+            name: "Charizard",
+            species: "Charizard",
+            hp: 0,
+            max_hp: 100,
+            active: true,
+            player_active_position: 1,
+          },
+        ],
+      } as unknown as PlayerBattleData;
+
+      const targets = getValidTargets({
+        moveTarget: "AdjacentAlly",
+        currentSlotIndex: 0,
+        battleType: "Doubles",
+        playerData,
+      });
+
+      // Ally Charizard in slot 1 has hp === 0, so no valid allies remain
+      expect(targets).toEqual([]);
+    });
+
+    it("excludes fainted foes when using Any in Triples", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              id: 0,
+              players: {
+                "player-1": {
+                  mons: [{ fainted: false, physical_appearance: { name: "Pikachu" } }],
+                },
+              },
+              active: [{ player: "player-1", mon_index: 0, battle_appearance_index: 0 }],
+            },
+            {
+              id: 1,
+              players: {
+                "player-2": {
+                  mons: [
+                    { fainted: false, physical_appearance: { name: "Gengar" } },
+                    { fainted: true, physical_appearance: { name: "Alakazam" } },
+                    { fainted: false, physical_appearance: { name: "Dragonite" } },
+                  ],
+                },
+              },
+              active: [
+                { player: "player-2", mon_index: 0, battle_appearance_index: 0 },
+                { player: "player-2", mon_index: 1, battle_appearance_index: 0 },
+                { player: "player-2", mon_index: 2, battle_appearance_index: 0 },
+              ],
+            },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const targets = getValidTargets({
+        moveTarget: "Any",
+        currentSlotIndex: 0,
+        battleType: "Triples",
+        battleState: mockState,
+      });
+
+      // Foe 0 (Gengar -> 1) and Foe 2 (Dragonite -> 3) are alive, Foe 1 (Alakazam -> 2) is fainted
+      expect(targets.filter((t) => t.type === "foe").map((t) => t.value)).toEqual([1, 3]);
     });
   });
 });

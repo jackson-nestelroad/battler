@@ -361,6 +361,7 @@ describe("LogFormatter", () => {
       mon: "The opposing Squirtle",
       monRef: { Active: { position: 0, name: "Squirtle", player: "p2", side: 1 } }
     });
+    expect(stringifyLog(healResult!.messages[0])).toBe("The opposing Squirtle had its HP restored!");
   });
 
   it("should disambiguate single vs multiple stats for fail what:unboost and emit ability notice", () => {

@@ -716,7 +716,7 @@ export const en = {
     formechange__from_species_zamazenta: null,
     formechange__from_species_zamazentacrowned: null,
     gigantamax: "{{MON}} Gigantamaxed!",
-    heal: null,
+    heal: "{{MON}} had its HP restored!",
     heal__from_ability_any: null,
     heal__from_ability_cheekpouch: null,
     heal__from_ability_dryskin: null,

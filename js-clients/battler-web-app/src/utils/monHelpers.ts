@@ -192,7 +192,7 @@ export function canSlotSwitch(
   }
   if (request.type === "turn" && selectedMove === null) {
     const activeReq = request.active?.[slotIndex];
-    return !!(activeReq && !activeReq.trapped);
+    return !!activeReq;
   }
   return false;
 }

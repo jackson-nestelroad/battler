@@ -1,7 +1,7 @@
 import type { BattleType, MoveTarget, PlayerBattleData } from "battler-types";
 import type { BattleState } from "battler-state";
 import { resolveActiveMonName } from "./monHelpers";
-import { getPlayerNameFromState } from "./battleState";
+import { getPlayerNameFromState, isMonFaintedInState } from "./battleState";
 
 export function parseTargetValue(targetVal: number, currentSlotIndex: number) {
   const isFoe = targetVal > 0;
@@ -192,10 +192,14 @@ export function getValidTargets({
   const processSide = (type: "foe" | "ally") => {
     if (type === "foe" && !info.canTargetFoe) return;
     if (type === "ally" && !info.canTargetAlly) return;
-    
+    const sideIdx = type === "foe" ? 1 : 0;
+
     for (let pos = 0; pos < activePerPlayer; pos++) {
       if (type === "ally" && pos === currentSlotIndex) continue;
       if (info.isAdjacentOnly && !isAdjacent(currentSlotIndex, pos, type === "foe", activePerPlayer)) {
+        continue;
+      }
+      if (isMonFaintedInState(battleState, sideIdx, pos, playerData)) {
         continue;
       }
       const targetVal = buildTargetValue(type, pos);
@@ -206,7 +210,9 @@ export function getValidTargets({
   processSide("foe");
 
   if (info.canTargetSelf) {
-    addTarget("self", currentSlotIndex, buildTargetValue("self", currentSlotIndex));
+    if (!isMonFaintedInState(battleState, 0, currentSlotIndex, playerData)) {
+      addTarget("self", currentSlotIndex, buildTargetValue("self", currentSlotIndex));
+    }
   }
 
   processSide("ally");

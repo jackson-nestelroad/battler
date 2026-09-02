@@ -1,6 +1,7 @@
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { useEffect, useMemo, useState } from "react";
 import { submitChoice } from "../../core/wamp";
+import { setChoiceError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { ChoiceBuilder } from "../../utils/choiceBuilder";
 import { parseChoiceError, getChosenSwitchPositions } from "../../utils/choiceParser";
@@ -15,6 +16,7 @@ import {
   getSlotMonName,
   getRequestSlotCount,
   getActiveSlotPosition,
+  resolveActiveMonName,
 } from "../../utils/monHelpers";
 import { getMoveTargetInfo, getValidTargets, type TargetOption } from "../../utils/targeting";
 import ErrorBanner from "../Common/ErrorBanner";
@@ -123,6 +125,26 @@ export default function ActionPanel({
 
   const handleSwitch = (playerTeamPosition: number, totalSlots: number) => {
     if (submittingRef.current) return;
+    if (request?.type === "turn") {
+      const activeReq = request.active?.[currentSlotIndex];
+      if (activeReq?.trapped) {
+        const fallbackName = getSlotMonName(activeMon, currentSlotIndex);
+        const monName = resolveActiveMonName(
+          playerData,
+          battleSession?.battleState,
+          0,
+          currentSlotIndex,
+          fallbackName,
+        );
+        dispatch(
+          setChoiceError({
+            battleId,
+            error: `invalid choice ${currentSlotIndex}: cannot switch: ${monName} is trapped`,
+          }),
+        );
+        return;
+      }
+    }
     const newChoices = [...choices, ChoiceBuilder.switch(playerTeamPosition)];
     advanceSlotOrSubmit(newChoices, totalSlots);
   };
