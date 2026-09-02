@@ -9139,7 +9139,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Bidoof was caught!",
         },
         "key": "catch__item_any",
@@ -9170,7 +9170,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Graveler was caught!",
         },
         "key": "catch__item_any",
@@ -9201,7 +9201,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Graveler was caught!",
         },
         "key": "catch__item_any",
@@ -9232,7 +9232,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Magikarp was caught!",
         },
         "key": "catch__item_any",
@@ -9263,7 +9263,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Magikarp was caught!",
         },
         "key": "catch__item_any",
@@ -9294,7 +9294,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catch|pla
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gotcha! the wild Metagross was caught!",
         },
         "key": "catch__item_any",
@@ -9313,7 +9313,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Oh no! The Mon broke free!",
         },
         "key": "catchfailed__item_any__shakes_0",
@@ -9332,7 +9332,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gah! It was so close, too!",
         },
         "key": "catchfailed__item_any__shakes_3",
@@ -9351,7 +9351,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gah! It was so close, too!",
         },
         "key": "catchfailed__item_any__shakes_3",
@@ -9370,7 +9370,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Gah! It was so close, too!",
         },
         "key": "catchfailed__item_any__shakes_3",
@@ -9389,7 +9389,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Aww! It appeared to be caught!",
         },
         "key": "catchfailed__item_any__shakes_1",
@@ -9408,7 +9408,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Aww! It appeared to be caught!",
         },
         "key": "catchfailed__item_any__shakes_1",
@@ -9427,7 +9427,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: catchfail
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "Aww! It appeared to be caught!",
         },
         "key": "catchfailed__item_any__shakes_1",
@@ -16650,12 +16650,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PROTAGONIST",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "PROTAGONIST escaped!",
         },
         "key": "escaped",
@@ -16673,12 +16673,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "WILD",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "WILD escaped!",
         },
         "key": "escaped",
@@ -16696,12 +16696,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: escaped|p
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "WILD-0",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "WILD-0 escaped!",
         },
         "key": "escaped",
@@ -17769,12 +17769,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: forfeited
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "PLAYER-1 forfeited.",
         },
         "key": "forfeited",
@@ -17792,12 +17792,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: forfeited
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "PLAYER-2 forfeited.",
         },
         "key": "forfeited",
@@ -17815,12 +17815,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: forfeited
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-3",
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "PLAYER-3 forfeited.",
         },
         "key": "forfeited",
@@ -25650,7 +25650,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: mega|mon:
             },
             "text": "the opposing Rayquaza",
           },
-          "__CAPITALIZED_MON_PLAYER_POSSESSIVE": {
+          "MON_PLAYER_POSSESSIVE": {
             "text": "PLAYER-1's",
           },
         },
@@ -28934,13 +28934,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE_POSSESSIVE": {
-            "text": "your team's",
+          "__CAPITALIZED_SIDE_POSSESSIVE": {
+            "text": "Your team's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "your team's Light Screen wore off!",
+          "text": "Your team's Light Screen wore off!",
         },
         "key": "sideend__move_lightscreen",
       },
@@ -28957,13 +28957,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "your team",
+          "__CAPITALIZED_SIDE": {
+            "text": "Your team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "your team is no longer protected by mist!",
+          "text": "Your team is no longer protected by mist!",
         },
         "key": "sideend__move_mist",
       },
@@ -29026,13 +29026,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE_POSSESSIVE": {
-            "text": "your team's",
+          "__CAPITALIZED_SIDE_POSSESSIVE": {
+            "text": "Your team's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "your team's Tailwind petered out!",
+          "text": "Your team's Tailwind petered out!",
         },
         "key": "sideend__move_tailwind",
       },
@@ -29072,13 +29072,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE_POSSESSIVE": {
-            "text": "the opposing team's",
+          "__CAPITALIZED_SIDE_POSSESSIVE": {
+            "text": "The opposing team's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team's Aurora Veil wore off!",
+          "text": "The opposing team's Aurora Veil wore off!",
         },
         "key": "sideend__move_auroraveil",
       },
@@ -29095,13 +29095,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE_POSSESSIVE": {
-            "text": "the opposing team's",
+          "__CAPITALIZED_SIDE_POSSESSIVE": {
+            "text": "The opposing team's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team's Light Screen wore off!",
+          "text": "The opposing team's Light Screen wore off!",
         },
         "key": "sideend__move_lightscreen",
       },
@@ -29118,13 +29118,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "the opposing team",
+          "__CAPITALIZED_SIDE": {
+            "text": "The opposing team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team is no longer protected by mist!",
+          "text": "The opposing team is no longer protected by mist!",
         },
         "key": "sideend__move_mist",
       },
@@ -29141,13 +29141,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sideend|s
     "messages": [
       {
         "context": {
-          "SIDE_POSSESSIVE": {
-            "text": "the opposing team's",
+          "__CAPITALIZED_SIDE_POSSESSIVE": {
+            "text": "The opposing team's",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team's Reflect wore off!",
+          "text": "The opposing team's Reflect wore off!",
         },
         "key": "sideend__move_reflect",
       },
@@ -29325,13 +29325,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "your team",
+          "__CAPITALIZED_SIDE": {
+            "text": "Your team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "your team became shrouded in mist!",
+          "text": "Your team became shrouded in mist!",
         },
         "key": "sidestart__move_mist",
       },
@@ -29348,13 +29348,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "your team",
+          "__CAPITALIZED_SIDE": {
+            "text": "Your team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "your team cloaked itself in a mystical veil!",
+          "text": "Your team cloaked itself in a mystical veil!",
         },
         "key": "sidestart__move_safeguard",
       },
@@ -29578,13 +29578,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "the opposing team",
+          "__CAPITALIZED_SIDE": {
+            "text": "The opposing team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team was caught in the vortex of water!",
+          "text": "The opposing team was caught in the vortex of water!",
         },
         "key": "sidestart__move_gmaxcannonade",
       },
@@ -29647,13 +29647,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: sidestart
     "messages": [
       {
         "context": {
-          "SIDE": {
-            "text": "the opposing team",
+          "__CAPITALIZED_SIDE": {
+            "text": "The opposing team",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "the opposing team became shrouded in mist!",
+          "text": "The opposing team became shrouded in mist!",
         },
         "key": "sidestart__move_mist",
       },
@@ -34838,12 +34838,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Bulbasaur",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
         "formatted": {
-          "category": "primary",
+          "category": "secondary",
           "text": "PLAYER-2 withdrew the opposing Bulbasaur!",
         },
         "key": "switchout",
@@ -34861,7 +34861,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Entei",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
@@ -34895,12 +34895,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Bulbasaur",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
         "formatted": {
-          "category": "primary",
+          "category": "secondary",
           "text": "PLAYER-2 withdrew the opposing Bulbasaur!",
         },
         "key": "switchout",
@@ -34918,7 +34918,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Entei",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
@@ -34952,12 +34952,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Bulbasaur",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
         "formatted": {
-          "category": "primary",
+          "category": "secondary",
           "text": "PLAYER-2 withdrew the opposing Bulbasaur!",
         },
         "key": "switchout",
@@ -34975,7 +34975,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
             },
             "text": "the opposing Shedinja",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
@@ -35009,7 +35009,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Cyclizar",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35043,7 +35043,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Espeon",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35077,7 +35077,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Espeon",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-2",
           },
         },
@@ -35111,7 +35111,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Golisopod",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35145,7 +35145,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Oricorio",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35179,7 +35179,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Palafin",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35213,7 +35213,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
             },
             "text": "the opposing Trapinch",
           },
-          "__CAPITALIZED_PLAYER": {
+          "PLAYER": {
             "text": "PLAYER-1",
           },
         },
@@ -35522,7 +35522,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: ultra|mon
           },
         },
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "The opposing Necrozma regained its true power through Ultra Burst!",
         },
         "key": "ultra",
@@ -35957,7 +35957,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "The Trainer blocked your Ball! Don't be a thief!",
         },
         "key": "uncatchable__thief",
@@ -35976,7 +35976,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: uncatchab
       {
         "context": {},
         "formatted": {
-          "category": "secondary",
+          "category": "primary",
           "text": "It dodged the thrown Ball! This Mon can't be caught!",
         },
         "key": "uncatchable",
@@ -36076,16 +36076,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 {
   "rawLog": "weather|weather:Extremely Harsh Sunlight|residual",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "The sunlight turned extremely harsh!",
-        },
-        "key": "weather__weather_extremelyharshsunlight",
-      },
-    ],
+    "key": "weather__weather_extremelyharshsunlight__residual",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36247,16 +36239,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 {
   "rawLog": "weather|weather:Harsh Sunlight|residual",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "The sunlight turned harsh!",
-        },
-        "key": "weather__weather_harshsunlight",
-      },
-    ],
+    "key": "weather__weather_harshsunlight__residual",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36285,16 +36269,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 {
   "rawLog": "weather|weather:Heavy Rain|residual",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "A heavy rain began to fall!",
-        },
-        "key": "weather__weather_heavyrain",
-      },
-    ],
+    "key": "weather__weather_heavyrain__residual",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36380,16 +36356,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 {
   "rawLog": "weather|weather:Rain|residual",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "It started to rain!",
-        },
-        "key": "weather__weather_rain",
-      },
-    ],
+    "key": "weather__weather_rain__residual",
+    "messages": [],
     "notices": [],
   },
 }
@@ -36570,16 +36538,8 @@ exports[`Exhaustive Log Coverage > should parse and format log string: weather|w
 {
   "rawLog": "weather|weather:Strong Winds|residual",
   "result": {
-    "messages": [
-      {
-        "context": {},
-        "formatted": {
-          "category": "secondary",
-          "text": "Mysterious strong winds are protecting Flying-type Mons!",
-        },
-        "key": "weather__weather_strongwinds",
-      },
-    ],
+    "key": "weather__weather_strongwinds__residual",
+    "messages": [],
     "notices": [],
   },
 }

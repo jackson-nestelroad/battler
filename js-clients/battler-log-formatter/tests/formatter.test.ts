@@ -387,7 +387,7 @@ describe("LogFormatter", () => {
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("Venusaur's Venusaurite is reacting to Your Mega Bracelet!");
+    expect(stringifyLog(result!.messages[0])).toBe("Venusaur's Venusaurite is reacting to your Mega Bracelet!");
     expect(stringifyLog(result!.messages[1])).toBe("Venusaur Mega Evolved!");
   });
 
@@ -538,7 +538,7 @@ describe("LogFormatter", () => {
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("Pikachu was switched out!");
+    expect(stringifyLog(result!.messages[0])).toBe("You withdrew Pikachu!");
     expect(stringifyLog(result!.messages[1])).toBe("You sent out Charmander!");
   });
 
@@ -560,8 +560,8 @@ describe("LogFormatter", () => {
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("The opposing Charmander was switched out!");
-    expect(stringifyLog(result!.messages[1])).toBe("P2 sent out the opposing Charmeleon!");
+    expect(stringifyLog(result!.messages[0])).toBe("p2 withdrew the opposing Charmander!");
+    expect(stringifyLog(result!.messages[1])).toBe("p2 sent out the opposing Charmeleon!");
   });
 
   it("should emit a single message for switch when prev_mon is absent", () => {
@@ -581,6 +581,38 @@ describe("LogFormatter", () => {
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(1);
     expect(stringifyLog(result!.messages[0])).toBe("You sent out Charmander!");
+  });
+
+  it("should auto-capitalize 'you' but preserve casing for player usernames", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const selfEntry: Partial<UiLogEntry> = {
+      title: "switch",
+      player: "p1",
+      side: 0,
+      values: {
+        name: "Walking Wake",
+        player: "p1",
+      },
+    };
+
+    const foeEntry: Partial<UiLogEntry> = {
+      title: "switch",
+      player: "ai-random-1",
+      side: 1,
+      values: {
+        name: "Walking Wake",
+        player: "ai-random-1",
+        mon: { Active: { position: 0, name: "Walking Wake", player: "ai-random-1", side: 1 } },
+      },
+    };
+
+    const selfResult = formatter.format(selfEntry as UiLogEntry);
+    expect(selfResult).not.toBeNull();
+    expect(stringifyLog(selfResult!.messages[0])).toBe("You sent out Walking Wake!");
+
+    const foeResult = formatter.format(foeEntry as UiLogEntry);
+    expect(foeResult).not.toBeNull();
+    expect(stringifyLog(foeResult!.messages[0])).toBe("ai-random-1 sent out the opposing Walking Wake!");
   });
 
   it("should map damage and heal HP diffs into context", () => {

@@ -3,6 +3,7 @@ import {
   Battle,
   BattlerServiceClient,
   LogEntry,
+  PlayerBattleData,
   Request,
   TeamData,
 } from "battler-service-client";

@@ -1,12 +1,13 @@
-import type { FormattedUiLog } from "battler-log-formatter";
 import type { UiLogEntry } from "battler-state";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
+import type { FormattedLogDisplayItem } from "../../utils/logFormatter";
+import { formatNoticeText } from "../../utils/logFormatter";
 
 import styles from "./LogPanel.module.scss";
 
 interface LogPanelProps {
-  visibleLogs: FormattedUiLog[];
+  visibleLogs: FormattedLogDisplayItem[];
   uiLogs: UiLogEntry[];
   engineLogs?: string[];
 }
@@ -66,28 +67,56 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
         )}
 
         {mode === "text" && (
-          <div className="flex-col gap-s">
-            {visibleLogs.map((log, index) => (
-              <div key={index} className={`${styles.logLine} ${styles[log.category] || ""}`}>
-                <span className={styles.indicator}>&gt;</span>
-                <span className={styles.text}>
-                  {log.tokens.map((token, i) => {
-                    if (token.type === "text") {
-                      return <Fragment key={i}>{token.value}</Fragment>;
-                    }
-                    const ctxVal = log.context[token.value];
-                    if (typeof ctxVal === "string") return <Fragment key={i}>{ctxVal}</Fragment>;
-                    if (Array.isArray(ctxVal)) {
-                      return <Fragment key={i}>{ctxVal.map(v => typeof v === "string" ? v : v.text).join(", ")}</Fragment>;
-                    }
-                    if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) {
-                      return <Fragment key={i}>{ctxVal.text}</Fragment>;
-                    }
-                    return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
-                  })}
-                </span>
-              </div>
-            ))}
+          <div className="flex-col gap-xs">
+            {visibleLogs.map((item, index) => {
+              if (item.kind === "notice") {
+                const noticeType = item.notice.type.toLowerCase();
+                let noticeClass = styles.noticeLine;
+                if (noticeType === "ability") {
+                  noticeClass = `${styles.noticeLine} ${styles.abilityNotice}`;
+                } else if (noticeType === "item") {
+                  noticeClass = `${styles.noticeLine} ${styles.itemNotice}`;
+                } else if (noticeType === "damage") {
+                  noticeClass = `${styles.noticeLine} ${styles.damageNotice}`;
+                } else if (noticeType === "heal") {
+                  noticeClass = `${styles.noticeLine} ${styles.healNotice}`;
+                }
+
+                return (
+                  <div key={index} className={noticeClass}>
+                    <span className={styles.text}>{formatNoticeText(item.notice)}</span>
+                  </div>
+                );
+              }
+
+              const { message } = item;
+              return (
+                <div key={index} className={`${styles.logLine} ${styles[item.category] || ""}`}>
+                  <span className={styles.indicator}>&gt;</span>
+                  <span className={styles.text}>
+                    {message.tokens.map((token, i) => {
+                      if (token.type === "text") {
+                        return <Fragment key={i}>{token.value}</Fragment>;
+                      }
+                      const ctxVal = message.context[token.value];
+                      if (typeof ctxVal === "string") return <Fragment key={i}>{ctxVal}</Fragment>;
+                      if (typeof ctxVal === "number") return <Fragment key={i}>{ctxVal.toString()}</Fragment>;
+                      if (Array.isArray(ctxVal)) {
+                        return (
+                          <Fragment key={i}>
+                            {ctxVal.map((v) => (typeof v === "string" ? v : v.text)).join(", ")}
+                          </Fragment>
+                        );
+                      }
+                      if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) {
+                        return <Fragment key={i}>{ctxVal.text}</Fragment>;
+                      }
+                      return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
+                    })}
+                  </span>
+                </div>
+              );
+            })}
             {visibleLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
           </div>
         )}
@@ -95,3 +124,4 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
     </div>
   );
 }
+

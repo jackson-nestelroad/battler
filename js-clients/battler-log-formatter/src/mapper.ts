@@ -99,8 +99,8 @@ export function resolvePlayerContext(
 
   if (!playerId) {
     return {
-      standard: { text: name },
-      possessive: { text: `${name}'s` },
+      standard: { text: name, noAutoCapitalize: true },
+      possessive: { text: `${name}'s`, noAutoCapitalize: true },
     };
   }
 
@@ -121,8 +121,8 @@ export function resolvePlayerContext(
   }
 
   return {
-    standard: { text, noAutoCapitalize: rel === "self" },
-    possessive: { text: possessiveText, noAutoCapitalize: rel === "self" },
+    standard: { text, noAutoCapitalize: rel !== "self" },
+    possessive: { text: possessiveText, noAutoCapitalize: rel !== "self" },
   };
 }
 
@@ -208,8 +208,8 @@ export function resolveSideContext(
   }
 
   return {
-    standard: { text, noAutoCapitalize: true },
-    possessive: { text: possessiveText, noAutoCapitalize: true },
+    standard: { text },
+    possessive: { text: possessiveText },
   };
 }
 
@@ -234,8 +234,8 @@ export function resolveMonContext(
       standard: { text: "Mon" },
       possessive: { text: "Mon's" },
       its: { text: i18next.t("mon.its") },
-      player: { text: "Player" },
-      player_possessive: { text: "Player's" },
+      player: { text: "Player", noAutoCapitalize: true },
+      player_possessive: { text: "Player's", noAutoCapitalize: true },
       raw: "Mon",
       raw_possessive: "Mon's",
       rel: "foe",
@@ -273,6 +273,8 @@ export function resolveMonContext(
   } else if (rel === "ally") {
     text = i18next.t("mon.ally", { name, player: playerName });
     possessiveText = i18next.t("mon.ally_possessive", { name, player: playerName });
+    noAutoCapitalize = true;
+    possessiveNoAutoCapitalize = true;
   } else {
     const isWild = isWildPlayer(state, playerId);
     if (isWild) {
@@ -648,9 +650,10 @@ export function mapUiLogEntry(
   if (entry.values) {
     // If values specifies mon/name/position/player for switch/appearance, bind mon
     if (!context.MON && (entry.values.mon || entry.values.name)) {
-      const monName = (entry.values.name as string) || "Mon";
-      const playerId = entry.player || (entry.values.player as string) || "";
-      const position = (entry.values.position as number) || 0;
+      const monName = typeof entry.values.name === "string" ? entry.values.name : "Mon";
+      const playerId =
+        entry.player || (typeof entry.values.player === "string" ? entry.values.player : "");
+      const position = typeof entry.values.position === "number" ? entry.values.position : 0;
       const monObj = (entry.values.mon as UiMon) || {
         Active: {
           name: monName,
