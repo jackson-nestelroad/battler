@@ -24,7 +24,11 @@ use anyhow::{
     Error,
     Result,
 };
-use battler::DataStoreByName;
+use battler::{
+    CoreBattleOptions,
+    DataStoreByName,
+};
+use battler_service::BattleServiceOptions;
 use battler_service_client::BattlerServiceClient;
 use futures_util::lock::Mutex;
 use tokio::{
@@ -59,7 +63,10 @@ use crate::{
 #[derive(Debug, Clone)]
 enum ActiveProposedBattleKind {
     Standard(ProposedBattleOptions),
-    Special(ProposedSpecialBattleOptions),
+    Special {
+        battle_options: CoreBattleOptions,
+        service_options: BattleServiceOptions,
+    },
 }
 
 #[derive(Debug)]
@@ -90,29 +97,62 @@ impl ActiveProposedBattle {
         }
     }
 
-    fn new_special(uuid: Uuid, options: ProposedSpecialBattleOptions) -> Self {
+    fn new_special<'d>(
+        uuid: Uuid,
+        data: &'d dyn DataStoreByName,
+        options: ProposedSpecialBattleOptions,
+    ) -> Result<Self> {
         let timeout = options.timeout.min(Duration::from_mins(5));
-        let (battle_type, rules) = match &options.special_battle {
+        let (battle_options, service_options) = match &options.special_battle {
             SpecialBattle::Chaos(chaos_opts) => {
-                let rules =
-                    Vec::from_iter(["Species Clause".to_string(), "Item Clause".to_string()]);
-                (chaos_opts.mode.battle_type(), rules)
+                let mut battle_opts = battler_fuzz_test_generator::generate_random_battle(
+                    data,
+                    chaos_opts.mode.battle_type(),
+                    chaos_opts.mode.team_size(),
+                    None,
+                )?;
+                let mut side_1 = options.side_1;
+                let mut side_2 = options.side_2;
+                for (i, player) in side_1.players.iter_mut().enumerate() {
+                    if let Some(generated_player) = battle_opts.side_1.players.get(i) {
+                        player.team = generated_player.team.clone();
+                    }
+                }
+                for (i, player) in side_2.players.iter_mut().enumerate() {
+                    if let Some(generated_player) = battle_opts.side_2.players.get(i) {
+                        player.team = generated_player.team.clone();
+                    }
+                }
+                battle_opts.side_1 = side_1;
+                battle_opts.side_2 = side_2;
+                battle_opts
+                    .validate()
+                    .map_err(|err| Error::msg(format!("invalid battle options: {err:#}")))?;
+                let mut service_options = options.service_options;
+                service_options.special = Some(format!("{}", options.special_battle));
+                (battle_opts, service_options)
             }
         };
         let proposed_battle = ProposedBattle {
             uuid,
-            sides: Vec::from_iter([Side::from(&options.side_1), Side::from(&options.side_2)]),
+            sides: Vec::from_iter([
+                Side::from(&battle_options.side_1),
+                Side::from(&battle_options.side_2),
+            ]),
             deadline: SystemTime::now() + timeout,
             battle: None,
-            battle_type,
-            rules,
-            timers: options.service_options.timers.clone(),
-            special: Some(format!("{}", options.special_battle)),
+            battle_type: battle_options.format.battle_type,
+            rules: battle_options.format.rules.clone(),
+            timers: service_options.timers.clone(),
+            special: service_options.special.clone(),
         };
-        Self {
-            kind: Some(ActiveProposedBattleKind::Special(options)),
+        Ok(Self {
+            kind: Some(ActiveProposedBattleKind::Special {
+                battle_options,
+                service_options,
+            }),
             proposed_battle,
-        }
+        })
     }
 
     fn uuid(&self) -> Uuid {
@@ -230,7 +270,6 @@ struct ActiveProposedBattleManager {
     players: Vec<String>,
     state: Mutex<ActiveProposedBattleManagerState>,
 
-    data: &'static dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     battler_multiplayer_service_state: Arc<Mutex<BattlerMultiplayerServiceState>>,
 }
@@ -238,7 +277,6 @@ struct ActiveProposedBattleManager {
 impl ActiveProposedBattleManager {
     fn new(
         proposed_battle: ActiveProposedBattle,
-        data: &'static dyn DataStoreByName,
         battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
         battler_multiplayer_service_state: Arc<Mutex<BattlerMultiplayerServiceState>>,
     ) -> Self {
@@ -255,7 +293,6 @@ impl ActiveProposedBattleManager {
                 inflight_state: ActiveProposedBattleInflightState::Idle,
                 join_set: JoinSet::default(),
             }),
-            data,
             battler_service_client,
             battler_multiplayer_service_state,
         }
@@ -399,41 +436,10 @@ impl ActiveProposedBattleManager {
                     Some(ActiveProposedBattleKind::Standard(options)) => {
                         Some((options.battle_options, options.service_options))
                     }
-                    Some(ActiveProposedBattleKind::Special(options)) => {
-                        match &options.special_battle {
-                            SpecialBattle::Chaos(chaos_opts) => {
-                                let mut battle_opts =
-                                    battler_fuzz_test_generator::generate_random_battle(
-                                        self.data,
-                                        chaos_opts.mode.battle_type(),
-                                        chaos_opts.mode.team_size(),
-                                        None,
-                                    )?;
-                                let mut side_1 = options.side_1;
-                                let mut side_2 = options.side_2;
-                                for (i, player) in side_1.players.iter_mut().enumerate() {
-                                    if let Some(generated_player) =
-                                        battle_opts.side_1.players.get(i)
-                                    {
-                                        player.team = generated_player.team.clone();
-                                    }
-                                }
-                                for (i, player) in side_2.players.iter_mut().enumerate() {
-                                    if let Some(generated_player) =
-                                        battle_opts.side_2.players.get(i)
-                                    {
-                                        player.team = generated_player.team.clone();
-                                    }
-                                }
-                                battle_opts.side_1 = side_1;
-                                battle_opts.side_2 = side_2;
-                                let mut service_options = options.service_options;
-                                service_options.special =
-                                    Some(format!("{}", options.special_battle));
-                                Some((battle_opts, service_options))
-                            }
-                        }
-                    }
+                    Some(ActiveProposedBattleKind::Special {
+                        battle_options,
+                        service_options,
+                    }) => Some((battle_options, service_options)),
                     None => None,
                 }
             } else {
@@ -964,16 +970,8 @@ impl<'d> BattlerMultiplayerService<'d> {
             state.player_state(&creator).last_proposed_at = Some(Instant::now());
 
             // 4. Create manager and register proposal.
-            // SAFETY: `data` is valid for `'d` on `BattlerMultiplayerService` and will outlive
-            // active proposed battles managed by this service instance.
-            let data_static = unsafe {
-                std::mem::transmute::<&'d dyn DataStoreByName, &'static dyn DataStoreByName>(
-                    self.data,
-                )
-            };
             let active_proposed_battle_manager = Arc::new(ActiveProposedBattleManager::new(
                 active_proposed_battle,
-                data_static,
                 self.battler_service_client.clone(),
                 self.state.clone(),
             ));
@@ -1049,7 +1047,7 @@ impl<'d> BattlerMultiplayerService<'d> {
         options: ProposedSpecialBattleOptions,
     ) -> Result<ProposedBattle> {
         let creator = options.service_options.creator.clone();
-        let active_proposed_battle = ActiveProposedBattle::new_special(uuid, options);
+        let active_proposed_battle = ActiveProposedBattle::new_special(uuid, self.data, options)?;
         self.register_and_start_proposed_battle(uuid, creator, active_proposed_battle)
             .await
     }

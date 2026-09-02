@@ -906,6 +906,8 @@ async fn creates_special_chaos_battle() {
     );
     assert_eq!(proposed.sides[1].players[0].status, None);
     assert_eq!(proposed.special, Some("Chaos (Singles 6v6)".to_string()));
+    assert!(proposed.rules.contains(&"Species Clause".to_string()));
+    assert!(proposed.rules.contains(&"Item Clause".to_string()));
 
     // Opponent accepts
     let updated = service
