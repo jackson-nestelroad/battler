@@ -12934,28 +12934,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Mimikyu,player-1,1|from:ability:Disguise|health:193/220",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Mimikyu",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Mimikyu",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Mimikyu was hurt!",
-        },
-        "key": "damage__from_ability_any",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Mimikyu",
@@ -12979,28 +12958,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:88/100",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Mimikyu",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Mimikyu",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Mimikyu was hurt!",
-        },
-        "key": "damage__from_ability_any",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Mimikyu",
@@ -13024,28 +12982,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Mimikyu,player-2,1|from:ability:Disguise|health:193/220",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Mimikyu",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Mimikyu",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Mimikyu was hurt!",
-        },
-        "key": "damage__from_ability_any",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Mimikyu",
@@ -14898,29 +14835,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Vivillon,player-2,1|from:move:Powder|health:76/100",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "FROM_MOVE": "Powder",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Vivillon",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Vivillon",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Vivillon is hurt by Powder!",
-        },
-        "key": "damage__from_move_any",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Vivillon",
@@ -14944,29 +14859,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: damage|mo
 {
   "rawLog": "damage|mon:Vivillon,player-2,1|from:move:Powder|health:203/270",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "FROM_MOVE": "Powder",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Vivillon",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Vivillon",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Vivillon is hurt by Powder!",
-        },
-        "key": "damage__from_move_any",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Vivillon",

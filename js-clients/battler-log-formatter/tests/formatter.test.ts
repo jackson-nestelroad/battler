@@ -751,4 +751,61 @@ describe("LogFormatter", () => {
     expect(result!.messages.length).toBe(1);
     expect(stringifyLog(result!.messages[0])).toBe("The opposing Snivy held up its Red Card against Snivy!");
   });
+
+  it("should format Disguise damage with empty messages and no fallback", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const state = {
+      field: {
+        sides: [
+          { players: { p1: { name: "Alice" } } },
+          { players: { p2: { name: "Bob" } } }
+        ]
+      }
+    };
+
+    const disguiseEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Mimikyu", player: "p1" } },
+        from: "ability:Disguise",
+        damage: [12, 100],
+      }
+    };
+
+    const result = formatter.format(disguiseEntry as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages).toEqual([]);
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0].type).toBe("Damage");
+    expect(result!.notices[0].name).toBe("12/100");
+  });
+
+  it("should format Powder damage with empty messages and no fallback", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const state = {
+      field: {
+        sides: [
+          { players: { p1: { name: "Alice" } } },
+          { players: { p2: { name: "Bob" } } }
+        ]
+      }
+    };
+
+    const powderEntry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } },
+        from: "move:Powder",
+        damage: [25, 100],
+      }
+    };
+
+    const result = formatter.format(powderEntry as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages).toEqual([]);
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0].type).toBe("Damage");
+    expect(result!.notices[0].name).toBe("25/100");
+  });
 });
+

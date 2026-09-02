@@ -129,7 +129,10 @@ function findTemplateKey(
     const safePattern = patternToKey(serialized);
 
     const fullKey = `logs.${safePattern}`;
-    if (i18next.exists(fullKey, templateArgs) && i18next.t(fullKey, templateArgs) !== null) {
+    if (
+      i18next.exists(fullKey, templateArgs) &&
+      i18next.t(fullKey, { ...templateArgs, returnObjects: true }) !== null
+    ) {
       return fullKey;
     }
   }
