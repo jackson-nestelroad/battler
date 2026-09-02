@@ -884,7 +884,7 @@ describe("LogFormatter", () => {
       mon: "Plusle's",
       monRef: { Active: { side: 0, position: 0, name: "Plusle", player: "p1" } }
     });
-    expect(stringifyLog(plusleResult!.messages[0])).toBe("Plusle swapped Abilities with its target!");
+    expect(plusleResult!.messages).toHaveLength(0);
 
     // 2. Minun (p2) gains Soundproof from Plusle (p1)
     const minunGainEntry: Partial<UiLogEntry> = {
@@ -907,7 +907,31 @@ describe("LogFormatter", () => {
       mon: "The opposing Minun's",
       monRef: { Active: { side: 1, position: 0, name: "Minun", player: "p2" } }
     });
-    expect(stringifyLog(minunResult!.messages[0])).toBe("The opposing Minun swapped Abilities with its target!");
+    expect(minunResult!.messages).toHaveLength(0);
+  });
+
+  it("should format Wandering Spirit activate with ability notice and swapped abilities message", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const activateEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Runerigus", player: "p1" } },
+        ability: "Wandering Spirit",
+        of: { Active: { side: 1, position: 0, name: "Excadrill", player: "p2" } }
+      }
+    };
+
+    const result = formatter.format(activateEntry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Wandering Spirit",
+      mon: "Runerigus's",
+      monRef: { Active: { side: 0, position: 0, name: "Runerigus", player: "p1" } }
+    });
+    expect(result!.messages.length).toBe(1);
+    expect(stringifyLog(result!.messages[0])).toBe("Runerigus swapped Abilities with its target!");
   });
 
   it("should format two ability notices simultaneously on abilityend with from:ability (Mummy)", () => {

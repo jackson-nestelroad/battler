@@ -98,8 +98,7 @@ export const en = {
       "{{SOURCE_POSSESSIVE}} {{ABILITY}} was taken over!",
     abilitystart__ability_any__from_ability_trace:
       "{{MON}} traced {{SOURCE_POSSESSIVE}} {{ABILITY}}!",
-    abilitystart__ability_any__from_ability_wanderingspirit:
-      "$t(logs.abilitystart__ability_any__from_move_skillswap)",
+    abilitystart__ability_any__from_ability_wanderingspirit: [],
     abilitystart__ability_any__from_move_any: null,
     abilitystart__ability_any__from_move_doodle:
       "$t(logs.abilitystart__ability_any__from_move_roleplay)",
@@ -107,7 +106,7 @@ export const en = {
     abilitystart__ability_any__from_move_roleplay:
       "{{MON}} copied {{SOURCE_POSSESSIVE}} {{ABILITY}} Ability!",
     abilitystart__ability_any__from_move_simplebeam: null,
-    abilitystart__ability_any__from_move_skillswap: "{{MON}} swapped Abilities with its target!",
+    abilitystart__ability_any__from_move_skillswap: [],
     abilitystart__ability_any__from_move_worryseed: null,
     activate: null,
     activate__ability_any: null,
@@ -175,7 +174,7 @@ export const en = {
     activate__ability_terashell: "{{MON}} made its shell gleam! It's distorting type matchups!",
     activate__ability_terashift: null,
     activate__ability_toxicdebris: null,
-    activate__ability_wanderingspirit: null,
+    activate__ability_wanderingspirit: "$t(logs.activate__move_skillswap)",
     activate__ability_waterbubble: null,
     activate__ability_wimpout: null,
     activate__ability_zerotohero: null,

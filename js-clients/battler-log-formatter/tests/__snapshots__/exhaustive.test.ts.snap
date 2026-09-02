@@ -1857,28 +1857,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Budew,player-1,1|ability:No Ability|source:Budew,player-2,1|from:move:Skill Swap",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Budew",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Budew",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Budew swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_move_skillswap",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Budew's",
@@ -2154,28 +2133,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Linoone,player-2,1|ability:Magma Armor|source:Magcargo,player-1,1|from:move:Skill Swap|of:Magcargo,player-1,1",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Linoone",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Linoone",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Linoone swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_move_skillswap",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Linoone's",
@@ -2199,28 +2157,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Magcargo,player-1,1|ability:No Ability|source:Linoone,player-2,1|from:move:Skill Swap",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Magcargo",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Magcargo",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Magcargo swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_move_skillswap",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Magcargo's",
@@ -2464,28 +2401,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Runerigus,player-1,1|ability:Mold Breaker|source:Runerigus,player-2,1|from:ability:Wandering Spirit",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Runerigus",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Runerigus",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Runerigus swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_ability_wanderingspirit",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Runerigus's",
@@ -2522,28 +2438,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Runerigus,player-1,1|ability:Wandering Spirit|source:Runerigus,player-2,1|from:ability:Wandering Spirit|of:Runerigus,player-2,1",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Runerigus",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Runerigus",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Runerigus swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_ability_wanderingspirit",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Runerigus's",
@@ -2567,28 +2462,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
 {
   "rawLog": "abilitystart|mon:Runerigus,player-2,1|ability:Mold Breaker|source:Runerigus,player-1,1|from:ability:Wandering Spirit",
   "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Runerigus",
-                "player": "player-2",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Runerigus",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Runerigus swapped Abilities with its target!",
-        },
-        "key": "abilitystart__ability_any__from_ability_wanderingspirit",
-      },
-    ],
+    "messages": [],
     "notices": [
       {
         "mon": "The opposing Runerigus's",
@@ -6659,7 +6533,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Runerigus,player-1,1|ability:Wandering Spirit|of:Runerigus,player-2,1",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Runerigus",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Runerigus",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Runerigus swapped Abilities with its target!",
+        },
+        "key": "activate__ability_wanderingspirit",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Runerigus's",
@@ -6683,7 +6578,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 {
   "rawLog": "activate|mon:Runerigus,player-2,1|ability:Wandering Spirit|of:Runerigus,player-1,1",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Runerigus",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Runerigus",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Runerigus swapped Abilities with its target!",
+        },
+        "key": "activate__ability_wanderingspirit",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Runerigus's",
