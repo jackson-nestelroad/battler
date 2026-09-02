@@ -632,7 +632,7 @@ input[type="checkbox"] {
   justify-content: center;
   font-size: var(--font-size-xs);
   font-weight: 800;
-  padding: 0.1rem 0.35rem;
+  padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
   text-transform: uppercase;
   color: var(--color-white);

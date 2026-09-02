@@ -1,4 +1,7 @@
-import type { ChaosBattleMode, ProposedSpecialBattleOptions } from "battler-multiplayer-service-client";
+import type {
+  ChaosBattleMode,
+  ProposedSpecialBattleOptions,
+} from "battler-multiplayer-service-client";
 import type { BattleType, CoreBattleOptions, MonData, PlayerData, PlayerType } from "battler-types";
 import React, { useEffect, useMemo, useState } from "react";
 import { proposeBattle, proposeSpecialBattle } from "../../core/wamp";
@@ -43,7 +46,7 @@ export default function ProposalForm() {
   const [category, setCategory] = useState<BattleCategory>("standard");
 
   // Chaos battle state
-  const [chaosMode, setChaosMode] = useState<ChaosBattleMode>("singles_6v6");
+  const [chaosMode, setChaosMode] = useState<ChaosBattleMode>("doubles_4v4");
 
   // Standard proposal form state
   const [format, setFormat] = useState<BattleType>("Singles");

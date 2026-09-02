@@ -39,9 +39,7 @@ function RequestHeader({ title, onForfeit, isLoading }: RequestHeaderProps) {
   return (
     <div className="card-header">
       <h3>{title}</h3>
-      <div className={styles.headerActions}>
-        <ForfeitButton onForfeit={onForfeit} isLoading={isLoading} />
-      </div>
+      <ForfeitButton onForfeit={onForfeit} isLoading={isLoading} />
     </div>
   );
 }
@@ -225,9 +223,9 @@ export default function ActionPanel({
       };
 
       return (
-        <div className={styles.movesColumn}>
+        <div className="flex-col gap-s">
           <div className={styles.columnHeaderRow}>
-            <h4 className={styles.summaryTitle}>Team preview</h4>
+            <h4 className={styles.summaryTitle}>Team Preview</h4>
           </div>
           <p className={styles.instructionText}>
             Select your team order from the right. Remaining spots will be filled automatically.
@@ -238,6 +236,7 @@ export default function ActionPanel({
 
           <div className="flex-row gap-s align-center">
             <button
+              type="button"
               className="btn btn-primary"
               onClick={handleTeamPreviewSubmit}
               disabled={isLoading}
@@ -246,6 +245,7 @@ export default function ActionPanel({
             </button>
             {selectedTeamIndices.length > 0 && (
               <button
+                type="button"
                 className="btn btn-secondary"
                 onClick={handleClearSelection}
                 disabled={isLoading}
@@ -423,7 +423,7 @@ export default function ActionPanel({
       : false;
 
   return (
-    <div className={`card flex-col gap-m ${styles.actionPanelCard}`}>
+    <div className={`card ${styles.actionPanelCard}`}>
       {displayErrorMessage && <ErrorBanner message={displayErrorMessage} />}
       {showHeader && (
         <RequestHeader

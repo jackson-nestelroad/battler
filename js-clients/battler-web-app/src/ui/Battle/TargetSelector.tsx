@@ -19,7 +19,7 @@ export default function TargetSelector({
   const requiresSelect = getMoveTargetInfo(selectedMoveTarget).isChoosable;
 
   return (
-    <div className={styles.targetCard}>
+    <div className="flex-col gap-s">
       <div className={styles.columnHeaderRow}>
         <h4 className={styles.summaryTitle}>Select target</h4>
         {onBack && (
@@ -38,6 +38,7 @@ export default function TargetSelector({
       <div className="flex-col gap-s">
         {!requiresSelect ? (
           <button
+            type="button"
             onClick={() => onConfirmMove(null)}
             className="btn btn-primary w-full"
             disabled={isLoading}
@@ -51,6 +52,7 @@ export default function TargetSelector({
 
               return (
                 <button
+                  type="button"
                   key={`${opt.type}-${opt.value}`}
                   onClick={() => onConfirmMove(opt.value)}
                   className={styles.targetBtn}

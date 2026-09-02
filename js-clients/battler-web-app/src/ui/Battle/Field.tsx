@@ -22,8 +22,12 @@ export default function Field({
 }: FieldProps) {
   if (!battleState) {
     return (
-      <div className={styles.fieldPlaceholder}>
-        <p>No battle.</p>
+      <div className={styles.arena}>
+        <div className={styles.battleground}>
+          <div className={styles.placeholderText}>
+            <p>None</p>
+          </div>
+        </div>
       </div>
     );
   }

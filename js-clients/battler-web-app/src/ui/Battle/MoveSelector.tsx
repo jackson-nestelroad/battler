@@ -46,73 +46,72 @@ export default function MoveSelector({
   );
 
   return (
-    <div className="flex-col gap-m">
-      <div className={styles.movesColumn}>
-        <div className={styles.columnHeaderRow}>
-          <h4 className={styles.summaryTitle}>Select move</h4>
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="btn btn-sm btn-secondary"
-              disabled={isLoading}
-              title="Go back to previous choice"
-            >
-              ← Back
-            </button>
-          )}
-        </div>
-
-        {hasModifiers && (
-          <div className={styles.modifiersRow}>
-            {UI_MODIFIER_KEYS.map((key) => {
-              const config = CHOICE_MODIFIER_CONFIGS[key];
-              let flag = !!activeReq[config.requestFlag];
-              if (key === "dyna" && isDynamaxed) flag = false;
-
-              if (!flag) return null;
-
-              return (
-                  <label
-                    key={key}
-                    className={`${styles.checkboxLabel} ${
-                      styles[`modifierLabel_${key}`] || ""
-                    } ${modifiers[key] ? styles.checked : ""}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={!!modifiers[key]}
-                      onChange={(e) => {
-                        onClearError();
-                        toggleModifier(key, e.target.checked);
-                      }}
-                    />
-                    {config.label}
-                  </label>
-              );
-            })}
-          </div>
+    <div className="flex-col gap-s">
+      <div className={styles.columnHeaderRow}>
+        <h4 className={styles.summaryTitle}>Select move</h4>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="btn btn-sm btn-secondary"
+            disabled={isLoading}
+            title="Go back to previous choice"
+          >
+            ← Back
+          </button>
         )}
+      </div>
 
-        <div className={styles.movesGrid}>
-          {(() => {
-            const availableMoves = getAvailableMoves(activeReq, { zmove: modifiers.zmove, dyna: isMaxMoveActive });
-            
-            return activeReq.moves.map((baseMove, index) => {
-              const modifierMove = availableMoves[index];
-              const moveToRender = modifierMove || baseMove;
-              let badgeText: string | null = null;
-              let isZMoveDisabled = false;
+      {hasModifiers && (
+        <div className="flex-row flex-wrap gap-s">
+          {UI_MODIFIER_KEYS.map((key) => {
+            const config = CHOICE_MODIFIER_CONFIGS[key];
+            let flag = !!activeReq[config.requestFlag];
+            if (key === "dyna" && isDynamaxed) flag = false;
 
-              if (modifiers.zmove) {
-                if (modifierMove) {
-                  badgeText = "Z-Move";
-                } else {
-                  isZMoveDisabled = true;
-                }
-              } else if (isMaxMoveActive && modifierMove) {
-                badgeText = "Max Move";
+            if (!flag) return null;
+
+            return (
+              <label
+                key={key}
+                className={`${styles.checkboxLabel} ${
+                  styles[`modifierLabel_${key}`] || ""
+                } ${modifiers[key] ? styles.checked : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!modifiers[key]}
+                  onChange={(e) => {
+                    onClearError();
+                    toggleModifier(key, e.target.checked);
+                  }}
+                />
+                {config.label}
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      <div className={styles.movesGrid}>
+        {(() => {
+          const availableMoves = getAvailableMoves(activeReq, { zmove: modifiers.zmove, dyna: isMaxMoveActive });
+          
+          return activeReq.moves.map((baseMove, index) => {
+            const modifierMove = availableMoves[index];
+            const moveToRender = modifierMove || baseMove;
+            let badgeText: string | null = null;
+            let isZMoveDisabled = false;
+
+            if (modifiers.zmove) {
+              if (modifierMove) {
+                badgeText = "Z-Move";
+              } else {
+                isZMoveDisabled = true;
               }
+            } else if (isMaxMoveActive && modifierMove) {
+              badgeText = "Max Move";
+            }
 
             const isMoveDisabled =
               isZMoveDisabled || baseMove.disabled || moveToRender.disabled;
@@ -134,18 +133,18 @@ export default function MoveSelector({
                 badgeClassName={badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge}
               />
             );
-          })})()}
-        </div>
-        {canShift && onShift && (
-          <ActionButton
-            title="Shift"
-            subtitle="Shift to center position"
-            onClick={onShift}
-            disabled={isLoading}
-            htmlTitle="Shift position to the center slot"
-          />
-        )}
+          });
+        })()}
       </div>
+      {canShift && onShift && (
+        <ActionButton
+          title="Shift"
+          subtitle="Shift to center position"
+          onClick={onShift}
+          disabled={isLoading}
+          htmlTitle="Shift position to the center slot"
+        />
+      )}
     </div>
   );
 }
