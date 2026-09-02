@@ -41,33 +41,20 @@ export default function TimerSettingsSection({
   timerSettings,
   onChange,
 }: TimerSettingsSectionProps) {
-  const getActionTimerValue = () => {
-    if (timerSettings.preset === "custom") return timerSettings.actionTimer;
+  const getTimerValue = (
+    field: keyof Pick<
+      TimerSettingsState,
+      "actionTimer" | "teamPreviewTimer" | "playerTimer" | "battleTimer"
+    >,
+  ) => {
+    if (timerSettings.preset === "custom") return timerSettings[field];
     if (timerSettings.preset === "none") return "";
-    return TIMER_PRESETS[timerSettings.preset].actionTimer;
-  };
-
-  const getPlayerTimerValue = () => {
-    if (timerSettings.preset === "custom") return timerSettings.playerTimer;
-    if (timerSettings.preset === "none") return "";
-    return TIMER_PRESETS[timerSettings.preset].playerTimer;
-  };
-
-  const getBattleTimerValue = () => {
-    if (timerSettings.preset === "custom") return timerSettings.battleTimer;
-    if (timerSettings.preset === "none") return "";
-    return TIMER_PRESETS[timerSettings.preset].battleTimer;
-  };
-
-  const getTeamPreviewTimerValue = () => {
-    if (timerSettings.preset === "custom") return timerSettings.teamPreviewTimer;
-    if (timerSettings.preset === "none") return "";
-    return TIMER_PRESETS[timerSettings.preset].teamPreviewTimer;
+    return TIMER_PRESETS[timerSettings.preset][field];
   };
 
   return (
     <div className={styles.advancedSection}>
-      <h4 className="mb-s">Match timers</h4>
+      <h4 className="mb-s">Timers</h4>
       <div className="flex-row flex-mobile-col gap-m align-end">
         <div className="form-group flex-1">
           <label htmlFor="timerPreset">Timer preset</label>
@@ -103,7 +90,7 @@ export default function TimerSettingsSection({
             type="number"
             min="5"
             placeholder={timerSettings.preset === "custom" ? "e.g., 45" : "None"}
-            value={getActionTimerValue()}
+            value={getTimerValue("actionTimer")}
             onChange={
               timerSettings.preset === "custom"
                 ? (e) => onChange({ actionTimer: e.target.value })
@@ -120,7 +107,7 @@ export default function TimerSettingsSection({
             type="number"
             min="5"
             placeholder={timerSettings.preset === "custom" ? "e.g., 60" : "None"}
-            value={getTeamPreviewTimerValue()}
+            value={getTimerValue("teamPreviewTimer")}
             onChange={
               timerSettings.preset === "custom"
                 ? (e) => onChange({ teamPreviewTimer: e.target.value })
@@ -137,7 +124,7 @@ export default function TimerSettingsSection({
             type="number"
             min="10"
             placeholder={timerSettings.preset === "custom" ? "e.g., 420" : "None"}
-            value={getPlayerTimerValue()}
+            value={getTimerValue("playerTimer")}
             onChange={
               timerSettings.preset === "custom"
                 ? (e) => onChange({ playerTimer: e.target.value })
@@ -154,7 +141,7 @@ export default function TimerSettingsSection({
             type="number"
             min="30"
             placeholder={timerSettings.preset === "custom" ? "e.g., 1200" : "None"}
-            value={getBattleTimerValue()}
+            value={getTimerValue("battleTimer")}
             onChange={
               timerSettings.preset === "custom"
                 ? (e) => onChange({ battleTimer: e.target.value })

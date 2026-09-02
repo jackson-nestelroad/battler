@@ -52,9 +52,35 @@ export interface ContextVar {
   noAutoCapitalize?: boolean;
 }
 
-export type ContextValue = string | number | ContextVar | (string | ContextVar)[];
+export type ContextValue =
+  | string
+  | number
+  | boolean
+  | bigint
+  | ContextVar
+  | (string | number | boolean | bigint | ContextVar)[];
 
 export type LogContext = Record<string, ContextValue> & { count?: number };
+
+export interface NoticeRuleCondition {
+  hasEffectType?: string;
+  hasSourceEffectType?: string;
+  titleIn?: string[];
+  hasContext?: string;
+}
+
+export interface NoticeRuleNotice {
+  type: string;
+  nameFromPath?: string;
+  nameFromContext?: string;
+  monResolution?: "fromContext" | "sourceFirst" | "targetFirst";
+  monFromContext?: string;
+}
+
+export interface NoticeRule {
+  condition: NoticeRuleCondition;
+  notice: NoticeRuleNotice;
+}
 
 export type ExtractVariables<T> =
   T extends string

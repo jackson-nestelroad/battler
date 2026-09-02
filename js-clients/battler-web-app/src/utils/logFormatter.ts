@@ -1,7 +1,7 @@
 import type { FormattedLogDisplayItem } from "battler-log-formatter";
-import { formatNoticeText, formatUiLogEntry } from "battler-log-formatter";
+import { formatContextValue, formatNoticeText, formatUiLogEntry } from "battler-log-formatter";
 
 export type { FormattedLogDisplayItem };
-export { formatNoticeText, formatUiLogEntry };
+export { formatContextValue, formatNoticeText, formatUiLogEntry };
 
 

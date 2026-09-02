@@ -264,53 +264,25 @@ export default function ProposalForm() {
     }
 
     // Build timers
+    const buildTimer = (secsStr: string, warnings: readonly bigint[] = []) =>
+      secsStr ? { secs: parseBigIntSafe(secsStr), warnings: [...warnings] } : null;
+
     let battleTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
     let playerTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
     let actionTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
     let teamPreviewTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
 
     if (timerSettings.preset === "custom") {
-      if (timerSettings.battleTimer) {
-        battleTimerVal = { secs: parseBigIntSafe(timerSettings.battleTimer), warnings: [] };
-      }
-      if (timerSettings.playerTimer) {
-        playerTimerVal = { secs: parseBigIntSafe(timerSettings.playerTimer), warnings: [] };
-      }
-      if (timerSettings.actionTimer) {
-        actionTimerVal = { secs: parseBigIntSafe(timerSettings.actionTimer), warnings: [] };
-      }
-      if (timerSettings.teamPreviewTimer) {
-        teamPreviewTimerVal = {
-          secs: parseBigIntSafe(timerSettings.teamPreviewTimer),
-          warnings: [],
-        };
-      }
+      battleTimerVal = buildTimer(timerSettings.battleTimer);
+      playerTimerVal = buildTimer(timerSettings.playerTimer);
+      actionTimerVal = buildTimer(timerSettings.actionTimer);
+      teamPreviewTimerVal = buildTimer(timerSettings.teamPreviewTimer);
     } else if (timerSettings.preset !== "none") {
       const preset = TIMER_PRESETS[timerSettings.preset];
-      if (preset.battleTimer) {
-        battleTimerVal = {
-          secs: parseBigIntSafe(preset.battleTimer),
-          warnings: [...preset.battleWarnings],
-        };
-      }
-      if (preset.playerTimer) {
-        playerTimerVal = {
-          secs: parseBigIntSafe(preset.playerTimer),
-          warnings: [...preset.playerWarnings],
-        };
-      }
-      if (preset.actionTimer) {
-        actionTimerVal = {
-          secs: parseBigIntSafe(preset.actionTimer),
-          warnings: [...preset.actionWarnings],
-        };
-      }
-      if (preset.teamPreviewTimer) {
-        teamPreviewTimerVal = {
-          secs: parseBigIntSafe(preset.teamPreviewTimer),
-          warnings: [...preset.teamPreviewWarnings],
-        };
-      }
+      battleTimerVal = buildTimer(preset.battleTimer, preset.battleWarnings);
+      playerTimerVal = buildTimer(preset.playerTimer, preset.playerWarnings);
+      actionTimerVal = buildTimer(preset.actionTimer, preset.actionWarnings);
+      teamPreviewTimerVal = buildTimer(preset.teamPreviewTimer, preset.teamPreviewWarnings);
     }
 
     const timers = {

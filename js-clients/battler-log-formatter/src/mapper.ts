@@ -213,6 +213,26 @@ export function resolveSideContext(
   };
 }
 
+export function getMonPlayerId(monRef?: UiMon): string | undefined {
+  if (!monRef || typeof monRef !== "object") return undefined;
+  if ("Active" in monRef && monRef.Active) return monRef.Active.player;
+  if ("Inactive" in monRef && monRef.Inactive) return monRef.Inactive.player;
+  if ("player" in monRef && typeof (monRef as { player?: string }).player === "string") {
+    return (monRef as { player: string }).player;
+  }
+  return undefined;
+}
+
+export function getMonName(monRef?: UiMon): string | undefined {
+  if (!monRef || typeof monRef !== "object") return undefined;
+  if ("Active" in monRef && monRef.Active) return monRef.Active.name;
+  if ("Inactive" in monRef && monRef.Inactive) return monRef.Inactive.name;
+  if ("name" in monRef && typeof (monRef as { name?: string }).name === "string") {
+    return (monRef as { name: string }).name;
+  }
+  return undefined;
+}
+
 export function resolveMonContext(
   monRef: UiMon | undefined,
   state: BattleState | undefined,
@@ -242,21 +262,8 @@ export function resolveMonContext(
     };
   }
 
-  let name = "Mon";
-  let playerId = "";
-
-  if ("Active" in monRef && monRef.Active) {
-    if (monRef.Active.name) name = monRef.Active.name;
-    if (monRef.Active.player) playerId = monRef.Active.player;
-  } else if ("Inactive" in monRef && monRef.Inactive) {
-    if (monRef.Inactive.name) name = monRef.Inactive.name;
-    if (monRef.Inactive.player) playerId = monRef.Inactive.player;
-  } else if ("name" in monRef && (monRef as unknown as { name?: string }).name) {
-    name = (monRef as unknown as { name: string }).name;
-    if ((monRef as unknown as { player?: string }).player) {
-      playerId = (monRef as unknown as { player: string }).player;
-    }
-  }
+  const name = getMonName(monRef) || "Mon";
+  const playerId = getMonPlayerId(monRef) || "";
 
   const rel = playerId ? getRelationship(state, options.localPlayerId, playerId) : "foe";
   const playerResolved = resolvePlayerContext(playerId, state, options);
@@ -857,20 +864,10 @@ export function mapUiLogEntry(
   }
 
   const primaryPlayerId =
-    (metadata.mon?.ref &&
-      ("Active" in metadata.mon.ref
-        ? metadata.mon.ref.Active?.player
-        : "Inactive" in metadata.mon.ref
-          ? metadata.mon.ref.Inactive?.player
-          : (metadata.mon.ref as unknown as { player?: string }).player)) ||
+    getMonPlayerId(metadata.mon?.ref) ||
     entry.player ||
     (entry.values?.player as string) ||
-    (metadata.target?.ref &&
-      ("Active" in metadata.target.ref
-        ? metadata.target.ref.Active?.player
-        : "Inactive" in metadata.target.ref
-          ? metadata.target.ref.Inactive?.player
-          : (metadata.target.ref as unknown as { player?: string }).player));
+    getMonPlayerId(metadata.target?.ref);
 
   if (primaryPlayerId && isWildPlayer(state, primaryPlayerId)) {
     flags.push("wild");

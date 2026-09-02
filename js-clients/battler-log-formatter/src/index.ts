@@ -1,6 +1,7 @@
 export {
   LogFormatter,
   stringifyLog,
+  formatContextValue,
   formatNoticeText,
   formatUiLogEntry,
 } from "./formatter.js";

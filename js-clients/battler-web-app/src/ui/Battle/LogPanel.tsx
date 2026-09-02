@@ -2,7 +2,7 @@ import type { UiLogEntry } from "battler-state";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
 import type { FormattedLogDisplayItem } from "../../utils/logFormatter";
-import { formatNoticeText } from "../../utils/logFormatter";
+import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 
 import styles from "./LogPanel.module.scss";
 
@@ -86,13 +86,14 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 let nextNonDivider: FormattedLogDisplayItem | undefined;
                 let hasContinueInGroup = item.subtype === "continue";
                 for (let i = index + 1; i < visibleLogs.length; i++) {
-                  if (visibleLogs[i].kind === "divider") {
-                    if ((visibleLogs[i] as { kind: "divider"; subtype: string }).subtype === "continue") {
+                  const nextItem = visibleLogs[i];
+                  if (nextItem.kind === "divider") {
+                    if (nextItem.subtype === "continue") {
                       hasContinueInGroup = true;
                     }
                     continue;
                   }
-                  nextNonDivider = visibleLogs[i];
+                  nextNonDivider = nextItem;
                   break;
                 }
 
@@ -108,16 +109,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
 
               if (item.kind === "notice") {
                 const noticeType = item.notice.type.toLowerCase();
-                let noticeClass = styles.noticeLine;
-                if (noticeType === "ability") {
-                  noticeClass = `${styles.noticeLine} ${styles.abilityNotice}`;
-                } else if (noticeType === "item") {
-                  noticeClass = `${styles.noticeLine} ${styles.itemNotice}`;
-                } else if (noticeType === "damage") {
-                  noticeClass = `${styles.noticeLine} ${styles.damageNotice}`;
-                } else if (noticeType === "heal") {
-                  noticeClass = `${styles.noticeLine} ${styles.healNotice}`;
-                }
+                const noticeClass = `${styles.noticeLine} ${styles[`${noticeType}Notice`] || ""}`;
 
                 return (
                   <div key={index} className={noticeClass}>
@@ -136,19 +128,8 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                         return <Fragment key={i}>{token.value}</Fragment>;
                       }
                       const ctxVal = message.context[token.value];
-                      if (typeof ctxVal === "string") return <Fragment key={i}>{ctxVal}</Fragment>;
-                      if (typeof ctxVal === "number") return <Fragment key={i}>{ctxVal.toString()}</Fragment>;
-                      if (Array.isArray(ctxVal)) {
-                        return (
-                          <Fragment key={i}>
-                            {ctxVal.map((v) => (typeof v === "string" ? v : v.text)).join(", ")}
-                          </Fragment>
-                        );
-                      }
-                      if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) {
-                        return <Fragment key={i}>{ctxVal.text}</Fragment>;
-                      }
-                      return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
+                      if (ctxVal === undefined) return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
+                      return <Fragment key={i}>{formatContextValue(ctxVal)}</Fragment>;
                     })}
                   </span>
                 </div>

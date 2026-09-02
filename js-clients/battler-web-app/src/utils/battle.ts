@@ -54,6 +54,16 @@ export interface ParsedTimerLog {
   isClear?: boolean;
 }
 
+function parseNumericSafe(val: unknown, fallback: number = NaN): number {
+  if (typeof val === "number") return isNaN(val) ? fallback : val;
+  if (typeof val === "bigint") return Number(val);
+  if (val !== undefined && val !== null) {
+    const parsed = parseInt(String(val), 10);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+  return fallback;
+}
+
 export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   if (typeof entry !== "object" || entry === null) return null;
   if (entry.title !== "timer" || !entry.values) return null;
@@ -61,15 +71,7 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
 
   const values = entry.values as Record<string, unknown>;
 
-  const remainingsecsVal = values["remainingsecs"];
-  if (remainingsecsVal === undefined) return null;
-  const remainingSecs =
-    typeof remainingsecsVal === "number"
-      ? remainingsecsVal
-      : typeof remainingsecsVal === "bigint"
-        ? Number(remainingsecsVal)
-        : parseInt(String(remainingsecsVal), 10);
-
+  const remainingSecs = parseNumericSafe(values["remainingsecs"]);
   if (isNaN(remainingSecs)) return null;
 
   let type: "battle" | "player" | "action" | "teampreview" = "battle";
@@ -96,14 +98,7 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   const isClear = "clear" in values;
 
   // Parse absolute deadline timestamp (in seconds)
-  const deadlineVal = values["deadline"];
-  const deadlineSecs = deadlineVal
-    ? typeof deadlineVal === "number"
-      ? deadlineVal
-      : typeof deadlineVal === "bigint"
-        ? Number(deadlineVal)
-        : parseInt(String(deadlineVal), 10)
-    : 0;
+  const deadlineSecs = parseNumericSafe(values["deadline"], 0);
 
   return {
     type,

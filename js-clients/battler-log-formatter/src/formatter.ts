@@ -14,6 +14,8 @@ import type {
   LogContext,
   MappedLogParticipantMetadata,
   MapperOptions,
+  NoticeRule,
+  NoticeRuleNotice,
   UiNotice,
 } from "./types.js";
 import { LogCategory } from "./types.js";
@@ -122,13 +124,7 @@ function createFormattedUiLog(
 }
 
 function resolveNoticeMon(
-  ruleNotice: {
-    type: string;
-    nameFromPath?: string;
-    nameFromContext?: string;
-    monResolution?: string;
-    monFromContext?: string;
-  },
+  ruleNotice: NoticeRuleNotice,
   mapped: AnyMappedLog,
 ): { monStr?: string; monRef?: UiMon } {
   if (ruleNotice.monResolution === "fromContext" || ruleNotice.monFromContext) {
@@ -245,51 +241,51 @@ export class LogFormatter {
 
     const notices: UiNotice[] = [];
 
-    for (const rule of noticeRules) {
+    for (const rule of (noticeRules as NoticeRule[])) {
       let match = true;
-      if ("hasSourceEffectType" in rule.condition && rule.condition.hasSourceEffectType) {
-        const reqType = (rule.condition.hasSourceEffectType as string).toLowerCase();
+      if (rule.condition.hasSourceEffectType) {
+        const reqType = rule.condition.hasSourceEffectType.toLowerCase();
         const actualType = mapped.source_effect?.effect_type?.toLowerCase();
         if (actualType !== reqType) {
           match = false;
         }
       }
-      if ("hasEffectType" in rule.condition && rule.condition.hasEffectType) {
-        const reqType = (rule.condition.hasEffectType as string).toLowerCase();
+      if (rule.condition.hasEffectType) {
+        const reqType = rule.condition.hasEffectType.toLowerCase();
         const actualType = mapped.effect?.effect_type?.toLowerCase();
         if (actualType !== reqType) {
           match = false;
         }
       }
-      if ("titleIn" in rule.condition && rule.condition.titleIn) {
+      if (rule.condition.titleIn) {
         const title = mapped.patterns[0]?.split("|")[0] || entry.title.toLowerCase();
         if (!title || !rule.condition.titleIn.includes(title)) {
           match = false;
         }
       }
-      if ("hasContext" in rule.condition && rule.condition.hasContext) {
-        if (!mapped.context[rule.condition.hasContext as string]) {
+      if (rule.condition.hasContext) {
+        if (!mapped.context[rule.condition.hasContext]) {
           match = false;
         }
       }
 
       if (match) {
         let name = "";
-        if ("nameFromPath" in rule.notice) {
+        if (rule.notice.nameFromPath) {
           if (rule.notice.nameFromPath === "source_effect.name" && mapped.source_effect?.name) {
             name = mapped.source_effect.name;
           } else if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
             name = mapped.effect.name;
           }
         }
-        if (!name && "nameFromContext" in rule.notice && rule.notice.nameFromContext) {
-          if (mapped.context[rule.notice.nameFromContext as string]) {
-            name = String(mapped.context[rule.notice.nameFromContext as string]);
+        if (!name && rule.notice.nameFromContext) {
+          if (mapped.context[rule.notice.nameFromContext]) {
+            name = String(mapped.context[rule.notice.nameFromContext]);
           }
         }
 
         if (name) {
-          const { monStr, monRef } = resolveNoticeMon(rule.notice as any, mapped);
+          const { monStr, monRef } = resolveNoticeMon(rule.notice, mapped);
           const exists = notices.some(
             (n) => n.type === rule.notice.type && n.name === name && n.mon === monStr,
           );
@@ -452,17 +448,28 @@ export function formatUiLogEntry(
   return formatter.formatEntry(entry, state);
 }
 
+export function formatContextValue(val: ContextValue | undefined): string {
+  if (val === undefined || val === null) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "bigint" || typeof val === "boolean") {
+    return String(val);
+  }
+  if (Array.isArray(val)) {
+    return val.map((v) => formatContextValue(v)).join(", ");
+  }
+  if (typeof val === "object" && "text" in val) {
+    return val.text;
+  }
+  return String(val);
+}
+
 export function stringifyLog(log: FormattedUiLog): string {
   return log.tokens
     .map((token) => {
       if (token.type === "text") return token.value;
       const ctxVal = log.context[token.value];
-      if (typeof ctxVal === "string") return ctxVal;
-      if (typeof ctxVal === "number") return ctxVal.toString();
-      if (Array.isArray(ctxVal))
-        return ctxVal.map((v) => (typeof v === "string" ? v : (v as ContextVar).text)).join(", ");
-      if (ctxVal && typeof ctxVal === "object" && "text" in ctxVal) return ctxVal.text;
-      return `{{${token.value}}}`;
+      if (ctxVal === undefined) return `{{${token.value}}}`;
+      return formatContextValue(ctxVal);
     })
     .join("");
 }

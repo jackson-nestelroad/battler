@@ -20,8 +20,7 @@
       }
 
       // Hide nested content components from rendering inside minimized container
-      :global(.modeTabs),
-      .modeTabs,
+      :global(.tabs-row),
       .scrollArea {
         display: none !important;
       }
@@ -109,8 +108,8 @@
 
 .residualDivider {
   border: none;
-  height: 0;
-  margin: 0;
+  height: var(--spacing-xs);
+  margin: var(--spacing-xs) 0;
 }
 
 .logLine {
@@ -193,7 +192,6 @@
   }
 
   &.damageNotice {
-    font-size: var(--font-size-xs);
     color: var(--color-danger);
 
     .text {
@@ -202,7 +200,6 @@
   }
 
   &.healNotice {
-    font-size: var(--font-size-xs);
     color: var(--color-success);
 
     .text {
