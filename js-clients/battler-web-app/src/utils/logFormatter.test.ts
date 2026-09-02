@@ -185,5 +185,38 @@ describe("logFormatter", () => {
         expect(foeResult[0].message.context.__CAPITALIZED_PLAYER).toBeUndefined();
       }
     });
+
+    it("should format turn logs as kind turn", () => {
+      const turnEntry: Partial<UiLogEntry> = {
+        title: "turn",
+        values: {
+          turn: 5n,
+        },
+      };
+
+      const result = formatUiLogEntry(turnEntry as UiLogEntry, undefined, "p1");
+      expect(result.length).toBe(1);
+      expect(result[0]).toEqual({
+        kind: "turn",
+        turn: "5",
+      });
+    });
+
+    it("should format continue and time logs as request-split", () => {
+      const continueEntry: Partial<UiLogEntry> = {
+        title: "continue",
+        values: {},
+      };
+      const timeEntry: Partial<UiLogEntry> = {
+        title: "time",
+        values: { value: "100" },
+      };
+
+      const contResult = formatUiLogEntry(continueEntry as UiLogEntry, undefined, "p1");
+      expect(contResult).toEqual([{ kind: "request-split" }]);
+
+      const timeResult = formatUiLogEntry(timeEntry as UiLogEntry, undefined, "p1");
+      expect(timeResult).toEqual([{ kind: "request-split" }]);
+    });
   });
 });

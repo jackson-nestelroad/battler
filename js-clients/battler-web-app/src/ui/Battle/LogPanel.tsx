@@ -69,6 +69,22 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
         {mode === "text" && (
           <div className="flex-col gap-xs">
             {visibleLogs.map((item, index) => {
+              if (item.kind === "turn") {
+                return (
+                  <div key={index} className={styles.turnHeader}>
+                    <span>Turn {item.turn}</span>
+                  </div>
+                );
+              }
+
+              if (item.kind === "request-split") {
+                const prev = visibleLogs[index - 1];
+                if (!prev || prev.kind === "turn" || prev.kind === "request-split") {
+                  return null;
+                }
+                return <hr key={index} className={styles.requestDivider} />;
+              }
+
               if (item.kind === "notice") {
                 const noticeType = item.notice.type.toLowerCase();
                 let noticeClass = styles.noticeLine;

@@ -77,6 +77,36 @@
 }
 
 
+.turnHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  margin: var(--spacing-s) 0 var(--spacing-xs) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+}
+
+.requestDivider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: var(--spacing-s) 0;
+}
+
 .logLine {
   display: flex;
   align-items: flex-start;

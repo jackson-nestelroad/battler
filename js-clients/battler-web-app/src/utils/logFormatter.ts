@@ -4,6 +4,13 @@ import { LogFormatter } from "battler-log-formatter";
 
 export type FormattedLogDisplayItem =
   | {
+      kind: "turn";
+      turn: string;
+    }
+  | {
+      kind: "request-split";
+    }
+  | {
       kind: "message";
       category: LogCategory;
       message: FormattedUiLog;
@@ -46,9 +53,21 @@ export function formatUiLogEntry(
   state?: BattleState,
   localPlayerId?: string,
 ): FormattedLogDisplayItem[] {
+  const titleLower = entry.title.toLowerCase();
+  if (titleLower === "turn") {
+    const turnVal = entry.values?.turn;
+    const turnStr = turnVal !== undefined ? String(turnVal) : "";
+    return [{ kind: "turn", turn: turnStr }];
+  }
+
+  if (titleLower === "continue" || titleLower === "time") {
+    return [{ kind: "request-split" }];
+  }
+
   const formatter = getFormatter(localPlayerId);
   const event = formatter.format(entry, state);
   if (!event) return [];
+
 
   const preNotices: FormattedLogDisplayItem[] = [];
   const postNotices: FormattedLogDisplayItem[] = [];
