@@ -100,7 +100,7 @@ describe("logFormatter", () => {
       expect(result[0].kind).toBe("notice");
       if (result[0].kind === "notice") {
         expect(result[0].notice.type).toBe("Damage");
-        expect(formatNoticeText(result[0].notice)).toBe("(The opposing Charmander lost 100/100 HP)");
+        expect(formatNoticeText(result[0].notice)).toBe("(The opposing Charmander lost 100% HP)");
       }
     });
 
@@ -146,7 +146,7 @@ describe("logFormatter", () => {
       expect(result[1].kind).toBe("notice");
       if (result[1].kind === "notice") {
         expect(result[1].notice.type).toBe("Damage");
-        expect(formatNoticeText(result[1].notice)).toBe("(The opposing Charizard lost 50/100 HP)");
+        expect(formatNoticeText(result[1].notice)).toBe("(The opposing Charizard lost 50% HP)");
       }
     });
 

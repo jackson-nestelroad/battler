@@ -23,7 +23,7 @@ export type FormattedLogDisplayItem =
 function getFormatter(localPlayerId?: string): LogFormatter {
   // Try to use a singleton formatter, or re-instantiate if player ID changes
   // For now, just create one on the fly since we need it rarely
-  return new LogFormatter({ localPlayerId });
+  return new LogFormatter({ localPlayerId, healthFormat: "percentage" });
 }
 
 export function formatNoticeText(notice: UiNotice): string {
