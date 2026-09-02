@@ -121,6 +121,7 @@ export const en = {
     activate__ability_any__started: null,
     activate__ability_any__stopped: null,
     activate__ability_battlebond: "{{MON}} became fully charged due to its bond with its Trainer!",
+    activate__ability_battlebond__wild: "{{MON}} became fully charged due to its Battle Bond!",
     activate__ability_commander: null,
     activate__ability_cottondown: null,
     activate__ability_cudchew: null,

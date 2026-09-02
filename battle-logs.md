@@ -1,6 +1,6 @@
 # Battle Engine Logs
 
-This document describes all the log types and structures output by the `battler` battle engine. 
+This document describes all the log types and structures output by the `battler` battle engine.
 
 ---
 
@@ -18,12 +18,16 @@ $$\text{title} \mid \text{key}_1\text{:value}_1 \mid \text{key}_2\text{:value}_2
 ## Common Serialized Types
 
 ### `MonPositionDetails`
+
 Used to identify a specific Mon's active position on the field.
+
 - **Format**: `Name,player_id,side_position` (e.g. `Pikachu,p1,1`)
 - **Format (when inactive/unpositioned)**: `Name,player_id` (e.g. `Pikachu,p1`)
 
 ### `ActiveMonDetails`
+
 A structured entry used to record all details of a Mon when it switches in or undergoes a species change. It serializes the following fields into the log entry:
+
 - `player` (string, required): Player ID.
 - `position` (integer, required): Active position on the side (1-based index).
 - `name` (string, required): The public nickname of the Mon (masked by illusions if active).
@@ -42,7 +46,9 @@ A structured entry used to record all details of a Mon when it switches in or un
 ### 1. Setup & Flow Logs
 
 #### `info`
+
 Provides metadata about the battle parameters, format, rules, and field environment.
+
 - **Required fields**: One of the following:
   - `battletype:Type` (e.g. `battletype:Single`)
   - `environment:Env` and `time:Time` (e.g. `environment:Grass|time:Day`)
@@ -53,35 +59,48 @@ Provides metadata about the battle parameters, format, rules, and field environm
   - `info|rule:Sleep Clause Mod: Limit one foe put to sleep`
 
 #### `side`
+
 Registers a side participating in the battle.
+
 - **Required fields**:
   - `id:SideIndex` (integer, side index)
   - `name:Name` (string, side name)
 - **Example**: `side|id:0|name:Player 1`
 
 #### `player`
+
 Registers a player in the battle, associated with their side and player position index.
+
 - **Required fields**:
   - `id:PlayerId` (string, player ID)
   - `name:PlayerName` (string, player display name)
   - `side:SideIndex` (integer, side index)
   - `position:PositionIndex` (integer, player position index on their side)
+- **Optional flags**:
+  - `wild` (boolean flag indicating a wild Pokémon encounter)
 - **Example**: `player|id:p1|name:Jackson|side:0|position:0`
+- **Example (Wild)**: `player|id:wild-1|name:Wild|side:1|position:0|wild`
 
 #### `teamsize`
+
 Logs a player's starting team size at the beginning of the battle.
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `size:Size` (integer)
 - **Example**: `teamsize|player:p1|size:6`
 
 #### `teampreviewstart`
+
 Indicates that the team preview phase has started.
+
 - **Required fields**: None.
 - **Example**: `teampreviewstart`
 
 #### `mon`
+
 Logs a Mon in a player's team during team preview.
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `species:SpeciesName` (string)
@@ -92,7 +111,9 @@ Logs a Mon in a player's team during team preview.
 - **Example**: `mon|player:p1|species:Pikachu|level:50|gender:M`
 
 #### `teampreview`
+
 Indicates the settings or end of the team preview.
+
 - **Optional fields**:
   - `pick:PickedSize` (integer, the number of Mon the player must pick)
 - **Examples**:
@@ -100,56 +121,76 @@ Indicates the settings or end of the team preview.
   - `teampreview|pick:3`
 
 #### `battlestart`
+
 Signals the official start of the battle (switching out of team preview).
+
 - **Required fields**: None.
 - **Example**: `battlestart`
 
 #### `turn`
+
 Logs the beginning of a new turn.
+
 - **Required fields**:
   - `turn:TurnNumber` (integer)
 - **Example**: `turn|turn:1`
 
 #### `time`
+
 Logs the clock value when the battle resumes after being paused (due to a request). This is logged instead of `continue` if the `log_time` engine option is enabled.
+
 - **Required fields**:
   - `value:TimeString` (string)
 - **Example**: `time|value:120`
 
 #### `continue`
+
 Logs that the battle is resuming after being paused (due to a request). This is logged unless the `log_time` engine option is enabled (which logs `time` instead).
+
 - **Required fields**: None.
 - **Example**: `continue`
 
 #### `residual`
+
 Indicates the end of the residual (end-of-turn) phase, after all residual events for that turn have been processed.
+
 - **Required fields**: None.
 - **Example**: `residual`
 
 #### `turnlimit`
+
 Indicates that the maximum turn limit has been reached.
+
 - **Required fields**: None.
 - **Example**: `turnlimit`
 
 #### `maxsidelength`
+
 Logs the maximum active side length when uneven sides are allowed.
+
 - **Required fields**:
   - `length:MaxSideLength` (integer)
 - **Example**: `maxsidelength|length:2`
 
 #### `win`
+
 Logs the winner of the battle.
+
 - **Required fields**:
   - `side:SideIndex` (integer)
 - **Example**: `win|side:0`
 
 #### `tie`
+
 Logs a tie-game end state.
+
 - **Required fields**: None.
 - **Example**: `tie`
 
 #### `split`
+
 Indicates that the following logs are split into private and public versions.
+
 - **Required fields**:
   - `side:SideIndex` (integer, which side receives the private log version)
 - **Example**: `split|side:0`
@@ -159,7 +200,9 @@ Indicates that the following logs are split into private and public versions.
 ### 2. Mon Action & State Logs
 
 #### `ability` / `abilitystart` / `abilityend`
+
 Logs ability activations or removal/suppression. `abilitystart` specifically represents an ability starting due to an effect (like Trace or Skill Swap).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `ability:AbilityName` (string)
@@ -171,7 +214,9 @@ Logs ability activations or removal/suppression. `abilitystart` specifically rep
   - `abilitystart|mon:Gardevoir,p1,1|ability:Intimidate|from:ability:Trace|of:Gyarados,p2,1`
 
 #### `activate`
+
 Logs the activation of a status, condition, effect, or clause.
+
 - **Optional fields**:
   - `mon:MonPositionDetails`
   - `move:MoveName`
@@ -191,7 +236,9 @@ Logs the activation of a status, condition, effect, or clause.
   - `activate|mon:Infernape,player-2,1|condition:Break Protect|broken`
 
 #### `addedtype`
+
 Logs an additional type appended to a Mon's current typing (e.g. Forest's Curse).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `type:TypeName` (string, the added type)
@@ -201,7 +248,9 @@ Logs an additional type appended to a Mon's current typing (e.g. Forest's Curse)
 - **Example**: `addedtype|mon:Pikachu,p1,1|type:Grass`
 
 #### `addpseudoweather` / `removepseudoweather`
+
 Logs field-wide pseudo-weathers (e.g. Trick Room, Gravity) being created or removed.
+
 - **Required fields**:
   - `condition:ConditionName` (string)
 - **Optional fields**:
@@ -210,7 +259,9 @@ Logs field-wide pseudo-weathers (e.g. Trick Room, Gravity) being created or remo
 - **Example**: `addpseudoweather|condition:Trick Room|from:move:Trick Room`
 
 #### `addsidecondition` / `removesidecondition`
+
 Logs side conditions (e.g. entry hazards, screens) being added or removed.
+
 - **Required fields**:
   - `side:SideIndex` (integer)
   - `condition:ConditionName` (string, condition ID/name)
@@ -220,7 +271,9 @@ Logs side conditions (e.g. entry hazards, screens) being added or removed.
 - **Example**: `addsidecondition|side:0|condition:Spikes|from:move:Spikes|of:Cloyster,p2,1`
 
 #### `addslotcondition` / `removeslotcondition`
+
 Logs slot-based conditions (e.g. Wish, Future Sight) applied to/removed from a field slot.
+
 - **Required fields**:
   - `side:SideIndex` (integer)
   - `slot:SlotIndex` (integer)
@@ -231,7 +284,9 @@ Logs slot-based conditions (e.g. Wish, Future Sight) applied to/removed from a f
 - **Example**: `addslotcondition|side:0|slot:0|condition:Wish`
 
 #### `addvolatile` / `removevolatile`
+
 Logs volatile statuses being applied or removed.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `volatile:VolatileName` (string, the volatile condition ID/name)
@@ -241,7 +296,9 @@ Logs volatile statuses being applied or removed.
 - **Example**: `addvolatile|mon:Pikachu,p1,1|volatile:Substitute`
 
 #### `block`
+
 Logs when a move or ability is blocked by an ability or item (e.g., Aroma Veil, Sweet Veil, Ability Shield).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target protected by the block)
 - **Optional fields**:
@@ -254,7 +311,9 @@ Logs when a move or ability is blocked by an ability or item (e.g., Aroma Veil, 
   - `block|mon:Chespin,player-1,2|move:Taunt|from:ability:Aroma Veil`
 
 #### `boost` / `unboost`
+
 Logs stat boosts or drops.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `stat:StatName` (string, e.g. `atk`, `def`, `spa`, `spd`, `spe`, `accuracy`, `evasion`)
@@ -268,7 +327,9 @@ Logs stat boosts or drops.
 - **Example**: `unboost|mon:Pikachu,p1,1|stat:atk|by:1|from:ability:Intimidate|of:Gyarados,p2,1`
 
 #### `cannotescape` / `escaped` / `forfeited`
+
 Logs player escape or forfeit events.
+
 - **Required fields**:
   - `player:PlayerId` (string)
 - **Examples**:
@@ -277,7 +338,9 @@ Logs player escape or forfeit events.
   - `forfeited|player:p1`
 
 #### `cant`
+
 Logs that a Mon is unable to act.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields**:
@@ -286,7 +349,9 @@ Logs that a Mon is unable to act.
 - **Example**: `cant|mon:Pikachu,p1,1|from:status:Paralysis`
 
 #### `catch`
+
 Logs a successful capture.
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `item:ItemName` (string, the name of the ball item used)
@@ -297,7 +362,9 @@ Logs a successful capture.
 - **Example**: `catch|player:p1|item:Ultra Ball|mon:Pikachu,p2,1|shakes:4`
 
 #### `catchfailed`
+
 Logs a failed capture attempt.
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `item:ItemName` (string, the name of the ball item used)
@@ -308,14 +375,18 @@ Logs a failed capture attempt.
 - **Example**: `catchfailed|player:p1|item:Poke Ball|mon:Pikachu,p2,1|shakes:2`
 
 #### `catchrate`
+
 Outputs debug information about the catch rates during capture check.
+
 - **Required fields**:
   - `catchrate:RateString` (e.g. `120000/1044480`)
   - `shakeprobability:ProbabilityString` (e.g. `34000/65536`)
 - **Example**: `catchrate|catchrate:120000/1044480|shakeprobability:34000/65536`
 
 #### `clearboosts` / `clearnegativeboosts` / `clearpositiveboosts`
+
 Clears boosts from a Mon.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields**:
@@ -324,7 +395,9 @@ Clears boosts from a Mon.
 - **Example**: `clearboosts|mon:Pikachu,p1,1|from:move:Haze`
 
 #### `copyboosts`
+
 Copies stat boosts from one Mon to another.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target receiving the copied boosts)
   - `source:MonPositionDetails` (the Mon boosts are being copied from)
@@ -334,7 +407,9 @@ Copies stat boosts from one Mon to another.
 - **Example**: `copyboosts|mon:Pikachu,p1,1|source:Charizard,p2,1|from:move:Psych Up`
 
 #### `curestatus`
+
 Logs that a Mon's status condition has been cured.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `status:StatusName` (string, the status cured)
@@ -344,7 +419,9 @@ Logs that a Mon's status condition has been cured.
 - **Example**: `curestatus|mon:Pikachu,p1,1|status:Poison|from:item:Pecha Berry`
 
 #### `damage` / `heal` / `sethp`
+
 Logs HP adjustments on a Mon.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `health:HealthString` (the new HP representation, e.g. `80/100` or actual HP)
@@ -356,7 +433,9 @@ Logs HP adjustments on a Mon.
   - `heal|mon:Pikachu,p1,1|health:150/312|from:item:Leftovers`
 
 #### `debug`
+
 Logs internal battle engine failures or warnings.
+
 - **Required fields**:
   - `event:EventName` (string, the name of the failing event)
   - `error:ErrorString` (string, the error message)
@@ -365,7 +444,9 @@ Logs internal battle engine failures or warnings.
 - **Example**: `debug|event:ModifyDamage|effect:Leftovers|error:Unexpected state connector`
 
 #### `deductpp`
+
 Logs PP deduction from a Mon's move (e.g. via Spite or pressure mechanics).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
   - `move:MoveName` (string)
@@ -373,14 +454,18 @@ Logs PP deduction from a Mon's move (e.g. via Spite or pressure mechanics).
 - **Example**: `deductpp|mon:Misdreavus,player-2,1|move:Dark Pulse|by:4`
 
 #### `didnotlearnmove`
+
 Logs a Mon declining to learn a move.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `move:MoveName` (string)
 - **Example**: `didnotlearnmove|mon:Pikachu,p1,1|move:Thunderbolt`
 
 #### `dynamax` / `revertdynamax`
+
 Logs a Mon dynamaxing or reverting back to normal.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields**:
@@ -388,7 +473,9 @@ Logs a Mon dynamaxing or reverting back to normal.
 - **Example**: `dynamax|mon:Pikachu,p1,1`
 
 #### `end`
+
 Logs the end/expiration of an active status, volatile, condition, move, or ability on a Mon.
+
 - **Required fields**:
   - `mon:MonPositionDetails`
 - **Optional fields**:
@@ -403,14 +490,18 @@ Logs the end/expiration of an active status, volatile, condition, move, or abili
   - `end|mon:Probopass,player-1,1|move:Magnet Rise`
 
 #### `exp`
+
 Logs experience points gained.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `exp:ExpAmount` (integer)
 - **Example**: `exp|mon:Pikachu,p1,1|exp:1200`
 
 #### `fail`
+
 Logs the failure of an effect or move.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields / values**:
@@ -423,7 +514,9 @@ Logs the failure of an effect or move.
   - `fail|mon:Pikachu,p1,1|what:heal`
 
 #### `faint` / `miss` / `supereffective` / `resisted` / `crit` / `ohko`
+
 Standard move outcome markers on a target.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Examples**:
@@ -433,7 +526,9 @@ Standard move outcome markers on a target.
   - `faint|mon:Pikachu,p1,1`
 
 #### `fieldactivate`
+
 Logs activation of field-wide conditions or moves (e.g. Perish Song, Teatime).
+
 - **Optional fields**:
   - `condition:ConditionName`
   - `move:MoveName`
@@ -443,7 +538,9 @@ Logs activation of field-wide conditions or moves (e.g. Perish Song, Teatime).
   - `fieldactivate|move:Perish Song`
 
 #### `fieldstart` / `fieldend`
+
 Logs when a field-wide condition (e.g. Electric Terrain, Trick Room) is created or ends.
+
 - **Required fields**: One of:
   - `move:MoveName`
   - `condition:ConditionName`
@@ -455,7 +552,9 @@ Logs when a field-wide condition (e.g. Electric Terrain, Trick Room) is created 
   - `fieldend|move:Psychic Terrain`
 
 #### `formechange` / `mega` / `revertmega` / `primal` / `revertprimal` / `ultra` / `revertultra` / `gigantamax` / `revertgigantamax`
+
 Logs various form modifications.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `species:SpeciesName` (string, new species/form)
@@ -465,19 +564,25 @@ Logs various form modifications.
 - **Example**: `mega|mon:Gengar,player-2,1|species:Gengar-Mega|from:item:Gengarite`
 
 #### `fxlang_debug`
+
 Logs debugging output directly from fxlang evaluation contexts.
+
 - **Required fields**:
   - `arg0`, `arg1`, `arg2` ... (string, formatted values of passed arguments)
 - **Example**: `fxlang_debug|arg0:String("Damage calculated")|arg1:Integer(154)`
 
 #### `hitcount`
+
 Logs the total hit count for multi-hit moves.
+
 - **Required fields**:
   - `hits:Count` (integer)
 - **Example**: `hitcount|hits:5`
 
 #### `immune`
+
 Logs a Mon's immunity to a move or effect.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields**:
@@ -486,7 +591,9 @@ Logs a Mon's immunity to a move or effect.
 - **Example**: `immune|mon:Gengar,p2,1|from:move:Earthquake`
 
 #### `invertboosts`
+
 Inverts all boost multipliers (positive becomes negative and vice versa).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Optional fields**:
@@ -495,7 +602,9 @@ Inverts all boost multipliers (positive becomes negative and vice versa).
 - **Example**: `invertboosts|mon:Malamar,player-2,1|from:move:Topsy-Turvy|of:Malamar,player-1,1`
 
 #### `item` / `itemstart` / `itemend`
+
 Logs item activations or item consumption/discard. `itemstart` specifically represents an item being applied or obtained due to an effect (like Trick or Magician).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `item:ItemName` (string)
@@ -511,7 +620,9 @@ Logs item activations or item consumption/discard. `itemstart` specifically repr
   - `itemend|mon:Snorlax,p1,1|item:Iapapa Berry|eat`
 
 #### `learnedmove`
+
 Logs a Mon learning a new move.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
   - `move:MoveName` (string)
@@ -520,7 +631,9 @@ Logs a Mon learning a new move.
 - **Example**: `learnedmove|mon:Pikachu,p1,1|move:Thunderbolt|forgot:Thunder Shock`
 
 #### `move` / `animatemove`
+
 Logs the execution or animation of a move.
+
 - `move`: Normal move execution.
 - `animatemove`: Forced animation-only trigger.
 - **Required fields**:
@@ -536,7 +649,9 @@ Logs the execution or animation of a move.
 - **Example**: `move|mon:Pikachu,p1,1|name:Thunderbolt|target:Charizard,p2,1`
 
 #### `prepare`
+
 Logs preparation for a multi-turn move (e.g. Solar Beam charging).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the Mon preparing the move)
   - `move:MoveName` (string)
@@ -545,13 +660,17 @@ Logs preparation for a multi-turn move (e.g. Solar Beam charging).
 - **Example**: `prepare|mon:Venusaur,p1,1|move:Solar Beam|target:Blastoise,p2,1`
 
 #### `protectweaken`
+
 Logs that a Mon's protect move was weakened/pierced by a Z-Move or Max Move.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the protected Mon)
 - **Example**: `protectweaken|mon:Chesnaught,player-1,1`
 
 #### `restorepp`
+
 Logs PP restoration for a Mon's move (e.g. via Leppa Berry).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
   - `move:MoveName` (string)
@@ -561,7 +680,9 @@ Logs PP restoration for a Mon's move (e.g. via Leppa Berry).
 - **Example**: `restorepp|mon:Pawmot,player-1,1|move:Revival Blessing|by:1|from:item:Leppa Berry`
 
 #### `revive`
+
 Logs that a fainted Mon has been revived.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the revived Mon)
 - **Optional fields**:
@@ -570,7 +691,9 @@ Logs that a fainted Mon has been revived.
 - **Example**: `revive|mon:Quaxly,player-1|from:move:Revival Blessing|of:Pawmot,player-1,1`
 
 #### `setpp`
+
 Logs setting a move's PP directly to a value (e.g. Grudge).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
   - `move:MoveName` (string)
@@ -581,7 +704,9 @@ Logs setting a move's PP directly to a value (e.g. Grudge).
 - **Example**: `setpp|mon:Misdreavus,player-2,1|move:Dark Pulse|to:0|from:move:Grudge|of:Misdreavus,player-1,1`
 
 #### `sidestart` / `sideend`
+
 Logs the start or end of a side condition (e.g., Light Screen, Mist, entry hazards).
+
 - **Required fields**:
   - `side:SideIndex` (integer)
   - `move:MoveName` (the screen/hazard move name)
@@ -592,7 +717,9 @@ Logs the start or end of a side condition (e.g., Light Screen, Mist, entry hazar
   - `sideend|side:1|move:Light Screen`
 
 #### `singlemove`
+
 Logs the start of a single-move effect (e.g. Destiny Bond, Grudge, Glaive Rush).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
 - **Optional fields**:
@@ -600,7 +727,9 @@ Logs the start of a single-move effect (e.g. Destiny Bond, Grudge, Glaive Rush).
 - **Example**: `singlemove|mon:Misdreavus,player-1,1|move:Grudge`
 
 #### `singleturn`
+
 Logs the start of a single-turn effect (e.g. Protect, Roost, Focus Punch, Endure).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
 - **Optional fields**:
@@ -610,7 +739,9 @@ Logs the start of a single-turn effect (e.g. Protect, Roost, Focus Punch, Endure
 - **Example**: `singleturn|mon:Infernape,player-2,1|move:Protect`
 
 #### `specieschange` / `replace` / `switch` / `drag` / `appear` / `switchout`
+
 Logs Mon entry, exit, or identity/species changes.
+
 - **Required fields for switches/replacements**: All fields in `ActiveMonDetails`.
 - **Required fields for `switchout`**: `mon:MonPositionDetails`.
 - **Examples**:
@@ -618,7 +749,9 @@ Logs Mon entry, exit, or identity/species changes.
   - `switchout|mon:Pikachu,p1,1`
 
 #### `start`
+
 Logs the start of an effect, condition, volatile status, or ability on a Mon.
+
 - **Required fields**:
   - `mon:MonPositionDetails`
 - **Optional fields**:
@@ -642,7 +775,9 @@ Logs the start of an effect, condition, volatile status, or ability on a Mon.
   - `start|mon:Budew,player-1,1|condition:Perish Song|perish:3`
 
 #### `status`
+
 Logs the application of a status condition (e.g. Sleep, Bad Poison, Paralysis).
+
 - **Required fields**:
   - `mon:MonPositionDetails`
   - `status:StatusName` (string)
@@ -652,7 +787,9 @@ Logs the application of a status condition (e.g. Sleep, Bad Poison, Paralysis).
 - **Example**: `status|mon:Pikachu,player-1,1|status:Bad Poison|from:Toxic Fumes`
 
 #### `swap`
+
 Swaps the position of active Mon on the field.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target Mon swapped)
   - `position:TargetPositionIndex` (integer, new position)
@@ -662,7 +799,9 @@ Swaps the position of active Mon on the field.
 - **Example**: `swap|mon:Pikachu,p1,1|position:2`
 
 #### `swapboosts`
+
 Swaps boosts between Mon.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target swapping boosts)
 - **Optional fields**:
@@ -672,14 +811,18 @@ Swaps boosts between Mon.
 - **Example**: `swapboosts|mon:Pikachu,p1,1|stats:atk,def|from:move:Guard Swap|of:Shuckle,p2,1`
 
 #### `swapplayer`
+
 Swaps the position of a player (usually in multiplayer team-shifting formats).
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `position:TargetPositionIndex` (integer)
 - **Example**: `swapplayer|player:p1|position:1`
 
 #### `swapsideconditions` / `swapsidecondition`
+
 Swaps screens, hazards, or other side conditions between sides.
+
 - **Required fields**:
   - `side:SideIndex` (integer)
 - **Required fields for `swapsideconditions`**:
@@ -693,7 +836,9 @@ Swaps screens, hazards, or other side conditions between sides.
 - **Example**: `swapsidecondition|side:0|condition:Reflect|source:1|from:move:Court Change|of:Cinderace,player-1,2`
 
 #### `transform`
+
 Logs a Mon transforming into another (e.g. Ditto using Transform).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the Mon transforming)
   - `into:MonPositionDetails` (the target Mon being copied)
@@ -704,7 +849,9 @@ Logs a Mon transforming into another (e.g. Ditto using Transform).
 - **Example**: `transform|mon:Ditto,p1,1|into:Mew,p2,1|species:Mew`
 
 #### `typechange` / `resettypechange`
+
 Logs type modifications or typing resets.
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the target)
 - **Required fields for `typechange`**:
@@ -715,7 +862,9 @@ Logs type modifications or typing resets.
 - **Example**: `typechange|mon:Pikachu,p1,1|types:Water|from:move:Soak`
 
 #### `uncatchable`
+
 Logs that a Mon cannot be caught.
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `mon:MonPositionDetails` (the target Mon)
@@ -724,7 +873,9 @@ Logs that a Mon cannot be caught.
 - **Example**: `uncatchable|player:p1|mon:Pikachu,p2,1`
 
 #### `useitem`
+
 Logs a player using an item from their bag (e.g. in PvE/wild encounters).
+
 - **Required fields**:
   - `player:PlayerId` (string)
   - `name:ItemName` (string)
@@ -733,14 +884,18 @@ Logs a player using an item from their bag (e.g. in PvE/wild encounters).
 - **Example**: `useitem|player:p1|name:Ultra Ball|target:Mewtwo,p2,1`
 
 #### `waiting`
+
 Logs that one Mon is waiting for another (e.g. during pledge moves).
+
 - **Required fields**:
   - `mon:MonPositionDetails` (the waiting Mon)
   - `on:MonPositionDetails` (the target being waited on)
 - **Example**: `waiting|mon:Pikachu,p1,1|on:Charizard,p2,1`
 
 #### `weather` / `clearweather`
+
 Logs weather starting, continuing, or clearing.
+
 - **Required fields for `weather`**:
   - `weather:WeatherName` (string)
 - **Optional fields**:

@@ -600,6 +600,7 @@ pub struct Player {
     pub team_size: usize,
     pub mons: Vec<Mon>,
     pub left_battle: bool,
+    pub wild: bool,
 }
 
 impl Player {

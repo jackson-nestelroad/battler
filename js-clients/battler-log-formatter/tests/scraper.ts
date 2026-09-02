@@ -15,6 +15,11 @@ export function maskLog(line: string): string[] {
   const parts = line.split("|").map((p) => p.trim());
   let title = parts[0];
 
+  const ALWAYS_NO_TAG = new Set(scraperConfig.alwaysNoTagLogs || []);
+  if (ALWAYS_NO_TAG.has(title)) {
+    return [title];
+  }
+
   const tags: string[] = [];
   const flags: string[] = [];
 
@@ -802,7 +807,12 @@ function generateMatrix() {
       if (lineMatch) {
         const k = lineMatch[1];
         const baseKey = k.includes("___") ? k.split("___")[0] : k;
-        if (!allGeneratedFallbacks.has(k) && !allGeneratedFallbacks.has(baseKey)) {
+        const keyWithoutWild = baseKey.replace(/__wild$/, "");
+        if (
+          !allGeneratedFallbacks.has(k) &&
+          !allGeneratedFallbacks.has(baseKey) &&
+          !allGeneratedFallbacks.has(keyWithoutWild)
+        ) {
           staleKeys.push(k);
         }
       }

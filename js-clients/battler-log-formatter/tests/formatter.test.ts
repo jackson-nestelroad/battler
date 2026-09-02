@@ -429,8 +429,8 @@ describe("LogFormatter", () => {
     const wildState = {
       field: {
         sides: [
-          { players: { p1: { id: "p1", name: "Jackson" } } },
-          { players: { "wild-1": { id: "wild-1", name: "Wild", player_type: "wild" } } }
+          { players: { p1: { id: "p1", name: "Jackson", wild: false } } },
+          { players: { "wild-1": { id: "wild-1", name: "Wild", wild: true } } }
         ]
       }
     };
@@ -446,6 +446,44 @@ describe("LogFormatter", () => {
     const result = formatter.format(entry as UiLogEntry, wildState as unknown as BattleState);
     expect(result).not.toBeNull();
     expect(stringifyLog(result!.messages[0])).toBe("The wild Pikachu used Thunderbolt!");
+  });
+
+  it("should format Battle Bond differently for trainer vs wild Mon", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const wildState = {
+      field: {
+        sides: [
+          { players: { p1: { id: "p1", name: "Jackson", wild: false } } },
+          { players: { "wild-1": { id: "wild-1", name: "Wild", wild: true } } }
+        ]
+      }
+    };
+
+    // Trainer-owned Greninja (self)
+    const trainerSelfEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { position: 0, name: "Greninja", player: "p1", side: 0 } },
+        ability: "Battle Bond"
+      }
+    };
+    const trainerSelfResult = formatter.format(trainerSelfEntry as UiLogEntry, wildState as unknown as BattleState);
+    expect(trainerSelfResult).not.toBeNull();
+    expect(trainerSelfResult!.messages[0].key).toBe("activate__ability_battlebond");
+    expect(stringifyLog(trainerSelfResult!.messages[0])).toBe("Greninja became fully charged due to its bond with its Trainer!");
+
+    // Wild Greninja
+    const wildEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { position: 0, name: "Greninja", player: "wild-1", side: 1 } },
+        ability: "Battle Bond"
+      }
+    };
+    const wildResult = formatter.format(wildEntry as UiLogEntry, wildState as unknown as BattleState);
+    expect(wildResult).not.toBeNull();
+    expect(wildResult!.messages[0].key).toBe("activate__ability_battlebond__wild");
+    expect(stringifyLog(wildResult!.messages[0])).toBe("The wild Greninja became fully charged due to its Battle Bond!");
   });
 
   it("should format move with zpower flag", () => {

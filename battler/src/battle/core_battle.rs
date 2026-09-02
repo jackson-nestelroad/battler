@@ -1077,13 +1077,17 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .players()
             .map(|player| {
-                battle_log_entry!(
+                let mut entry = battle_log_entry!(
                     "player",
                     ("id", &player.id),
                     ("name", &player.name),
                     ("side", player.side),
                     ("position", player.position),
-                )
+                );
+                if player.player_type.wild() {
+                    entry.add_flag("wild");
+                }
+                entry
             })
             .collect::<Vec<_>>();
         context.battle_mut().log_many(player_logs);

@@ -57,22 +57,29 @@ export function isWildPlayer(
   state: BattleState | undefined,
   playerId: string | undefined,
 ): boolean {
-  if (!playerId || !state?.field?.sides) return false;
-  for (const side of state.field.sides) {
-    const player = side?.players?.[playerId];
-    if (player) {
-      const pType =
-        (player as unknown as { player_type?: unknown; type?: unknown }).player_type ??
-        (player as unknown as { player_type?: unknown; type?: unknown }).type;
-      if (typeof pType === "string") {
-        return pType.toLowerCase() === "wild";
-      }
-      if (typeof pType === "object" && pType !== null) {
-        return ("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType;
+  if (!playerId) return false;
+  if (state?.field?.sides) {
+    for (const side of state.field.sides) {
+      const player = side?.players?.[playerId];
+      if (player) {
+        if ((player as unknown as { wild?: boolean }).wild !== undefined) {
+          return Boolean((player as unknown as { wild?: boolean }).wild);
+        }
+        const pType =
+          (player as unknown as { player_type?: unknown; type?: unknown }).player_type ??
+          (player as unknown as { player_type?: unknown; type?: unknown }).type;
+        if (typeof pType === "string") {
+          return pType.toLowerCase() === "wild";
+        }
+        if (typeof pType === "object" && pType !== null) {
+          return (
+            ("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType
+          );
+        }
       }
     }
   }
-  return false;
+  return playerId.toLowerCase().startsWith("wild");
 }
 
 export function resolvePlayerContext(
@@ -724,6 +731,26 @@ export function mapUiLogEntry(
         tags.push(`${k}:*`);
       }
     }
+  }
+
+  const primaryPlayerId =
+    (metadata.mon?.ref &&
+      ("Active" in metadata.mon.ref
+        ? metadata.mon.ref.Active?.player
+        : "Inactive" in metadata.mon.ref
+          ? metadata.mon.ref.Inactive?.player
+          : (metadata.mon.ref as unknown as { player?: string }).player)) ||
+    entry.player ||
+    (entry.values?.player as string) ||
+    (metadata.target?.ref &&
+      ("Active" in metadata.target.ref
+        ? metadata.target.ref.Active?.player
+        : "Inactive" in metadata.target.ref
+          ? metadata.target.ref.Inactive?.player
+          : (metadata.target.ref as unknown as { player?: string }).player));
+
+  if (primaryPlayerId && isWildPlayer(state, primaryPlayerId)) {
+    flags.push("wild");
   }
 
   const combinatoricTags = tags.filter((t) => {

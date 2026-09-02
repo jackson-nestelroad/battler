@@ -2900,4 +2900,24 @@ mod state_test {
         assert_eq!(switch_log.title, "switch");
         assert_eq!(switch_log.values.get("prev_mon"), None);
     }
+
+    #[test]
+    fn records_wild_player_type() {
+        let log = Log::new([
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:wild-1|name:Wild|side:1|position:0|wild",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+        assert_eq!(
+            state.field.sides[0].players.get("player-1").unwrap().wild,
+            false
+        );
+        assert_eq!(
+            state.field.sides[1].players.get("wild-1").unwrap().wild,
+            true
+        );
+    }
 }

@@ -1145,6 +1145,7 @@ fn alter_battle_state_for_entry(
             let name = entry.value_or_else("name")?;
             let side: usize = entry.value_or_else("side")?;
             let position = entry.value_or_else::<usize>("position")?;
+            let wild = entry.value_ref("wild").is_some();
             let side = state.field.side_mut_or_else(side)?;
             side.players.insert(
                 id.clone(),
@@ -1152,6 +1153,7 @@ fn alter_battle_state_for_entry(
                     name,
                     id,
                     position,
+                    wild,
                     ..Default::default()
                 },
             );
