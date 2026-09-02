@@ -59,7 +59,8 @@ console.log("Copying generated binding files to JS client directories...");
 function copyPattern(srcDir, destDir, pattern = /\.ts$/) {
   const files = fs.readdirSync(srcDir);
   for (const file of files) {
-    if (pattern.test(file)) {
+    const isMatch = typeof pattern === "function" ? pattern(file) : pattern.test(file);
+    if (isMatch) {
       fs.copyFileSync(path.resolve(srcDir, file), path.resolve(destDir, file));
     }
   }
@@ -70,12 +71,17 @@ copyPattern(path.resolve(rootDir, "battler-choice/bindings"), battlerTypesDir);
 copyPattern(path.resolve(rootDir, "battler/bindings"), battlerTypesDir);
 
 // Service Client gets service specific bindings only
-copyPattern(path.resolve(rootDir, "battler-service/bindings"), serviceClientBindingsDir);
+copyPattern(
+  path.resolve(rootDir, "battler-service/bindings"),
+  serviceClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
+);
 
 // Multiplayer Client gets multiplayer service specific bindings and copy of specific service options
 copyPattern(
   path.resolve(rootDir, "battler-multiplayer-service/bindings"),
   multiplayerClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
 );
 fs.copyFileSync(
   path.resolve(rootDir, "battler-service/bindings/BattleServiceOptions.ts"),

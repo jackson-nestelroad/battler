@@ -30,7 +30,12 @@ export default function BattleProposalView({
   const dispatch = useAppDispatch();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  useEffect(() => {
+    dispatch(setConnectionError(null));
+  }, [battleId, dispatch]);
+
   const title = getBattleTitle(null, null, activeProposal);
+  const isDeclined = !!activeProposal.rejection || !!activeProposal.deletionReason;
 
   useEffect(() => {
     if (title) {
@@ -41,24 +46,12 @@ export default function BattleProposalView({
     };
   }, [title]);
 
-  const handleRefresh = async () => {
-    if (!connection.playerId) return;
-    setIsRefreshing(true);
-    try {
-      await dispatch(refreshProposalSession({ battleId, playerId: connection.playerId })).unwrap();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const currentPlayer = activeProposal.sides
-    .flatMap((side) => side.players)
-    .find((player) => player.id === connection.playerId);
+    .flatMap((s) => s.players)
+    .find((p) => p.id === connection.playerId);
+
   const isParticipant = !!currentPlayer;
   const hasCurrentPlayerAccepted = currentPlayer?.status === "accepted";
-  const isDeclined = !!activeProposal.rejection || !!activeProposal.deletionReason;
 
   useEffect(() => {
     if (!isParticipant) {
@@ -71,25 +64,37 @@ export default function BattleProposalView({
     return null;
   }
 
-  const handleAccept = () => {
-    dispatch(respondToProposal({ proposedBattleId: battleId, accept: true }))
-      .unwrap()
-      .catch((err) => {
-        dispatch(setConnectionError("Failed to accept proposal: " + (err.message || err), err));
-      });
+  const handleAccept = async () => {
+    try {
+      await dispatch(respondToProposal({ proposedBattleId: battleId, accept: true })).unwrap();
+    } catch {
+      // Error handled by wamp thunk
+    }
   };
 
-  const handleDecline = () => {
-    dispatch(respondToProposal({ proposedBattleId: battleId, accept: false }))
-      .unwrap()
-      .catch((err) => {
-        dispatch(setConnectionError("Failed to decline proposal: " + (err.message || err), err));
-      });
+  const handleDecline = async () => {
+    try {
+      await dispatch(respondToProposal({ proposedBattleId: battleId, accept: false })).unwrap();
+    } catch {
+      // Error handled by wamp thunk
+    }
   };
 
   const handleDismiss = () => {
     dispatch(removeProposal(battleId));
     dispatch(selectBattle({ view: "lobby", battleId: null }));
+  };
+
+  const handleRefresh = async () => {
+    if (!connection.playerId) return;
+    setIsRefreshing(true);
+    try {
+      await dispatch(
+        refreshProposalSession({ battleId, playerId: connection.playerId }),
+      ).unwrap();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -98,8 +103,10 @@ export default function BattleProposalView({
         <div className="screen-header-title flex-col gap-xs">
           <h2>{title}</h2>
           <span className="screen-header-subtitle">
-            <span className="screen-header-format">Battle Proposal</span> •{" "}
-            <CopyableId id={battleId} type="proposal" />
+            <span className="screen-header-format">
+              {activeProposal.special ? `${activeProposal.special} Proposal` : "Battle Proposal"}
+            </span>{" "}
+            • <CopyableId id={battleId} type="proposal" />
           </span>
         </div>
         <RefreshButton
@@ -121,6 +128,7 @@ export default function BattleProposalView({
               battleType={activeProposal.battle_type}
               rules={activeProposal.rules}
               timers={activeProposal.timers}
+              special={activeProposal.special}
             />
           </div>
 

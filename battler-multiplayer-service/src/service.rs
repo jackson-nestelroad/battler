@@ -107,7 +107,7 @@ impl ActiveProposedBattle {
             battle_type,
             rules,
             timers: options.service_options.timers.clone(),
-            special: Some(options.special_battle.clone()),
+            special: Some(format!("{}", options.special_battle)),
         };
         Self {
             kind: Some(ActiveProposedBattleKind::Special(options)),

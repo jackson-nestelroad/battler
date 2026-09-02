@@ -118,10 +118,10 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
                     <div className={styles.battleSubtitle} onClick={(e) => e.stopPropagation()}>
                       <CopyableId id={battleId} type="battle" />
                     </div>
-                    {b.battle_type && (
+                    {(b.special || b.battle_type) && (
                       <>
                         <span className={styles.dotSeparator}>•</span>
-                        <span className={styles.metaText}>{b.battle_type}</span>
+                        <span className={styles.metaText}>{b.special || b.battle_type}</span>
                       </>
                     )}
                     {stateStr && (

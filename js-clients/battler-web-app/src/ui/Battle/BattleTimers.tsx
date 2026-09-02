@@ -41,7 +41,7 @@ export default function BattleTimers({
           if (timer.type === "player") {
             label = isMe ? "You" : name;
           } else if (timer.type === "action") {
-            label = isMe ? "Action Timer" : `${name} Action`;
+            label = isMe ? "Action" : `${name} Action`;
           } else if (timer.type === "teampreview") {
             label = timer.playerId ? (isMe ? "Team Preview" : `${name} Preview`) : "Team Preview";
           }

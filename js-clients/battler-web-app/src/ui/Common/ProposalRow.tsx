@@ -22,6 +22,7 @@ export default function ProposalRow({
   const userPlayer = proposal.sides.flatMap((s) => s.players).find((pl) => pl.id === playerId);
   const isDeclined = !!proposal.rejection || !!proposal.deletionReason;
   const title = getBattleTitle(null, null, proposal);
+  const formatLabel = proposal.special || proposal.battle_type;
 
   if (!userPlayer) {
     return null;
@@ -37,10 +38,10 @@ export default function ProposalRow({
           <span className={styles.proposerName}>{title}</span>
           {isDeclined ? (
             <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
-              Failed: {formatDeletionReason(proposal.deletionReason)}
+              {formatLabel} • Failed: {formatDeletionReason(proposal.deletionReason)}
             </span>
           ) : (
-            <span className={styles.proposalMeta}>Incoming • Waiting...</span>
+            <span className={styles.proposalMeta}>{formatLabel} • Incoming • Waiting...</span>
           )}
         </div>
         <div className={styles.proposalActions}>
@@ -73,10 +74,10 @@ export default function ProposalRow({
         <span className={styles.proposerName}>{title}</span>
         {isDeclined ? (
           <span className={`${styles.proposalMeta} ${styles.declinedText}`}>
-            Failed: {formatDeletionReason(proposal.deletionReason)}
+            {formatLabel} • Failed: {formatDeletionReason(proposal.deletionReason)}
           </span>
         ) : (
-          <span className={styles.proposalMeta}>Waiting...</span>
+          <span className={styles.proposalMeta}>{formatLabel} • Waiting...</span>
         )}
       </div>
       <div className={styles.proposalActions}>

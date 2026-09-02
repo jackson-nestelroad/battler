@@ -248,11 +248,11 @@ pub struct ProposedBattle {
     pub rules: Vec<String>,
     /// Timer configuration.
     pub timers: Timers,
-    /// Special battle configuration.
+    /// Special battle format type.
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "typescript", ts(optional))]
-    pub special: Option<SpecialBattle>,
+    pub special: Option<String>,
 }
 
 /// A player's response to a proposed battle.

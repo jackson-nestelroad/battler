@@ -1067,6 +1067,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
 
     const proposed = await p1Multi.proposeSpecialBattle(specialOptions);
     assert.ok(proposed.uuid);
+    assert.strictEqual(proposed.special, "Chaos (Singles 6v6)");
 
     const battleId = await p1Multi.waitForBattleStart(proposed.uuid);
     assert.ok(battleId);

@@ -7,9 +7,15 @@ interface BattleDetailsGridProps {
   battleType: BattleType;
   rules?: string[];
   timers?: Timers | null;
+  special?: string | null;
 }
 
-export default function BattleDetailsGrid({ battleType, rules, timers }: BattleDetailsGridProps) {
+export default function BattleDetailsGrid({
+  battleType,
+  rules,
+  timers,
+  special,
+}: BattleDetailsGridProps) {
   const activeTimers = timers
     ? (
         [
@@ -23,10 +29,21 @@ export default function BattleDetailsGrid({ battleType, rules, timers }: BattleD
 
   return (
     <div className="details-grid">
-      <span className="details-label">Format</span>
-      <div>
-        <span className="badge badge-secondary">{battleType}</span>
-      </div>
+      {special ? (
+        <>
+          <span className="details-label">Special</span>
+          <div>
+            <span className="badge badge-primary">{special}</span>
+          </div>
+        </>
+      ) : (
+        <>
+          <span className="details-label">Format</span>
+          <div>
+            <span className="badge badge-secondary">{battleType}</span>
+          </div>
+        </>
+      )}
 
       {rules && rules.length > 0 && (
         <>

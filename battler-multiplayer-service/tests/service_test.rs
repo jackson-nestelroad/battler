@@ -905,12 +905,7 @@ async fn creates_special_chaos_battle() {
         Some(PlayerStatus::Accepted)
     );
     assert_eq!(proposed.sides[1].players[0].status, None);
-    assert_eq!(
-        proposed.special,
-        Some(SpecialBattle::Chaos(ChaosBattleOptions {
-            mode: ChaosBattleMode::Singles6v6,
-        }))
-    );
+    assert_eq!(proposed.special, Some("Chaos (Singles 6v6)".to_string()));
 
     // Opponent accepts
     let updated = service
@@ -927,10 +922,5 @@ async fn creates_special_chaos_battle() {
         Some(PlayerStatus::Accepted)
     );
     assert!(updated.battle.is_some());
-    assert_eq!(
-        updated.special,
-        Some(SpecialBattle::Chaos(ChaosBattleOptions {
-            mode: ChaosBattleMode::Singles6v6,
-        }))
-    );
+    assert_eq!(updated.special, Some("Chaos (Singles 6v6)".to_string()));
 }

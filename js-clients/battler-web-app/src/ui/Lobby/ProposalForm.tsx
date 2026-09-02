@@ -1,5 +1,5 @@
 import type { ChaosBattleMode, ProposedSpecialBattleOptions } from "battler-multiplayer-service-client";
-import type { BattleType, CoreBattleOptions, MonData } from "battler-types";
+import type { BattleType, CoreBattleOptions, MonData, PlayerData, PlayerType } from "battler-types";
 import React, { useEffect, useMemo, useState } from "react";
 import { proposeBattle, proposeSpecialBattle } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
@@ -255,8 +255,8 @@ export default function ProposalForm() {
     };
 
     // Helper to map FormPlayer to PlayerData bindings format
-    const mapFormPlayerToPlayerData = (p: FormPlayer) => {
-      const player_type =
+    const mapFormPlayerToPlayerData = (p: FormPlayer): PlayerData => {
+      const player_type: PlayerType =
         p.playerType === "wild"
           ? {
               type: "wild",

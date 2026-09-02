@@ -213,8 +213,8 @@ export default function BattleScreen() {
             {metadata && (
               <>
                 {" "}
-                • <span className="screen-header-format">{metadata.battle_type}</span>
-                {((metadata.rules && metadata.rules.length > 0) || metadata.timers) && (
+                • <span className="screen-header-format">{metadata.special || metadata.battle_type}</span>
+                {((metadata.rules && metadata.rules.length > 0) || metadata.timers || metadata.special) && (
                   <>
                     {" "}
                     •{" "}
@@ -256,6 +256,7 @@ export default function BattleScreen() {
             battleType={metadata.battle_type}
             rules={metadata.rules}
             timers={metadata.timers}
+            special={metadata.special}
           />
         </div>
       )}
