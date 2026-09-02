@@ -1,4 +1,4 @@
-import type { Request } from "battler-types";
+import type { MonMoveSlotData, Request } from "battler-types";
 import { describe, expect, it } from "vitest";
 import {
   canSlotShift,
@@ -107,7 +107,15 @@ describe("monHelpers", () => {
     } as unknown as Request;
     expect(canSlotSwitch(normalTurnReq, 0, null)).toBe(true);
     // When a move is selected, cannot switch
-    expect(canSlotSwitch(normalTurnReq, 0, { id: "thunderbolt" } as any)).toBe(false);
+    expect(
+      canSlotSwitch(normalTurnReq, 0, {
+        id: "thunderbolt",
+        name: "Thunderbolt",
+        pp: 15,
+        max_pp: 15,
+        disabled: false,
+      } as MonMoveSlotData),
+    ).toBe(false);
 
     // Turn request WITH trapped mon: should return true to allow user to try switching
     const trappedTurnReq = {

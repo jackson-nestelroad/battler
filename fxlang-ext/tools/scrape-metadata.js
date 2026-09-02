@@ -26,14 +26,6 @@ const EFFECT_RS = path.join(
   "fxlang",
   "effect.rs",
 );
-const EVAL_RS = path.join(
-  REPO_ROOT,
-  "battler",
-  "src",
-  "effect",
-  "fxlang",
-  "eval.rs",
-);
 const OUTPUT_FILE = path.join(__dirname, "..", "metadata.json");
 
 function extractReturnTypes(lines, startIndex, typeMapping) {
@@ -413,6 +405,9 @@ function scrapeVariables(filePath, typeMapping) {
             if (existingMoveOnly) {
               effectMemberData.only_applicable_to_move = true;
             }
+            if (existingActiveMoveOnly) {
+              effectMemberData.only_applicable_to_active_move = true;
+            }
 
             if (existingType !== returnType) {
               const types = new Set([
@@ -454,7 +449,7 @@ function scrapeVariables(filePath, typeMapping) {
   return metadata;
 }
 
-function scrapeBuiltInVariables(filePath) {
+function scrapeBuiltInVariables() {
   // These are the truly global variables injected into every FxLang context
   // Conditional variables (like target, source, etc.) are handled per-event in scrapeEvents.
   const globalVars = {
@@ -583,7 +578,7 @@ function scrapeFunctions(filePath) {
         const itemTypeMatch = docLine.match(/@returnsitem\s*\{(.*)\}/);
         const retMatch = docLine.match(/@returns\s*\{(.*)\}/);
         const paramMatch = docLine.match(
-          /@param\s*\{(.*)\}\s*(?:\[([\w\.]+)\]|([\w\.]+))\s*(.*)/,
+          /@param\s*\{(.*)\}\s*(?:\[([\w.]+)\]|([\w.]+))\s*(.*)/,
         );
         const flagMatch = docLine.match(/@flag\s*(\w+)\s*(.*)/);
 
@@ -657,9 +652,8 @@ function scrapeFunctions(filePath) {
   return functions;
 }
 
-function scrapeEvents(effectFilePath, evalFilePath) {
+function scrapeEvents(effectFilePath) {
   const effectContent = fs.readFileSync(effectFilePath, "utf8");
-  const evalContent = fs.readFileSync(evalFilePath, "utf8");
 
   // 1. Parse CallbackFlags mapping
   const flagsMap = {};
@@ -867,10 +861,10 @@ function main() {
   }
 
   const vars = scrapeVariables(VARIABLE_RS, typeMappings);
-  const builtInVars = scrapeBuiltInVariables(EVAL_RS);
+  const builtInVars = scrapeBuiltInVariables();
   const funcs = scrapeFunctions(FUNCTIONS_RS);
   const commonFlags = scrapeCommonFlags(FUNCTIONS_RS);
-  const events = scrapeEvents(EFFECT_RS, EVAL_RS);
+  const events = scrapeEvents(EFFECT_RS);
   const effectStateMembers = scrapeEffectStateMembers(
     path.join(
       REPO_ROOT,

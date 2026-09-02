@@ -1,12 +1,14 @@
+import type autobahn from "autobahn";
 import { BattlerClient } from "battler-client";
-import { LogEntry } from "battler-service-client";
+import { BattlerServiceClient, LogEntry } from "battler-service-client";
+import type { Request } from "battler-types";
 import * as assert from "node:assert";
 import { describe, test } from "node:test";
 
 class MockBattlerServiceClient {
   public subscribeCallback?: (entry: LogEntry) => void;
   public logsReturned: (string | null)[] = [];
-  public currentRequest: any = null;
+  public currentRequest: Request | null = null;
 
   async battle(battleId: string) {
     return {
@@ -18,22 +20,26 @@ class MockBattlerServiceClient {
     };
   }
 
-  async fullLog(battleId: string, side?: number) {
+  async fullLog(_battleId: string, _side?: number) {
     return this.logsReturned.filter((x): x is string => x !== null);
   }
 
-  async subscribe(battleId: string, side: number | undefined, callback: (entry: LogEntry) => void) {
+  async subscribe(
+    _battleId: string,
+    _side: number | undefined,
+    callback: (entry: LogEntry) => void,
+  ) {
     this.subscribeCallback = callback;
-    return { id: 1 } as any;
+    return { id: 1 } as unknown as autobahn.Subscription;
   }
 
-  async unsubscribe(subscription: any) {}
+  async unsubscribe(_subscription: unknown) {}
 
-  async request(battleId: string, player: string) {
+  async request(_battleId: string, _player: string) {
     return this.currentRequest;
   }
 
-  async lastLogEntry(battleId: string, side?: number) {
+  async lastLogEntry(_battleId: string, _side?: number) {
     return [this.logsReturned.length - 1, ""] as [number, string];
   }
 }
@@ -56,7 +62,11 @@ describe("BattlerClient Mock Tests", () => {
     const mockService = new MockBattlerServiceClient();
     mockService.logsReturned = [...startLogs];
 
-    const client = await BattlerClient.create("test-battle-uuid", "player-1", mockService as any);
+    const client = await BattlerClient.create(
+      "test-battle-uuid",
+      "player-1",
+      mockService as unknown as BattlerServiceClient,
+    );
 
     assert.strictEqual(client.state().turn, 1);
 
@@ -91,9 +101,13 @@ describe("BattlerClient Mock Tests", () => {
     const mockService = new MockBattlerServiceClient();
     mockService.logsReturned = [...startLogs];
 
-    const client = await BattlerClient.create("test-battle-uuid", "player-1", mockService as any);
+    const client = await BattlerClient.create(
+      "test-battle-uuid",
+      "player-1",
+      mockService as unknown as BattlerServiceClient,
+    );
 
-    const errorPromise = new Promise<any>((resolve) => {
+    const errorPromise = new Promise<unknown>((resolve) => {
       client.on("error", (err) => {
         resolve(err);
       });

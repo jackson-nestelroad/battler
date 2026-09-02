@@ -1,28 +1,23 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { alterBattleState, newBattleState } from "battler-state";
-import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { alterBattleState, newBattleState, UiLogEntry } from "battler-state";
+import { LogFormatter } from "../src/formatter.js";
 import { mapUiLogEntry } from "../src/mapper.js";
 import { parsePattern, serializePattern, patternToKey } from "../src/pattern.js";
 import { en } from "../locales/en.js";
 import matrixLogs from "../tests/data/logs-matrix.json" with { type: "json" };
 import { parseTemplateToTokens } from "../src/engine.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const formatter = new LogFormatter({ localPlayerId: "p1" });
 
 interface ValidationFailure {
   rawLog: string;
   reason: string;
-  details?: any;
+  details?: unknown;
 }
 
 const failures: ValidationFailure[] = [];
 
 // 1. Validate all templates in en.ts
 console.log("Validating locale templates...");
-const templateVarRegex = /\{\{([a-zA-Z0-9_]+)\}\}/g;
 let templateCount = 0;
 
 for (const [key, val] of Object.entries(en.logs)) {
@@ -128,20 +123,20 @@ for (const logString of matrixLogs) {
   } catch (err) {
     // If it's a known standalone log that requires specific state context, format directly
     if (logString.startsWith("start|move:Doom Desire") || logString.startsWith("start|move:Future Sight")) {
-      const parts = logString.split("|");
-      const title = parts[0];
-      const values: Record<string, any> = {};
-      for (let i = 1; i < parts.length; i++) {
-        const [k, ...rest] = parts[i].split(":");
+      const logParts = logString.split("|");
+      const title = logParts[0];
+      const values: Record<string, string> = {};
+      for (let i = 1; i < logParts.length; i++) {
+        const [k, ...rest] = logParts[i].split(":");
         values[k] = rest.join(":");
       }
-      const dummyEntry = {
+      const dummyEntry: UiLogEntry = {
         title,
         values,
       };
-      const mapped = mapUiLogEntry(dummyEntry as any, undefined, { localPlayerId: "p1" });
+      const mapped = mapUiLogEntry(dummyEntry, undefined, { localPlayerId: "p1" });
       if (mapped) {
-        const ev = formatter.format(dummyEntry as any, undefined);
+        formatter.format(dummyEntry, undefined);
         continue;
       }
     }
@@ -170,14 +165,14 @@ for (const logString of matrixLogs) {
 
   // Find candidate templates in en.logs
   let matchedKey: string | undefined = undefined;
-  let matchedVal: any = undefined;
+  let matchedVal: string | string[] | null | undefined = undefined;
   for (const pattern of mapped.patterns) {
     const parsed = parsePattern(pattern);
     const serialized = serializePattern(parsed);
     const safePattern = patternToKey(serialized);
     if (safePattern in en.logs) {
       matchedKey = safePattern;
-      matchedVal = (en.logs as any)[safePattern];
+      matchedVal = (en.logs as Record<string, string | string[] | null>)[safePattern];
       break;
     }
   }

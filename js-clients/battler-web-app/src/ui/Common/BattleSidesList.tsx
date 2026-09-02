@@ -31,13 +31,16 @@ export default function BattleSidesList({ sides, isProposal = false }: BattleSid
                 let badgeClass = "";
 
                 if (isProposal) {
-                  statusText = p.status || "Pending";
-                  badgeClass =
-                    p.status === "accepted"
-                      ? "badge-success"
-                      : p.status === "rejected"
-                        ? "badge-danger"
-                        : "badge-warning";
+                  if (p.status === "accepted") {
+                    statusText = "Accepted";
+                    badgeClass = "badge-success";
+                  } else if (p.status === "rejected") {
+                    statusText = "Rejected";
+                    badgeClass = "badge-danger";
+                  } else {
+                    statusText = "Pending";
+                    badgeClass = "badge-warning";
+                  }
                 } else {
                   const isReady = p.state === "ready";
                   statusText = isReady ? "Ready" : "Preparing";

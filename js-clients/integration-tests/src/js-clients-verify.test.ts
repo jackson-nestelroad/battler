@@ -7,8 +7,13 @@ import { fileURLToPath } from "url";
 
 import { BattlerClient, ChoiceBuilder } from "battler-client";
 import { BattlerMultiplayerClient } from "battler-multiplayer-client";
-import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
-import { BattlerServiceClient } from "battler-service-client";
+import {
+  BattlerMultiplayerServiceClient,
+  ProposedBattleOptions,
+  ProposedSpecialBattleOptions,
+} from "battler-multiplayer-service-client";
+import { BattleServiceOptions, BattlerServiceClient, TeamData } from "battler-service-client";
+import type { CoreBattleOptions, SideData } from "battler-types";
 import { WampSessionProvider } from "battler-wamp-client";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -188,10 +193,12 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       },
     };
 
-    const proposedOptions = {
-      battle_options: battleOptions,
+    const proposedOptions: ProposedBattleOptions = {
+      battle_options: battleOptions as unknown as CoreBattleOptions,
       service_options: {
         creator: "player_1",
+        timers: { battle: null, player: null, action: null, team_preview: null },
+        log_timer_deadlines: false,
       },
       timeout: {
         secs: 30,
@@ -200,7 +207,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     };
 
     // P1 proposed battle start promise
-    const p1StartPromise = p1MultiClient.proposeAndWaitForBattleStart(proposedOptions as any);
+    const p1StartPromise = p1MultiClient.proposeAndWaitForBattleStart(proposedOptions);
 
     // Give a short delay for proposal to publish
     await new Promise((r) => setTimeout(r, 100));
@@ -216,7 +223,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // P2 accepts the battle
-    await p2MultiClient.respondToProposal(proposal.uuid, true, p2Team as any);
+    await p2MultiClient.respondToProposal(proposal.uuid, true, p2Team as unknown as TeamData);
 
     // Both clients should resolve their start promises and catch up
     const p1Client = await p1StartPromise;
@@ -418,10 +425,12 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       },
     };
 
-    const proposedOptions = {
-      battle_options: battleOptions,
+    const proposedOptions: ProposedBattleOptions = {
+      battle_options: battleOptions as unknown as CoreBattleOptions,
       service_options: {
         creator: "player_1",
+        timers: { battle: null, player: null, action: null, team_preview: null },
+        log_timer_deadlines: false,
       },
       timeout: {
         secs: 30,
@@ -431,7 +440,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
 
     // P1 proposes the battle after cooldown
     await new Promise((r) => setTimeout(r, 3100));
-    const proposed = await p1MultiClient.proposeBattle(proposedOptions as any);
+    const proposed = await p1MultiClient.proposeBattle(proposedOptions);
 
     // P1 proposed battle start promise
     const p1StartPromise = p1MultiClient.waitForBattleStart(proposed.uuid).then((battleId) => {
@@ -444,7 +453,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     });
 
     // P2 accepts the battle
-    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as any);
+    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as unknown as TeamData);
 
     const [p1Client, p2Client] = await Promise.all([p1StartPromise, p2StartPromise]);
     assert.ok(p1Client, "Player 1 client should resolve and catch up");
@@ -475,7 +484,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     await p1Client.makeChoice(ChoiceBuilder.forfeit().toString());
     await p2Client.makeChoice(ChoiceBuilder.move(0).toString());
 
-    function isFinished(phase: any): boolean {
+    function isFinished(phase: unknown): boolean {
       if (!phase) return false;
       if (phase === "finished" || phase === "Finished") return true;
       if (typeof phase === "object" && ("finished" in phase || "Finished" in phase)) return true;
@@ -551,8 +560,8 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     await assert.rejects(
       async () => {
         await serviceClient.create(
-          { seed: 0n } as any,
-          { creator: "player_1", timers: false } as any,
+          { seed: 0n } as unknown as CoreBattleOptions,
+          { creator: "player_1", timers: false } as unknown as BattleServiceOptions,
         );
       },
       () => {
@@ -624,7 +633,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
             { id: "player_2", name: "Player 2", team: { members: [], bag: { items: {} } } },
           ],
         },
-      } as any,
+      } as unknown as CoreBattleOptions,
       service_options: {
         creator: "player_1",
         timers: {
@@ -751,17 +760,18 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       },
     };
 
-    const proposedOptions = {
-      battle_options: battleOptions,
+    const proposedOptions: ProposedBattleOptions = {
+      battle_options: battleOptions as unknown as CoreBattleOptions,
       service_options: {
         creator: "player_1",
-        timers: { battle: null, player: null, action: null },
+        timers: { battle: null, player: null, action: null, team_preview: null },
+        log_timer_deadlines: false,
       },
       timeout: { secs: 30, nanos: 0 },
     };
 
     await new Promise((r) => setTimeout(r, 3100));
-    const proposed = await p1MultiClient.proposeBattle(proposedOptions as any);
+    const proposed = await p1MultiClient.proposeBattle(proposedOptions);
 
     // Players wait for battle start
     const p1StartPromise = p1MultiClient.waitForBattleStart(proposed.uuid).then((battleId) => {
@@ -771,7 +781,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       return p2MultiClient.createBattlerClient(battleId);
     });
 
-    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as any);
+    await p2MultiClient.respondToProposal(proposed.uuid, true, p2Team as unknown as TeamData);
 
     const [p1Client, p2Client] = await Promise.all([p1StartPromise, p2StartPromise]);
 
@@ -869,16 +879,6 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     const p3Multi = createMultiClient(p3Provider, "player_3");
     const p4Multi = createMultiClient(p4Provider, "player_4");
 
-    const makeMon = (name: string, species: string, move: string) => ({
-      name,
-      species,
-      ability: "Blaze",
-      nature: "Hardy",
-      gender: "Female",
-      moves: [move],
-      level: 100,
-    });
-
     const p1Team = {
       members: [
         {
@@ -973,7 +973,9 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     };
 
     await new Promise((r) => setTimeout(r, 3100));
-    const proposed = await p1Multi.proposeBattle(proposedOptions as any);
+    const proposed = await p1Multi.proposeBattle(
+      proposedOptions as unknown as ProposedBattleOptions,
+    );
 
     const startPromises = [
       p1Multi.waitForBattleStart(proposed.uuid).then((id) => p1Multi.createBattlerClient(id)),
@@ -983,9 +985,9 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     ];
 
     await Promise.all([
-      p2Multi.respondToProposal(proposed.uuid, true, p2Team as any),
-      p3Multi.respondToProposal(proposed.uuid, true, p3Team as any),
-      p4Multi.respondToProposal(proposed.uuid, true, p4Team as any),
+      p2Multi.respondToProposal(proposed.uuid, true, p2Team as unknown as TeamData),
+      p3Multi.respondToProposal(proposed.uuid, true, p3Team as unknown as TeamData),
+      p4Multi.respondToProposal(proposed.uuid, true, p4Team as unknown as TeamData),
     ]);
 
     const [c1, c2, c3, c4] = await Promise.all(startPromises);
@@ -1025,11 +1027,11 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       new BattlerServiceClient(p1Provider),
     );
 
-    const specialOptions = {
+    const specialOptions: ProposedSpecialBattleOptions = {
       special_battle: {
-        type: "chaos" as const,
+        type: "chaos",
         options: {
-          mode: "singles_6v6" as const,
+          mode: "singles_6v6",
         },
       },
       side_1: {
@@ -1044,7 +1046,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
             dex: { species: [] },
           },
         ],
-      },
+      } as unknown as SideData,
       side_2: {
         name: "Side 2",
         players: [
@@ -1057,7 +1059,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
             dex: { species: [] },
           },
         ],
-      },
+      } as unknown as SideData,
       service_options: {
         creator: "player_chaos",
         timers: { battle: null, player: null, action: null, team_preview: null },

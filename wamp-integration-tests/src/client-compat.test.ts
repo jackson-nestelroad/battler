@@ -7,26 +7,53 @@ import { fileURLToPath } from "url";
 import * as autobahn from "autobahn";
 import * as net from "net";
 
+interface AutobahnSessionProto {
+  join(realm: unknown, authmethods: unknown, authid: unknown, authextra: unknown): unknown;
+  _send_wamp(msg: unknown): unknown;
+  call(
+    procedure: string,
+    args?: unknown[],
+    kwargs?: Record<string, unknown>,
+    options?: Record<string, unknown>,
+  ): {
+    then(
+      onFulfilled?: (res: unknown) => void,
+      onRejected?: (err: unknown) => void,
+      onProgress?: (progress: unknown) => void,
+    ): void;
+    cancel(options?: { mode?: string }): void;
+  };
+}
+
+interface WampError {
+  error: string;
+  args?: unknown[];
+  kwargs?: Record<string, unknown>;
+  message?: string;
+}
+
 // Monkeypatch Autobahn's Session prototype to negotiate call_timeout and call_canceling caller features.
-const originalJoin = (autobahn as any).Session.prototype.join;
-(autobahn as any).Session.prototype.join = function (
-  realm: any,
-  authmethods: any,
-  authid: any,
-  authextra: any,
+const sessionProto = (
+  autobahn as unknown as { Session: { prototype: AutobahnSessionProto } }
+).Session.prototype;
+const originalJoin = sessionProto.join;
+sessionProto.join = function (
+  realm: unknown,
+  authmethods: unknown,
+  authid: unknown,
+  authextra: unknown,
 ) {
-  const self = this;
-  const originalSendWamp = self._send_wamp;
-  self._send_wamp = function (msg: any) {
-    if (msg && msg[0] === 1) {
+  const originalSendWamp = this._send_wamp;
+  this._send_wamp = function (msg: unknown) {
+    if (Array.isArray(msg) && msg[0] === 1) {
       // HELLO
-      const details = msg[2] || {};
-      if (details.roles) {
-        if (details.roles.caller) {
-          if (!details.roles.caller.features) details.roles.caller.features = {};
-          details.roles.caller.features.call_timeout = true;
-          details.roles.caller.features.call_canceling = true;
-        }
+      const details = (msg[2] || {}) as {
+        roles?: { caller?: { features?: { call_timeout?: boolean; call_canceling?: boolean } } };
+      };
+      if (details.roles?.caller) {
+        if (!details.roles.caller.features) details.roles.caller.features = {};
+        details.roles.caller.features.call_timeout = true;
+        details.roles.caller.features.call_canceling = true;
       }
     }
     return originalSendWamp.call(this, msg);
@@ -139,11 +166,11 @@ function runRustClient(
 }
 
 describe("WAMP Client Compatibility Tests", () => {
-  let server: any;
+  let server: ChildProcess;
   let controlClient: autobahn.Connection;
   let serverPort: number;
-  let controlSessionDetails: any = null;
-  const controlRegistrations: any[] = [];
+  let controlSessionDetails: { authid?: string; [key: string]: unknown } | null = null;
+  const controlRegistrations: autobahn.Registration[] = [];
 
   before(async () => {
     serverPort = 9001;
@@ -156,11 +183,11 @@ describe("WAMP Client Compatibility Tests", () => {
       detached: true,
     });
 
-    server.stdout.on("data", (data: any) => {
+    server.stdout?.on("data", (data: Buffer) => {
       console.log(`[CROSSBAR] ${data.toString().trim()}`);
     });
 
-    server.stderr.on("data", (data: any) => {
+    server.stderr?.on("data", (data: Buffer) => {
       console.error(`[CROSSBAR ERR] ${data.toString().trim()}`);
     });
 
@@ -198,13 +225,13 @@ describe("WAMP Client Compatibility Tests", () => {
       });
       try {
         process.kill(-server.pid!, "SIGTERM");
-      } catch (e) {
+      } catch {
         server.kill("SIGTERM");
       }
       const timeout = setTimeout(() => {
         try {
           process.kill(-server.pid!, "SIGKILL");
-        } catch (e) {
+        } catch {
           server.kill("SIGKILL");
         }
       }, 1500);
@@ -217,9 +244,11 @@ describe("WAMP Client Compatibility Tests", () => {
     if (controlClient && controlClient.session) {
       while (controlRegistrations.length > 0) {
         const reg = controlRegistrations.pop();
-        try {
-          await controlClient.session.unregister(reg);
-        } catch (e) {}
+        if (reg) {
+          try {
+            await controlClient.session.unregister(reg);
+          } catch {}
+        }
       }
     }
     await new Promise((r) => setTimeout(r, 50));
@@ -259,11 +288,11 @@ describe("WAMP Client Compatibility Tests", () => {
 
   test("T3.2: Pub/Sub Basic (TS Subscriber, Rust Publisher)", async () => {
     // Subscribe from the TS control client before the Rust client runs
-    const receivedArgs: any[] = [];
-    const receivedKwargs: any[] = [];
+    const receivedArgs: unknown[] = [];
+    const receivedKwargs: Record<string, unknown>[] = [];
     const sub = await controlClient.session!.subscribe("com.compat.topic", (args, kwargs) => {
       receivedArgs.push(...(args ?? []));
-      receivedKwargs.push(kwargs ?? {});
+      if (kwargs) receivedKwargs.push(kwargs);
     });
 
     // Rust pubsub scenario publishes [123, "test"] with kwargs {foo: "bar"}
@@ -379,7 +408,12 @@ describe("WAMP Client Compatibility Tests", () => {
   test("T4.2: RPC Error Propagation (TS Callee, Rust Caller)", async () => {
     // Control client registers a procedure that throws a WAMP application error
     const reg = await controlClient.session!.register("com.compat.error_proc", () => {
-      throw new (autobahn as any).Error("com.compat.error.custom", ["ts error payload"]);
+      const errConstructor = (
+        autobahn as unknown as {
+          Error: new (error: string, args: unknown[]) => Error;
+        }
+      ).Error;
+      throw new errConstructor("com.compat.error.custom", ["ts error payload"]);
     });
     controlRegistrations.push(reg);
 
@@ -404,9 +438,10 @@ describe("WAMP Client Compatibility Tests", () => {
 
     await assert.rejects(
       Promise.resolve(controlClient.session!.call("com.compat.error_proc")),
-      (err: any) => {
-        assert.strictEqual(err.error, "com.compat.error.custom");
-        assert.strictEqual(err.args[0], "custom callee error payload");
+      (err: unknown) => {
+        const wampErr = err as WampError;
+        assert.strictEqual(wampErr.error, "com.compat.error.custom");
+        assert.strictEqual(wampErr.args?.[0], "custom callee error payload");
         return true;
       },
     );
@@ -502,7 +537,7 @@ describe("WAMP Client Compatibility Tests", () => {
         {},
         { disclose_me: true },
       );
-      assert.strictEqual(res, controlSessionDetails.authid);
+      assert.strictEqual(res, controlSessionDetails?.authid);
 
       await client.lines;
     });
@@ -512,9 +547,10 @@ describe("WAMP Client Compatibility Tests", () => {
       let callerSession: number | null = null;
       const reg = await controlClient.session!.register(
         "com.compat.caller_disclose",
-        (args, kwargs, details) => {
-          callerAuthid = (details as any)?.caller_authid || null;
-          callerSession = (details as any)?.caller || null;
+        (_args, _kwargs, details) => {
+          const det = details as { caller_authid?: string; caller?: number } | undefined;
+          callerAuthid = det?.caller_authid || null;
+          callerSession = det?.caller || null;
           return "ok";
         },
       );
@@ -560,10 +596,13 @@ describe("WAMP Client Compatibility Tests", () => {
     await client.waitForLine("INVOCATION_RECEIVED");
 
     // Cancel the call
-    (callPromise as any).cancel({ mode: "kill" });
+    (callPromise as unknown as { cancel: (opts: { mode: string }) => void }).cancel({
+      mode: "kill",
+    });
 
-    await assert.rejects(Promise.resolve(callPromise), (err: any) => {
-      assert.strictEqual(err.error, "wamp.error.canceled");
+    await assert.rejects(Promise.resolve(callPromise), (err: unknown) => {
+      const wampErr = err as WampError;
+      assert.strictEqual(wampErr.error, "wamp.error.canceled");
       return true;
     });
 
@@ -579,17 +618,30 @@ describe("WAMP Client Compatibility Tests", () => {
 
       const progressResults: number[] = [];
       const finalResult = await new Promise<number>((resolve, reject) => {
-        const d = (controlClient.session as any).call(
+        const session = controlClient.session as unknown as AutobahnSessionProto;
+        const d = session.call(
           "com.compat.callee_progress",
           [],
           {},
           { receive_progress: true },
         );
         d.then(
-          (res: any) => resolve(res?.args ? res.args[0] : res),
-          (err: any) => reject(err),
-          (p: any) => {
-            progressResults.push(p?.args ? p.args[0] : p);
+          (res: unknown) => {
+            const r = res as { args?: number[] } | number;
+            resolve(
+              typeof r === "object" && r && "args" in r && r.args
+                ? r.args[0]
+                : (r as number),
+            );
+          },
+          (err: unknown) => reject(err),
+          (p: unknown) => {
+            const prog = p as { args?: number[] } | number;
+            progressResults.push(
+              typeof prog === "object" && prog && "args" in prog && prog.args
+                ? prog.args[0]
+                : (prog as number),
+            );
           },
         );
       });

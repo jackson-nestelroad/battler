@@ -89,10 +89,16 @@ export class BattlerServiceClient {
         `com.battler.battler_service.battles.${uuidForUri(battleId)}.update_team`,
         [player, safeJsonStringify(team)],
       );
-    } catch (err: any) {
-      if (err?.error === "com.battler.battler_service.error.validation_failed") {
-        const problems = err.args?.map((arg: any) => String(arg)) || [];
-        throw new ValidationError(err.message || "Validation failed", problems);
+    } catch (err: unknown) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "error" in err &&
+        err.error === "com.battler.battler_service.error.validation_failed"
+      ) {
+        const errorObj = err as { message?: string; args?: unknown[] };
+        const problems = errorObj.args?.map((arg: unknown) => String(arg)) || [];
+        throw new ValidationError(errorObj.message || "Validation failed", problems);
       }
       throw err;
     }

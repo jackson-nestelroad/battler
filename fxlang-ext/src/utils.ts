@@ -4,7 +4,6 @@ import { Metadata, SymbolTable, MemberData, FxLangParseResult, FxLangBlock, FxLa
 const relevanceCache = new Map<string, { version: number, relevant: boolean }>();
 let eventNamesSet = new Set<string>();
 let typeMembersCache: Record<string, Record<string, MemberData>> = {};
-let commonFlagsSet = new Set<string>();
 const typeSplitCache = new Map<string, Set<string>>();
 
 function getSplitTypes(typeStr: string): Set<string> {
@@ -17,7 +16,6 @@ function getSplitTypes(typeStr: string): Set<string> {
 
 export function preprocessMetadata(metadata: Metadata) {
     updateEventNamesSet(metadata);
-    commonFlagsSet = new Set(metadata.common_flags || []);
     
     // Pre-merge type members
     typeMembersCache = {};
@@ -91,7 +89,7 @@ export function parseFxLangDocument(document: vscode.TextDocument, metadata: Met
                     if (rawName === 'program') {
                         for (let j = i - 1; j >= 0; j--) {
                             const prevLine = document.lineAt(j).text.trim();
-                            const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
+                            const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
                             if (prevMatch) {
                                 const prevRaw = prevMatch[1];
                                 if (resolveEventName(prevRaw, metadata) && prevRaw !== 'program' && prevRaw !== 'metadata') {
@@ -251,7 +249,7 @@ export function getCustomVariables(document: vscode.TextDocument, position: vsco
             }
         }
         
-        const eventMatch = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+        const eventMatch = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
         if (eventMatch && eventMatch[1] !== 'program' && eventMatch[1] !== 'metadata') {
             break;
         }
@@ -270,7 +268,7 @@ export function getEnclosingEvent(document: vscode.TextDocument, position: vscod
     for (let i = position.line; i >= startLine; i--) {
         const line = document.lineAt(i).text.trim();
         if (!line.startsWith('"')) continue;
-        const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+        const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
         if (match) {
             const rawName = match[1];
             if (rawName !== 'program' && rawName !== 'metadata') {
@@ -295,7 +293,7 @@ export function inferType(expression: string, symbols: SymbolTable, metadata: Me
     if (expression.match(/^(true|false)$/)) return 'Boolean';
     if (expression.match(/^[+-]\d+(\.\d+)?$/)) return 'Fraction';
     if (expression.match(/^\d+(\.\d+)?$/)) return 'UFraction';
-    if (expression.match(/^[+-]?\d+(?:\.\d+)?(?:\s*[\+\-\*\/]\s*\d+(?:\.\d+)?)+$/)) {
+    if (expression.match(/^[+-]?\d+(?:\.\d+)?(?:\s*[+\-*/]\s*\d+(?:\.\d+)?)+$/)) {
         return expression.startsWith('-') ? 'Fraction' : 'UFraction';
     }
     if (expression.match(/^['"]/)) return 'String';
@@ -615,7 +613,7 @@ export function getVariableData(varName: string, metadata: Metadata, eventName?:
         return {
             type: vData.type,
             optional: vData.optional,
-            item_type: (vData as any).item_type,
+            item_type: vData.item_type,
             origin: `Event Context: ${eventName}`
         };
     } else if (metadata.variables[varName]) {
@@ -623,7 +621,7 @@ export function getVariableData(varName: string, metadata: Metadata, eventName?:
         return {
             type: vData.type,
             optional: vData.optional,
-            item_type: (vData as any).item_type,
+            item_type: vData.item_type,
             origin: 'Built-in / Global'
         };
     }

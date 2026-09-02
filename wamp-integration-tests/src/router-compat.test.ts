@@ -11,19 +11,31 @@ import { generateScramResponse } from "./scram.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+interface AutobahnConnectionProto {
+  _create_transport(): { send: (msg: unknown) => unknown } | undefined;
+}
+
+interface WampError {
+  error: string;
+  args?: unknown[];
+  kwargs?: Record<string, unknown>;
+  message?: string;
+}
+
 // Monkeypatch autobahn transport creation to support SCRAM AUTHENTICATE extra details
-const originalCreateTransport = (autobahn.Connection.prototype as any)._create_transport;
-(autobahn.Connection.prototype as any)._create_transport = function () {
-  const connectionInstance = this;
+const connProto = autobahn.Connection.prototype as unknown as AutobahnConnectionProto;
+const originalCreateTransport = connProto._create_transport;
+connProto._create_transport = function () {
+  const connectionInstance = this as unknown as { _session?: { _scram_nonce?: string } };
   const transport = originalCreateTransport.call(this);
   if (transport) {
     const originalSend = transport.send;
-    transport.send = function (msg: any) {
-      if (msg && msg[0] === 5) {
+    transport.send = function (msg: unknown) {
+      if (Array.isArray(msg) && msg[0] === 5) {
         // AUTHENTICATE
-        const extra = msg[2] || {};
-        if (connectionInstance._session && (connectionInstance._session as any)._scram_nonce) {
-          extra.nonce = (connectionInstance._session as any)._scram_nonce;
+        const extra = ((msg[2] as Record<string, unknown>) || {});
+        if (connectionInstance._session && connectionInstance._session._scram_nonce) {
+          extra.nonce = connectionInstance._session._scram_nonce;
         }
         msg[2] = extra;
       }
@@ -80,21 +92,25 @@ function startRouter(auth: string = "none"): Promise<{ port: number; process: Ch
 }
 
 class ProgressPromise<T> extends Promise<T> {
-  private _progressHandlers: ((value: any) => void)[] = [];
+  private _progressHandlers: ((value: unknown) => void)[] = [];
 
-  progress(handler: (value: any) => void): this {
+  progress(handler: (value: unknown) => void): this {
     this._progressHandlers.push(handler);
     return this;
   }
 
-  then(onfulfilled?: any, onrejected?: any, onprogress?: any): any {
+  override then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+    onprogress?: ((progress: unknown) => void) | null,
+  ): Promise<TResult1 | TResult2> {
     if (onprogress) {
       this._progressHandlers.push(onprogress);
     }
     return super.then(onfulfilled, onrejected);
   }
 
-  _notify(value: any) {
+  _notify(value: unknown) {
     for (const handler of this._progressHandlers) {
       try {
         handler(value);
@@ -105,28 +121,40 @@ class ProgressPromise<T> extends Promise<T> {
   }
 }
 
-function customDeferredFactory() {
-  const deferred: any = {};
-  deferred.promise = new ProgressPromise((resolve, reject) => {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
-  deferred.notify = (value: any) => {
-    (deferred.promise as any)._notify(value);
-  };
-  return deferred;
+interface CustomDeferred {
+  promise: ProgressPromise<unknown>;
+  resolve: (val: unknown) => void;
+  reject: (err: unknown) => void;
+  notify: (val: unknown) => void;
 }
 
-function connectClient(port: number, options: any = {}): Promise<autobahn.Connection> {
+function customDeferredFactory(): CustomDeferred {
+  let resolvePromise!: (val: unknown) => void;
+  let rejectPromise!: (err: unknown) => void;
+  const promise = new ProgressPromise<unknown>((resolve, reject) => {
+    resolvePromise = resolve;
+    rejectPromise = reject;
+  });
+  return {
+    promise,
+    resolve: resolvePromise,
+    reject: rejectPromise,
+    notify: (value: unknown) => {
+      promise._notify(value);
+    },
+  };
+}
+
+function connectClient(port: number, options: Record<string, unknown> = {}): Promise<autobahn.Connection> {
   return new Promise((resolve, reject) => {
     const connection = new autobahn.Connection({
       url: `ws://127.0.0.1:${port}`,
       realm: "com.compat.test",
       max_retries: 0,
-      use_deferred: customDeferredFactory,
+      use_deferred: customDeferredFactory as unknown as autobahn.DeferFactory,
       ...options,
     });
-    connection.onopen = (session, details) => {
+    connection.onopen = () => {
       resolve(connection);
     };
     connection.onclose = (reason, details) => {
@@ -138,7 +166,11 @@ function connectClient(port: number, options: any = {}): Promise<autobahn.Connec
 }
 
 function makeScramChallenger(clientNonce: string, password?: string) {
-  return async (session: any, method: string, extra: any) => {
+  return async (
+    session: unknown,
+    method: string,
+    extra: { nonce: string; salt: string; kdf: string; iterations: number; memory?: number },
+  ) => {
     if (method === "scram") {
       const scramResponse = await generateScramResponse(
         "test-user",
@@ -152,7 +184,9 @@ function makeScramChallenger(clientNonce: string, password?: string) {
           memory: extra.memory,
         },
       );
-      session._scram_nonce = extra.nonce;
+      if (session && typeof session === "object") {
+        (session as { _scram_nonce?: string })._scram_nonce = extra.nonce;
+      }
       return scramResponse.signature;
     }
     throw new Error("Unsupported auth method");
@@ -206,16 +240,16 @@ describe("WAMP Router Compatibility Tests", () => {
   test("T1.4: Protocol Violation", async () => {
     // Send a direct raw socket message that violates protocol (invalid json)
     const ws = new WebSocket(`ws://127.0.0.1:${router.port}`, "wamp.2.json");
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       ws.on("open", () => {
         ws.send("invalid json payload");
       });
-      ws.on("close", (code, reason) => {
+      ws.on("close", (code) => {
         // Expect connection to be closed by router due to protocol violation
         assert.ok(code > 0);
         resolve();
       });
-      ws.on("error", (err) => {
+      ws.on("error", () => {
         resolve();
       });
     });
@@ -264,15 +298,20 @@ describe("WAMP Router Compatibility Tests", () => {
     const caller = await connectClient(router.port);
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.cleanup")),
-      (err: any) => err.error === "wamp.error.no_available_callee",
+      (err: unknown) => (err as WampError).error === "wamp.error.no_available_callee",
     );
 
     caller.close();
   });
 
   test("T1.7: MessagePack Serializer Handshake", async () => {
+    const serializerConstructor = (
+      autobahn as unknown as {
+        serializer: { MsgpackSerializer: new () => unknown };
+      }
+    ).serializer.MsgpackSerializer;
     const connection = await connectClient(router.port, {
-      serializers: [new (autobahn as any).serializer.MsgpackSerializer()],
+      serializers: [new serializerConstructor()],
     });
     assert.ok(connection.isOpen);
 
@@ -336,13 +375,13 @@ describe("WAMP Router Compatibility Tests", () => {
     const clientA = await connectClient(router.port);
     const clientB = await connectClient(router.port);
 
-    let resolveEvent: any;
-    const eventReceived = new Promise<any>((resolve) => {
+    let resolveEvent!: (val: { args: unknown[] | null; kwargs: Record<string, unknown> | null }) => void;
+    const eventReceived = new Promise<{ args: unknown[] | null; kwargs: Record<string, unknown> | null }>((resolve) => {
       resolveEvent = resolve;
     });
 
     await clientA.session!.subscribe("com.compat.topic", (args, kwargs) => {
-      resolveEvent({ args, kwargs });
+      resolveEvent({ args: args ?? null, kwargs: kwargs ?? null });
     });
 
     // Publish
@@ -372,11 +411,15 @@ describe("WAMP Router Compatibility Tests", () => {
     const clientA = await connectClient(router.port);
     const clientB = await connectClient(router.port);
 
-    const events: any[] = [];
+    interface TopicEvent {
+      args: unknown[] | null;
+      topic?: string;
+    }
+    const events: TopicEvent[] = [];
     await clientA.session!.subscribe(
       "com.compat",
-      (args, kwargs, details) => {
-        events.push({ args, topic: details?.topic });
+      (args, _kwargs, details) => {
+        events.push({ args: args ?? null, topic: details?.topic });
       },
       { match: "prefix" },
     );
@@ -398,11 +441,15 @@ describe("WAMP Router Compatibility Tests", () => {
     const clientA = await connectClient(router.port);
     const clientB = await connectClient(router.port);
 
-    const events: any[] = [];
+    interface TopicEvent {
+      args: unknown[] | null;
+      topic?: string;
+    }
+    const events: TopicEvent[] = [];
     await clientA.session!.subscribe(
       "com.compat..status",
-      (args, kwargs, details) => {
-        events.push({ args, topic: details?.topic });
+      (args, _kwargs, details) => {
+        events.push({ args: args ?? null, topic: details?.topic });
       },
       { match: "wildcard" },
     );
@@ -452,18 +499,18 @@ describe("WAMP Router Compatibility Tests", () => {
     const publisher = await connectClient(router.port);
 
     let prefixCount = 0;
-    let prefixReceivedArgs: any[] = [];
+    let prefixReceivedArgs: unknown[] = [];
     await subPrefix.session!.subscribe(
       "com.compat.prefix",
       (args) => {
         prefixCount++;
-        prefixReceivedArgs = args || [];
+        prefixReceivedArgs = args ?? [];
       },
       { match: "prefix" },
     );
 
     let wildcardCount = 0;
-    let wildcardReceivedArgs: any[] = [];
+    let wildcardReceivedArgs: unknown[] = [];
     await subWildcard.session!.subscribe(
       "com.compat.wildcard..event",
       (args) => {
@@ -498,11 +545,11 @@ describe("WAMP Router Compatibility Tests", () => {
     const publisher = await connectClient(router.port);
 
     // Collect full event details for each received event
-    const disclosedDetails: any[] = [];
+    const disclosedDetails: autobahn.IEvent[] = [];
     await subscriber.session!.subscribe(
       "com.compat.pub_disclose",
-      (_args: any, _kwargs: any, details: any) => {
-        disclosedDetails.push(details);
+      (_args, _kwargs, details) => {
+        if (details) disclosedDetails.push(details);
       },
     );
 
@@ -517,11 +564,11 @@ describe("WAMP Router Compatibility Tests", () => {
     );
 
     // Publish without disclose_me — publisher session ID should NOT appear
-    const hiddenDetails: any[] = [];
+    const hiddenDetails: autobahn.IEvent[] = [];
     await subscriber.session!.subscribe(
       "com.compat.pub_hidden",
-      (_args: any, _kwargs: any, details: any) => {
-        hiddenDetails.push(details);
+      (_args, _kwargs, details) => {
+        if (details) hiddenDetails.push(details);
       },
     );
     publisher.session!.publish("com.compat.pub_hidden", []);
@@ -595,7 +642,7 @@ describe("WAMP Router Compatibility Tests", () => {
     const caller = await connectClient(router.port);
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.nonexistent")),
-      (err: any) => err.error === "wamp.error.no_such_procedure",
+      (err: unknown) => (err as WampError).error === "wamp.error.no_such_procedure",
     );
     caller.close();
   });
@@ -612,7 +659,7 @@ describe("WAMP Router Compatibility Tests", () => {
 
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.temp")),
-      (err: any) => err.error === "wamp.error.no_such_procedure",
+      (err: unknown) => (err as WampError).error === "wamp.error.no_such_procedure",
     );
 
     callee.close();
@@ -629,10 +676,11 @@ describe("WAMP Router Compatibility Tests", () => {
       });
     });
 
-    await assert.rejects(Promise.resolve(caller.session!.call("com.compat.error")), (err: any) => {
-      assert.strictEqual(err.error, "com.compat.custom_error");
-      assert.deepStrictEqual(err.args, ["failed details"]);
-      assert.deepStrictEqual(err.kwargs, { extra_key: "extra_val" });
+    await assert.rejects(Promise.resolve(caller.session!.call("com.compat.error")), (err: unknown) => {
+      const wampErr = err as WampError;
+      assert.strictEqual(wampErr.error, "com.compat.custom_error");
+      assert.deepStrictEqual(wampErr.args, ["failed details"]);
+      assert.deepStrictEqual(wampErr.kwargs, { extra_key: "extra_val" });
       return true;
     });
 
@@ -649,7 +697,7 @@ describe("WAMP Router Compatibility Tests", () => {
     await callee1.session!.register("com.compat.shared.single", () => 1);
     await assert.rejects(
       Promise.resolve(callee2.session!.register("com.compat.shared.single", () => 2)),
-      (err: any) => err.error === "wamp.error.procedure_already_exists",
+      (err: unknown) => (err as WampError).error === "wamp.error.procedure_already_exists",
     );
 
     // Policy: roundrobin
@@ -735,7 +783,7 @@ describe("WAMP Router Compatibility Tests", () => {
     // Verify non-matching wildcard call fails
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.wildcard.foo.other")),
-      (err: any) => err.error === "wamp.error.no_such_procedure",
+      (err: unknown) => (err as WampError).error === "wamp.error.no_such_procedure",
     );
 
     // 3. Priority/Conflict Resolution: Exact vs Prefix
@@ -761,10 +809,9 @@ describe("WAMP Router Compatibility Tests", () => {
     const caller = await connectClient(router.port);
 
     // 1. Opt-in disclosure (disclose_caller = false on registration)
-    await callee.session!.register("com.compat.disclose.optin", (args, kwargs, details) => {
-      return (details as any)?.caller_authid !== undefined
-        ? (details as any)?.caller_authid
-        : "hidden";
+    await callee.session!.register("com.compat.disclose.optin", (_args, _kwargs, details) => {
+      const det = details as { caller_authid?: string } | undefined;
+      return det?.caller_authid !== undefined ? det.caller_authid : "hidden";
     });
 
     // Call with disclose_me = true
@@ -783,10 +830,9 @@ describe("WAMP Router Compatibility Tests", () => {
     // 2. Forced disclosure (disclose_caller = true on registration)
     await callee.session!.register(
       "com.compat.disclose.force",
-      (args, kwargs, details) => {
-        return (details as any)?.caller_authid !== undefined
-          ? (details as any)?.caller_authid
-          : "hidden";
+      (_args, _kwargs, details) => {
+        const det = details as { caller_authid?: string } | undefined;
+        return det?.caller_authid !== undefined ? det.caller_authid : "hidden";
       },
       { disclose_caller: true },
     );
@@ -810,7 +856,7 @@ describe("WAMP Router Compatibility Tests", () => {
 
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.slow", [], {}, { timeout: 300 })),
-      (err: any) => err.error === "wamp.error.canceled",
+      (err: unknown) => (err as WampError).error === "wamp.error.canceled",
     );
 
     callee.close();
@@ -832,11 +878,13 @@ describe("WAMP Router Compatibility Tests", () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Cancel the call
-    (callPromise as any).cancel({ mode: "kill" });
+    (callPromise as unknown as { cancel: (opts: { mode: string }) => void }).cancel({
+      mode: "kill",
+    });
 
     await assert.rejects(
       Promise.resolve(callPromise),
-      (err: any) => err.error === "wamp.error.canceled",
+      (err: unknown) => (err as WampError).error === "wamp.error.canceled",
     );
 
     callee.close();
@@ -847,10 +895,10 @@ describe("WAMP Router Compatibility Tests", () => {
     const callee = await connectClient(router.port);
     const caller = await connectClient(router.port);
 
-    await callee.session!.register("com.compat.progressive", (args, kwargs, details) => {
+    await callee.session!.register("com.compat.progressive", (_args, _kwargs, details) => {
       if (details?.progress) {
-        details?.progress([1], undefined);
-        details?.progress([2], undefined);
+        details.progress([1], undefined);
+        details.progress([2], undefined);
       }
       return 3;
     });
@@ -868,9 +916,9 @@ describe("WAMP Router Compatibility Tests", () => {
       (finalResult) => {
         assert.strictEqual(finalResult, 3);
       },
-      (err) => {},
-      (val: any) => {
-        progressResults.push(val);
+      () => {},
+      (val: unknown) => {
+        progressResults.push(val as number);
       },
     );
 
@@ -884,7 +932,7 @@ describe("WAMP Router Compatibility Tests", () => {
 });
 
 describe("WAMP Router Authentication Compatibility Tests", () => {
-  let currentRouter: any = null;
+  let currentRouter: { port: number; process: ChildProcess } | null = null;
 
   afterEach(() => {
     if (currentRouter && currentRouter.process) {

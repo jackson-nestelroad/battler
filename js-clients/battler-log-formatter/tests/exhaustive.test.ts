@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alterBattleState, newBattleState } from "battler-state";
+import { alterBattleState, newBattleState, UiLogEntry } from "battler-state";
 import { LogFormatter, stringifyLog } from "../src/formatter.js";
 import { mapUiLogEntry } from "../src/mapper.js";
 import type { LogCategory, LogContext, UiNotice } from "../src/types.js";
@@ -83,7 +83,7 @@ describe("Exhaustive Log Coverage", () => {
     }
 
     let alteredState;
-    let uiLogEntry: any;
+    let uiLogEntry: UiLogEntry | undefined;
     try {
       alteredState = alterBattleState(newBattleState(), testSequence);
       if (alteredState.ui_log.length > 0) {
@@ -93,11 +93,11 @@ describe("Exhaustive Log Coverage", () => {
         }
       }
     } catch {
-      const parts = logString.split("|");
-      const title = parts[0];
-      const values: Record<string, any> = {};
-      for (let i = 1; i < parts.length; i++) {
-        const [k, ...rest] = parts[i].split(":");
+      const fallbackParts = logString.split("|");
+      const title = fallbackParts[0];
+      const values: Record<string, string> = {};
+      for (let i = 1; i < fallbackParts.length; i++) {
+        const [k, ...rest] = fallbackParts[i].split(":");
         values[k] = rest.join(":");
       }
       uiLogEntry = {
@@ -132,10 +132,10 @@ describe("Exhaustive Log Coverage", () => {
         let matchedKey: string | undefined = undefined;
         if (mapped) {
           for (const pattern of mapped.patterns) {
-            const parts = pattern.split("|");
-            const title = parts.shift()!;
-            const tags = parts.filter((x) => x.includes(":"));
-            const flags = parts.filter((x) => !x.includes(":"));
+            const patternParts = pattern.split("|");
+            const title = patternParts.shift()!;
+            const tags = patternParts.filter((x) => x.includes(":"));
+            const flags = patternParts.filter((x) => !x.includes(":"));
             tags.sort();
             flags.sort();
             const p = [title, ...tags, ...flags].join("|");

@@ -64,7 +64,7 @@ export class FxLangParser {
                                 // Find where the event block actually starts
                                 for (let j = i - 1; j >= 0; j--) {
                                     const prevLine = document.lineAt(j).text.trim();
-                                    const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
+                                    const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
                                     if (prevMatch && this.resolveEventName(prevMatch[1]) === currentEventName) {
                                         currentBlockStart = j;
                                         break;
@@ -101,7 +101,7 @@ export class FxLangParser {
     private findInheritedEvent(document: vscode.TextDocument, lineIdx: number): string | undefined {
         for (let j = lineIdx - 1; j >= 0; j--) {
             const prevLine = document.lineAt(j).text.trim();
-            const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[\{]/);
+            const prevMatch = prevLine.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
             if (prevMatch) {
                 const prevRaw = prevMatch[1];
                 const prevResolved = this.resolveEventName(prevRaw);

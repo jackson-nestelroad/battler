@@ -65,7 +65,7 @@ export class BattlerMultiplayerClient {
       return initial.battle;
     }
 
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       let sub: autobahn.Subscription | undefined;
       let resolved = false;
       const cleanup = () => {
@@ -74,48 +74,46 @@ export class BattlerMultiplayerClient {
         }
       };
 
-      try {
-        sub = await this.proposedBattleUpdates((update) => {
-          if (resolved) return;
-          if (update.proposed_battle.uuid === proposedBattleId) {
-            if (update.proposed_battle.battle) {
-              resolved = true;
-              cleanup();
-              resolve(update.proposed_battle.battle);
-            } else if (update.deletion_reason === "fulfilled" && update.proposed_battle.battle) {
-              resolved = true;
-              cleanup();
-              resolve(update.proposed_battle.battle);
-            } else if (
-              update.rejection ||
-              (update.deletion_reason && update.deletion_reason !== "fulfilled")
-            ) {
-              resolved = true;
-              cleanup();
-              reject(
-                new Error(
-                  update.deletion_reason || "proposed battle proposal was rejected or cancelled",
-                ),
-              );
+      (async () => {
+        try {
+          sub = await this.proposedBattleUpdates((update) => {
+            if (resolved) return;
+            if (update.proposed_battle.uuid === proposedBattleId) {
+              if (update.proposed_battle.battle) {
+                resolved = true;
+                cleanup();
+                resolve(update.proposed_battle.battle);
+              } else if (
+                update.rejection ||
+                (update.deletion_reason && update.deletion_reason !== "fulfilled")
+              ) {
+                resolved = true;
+                cleanup();
+                reject(
+                  new Error(
+                    update.deletion_reason || "proposed battle proposal was rejected or cancelled",
+                  ),
+                );
+              }
             }
-          }
-        });
+          });
 
-        // Re-check proposed battle after subscription setup to ensure updates during setup aren't missed
-        const check = await this.multiplayerService
-          .proposedBattle(proposedBattleId)
-          .catch(() => null);
-        if (check && check.battle && !resolved) {
-          resolved = true;
-          cleanup();
-          resolve(check.battle);
+          // Re-check proposed battle after subscription setup to ensure updates during setup aren't missed
+          const check = await this.multiplayerService
+            .proposedBattle(proposedBattleId)
+            .catch(() => null);
+          if (check && check.battle && !resolved) {
+            resolved = true;
+            cleanup();
+            resolve(check.battle);
+          }
+        } catch (err) {
+          if (!resolved) {
+            cleanup();
+            reject(err);
+          }
         }
-      } catch (err) {
-        if (!resolved) {
-          cleanup();
-          reject(err);
-        }
-      }
+      })();
     });
   }
 

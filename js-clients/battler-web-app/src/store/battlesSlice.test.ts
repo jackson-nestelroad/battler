@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import type { BattleState, UiLogEntry } from "battler-state";
+import type { Request } from "battler-types";
 import { describe, expect, it } from "vitest";
 import battlesReducer, {
   battleSessionCreated,
@@ -279,7 +280,7 @@ describe("battlesSlice active timers", () => {
     store.dispatch(
       setBattleRequest({
         battleId,
-        request: { type: "turn", active: [] } as any,
+        request: { type: "turn", active: [] } as unknown as Request,
       }),
     );
 

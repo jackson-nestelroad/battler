@@ -83,7 +83,7 @@ export class SymbolEngine {
     private findRawEventName(document: vscode.TextDocument, position: vscode.Position): string {
         for (let i = position.line; i >= Math.max(0, position.line - 500); i--) {
             const line = document.lineAt(i).text.trim();
-            const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+            const match = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
             if (match && match[1] !== 'program' && match[1] !== 'metadata') {
                 return match[1];
             }
@@ -103,7 +103,7 @@ export class SymbolEngine {
                 }
                 // Handle multi-line parameters if needed... (omitted for brevity in this cleanup step)
             }
-            const eventMatch = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\[{]/);
+            const eventMatch = line.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[[{]/);
             if (eventMatch && eventMatch[1] !== 'program' && eventMatch[1] !== 'metadata') break;
         }
         return params;

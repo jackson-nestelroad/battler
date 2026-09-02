@@ -14,31 +14,13 @@ export type Role = { type: "spectator"; side: undefined } | { type: "player"; si
 
 export * from "./choice-builder.js";
 
-export interface BattlerClient {
-  on(event: "update", listener: () => void): this;
-  on(event: "request", listener: (request: Request | null) => void): this;
-  on(event: "end", listener: () => void): this;
-  on(event: "deleted", listener: () => void): this;
-  on(event: "error", listener: (err: unknown) => void): this;
-
-  once(event: "update", listener: () => void): this;
-  once(event: "request", listener: (request: Request | null) => void): this;
-  once(event: "end", listener: () => void): this;
-  once(event: "deleted", listener: () => void): this;
-  once(event: "error", listener: (err: unknown) => void): this;
-
-  off(event: "update", listener: () => void): this;
-  off(event: "request", listener: (request: Request | null) => void): this;
-  off(event: "end", listener: () => void): this;
-  off(event: "deleted", listener: () => void): this;
-  off(event: "error", listener: (err: unknown) => void): this;
-
-  emit(event: "update"): boolean;
-  emit(event: "request", request: Request | null): boolean;
-  emit(event: "end"): boolean;
-  emit(event: "deleted"): boolean;
-  emit(event: "error", err: unknown): boolean;
-}
+export type BattlerClientEvents = {
+  update: () => void;
+  request: (request: Request | null) => void;
+  end: () => void;
+  deleted: () => void;
+  error: (err: unknown) => void;
+};
 
 export function getRoleForPlayer(battle: Battle, player: string): Role {
   for (let i = 0; i < battle.sides.length; i++) {
@@ -205,11 +187,30 @@ export class BattlerClient extends EventEmitter {
     this.emit("request", request);
   }
 
+  override on<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.on(event, listener as (...args: unknown[]) => void);
+  }
+
+  override once<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.once(event, listener as (...args: unknown[]) => void);
+  }
+
+  override off<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.off(event, listener as (...args: unknown[]) => void);
+  }
+
+  override emit<E extends keyof BattlerClientEvents>(
+    event: E,
+    ...args: Parameters<BattlerClientEvents[E]>
+  ): boolean {
+    return super.emit(event, ...args);
+  }
+
   async sync(): Promise<void> {
     if (this.subscription) {
       try {
         await this.service.unsubscribe(this.subscription);
-      } catch (e) {
+      } catch {
         // Ignore unsubscribe errors if previous session died
       }
       this.subscription = undefined;
@@ -251,7 +252,7 @@ export class BattlerClient extends EventEmitter {
       const request = await this.service.request(this.battleId, this.player);
       this.currentRequest = request;
       return request;
-    } catch (err) {
+    } catch {
       return null;
     }
   }

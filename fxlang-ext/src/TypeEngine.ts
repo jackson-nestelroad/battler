@@ -66,7 +66,7 @@ export class TypeEngine {
         if (expression.match(/^(true|false)$/)) return 'Boolean';
         if (expression.match(/^[+-]\d+(\.\d+)?$/)) return 'Fraction';
         if (expression.match(/^\d+(\.\d+)?$/)) return 'UFraction';
-        if (expression.match(/^[+-]?\d+(?:\.\d+)?(?:\s*[\+\-\*\/]\s*\d+(?:\.\d+)?)+$/)) {
+        if (expression.match(/^[+-]?\d+(?:\.\d+)?(?:\s*[+\-*/]\s*\d+(?:\.\d+)?)+$/)) {
             return expression.startsWith('-') ? 'Fraction' : 'UFraction';
         }
         if (expression.match(/^['"]/)) return 'String';

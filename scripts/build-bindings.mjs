@@ -118,11 +118,11 @@ for (const { dir, isCore } of directories) {
     }
 
     // Rewrite imports: from "./Side" -> from "./Side.js"
-    content = content.replace(/(from\s+["']\.\/[^"'\.]+)["']/g, '$1.js"');
+    content = content.replace(/(from\s+["']\.\/[^"'.]+)["']/g, '$1.js"');
 
     // Rewrite relative core imports in client packages to point to the NPM "battler-types" package instead
     if (!isCore) {
-      content = content.replace(/from\s+["']\.\/([^"'\.]+)\.js["']/g, (match, importName) => {
+      content = content.replace(/from\s+["']\.\/([^"'.]+)\.js["']/g, (match, importName) => {
         if (coreEngineTypes.has(importName)) {
           return `from "battler-types"`;
         }
