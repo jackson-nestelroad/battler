@@ -93,7 +93,6 @@ export class BattlerClient extends EventEmitter {
   private hasDoneSignal = false;
   private hasEmittedEndSignal = false;
   private hasDeletedSignal = false;
-  private safetyEndTimeout: ReturnType<typeof setTimeout> | null = null;
   private hasPendingRequestSignal = false;
 
   private constructor(
@@ -286,10 +285,6 @@ export class BattlerClient extends EventEmitter {
 
   async cancel(): Promise<void> {
     this.isCanceled = true;
-    if (this.safetyEndTimeout) {
-      clearTimeout(this.safetyEndTimeout);
-      this.safetyEndTimeout = null;
-    }
     if (this.subscription) {
       await this.service.unsubscribe(this.subscription);
       this.subscription = undefined;

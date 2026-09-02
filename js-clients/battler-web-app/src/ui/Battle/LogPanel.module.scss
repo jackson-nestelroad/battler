@@ -173,38 +173,26 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
 
+  .text {
+    color: inherit;
+  }
+
   &.abilityNotice {
     color: var(--color-info);
     font-weight: 600;
-
-    .text {
-      color: var(--color-info);
-    }
   }
 
   &.itemNotice {
     color: var(--color-warning);
     font-weight: 600;
-
-    .text {
-      color: var(--color-warning);
-    }
   }
 
   &.damageNotice {
     color: var(--color-danger);
-
-    .text {
-      color: var(--color-danger);
-    }
   }
 
   &.healNotice {
     color: var(--color-success);
-
-    .text {
-      color: var(--color-success);
-    }
   }
 }
 

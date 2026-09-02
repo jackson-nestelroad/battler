@@ -1,7 +1,7 @@
 import type { UiLogEntry } from "battler-state";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
-import type { FormattedLogDisplayItem } from "../../utils/logFormatter";
+import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFormatter";
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 
 import styles from "./LogPanel.module.scss";
@@ -15,7 +15,7 @@ interface LogPanelProps {
 function renderLogDivider(
   visibleLogs: readonly FormattedLogDisplayItem[],
   index: number,
-  initialSubtype: string,
+  initialSubtype: LogDividerType,
 ) {
   const prev = visibleLogs[index - 1];
   if (!prev || prev.kind === "turn" || prev.kind === "divider") {
