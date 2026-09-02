@@ -609,7 +609,7 @@ export const en = {
     fail__from_weather_rain: null,
     fail__from_weather_sandstorm: null,
     fail__from_weather_snow: null,
-    fail__from_weather_strongwinds: "[UNHANDLED]",
+    fail__from_weather_strongwinds: null,
     fail__what_any: null,
     fail__what_heal: "{{MON_POSSESSIVE}} HP is full!",
     fail__what_move_corrosivegas: null,
