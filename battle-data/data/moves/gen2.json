@@ -969,7 +969,7 @@
     "target": "Normal",
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": {
-      "status": "confusion",
+      "volatile_status": "confusion",
       "boosts": {
         "atk": 2
       }

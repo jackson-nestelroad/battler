@@ -459,6 +459,7 @@ mod moves {
         mod sleep_talk_test;
         mod spikes_test;
         mod spite_test;
+        mod swagger_test;
         mod thief_test;
     }
 

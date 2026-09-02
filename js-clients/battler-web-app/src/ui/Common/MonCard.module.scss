@@ -91,6 +91,7 @@
   align-items: center;
   width: 100%;
   margin-top: var(--spacing-xs);
+  gap: var(--spacing-xs);
 }
 
 .summaryHpText {
@@ -99,6 +100,7 @@
   font-family: var(--font-mono);
   white-space: nowrap;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .selectionBadge {

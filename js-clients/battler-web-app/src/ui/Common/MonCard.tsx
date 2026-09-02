@@ -48,10 +48,10 @@ export default function MonCard({
 
       <div className={styles.summaryCardMetaRow}>
         <div className={styles.summaryCardMeta}>
-          {status ? (
-            <span className={`status-badge ${status.toLowerCase()}`}>{status}</span>
-          ) : hp === 0 ? (
+          {hp === 0 || status?.toLowerCase() === "fnt" ? (
             <span className="badge badge-danger">Fainted</span>
+          ) : status ? (
+            <span className={`status-badge ${status.toLowerCase()}`}>{status}</span>
           ) : (
             <span className="badge badge-success">OK</span>
           )}
