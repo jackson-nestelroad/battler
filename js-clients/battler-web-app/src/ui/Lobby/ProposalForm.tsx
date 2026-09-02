@@ -270,27 +270,47 @@ export default function ProposalForm() {
     let teamPreviewTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
 
     if (timerSettings.preset === "custom") {
-      if (timerSettings.battleTimer)
+      if (timerSettings.battleTimer) {
         battleTimerVal = { secs: parseBigIntSafe(timerSettings.battleTimer), warnings: [] };
-      if (timerSettings.playerTimer)
+      }
+      if (timerSettings.playerTimer) {
         playerTimerVal = { secs: parseBigIntSafe(timerSettings.playerTimer), warnings: [] };
-      if (timerSettings.actionTimer)
+      }
+      if (timerSettings.actionTimer) {
         actionTimerVal = { secs: parseBigIntSafe(timerSettings.actionTimer), warnings: [] };
-      if (timerSettings.teamPreviewTimer)
+      }
+      if (timerSettings.teamPreviewTimer) {
         teamPreviewTimerVal = {
           secs: parseBigIntSafe(timerSettings.teamPreviewTimer),
           warnings: [],
         };
+      }
     } else if (timerSettings.preset !== "none") {
       const preset = TIMER_PRESETS[timerSettings.preset];
-      if (preset.battleTimer)
-        battleTimerVal = { secs: parseBigIntSafe(preset.battleTimer), warnings: [] };
-      if (preset.playerTimer)
-        playerTimerVal = { secs: parseBigIntSafe(preset.playerTimer), warnings: [] };
-      if (preset.actionTimer)
-        actionTimerVal = { secs: parseBigIntSafe(preset.actionTimer), warnings: [] };
-      if (preset.teamPreviewTimer)
-        teamPreviewTimerVal = { secs: parseBigIntSafe(preset.teamPreviewTimer), warnings: [] };
+      if (preset.battleTimer) {
+        battleTimerVal = {
+          secs: parseBigIntSafe(preset.battleTimer),
+          warnings: [...preset.battleWarnings],
+        };
+      }
+      if (preset.playerTimer) {
+        playerTimerVal = {
+          secs: parseBigIntSafe(preset.playerTimer),
+          warnings: [...preset.playerWarnings],
+        };
+      }
+      if (preset.actionTimer) {
+        actionTimerVal = {
+          secs: parseBigIntSafe(preset.actionTimer),
+          warnings: [...preset.actionWarnings],
+        };
+      }
+      if (preset.teamPreviewTimer) {
+        teamPreviewTimerVal = {
+          secs: parseBigIntSafe(preset.teamPreviewTimer),
+          warnings: [...preset.teamPreviewWarnings],
+        };
+      }
     }
 
     const timers = {

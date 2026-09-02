@@ -1,5 +1,16 @@
 [
   {
+    "category": "hint",
+    "condition": {
+      "extension": "battlerservice",
+      "titleIn": [
+        "timer",
+        "started",
+        "done"
+      ]
+    }
+  },
+  {
     "category": "primary",
     "condition": {
       "titleIn": [

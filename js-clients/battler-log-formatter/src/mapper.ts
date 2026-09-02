@@ -408,14 +408,35 @@ export function bindMonParticipant(
   }
 }
 
-export function normalizeTitle(entry: UiLogEntry): string {
-  return entry.title.toLowerCase();
+export function extractExtensionSource(entry: UiLogEntry): string | null {
+  if (entry.values?.source && typeof entry.values.source === "string") {
+    return entry.values.source.replace(/^[-:]+|[:]+$/g, "");
+  }
+  if (entry.title.startsWith("-") && entry.title.includes(":")) {
+    return entry.title.split(":")[0].replace(/^-+/, "");
+  }
+  return null;
 }
 
-export function resolveCategory(title: string, tags: string[], entryTitle: string): LogCategory {
+export function normalizeTitle(entry: UiLogEntry): string {
+  let title = entry.title.toLowerCase();
+  if (title.startsWith("-") && title.includes(":")) {
+    title = title.split(":")[1].toLowerCase();
+  }
+  return title;
+}
+
+export function resolveCategory(
+  title: string,
+  tags: string[],
+  entryTitle: string,
+  extensionSource?: string | null,
+): LogCategory {
   for (const rule of categoryRules) {
     const condition = rule.condition as {
       default?: boolean;
+      extension?: string;
+      extensionIn?: string[];
       title?: string;
       titleIn?: string[];
       withoutTags?: string[];
@@ -423,6 +444,15 @@ export function resolveCategory(title: string, tags: string[], entryTitle: strin
     };
     if (condition.default) {
       return rule.category as LogCategory;
+    }
+    if (condition.extension && (!extensionSource || extensionSource !== condition.extension)) {
+      continue;
+    }
+    if (
+      condition.extensionIn &&
+      (!extensionSource || !condition.extensionIn.includes(extensionSource))
+    ) {
+      continue;
     }
     if (
       condition.title &&
@@ -564,17 +594,52 @@ export function mapUiLogEntry(
   const title = normalizeTitle(entry);
   if (!title) return null;
 
+  const extensionSource = extractExtensionSource(entry);
   const metadata: MappedLogMetadata = {};
   const tags: string[] = [];
   const flags: string[] = [];
   const context: LogContext = {};
 
   // --- Process explicit struct fields ---
-  if (entry.player) {
+  const playerId =
+    entry.player ||
+    (typeof entry.values?.player === "string" ? entry.values.player : undefined) ||
+    (typeof entry.values?.action === "string" ? entry.values.action : undefined);
+  if (playerId) {
     tags.push("player:*");
-    const resolved = resolvePlayerContext(entry.player, state, options);
+    const resolved = resolvePlayerContext(playerId, state, options);
     context.PLAYER = resolved.standard;
     context.PLAYER_POSSESSIVE = resolved.possessive;
+  }
+
+  if (title === "timer") {
+    if (entry.values?.action !== undefined || entry.values?.turn !== undefined) {
+      flags.push("turn");
+    }
+
+    const rawSecs =
+      entry.values?.remainingsecs ?? entry.values?.remaining_secs ?? entry.values?.remaining;
+    if (rawSecs !== undefined && rawSecs !== null) {
+      const numSecs = Number(rawSecs);
+      if (!isNaN(numSecs)) {
+        context.REMAININGSECS = numSecs;
+        if (numSecs < 60) {
+          context.TIME = `${numSecs} second${numSecs === 1 ? "" : "s"}`;
+        } else {
+          const minutes = Math.floor(numSecs / 60);
+          const seconds = numSecs % 60;
+          if (seconds === 0) {
+            context.TIME = `${minutes} minute${minutes === 1 ? "" : "s"}`;
+          } else {
+            const padded = seconds.toString().padStart(2, "0");
+            context.TIME = `${minutes}:${padded}`;
+          }
+        }
+        if (numSecs === 0) {
+          flags.push("done");
+        }
+      }
+    }
   }
 
   const side =
@@ -788,19 +853,25 @@ export function mapUiLogEntry(
 
   const combinatoricTags = tags.filter((t) => {
     const rawTag = t.split(":")[0];
+    if (title === "timer" && rawTag === "player") {
+      return true;
+    }
     return (
       !rules.excludeTags.includes(rawTag) && !rules.excludeTags.includes(rawTag.replace(/_/g, ""))
     );
   });
-  const combinatoricFlags = flags.filter(
-    (f) => !rules.excludeTags.includes(f) && !rules.excludeTags.includes(f.replace(/_/g, "")),
-  );
+  const combinatoricFlags = flags.filter((f) => {
+    if (title === "timer" && f === "turn") {
+      return true;
+    }
+    return !rules.excludeTags.includes(f) && !rules.excludeTags.includes(f.replace(/_/g, ""));
+  });
 
   if (state?.battle_type) {
     combinatoricTags.push(`battletype:${state.battle_type.toLowerCase()}`);
   }
 
-  const category = resolveCategory(title, tags, entry.title);
+  const category = resolveCategory(title, tags, entry.title, extensionSource);
 
   const patterns = generateCombinatorics(
     title,
@@ -815,6 +886,7 @@ export function mapUiLogEntry(
     effect: primaryEffect ?? undefined,
     source_effect: sourceEffect ?? undefined,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+    extension: extensionSource ?? undefined,
   };
 }
 

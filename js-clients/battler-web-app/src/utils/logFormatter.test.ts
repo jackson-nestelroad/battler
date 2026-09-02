@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { formatNoticeText, formatUiLogEntry } from "./logFormatter";
 import { LogCategory } from "battler-log-formatter";
-import type { UiLogEntry } from "battler-state";
+import type { BattleState, UiLogEntry } from "battler-state";
 
 describe("logFormatter", () => {
   describe("formatNoticeText", () => {
@@ -220,7 +220,7 @@ describe("logFormatter", () => {
     });
 
     it("should format ability notices with correct unified capitalization in multi and single battles", () => {
-      const multiState: Partial<BattleState> = {
+      const multiState = {
         battle_type: "Multi",
         field: {
           sides: [
@@ -228,7 +228,7 @@ describe("logFormatter", () => {
             { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } } as any,
           ],
         },
-      };
+      } as unknown as BattleState;
 
       const multiEntry: Partial<UiLogEntry> = {
         title: "activate",
@@ -262,6 +262,25 @@ describe("logFormatter", () => {
         expect(formatNoticeText(singleResult[0].notice)).toBe(
           "[The opposing Ninetales's Drought]"
         );
+      }
+    });
+
+    it("should format timer logs as message with LogCategory.Hint", () => {
+      const timerEntry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          player: "p1",
+          warning: true,
+          remainingsecs: 10n,
+        },
+      };
+
+      const result = formatUiLogEntry(timerEntry as UiLogEntry, undefined, "p1");
+      expect(result.length).toBe(1);
+      expect(result[0].kind).toBe("message");
+      if (result[0].kind === "message") {
+        expect(result[0].category).toBe(LogCategory.Hint);
       }
     });
   });

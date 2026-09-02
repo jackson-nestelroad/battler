@@ -8,6 +8,7 @@ export type LogTemplateKey = keyof typeof en.logs;
 export enum LogCategory {
   Primary = "primary",     // Main actions (Moves, Switches, Faints, Transformations, Outcomes)
   Secondary = "secondary", // Modifiers, effects, abilities, weather, and sub-messages
+  Hint = "hint",           // System hints, timer warnings, and informational notices
 }
 
 export type UiToken = LogToken;
@@ -69,6 +70,7 @@ export interface AnyMappedLog {
   effect?: Effect;
   source_effect?: Effect;
   metadata?: MappedLogMetadata;
+  extension?: string;
 }
 
 export interface MapperOptions {

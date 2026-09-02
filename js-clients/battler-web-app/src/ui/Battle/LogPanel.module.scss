@@ -143,6 +143,20 @@
       color: var(--text-secondary);
     }
   }
+
+  &.hint {
+    font-size: var(--font-size-xs);
+    font-style: italic;
+    margin-left: var(--spacing-m);
+
+    .indicator {
+      display: none;
+    }
+
+    .text {
+      color: var(--text-muted);
+    }
+  }
 }
 
 .noticeLine {

@@ -107,7 +107,11 @@
     "animateonly",
     "notarget",
     "no_target",
-    "prev_mon"
+    "prev_mon",
+    "remainingsecs",
+    "remaining_secs",
+    "remaining",
+    "deadline"
   ],
   "wildcardableTags": [
     "ability",

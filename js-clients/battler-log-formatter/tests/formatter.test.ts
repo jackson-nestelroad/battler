@@ -1032,4 +1032,224 @@ describe("LogFormatter", () => {
       monRef: { Active: { side: 1, position: 0, name: "Ninetales", player: "p2" } }
     });
   });
+
+  describe("Extension logs", () => {
+    it("should format turn timer warning for player with Hint category", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          action: "p1",
+          warning: true,
+          remainingsecs: 10,
+        }
+      };
+      const state = {
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Alice" } } },
+            { name: "Side 2", players: { p2: { name: "Bob" } } },
+          ]
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(msg.key).toBe("timer__player_any__turn__warning");
+      expect(stringifyLog(msg)).toBe("10 seconds left for you to make a decision!");
+    });
+
+    it("should format turn timer expiration for player", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          action: "p2",
+          done: true,
+          remainingsecs: 0,
+        }
+      };
+      const state = {
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Alice" } } },
+            { name: "Side 2", players: { p2: { name: "Bob" } } },
+          ]
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(msg.key).toBe("timer__player_any__done__turn");
+      expect(stringifyLog(msg)).toBe("Bob did not make a move in time.");
+    });
+
+    it("should format player bank timer warning", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          player: "p2",
+          warning: true,
+          remainingsecs: 5,
+        }
+      };
+      const state = {
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Alice" } } },
+            { name: "Side 2", players: { p2: { name: "Bob" } } },
+          ]
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(msg.key).toBe("timer__player_any__warning");
+      expect(stringifyLog(msg)).toBe("5 seconds left for Bob.");
+    });
+
+    it("should format player bank timer expiration (done)", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          player: "p2",
+          done: true,
+          remainingsecs: 0,
+        }
+      };
+      const state = {
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Alice" } } },
+            { name: "Side 2", players: { p2: { name: "Bob" } } },
+          ]
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(msg.key).toBe("timer__player_any__done");
+      expect(stringifyLog(msg)).toBe("Bob ran out of time!");
+    });
+
+    it("should format teampreview timer warning and done", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          teampreview: true,
+          warning: true,
+          remainingsecs: 15,
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(stringifyLog(msg)).toBe("15 seconds left for Team Preview!");
+
+      const doneEntry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          teampreview: true,
+          done: true,
+          remainingsecs: 0,
+        }
+      };
+      const doneResult = formatter.format(doneEntry as UiLogEntry);
+      expect(doneResult).not.toBeNull();
+      expect(stringifyLog(doneResult!.messages[0])).toBe("Team Preview time has expired!");
+    });
+
+    it("should format battle timer warning and done", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const warningEntry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          battle: true,
+          warning: true,
+          remainingsecs: 60,
+        }
+      };
+      const warningResult = formatter.format(warningEntry as UiLogEntry);
+      expect(warningResult).not.toBeNull();
+      expect(stringifyLog(warningResult!.messages[0])).toBe("1 minute left in the battle!");
+
+      const doneEntry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          battle: true,
+          done: true,
+          remainingsecs: 0,
+        }
+      };
+      const doneResult = formatter.format(doneEntry as UiLogEntry);
+      expect(doneResult).not.toBeNull();
+      expect(stringifyLog(doneResult!.messages[0])).toBe("The battle ran out of time!");
+    });
+
+    it("should return null (silent) for ordinary timer countdown ticks", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "timer",
+        values: {
+          source: "-battlerservice",
+          player: "p1",
+          remainingsecs: 47,
+        }
+      };
+
+      const result = formatter.format(entry as UiLogEntry);
+      expect(result).toBeNull();
+    });
+
+    it("should format non-timer extension entries like started and done as Hint category", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const startedEntry: Partial<UiLogEntry> = {
+        title: "-battlerservice:started",
+        values: {
+          source: "-battlerservice",
+        }
+      };
+      const startedResult = formatter.format(startedEntry as UiLogEntry);
+      expect(startedResult).not.toBeNull();
+      expect(startedResult!.messages[0].category).toBe(LogCategory.Hint);
+      expect(stringifyLog(startedResult!.messages[0])).toBe("The battle has started!");
+
+      const doneEntry: Partial<UiLogEntry> = {
+        title: "-battlerservice:done",
+        values: {
+          source: "-battlerservice",
+        }
+      };
+      const doneResult = formatter.format(doneEntry as UiLogEntry);
+      expect(doneResult).not.toBeNull();
+      expect(doneResult!.messages[0].category).toBe(LogCategory.Hint);
+      expect(stringifyLog(doneResult!.messages[0])).toBe("The battle is over!");
+    });
+  });
 });

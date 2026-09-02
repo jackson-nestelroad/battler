@@ -1224,4 +1224,20 @@ export const en = {
     weather__weather_strongwinds__residual: [],
     win: "{{SIDE_NAME}} won the battle!",
   },
+  extensions: {
+    battlerservice: {
+      timer__player_any__turn__warning: "{{TIME}} left for {{PLAYER}} to make a decision!",
+      timer__player_any__done__turn: "{{PLAYER}} did not make a move in time.",
+      timer__player_any__turn__done: "$t(extensions.battlerservice.timer__player_any__done__turn)",
+      timer__player_any__warning: "{{TIME}} left for {{PLAYER}}.",
+      timer__player_any__done: "{{PLAYER}} ran out of time!",
+      timer__teampreview__warning: "{{TIME}} left for Team Preview!",
+      timer__done__teampreview: "Team Preview time has expired!",
+      timer__teampreview__done: "$t(extensions.battlerservice.timer__done__teampreview)",
+      timer__battle__warning: "{{TIME}} left in the battle!",
+      timer__battle__done: "The battle ran out of time!",
+      started: "The battle has started!",
+      done: "The battle is over!",
+    },
+  },
 };

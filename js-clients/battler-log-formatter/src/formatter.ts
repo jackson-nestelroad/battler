@@ -113,7 +113,7 @@ function createFormattedUiLog(
   }
 
   return {
-    key: templateKey.replace(/^logs\./, ""),
+    key: templateKey.replace(/^(logs|extensions\.[^.]+)\./, ""),
     tokens: finalTokens,
     category,
     context: cleanContext,
@@ -180,12 +180,23 @@ function resolveNoticeMon(
 function findTemplateKey(
   patterns: string[],
   templateArgs: Record<string, unknown>,
+  extensionSource?: string | null,
 ): string | undefined {
   if (!patterns || patterns.length === 0) return undefined;
   for (const pattern of patterns) {
     const parsed = parsePattern(pattern);
     const serialized = serializePattern(parsed);
     const safePattern = patternToKey(serialized);
+
+    if (extensionSource) {
+      const extKey = `extensions.${extensionSource}.${safePattern}`;
+      if (
+        i18next.exists(extKey, templateArgs) &&
+        i18next.t(extKey, { ...templateArgs, returnObjects: true }) !== null
+      ) {
+        return extKey;
+      }
+    }
 
     const fullKey = `logs.${safePattern}`;
     if (
@@ -339,7 +350,7 @@ export class LogFormatter {
     if (this.options.forceTemplateKey) {
       resolvedKey = `logs.${this.options.forceTemplateKey}`;
     } else {
-      resolvedKey = findTemplateKey(mapped.patterns, templateArgs);
+      resolvedKey = findTemplateKey(mapped.patterns, templateArgs, mapped.extension);
     }
 
     if (resolvedKey && i18next.exists(resolvedKey, templateArgs)) {
