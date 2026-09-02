@@ -1,21 +1,43 @@
 [
   {
     "condition": {
-      "hasEffectType": "Ability"
+      "hasSourceEffectType": "Ability"
     },
     "notice": {
       "type": "Ability",
-      "nameFromPath": "effect.name"
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
     }
   },
   {
     "condition": {
-      "titleIn": ["ability", "abilitystart", "abilityend"],
+      "hasSourceEffectType": "Item"
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasEffectType": "Ability"
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "effect.name",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["ability", "abilitystart", "abilityend", "activate"],
       "hasContext": "ABILITY"
     },
     "notice": {
       "type": "Ability",
-      "nameFromContext": "ABILITY"
+      "nameFromContext": "ABILITY",
+      "monResolution": "targetFirst"
     }
   },
   {
@@ -24,17 +46,19 @@
     },
     "notice": {
       "type": "Item",
-      "nameFromPath": "effect.name"
+      "nameFromPath": "effect.name",
+      "monResolution": "targetFirst"
     }
   },
   {
     "condition": {
-      "titleIn": ["item", "itemstart", "itemend"],
+      "titleIn": ["item", "itemstart", "itemend", "activate"],
       "hasContext": "ITEM"
     },
     "notice": {
       "type": "Item",
-      "nameFromContext": "ITEM"
+      "nameFromContext": "ITEM",
+      "monResolution": "targetFirst"
     }
   },
   {
@@ -45,6 +69,7 @@
     "notice": {
       "type": "Damage",
       "nameFromContext": "DAMAGE",
+      "monResolution": "fromContext",
       "monFromContext": "MON"
     }
   },
@@ -56,6 +81,7 @@
     "notice": {
       "type": "Heal",
       "nameFromContext": "HEAL",
+      "monResolution": "fromContext",
       "monFromContext": "MON"
     }
   }

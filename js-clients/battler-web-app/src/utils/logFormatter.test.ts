@@ -118,7 +118,7 @@ describe("logFormatter", () => {
       expect(result[0].kind).toBe("notice");
       if (result[0].kind === "notice") {
         expect(result[0].notice.type).toBe("Ability");
-        expect(formatNoticeText(result[0].notice)).toBe("[Blastoise's Neutralizing Gas]");
+        expect(formatNoticeText(result[0].notice)).toBe("[The opposing Blastoise's Neutralizing Gas]");
       }
       expect(result[1].kind).toBe("message");
       if (result[1].kind === "message") {

@@ -323,7 +323,7 @@ describe("LogFormatter", () => {
     });
   });
 
-  it("should disambiguate single vs multiple stats for fail what:unboost", () => {
+  it("should disambiguate single vs multiple stats for fail what:unboost and emit ability notice", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const singleStatEntry: Partial<UiLogEntry> = {
       title: "fail",
@@ -337,8 +337,15 @@ describe("LogFormatter", () => {
 
     const singleResult = formatter.format(singleStatEntry as UiLogEntry);
     expect(singleResult).not.toBeNull();
-    expect(singleResult!.messages[0].key).toBe("fail__from_ability_any__what_unboost");
+    expect(singleResult!.messages[0].key).toBe("fail__what_unboost");
     expect(stringifyLog(singleResult!.messages[0])).toBe("Beldum's Attack was not lowered!");
+    expect(singleResult!.notices.length).toBe(1);
+    expect(singleResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Clear Body",
+      mon: "Beldum's",
+      monRef: { Active: { position: 0, name: "Beldum", player: "p1", side: 0 } }
+    });
 
     const multiStatEntry: Partial<UiLogEntry> = {
       title: "fail",
@@ -352,11 +359,18 @@ describe("LogFormatter", () => {
 
     const multiResult = formatter.format(multiStatEntry as UiLogEntry);
     expect(multiResult).not.toBeNull();
-    expect(multiResult!.messages[0].key).toBe("fail__from_ability_any__what_unboost");
+    expect(multiResult!.messages[0].key).toBe("fail__what_unboost");
     expect(stringifyLog(multiResult!.messages[0])).toBe("Beldum's stats were not lowered!");
+    expect(multiResult!.notices.length).toBe(1);
+    expect(multiResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Clear Body",
+      mon: "Beldum's",
+      monRef: { Active: { position: 0, name: "Beldum", player: "p1", side: 0 } }
+    });
   });
 
-  it("should preserve species and forme information in formechange", () => {
+  it("should emit ability notice for formechange", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "formechange",
@@ -369,11 +383,16 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(1);
-    expect(stringifyLog(result!.messages[0])).toBe("Aegislash transformed!");
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Stance Change",
+      mon: "Aegislash's",
+      monRef: { Active: { position: 0, name: "Aegislash", player: "p1", side: 0 } }
+    });
   });
 
-  it("should emit two messages for Mega Evolution", () => {
+  it("should emit two messages and item notice for Mega Evolution", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "mega",
@@ -388,10 +407,17 @@ describe("LogFormatter", () => {
     expect(result).not.toBeNull();
     expect(result!.messages.length).toBe(2);
     expect(stringifyLog(result!.messages[0])).toBe("Venusaur's Venusaurite is reacting to your Mega Bracelet!");
-    expect(stringifyLog(result!.messages[1])).toBe("Venusaur Mega Evolved!");
+    expect(stringifyLog(result!.messages[1])).toBe("Venusaur has Mega Evolved into Venusaur-Mega!");
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Item",
+      name: "Venusaurite",
+      mon: "Venusaur's",
+      monRef: { Active: { position: 0, name: "Venusaur", player: "p1", side: 0 } }
+    });
   });
 
-  it("should emit two messages for Primal Reversion", () => {
+  it("should format Primal Reversion", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "primal",
@@ -403,9 +429,8 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("Primal Reversion! It regained its true power!");
-    expect(stringifyLog(result!.messages[1])).toBe("Kyogre underwent Primal Reversion!");
+    expect(result!.messages.length).toBe(1);
+    expect(stringifyLog(result!.messages[0])).toBe("Kyogre's Primal Reversion! It reverted to its primal state!");
   });
 
   it("should format debug logs correctly with Secondary category", () => {
@@ -485,7 +510,6 @@ describe("LogFormatter", () => {
     expect(wildResult!.messages[0].key).toBe("activate__ability_battlebond__wild");
     expect(stringifyLog(wildResult!.messages[0])).toBe("The wild Greninja became fully charged due to its Battle Bond!");
   });
-
   it("should format move with zpower flag", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
@@ -499,10 +523,10 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(stringifyLog(result!.messages[0])).toBe("Pikachu used Thunder Wave!");
+    expect(stringifyLog(result!.messages[0])).toBe("Pikachu used Z-Thunder Wave!");
   });
 
-  it("should emit two messages for Magic Bounce reflection", () => {
+  it("should format Magic Bounce reflection message and ability notice", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "move",
@@ -515,276 +539,18 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(2);
+    expect(result!.messages.length).toBe(1);
     expect(stringifyLog(result!.messages[0])).toBe("The opposing Espeon bounced the Toxic back!");
-    expect(stringifyLog(result!.messages[1])).toBe("The opposing Espeon used Toxic!");
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Magic Bounce",
+      mon: "The opposing Espeon's",
+      monRef: { Active: { position: 0, name: "Espeon", player: "p2", side: 1 } }
+    });
   });
 
-  it("should emit two messages for switch when prev_mon is present", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: Partial<UiLogEntry> = {
-      title: "switch",
-      player: "p1",
-      side: 0,
-      values: {
-        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
-        prev_mon: { Active: { position: 0, name: "Pikachu", player: "p1", side: 0 } },
-        name: "Charmander",
-        position: 0,
-        player: "p1"
-      }
-    };
-
-    const result = formatter.format(entry as UiLogEntry);
-    expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("You withdrew Pikachu!");
-    expect(stringifyLog(result!.messages[1])).toBe("You sent out Charmander!");
-  });
-
-  it("should emit two messages for opposing switch when prev_mon is present", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: Partial<UiLogEntry> = {
-      title: "switch",
-      player: "p2",
-      side: 1,
-      values: {
-        mon: { Active: { position: 0, name: "Charmeleon", player: "p2", side: 1 } },
-        prev_mon: { Active: { position: 0, name: "Charmander", player: "p2", side: 1 } },
-        name: "Charmeleon",
-        position: 0,
-        player: "p2"
-      }
-    };
-
-    const result = formatter.format(entry as UiLogEntry);
-    expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(2);
-    expect(stringifyLog(result!.messages[0])).toBe("p2 withdrew the opposing Charmander!");
-    expect(stringifyLog(result!.messages[1])).toBe("p2 sent out the opposing Charmeleon!");
-  });
-
-  it("should emit a single message for switch when prev_mon is absent", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: Partial<UiLogEntry> = {
-      title: "switch",
-      player: "p1",
-      side: 0,
-      values: {
-        name: "Charmander",
-        position: 0,
-        player: "p1"
-      }
-    };
-
-    const result = formatter.format(entry as UiLogEntry);
-    expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(1);
-    expect(stringifyLog(result!.messages[0])).toBe("You sent out Charmander!");
-  });
-
-  it("should auto-capitalize 'you' but preserve casing for player usernames", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const selfEntry: Partial<UiLogEntry> = {
-      title: "switch",
-      player: "p1",
-      side: 0,
-      values: {
-        name: "Walking Wake",
-        player: "p1",
-      },
-    };
-
-    const foeEntry: Partial<UiLogEntry> = {
-      title: "switch",
-      player: "ai-random-1",
-      side: 1,
-      values: {
-        name: "Walking Wake",
-        player: "ai-random-1",
-        mon: { Active: { position: 0, name: "Walking Wake", player: "ai-random-1", side: 1 } },
-      },
-    };
-
-    const selfResult = formatter.format(selfEntry as UiLogEntry);
-    expect(selfResult).not.toBeNull();
-    expect(stringifyLog(selfResult!.messages[0])).toBe("You sent out Walking Wake!");
-
-    const foeResult = formatter.format(foeEntry as UiLogEntry);
-    expect(foeResult).not.toBeNull();
-    expect(stringifyLog(foeResult!.messages[0])).toBe("ai-random-1 sent out the opposing Walking Wake!");
-  });
-
-  it("should map damage and heal HP diffs into context", () => {
-    const formatterFraction = new LogFormatter({ healthFormat: "fraction" });
-    const formatterPercent = new LogFormatter({ healthFormat: "percentage" });
-
-    const damageEntry: Partial<UiLogEntry> = {
-      title: "damage",
-      values: {
-        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
-        health: [75, 100],
-        damage: [25, 100]
-      }
-    };
-
-    const healEntry: Partial<UiLogEntry> = {
-      title: "heal",
-      values: {
-        mon: { Active: { position: 0, name: "Charmander", player: "p1", side: 0 } },
-        health: [90, 100],
-        heal: [15, 100]
-      }
-    };
-
-    const mappedD1 = mapUiLogEntry(damageEntry as UiLogEntry, undefined, { healthFormat: "fraction" });
-    expect(mappedD1!.context.DAMAGE).toBe("25/100");
-    expect(mappedD1!.context.HEALTH).toBe("75/100");
-
-    const mappedD2 = mapUiLogEntry(damageEntry as UiLogEntry, undefined, { healthFormat: "percentage" });
-    expect(mappedD2!.context.DAMAGE).toBe("25%");
-    expect(mappedD2!.context.HEALTH).toBe("75%");
-
-    const mappedH1 = mapUiLogEntry(healEntry as UiLogEntry, undefined, { healthFormat: "fraction" });
-    expect(mappedH1!.context.HEAL).toBe("15/100");
-    expect(mappedH1!.context.HEALTH).toBe("90/100");
-
-    const mappedH2 = mapUiLogEntry(healEntry as UiLogEntry, undefined, { healthFormat: "percentage" });
-    expect(mappedH2!.context.HEAL).toBe("15%");
-    expect(mappedH2!.context.HEALTH).toBe("90%");
-  });
-
-  it("should generalize magnitude formatting dynamically", () => {
-    const formatter = new LogFormatter();
-    const getMagnitudeLog = (mag: number) => {
-      const entry: Partial<UiLogEntry> = {
-        title: "activate",
-        values: {
-          move: "Magnitude",
-          magnitude: mag
-        }
-      };
-      const result = formatter.format(entry as UiLogEntry);
-      return stringifyLog(result!.messages[0]);
-    };
-
-    expect(getMagnitudeLog(4)).toBe("Magnitude 4!");
-    expect(getMagnitudeLog(7)).toBe("Magnitude 7!");
-    expect(getMagnitudeLog(10)).toBe("Magnitude 10!");
-  });
-
-  it("should format ally Mon with player and name interpolated", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: Partial<UiLogEntry> = {
-      title: "faint",
-      values: {
-        mon: { Active: { side: 0, position: 1, name: "Pikachu", player: "p2" } }
-      }
-    };
-    const state = {
-      field: {
-        sides: [
-          {
-            players: {
-              p1: { name: "Alice" },
-              p2: { name: "Bob" }
-            }
-          }
-        ]
-      }
-    };
-    const result = formatter.format(entry as UiLogEntry, state as unknown as BattleState);
-    expect(result).not.toBeNull();
-    const log = result!.messages[0];
-    expect(stringifyLog(log)).toBe("Bob's Pikachu fainted!");
-  });
-
-  it("should preserve FOE_SIDE based on the primary mon actor", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const entry: Partial<UiLogEntry> = {
-      title: "damage",
-      values: {
-        mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
-        target: { Active: { side: 1, position: 0, name: "Charmander", player: "p2" } }
-      }
-    };
-    const state = {
-      field: {
-        sides: [
-          { players: { p1: { name: "Alice" } } },
-          { players: { p2: { name: "Bob" } } }
-        ]
-      }
-    };
-    const mapped = mapUiLogEntry(entry as UiLogEntry, state as unknown as BattleState, { localPlayerId: "p1" });
-    expect(mapped).not.toBeNull();
-    expect(mapped!.context.FOE_SIDE).toBe("the opposing team");
-  });
-
-  it("should format item damage with OF_OR_MON_POSSESSIVE when of is omitted vs present", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const state = {
-      field: {
-        sides: [
-          { players: { p1: { name: "Alice" } } },
-          { players: { p2: { name: "Bob" } } }
-        ]
-      }
-    };
-
-    // Case 1: Holder takes damage from its own item (no "of" source)
-    const selfItemEntry: Partial<UiLogEntry> = {
-      title: "damage",
-      values: {
-        mon: { Active: { side: 1, position: 0, name: "Staraptor", player: "p2" } },
-        from: "item:Black Sludge",
-      }
-    };
-    const selfResult = formatter.format(selfItemEntry as UiLogEntry, state as unknown as BattleState);
-    expect(selfResult).not.toBeNull();
-    expect(stringifyLog(selfResult!.messages[0])).toBe("The opposing Staraptor was hurt by its Black Sludge!");
-
-    // Case 2: Attacker takes damage from opponent's item ("of" source present)
-    const opponentItemEntry: Partial<UiLogEntry> = {
-      title: "damage",
-      values: {
-        mon: { Active: { side: 0, position: 0, name: "Garchomp", player: "p1" } },
-        from: "item:Rocky Helmet",
-        of: { Active: { side: 1, position: 0, name: "Ferrothorn", player: "p2" } },
-      }
-    };
-    const opponentResult = formatter.format(opponentItemEntry as UiLogEntry, state as unknown as BattleState);
-    expect(opponentResult).not.toBeNull();
-    expect(stringifyLog(opponentResult!.messages[0])).toBe("Garchomp was hurt by the opposing Ferrothorn's Rocky Helmet!");
-  });
-
-  it("should format Red Card activation with mon and target", () => {
-    const formatter = new LogFormatter({ localPlayerId: "p1" });
-    const state = {
-      field: {
-        sides: [
-          { players: { p1: { name: "Alice" } } },
-          { players: { p2: { name: "Bob" } } }
-        ]
-      }
-    };
-
-    const redCardEntry: Partial<UiLogEntry> = {
-      title: "activate",
-      values: {
-        mon: { Active: { side: 1, position: 0, name: "Snivy", player: "p2" } },
-        item: "Red Card",
-        target: { Active: { side: 0, position: 0, name: "Snivy", player: "p1" } },
-      }
-    };
-
-    const result = formatter.format(redCardEntry as UiLogEntry, state as unknown as BattleState);
-    expect(result).not.toBeNull();
-    expect(result!.messages.length).toBe(1);
-    expect(stringifyLog(result!.messages[0])).toBe("The opposing Snivy held up its Red Card against Snivy!");
-  });
-
-  it("should format Disguise damage with empty messages and no fallback", () => {
+  it("should format Disguise damage with ability and damage notices", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const state = {
       field: {
@@ -807,12 +573,22 @@ describe("LogFormatter", () => {
     const result = formatter.format(disguiseEntry as UiLogEntry, state as unknown as BattleState);
     expect(result).not.toBeNull();
     expect(result!.messages).toEqual([]);
-    expect(result!.notices.length).toBe(1);
-    expect(result!.notices[0].type).toBe("Damage");
-    expect(result!.notices[0].name).toBe("12/100");
+    expect(result!.notices.length).toBe(2);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Disguise",
+      mon: "Mimikyu's",
+      monRef: { Active: { side: 0, position: 0, name: "Mimikyu", player: "p1" } }
+    });
+    expect(result!.notices[1]).toEqual({
+      type: "Damage",
+      name: "12/100",
+      mon: "Mimikyu",
+      monRef: { Active: { side: 0, position: 0, name: "Mimikyu", player: "p1" } }
+    });
   });
 
-  it("should format Powder damage with empty messages and no fallback", () => {
+  it("should format Powder damage with empty messages and damage notice", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const state = {
       field: {
@@ -836,8 +612,355 @@ describe("LogFormatter", () => {
     expect(result).not.toBeNull();
     expect(result!.messages).toEqual([]);
     expect(result!.notices.length).toBe(1);
-    expect(result!.notices[0].type).toBe("Damage");
-    expect(result!.notices[0].name).toBe("25/100");
+    expect(result!.notices[0]).toEqual({
+      type: "Damage",
+      name: "25/100",
+      mon: "The opposing Charizard",
+      monRef: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } }
+    });
+  });
+
+  it("should format ability notice with of (source) on weather log", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "weather",
+      values: {
+        weather: "Harsh Sunlight",
+        from: "ability:Drought",
+        of: { Active: { side: 0, position: 0, name: "Ninetales", player: "p1" } }
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Drought",
+      mon: "Ninetales's",
+      monRef: { Active: { side: 0, position: 0, name: "Ninetales", player: "p1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("The sunlight turned harsh!");
+  });
+
+  it("should format ability notice on unboost with of (source)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "unboost",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } },
+        stat: "atk",
+        by: 1,
+        from: "ability:Intimidate",
+        of: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } }
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Intimidate",
+      mon: "The opposing Gyarados's",
+      monRef: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("Walking Wake's Attack fell!");
+  });
+
+  it("should format item notice and heal notice on heal with Leftovers", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1", healthFormat: "percentage" });
+    const entry: Partial<UiLogEntry> = {
+      title: "heal",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } },
+        health: [100, 100],
+        heal: [6, 100],
+        from: "item:Leftovers"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    expect(result!.notices[0]).toEqual({
+      type: "Item",
+      name: "Leftovers",
+      mon: "Zapdos's",
+      monRef: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } }
+    });
+    expect(result!.notices[1]).toEqual({
+      type: "Heal",
+      name: "6%",
+      mon: "Zapdos",
+      monRef: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("Zapdos restored a little HP using its Leftovers!");
+  });
+
+  it("should format item notice and damage notice on damage with Life Orb", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1", healthFormat: "percentage" });
+    const entry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Walking Wake", player: "p2" } },
+        health: [90, 100],
+        damage: [10, 100],
+        from: "item:Life Orb"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    expect(result!.notices[0]).toEqual({
+      type: "Item",
+      name: "Life Orb",
+      mon: "The opposing Walking Wake's",
+      monRef: { Active: { side: 1, position: 0, name: "Walking Wake", player: "p2" } }
+    });
+    expect(result!.notices[1]).toEqual({
+      type: "Damage",
+      name: "10%",
+      mon: "The opposing Walking Wake",
+      monRef: { Active: { side: 1, position: 0, name: "Walking Wake", player: "p2" } }
+    });
+  });
+
+  it("should format both item and ability notices for Booster Energy activating Protosynthesis", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } },
+        ability: "Protosynthesis",
+        from: "item:Booster Energy"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    expect(result!.notices[0]).toEqual({
+      type: "Item",
+      name: "Booster Energy",
+      mon: "Walking Wake's",
+      monRef: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } }
+    });
+    expect(result!.notices[1]).toEqual({
+      type: "Ability",
+      name: "Protosynthesis",
+      mon: "Walking Wake's",
+      monRef: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("Walking Wake used its Booster Energy to activate Protosynthesis!");
+  });
+
+  it("should format both source ability notice and target damage notice simultaneously on contact ability damage", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1", healthFormat: "percentage" });
+    const entry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } },
+        of: { Active: { side: 1, position: 0, name: "Garchomp", player: "p2" } },
+        health: [88, 100],
+        damage: [12, 100],
+        from: "ability:Rough Skin"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    // Source notice (Rough Skin belongs to Garchomp)
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Rough Skin",
+      mon: "The opposing Garchomp's",
+      monRef: { Active: { side: 1, position: 0, name: "Garchomp", player: "p2" } }
+    });
+    // Target notice (Damage taken by Walking Wake)
+    expect(result!.notices[1]).toEqual({
+      type: "Damage",
+      name: "12%",
+      mon: "Walking Wake",
+      monRef: { Active: { side: 0, position: 0, name: "Walking Wake", player: "p1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("Walking Wake was hurt!");
+  });
+
+  it("should format both source item notice and target damage notice simultaneously on contact item damage", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1", healthFormat: "percentage" });
+    const entry: Partial<UiLogEntry> = {
+      title: "damage",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } },
+        of: { Active: { side: 1, position: 0, name: "Ferrothorn", player: "p2" } },
+        health: [84, 100],
+        damage: [16, 100],
+        from: "item:Rocky Helmet"
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    // Source notice (Rocky Helmet belongs to Ferrothorn)
+    expect(result!.notices[0]).toEqual({
+      type: "Item",
+      name: "Rocky Helmet",
+      mon: "The opposing Ferrothorn's",
+      monRef: { Active: { side: 1, position: 0, name: "Ferrothorn", player: "p2" } }
+    });
+    // Target notice (Damage taken by Zapdos)
+    expect(result!.notices[1]).toEqual({
+      type: "Damage",
+      name: "16%",
+      mon: "Zapdos",
+      monRef: { Active: { side: 0, position: 0, name: "Zapdos", player: "p1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe("Zapdos was hurt by the opposing Ferrothorn's Rocky Helmet!");
+  });
+
+  it("should format Skill Swap flow with ability notices on each swap log entry", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+    // 1. Plusle (p1) gains Drizzle from Minun (p2)
+    const plusleGainEntry: Partial<UiLogEntry> = {
+      title: "abilitystart",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Plusle", player: "p1" } },
+        source: { Active: { side: 1, position: 0, name: "Minun", player: "p2" } },
+        ability: "Drizzle",
+        from: "move:Skill Swap"
+      }
+    };
+
+    const plusleResult = formatter.format(plusleGainEntry as UiLogEntry);
+    expect(plusleResult).not.toBeNull();
+    expect(plusleResult!.notices.length).toBe(1);
+    expect(plusleResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Drizzle",
+      mon: "Plusle's",
+      monRef: { Active: { side: 0, position: 0, name: "Plusle", player: "p1" } }
+    });
+    expect(stringifyLog(plusleResult!.messages[0])).toBe("Plusle swapped Abilities with its target!");
+
+    // 2. Minun (p2) gains Soundproof from Plusle (p1)
+    const minunGainEntry: Partial<UiLogEntry> = {
+      title: "abilitystart",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Minun", player: "p2" } },
+        source: { Active: { side: 0, position: 0, name: "Plusle", player: "p1" } },
+        ability: "Soundproof",
+        from: "move:Skill Swap",
+        of: { Active: { side: 0, position: 0, name: "Plusle", player: "p1" } }
+      }
+    };
+
+    const minunResult = formatter.format(minunGainEntry as UiLogEntry);
+    expect(minunResult).not.toBeNull();
+    expect(minunResult!.notices.length).toBe(1);
+    expect(minunResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Soundproof",
+      mon: "The opposing Minun's",
+      monRef: { Active: { side: 1, position: 0, name: "Minun", player: "p2" } }
+    });
+    expect(stringifyLog(minunResult!.messages[0])).toBe("The opposing Minun swapped Abilities with its target!");
+  });
+
+  it("should format two ability notices simultaneously on abilityend with from:ability (Mummy)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "abilityend",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Conkeldurr", player: "p1" } },
+        ability: "Sheer Force",
+        from: "ability:Mummy",
+        of: { Active: { side: 1, position: 0, name: "Cofagrigus", player: "p2" } }
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    // 1. Source Ability notice (Mummy from the opposing Cofagrigus)
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Mummy",
+      mon: "The opposing Cofagrigus's",
+      monRef: { Active: { side: 1, position: 0, name: "Cofagrigus", player: "p2" } }
+    });
+    // 2. Target Ability notice (Sheer Force from Conkeldurr)
+    expect(result!.notices[1]).toEqual({
+      type: "Ability",
+      name: "Sheer Force",
+      mon: "Conkeldurr's",
+      monRef: { Active: { side: 0, position: 0, name: "Conkeldurr", player: "p1" } }
+    });
+  });
+
+  it("should format two ability notices simultaneously on abilitystart with from:ability (Lingering Aroma)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "abilitystart",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Conkeldurr", player: "p1" } },
+        ability: "Lingering Aroma",
+        from: "ability:Lingering Aroma",
+        of: { Active: { side: 1, position: 0, name: "Oinkologne", player: "p2" } }
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    // 1. Source Ability notice (Lingering Aroma on the opposing Oinkologne)
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Lingering Aroma",
+      mon: "The opposing Oinkologne's",
+      monRef: { Active: { side: 1, position: 0, name: "Oinkologne", player: "p2" } }
+    });
+    // 2. Target Ability notice (Lingering Aroma acquired by Conkeldurr)
+    expect(result!.notices[1]).toEqual({
+      type: "Ability",
+      name: "Lingering Aroma",
+      mon: "Conkeldurr's",
+      monRef: { Active: { side: 0, position: 0, name: "Conkeldurr", player: "p1" } }
+    });
+  });
+
+  it("should format two ability notices simultaneously on activate with from:ability (Mirror Armor / Synchronize)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 0, position: 0, name: "Corviknight", player: "p1" } },
+        ability: "Mirror Armor",
+        from: "ability:Intimidate",
+        of: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } }
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(2);
+    // 1. Source Ability notice (Intimidate from the opposing Gyarados via sourceFirst)
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Intimidate",
+      mon: "The opposing Gyarados's",
+      monRef: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } }
+    });
+    // 2. Target Ability notice (Mirror Armor on Corviknight via targetFirst)
+    expect(result!.notices[1]).toEqual({
+      type: "Ability",
+      name: "Mirror Armor",
+      mon: "Corviknight's",
+      monRef: { Active: { side: 0, position: 0, name: "Corviknight", player: "p1" } }
+    });
   });
 });
-

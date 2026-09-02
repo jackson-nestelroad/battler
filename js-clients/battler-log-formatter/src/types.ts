@@ -48,11 +48,18 @@ export type RequiredContext<K extends LogTemplateKey> =
     ? { count?: number }
     : Record<ExtractVariables<NonNullable<typeof en.logs[K]>>, ContextValue> & { count?: number };
 
+export interface MappedLogParticipantMetadata {
+  raw?: string;
+  raw_possessive?: string;
+  possessive?: string;
+  ref?: UiMon;
+}
+
 export interface MappedLogMetadata {
-  mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
-  target?: { raw?: string, raw_possessive?: string, ref?: UiMon };
-  source?: { raw?: string, raw_possessive?: string, ref?: UiMon };
-  prev_mon?: { raw?: string, raw_possessive?: string, ref?: UiMon };
+  mon?: MappedLogParticipantMetadata;
+  target?: MappedLogParticipantMetadata;
+  source?: MappedLogParticipantMetadata;
+  prev_mon?: MappedLogParticipantMetadata;
 }
 
 export interface AnyMappedLog {
@@ -60,6 +67,7 @@ export interface AnyMappedLog {
   category: LogCategory;
   context: LogContext;
   effect?: Effect;
+  source_effect?: Effect;
   metadata?: MappedLogMetadata;
 }
 

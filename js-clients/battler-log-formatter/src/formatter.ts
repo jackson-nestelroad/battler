@@ -6,10 +6,12 @@ import i18next from "./i18n.js";
 import { mapUiLogEntry } from "./mapper.js";
 import { parsePattern, patternToKey, serializePattern } from "./pattern.js";
 import type {
+  AnyMappedLog,
   ContextValue,
   ContextVar,
   FormattedLogEvent,
   LogContext,
+  MappedLogParticipantMetadata,
   MapperOptions,
   UiNotice,
 } from "./types.js";
@@ -118,6 +120,59 @@ function createFormattedUiLog(
   };
 }
 
+function resolveNoticeMon(
+  ruleNotice: {
+    type: string;
+    nameFromPath?: string;
+    nameFromContext?: string;
+    monResolution?: string;
+    monFromContext?: string;
+  },
+  mapped: AnyMappedLog,
+): { monStr?: string; monRef?: UiMon } {
+  if (ruleNotice.monResolution === "fromContext" || ruleNotice.monFromContext) {
+    const ctxKey = ruleNotice.monFromContext as string;
+    if (mapped.context[ctxKey]) {
+      const rawCtx = mapped.context[ctxKey];
+      const capCtx = capitalizeContextValue(rawCtx);
+      let monStr: string | undefined = undefined;
+      let monRef: UiMon | undefined = undefined;
+      if (typeof capCtx === "string") {
+        monStr = capCtx;
+      } else if (capCtx && typeof capCtx === "object" && "text" in capCtx) {
+        monStr = (capCtx as ContextVar).text;
+        if ((capCtx as ContextVar).monRef) {
+          monRef = (capCtx as ContextVar).monRef;
+        }
+      }
+      return { monStr, monRef };
+    }
+    return {};
+  }
+
+  let participant: MappedLogParticipantMetadata | undefined = undefined;
+  if (ruleNotice.monResolution === "sourceFirst") {
+    // If of / source is specified, use source; otherwise default to target / mon of log
+    participant = mapped.metadata?.source || mapped.metadata?.target || mapped.metadata?.mon;
+  } else {
+    // targetFirst: default to target / mon of log, fallback to source
+    participant = mapped.metadata?.mon || mapped.metadata?.target || mapped.metadata?.source;
+  }
+
+  if (participant) {
+    let monStr: string | undefined = undefined;
+    if (participant.possessive) {
+      monStr = participant.possessive.charAt(0).toUpperCase() + participant.possessive.slice(1);
+    } else if (participant.raw_possessive) {
+      monStr =
+        participant.raw_possessive.charAt(0).toUpperCase() + participant.raw_possessive.slice(1);
+    }
+    return { monStr, monRef: participant.ref };
+  }
+
+  return {};
+}
+
 function findTemplateKey(
   patterns: string[],
   templateArgs: Record<string, unknown>,
@@ -176,64 +231,61 @@ export class LogFormatter {
 
     for (const rule of noticeRules) {
       let match = true;
-      if (
-        rule.condition.hasEffectType &&
-        mapped.effect?.effect_type !== rule.condition.hasEffectType
-      ) {
-        match = false;
+      if ("hasSourceEffectType" in rule.condition && rule.condition.hasSourceEffectType) {
+        const reqType = (rule.condition.hasSourceEffectType as string).toLowerCase();
+        const actualType = mapped.source_effect?.effect_type?.toLowerCase();
+        if (actualType !== reqType) {
+          match = false;
+        }
       }
-      if (rule.condition.titleIn) {
-        const title = mapped.patterns[0]?.split("|")[0];
+      if ("hasEffectType" in rule.condition && rule.condition.hasEffectType) {
+        const reqType = (rule.condition.hasEffectType as string).toLowerCase();
+        const actualType = mapped.effect?.effect_type?.toLowerCase();
+        if (actualType !== reqType) {
+          match = false;
+        }
+      }
+      if ("titleIn" in rule.condition && rule.condition.titleIn) {
+        const title = mapped.patterns[0]?.split("|")[0] || entry.title.toLowerCase();
         if (!title || !rule.condition.titleIn.includes(title)) {
           match = false;
         }
       }
-      if (rule.condition.hasContext && !mapped.context[rule.condition.hasContext]) {
-        match = false;
+      if ("hasContext" in rule.condition && rule.condition.hasContext) {
+        if (!mapped.context[rule.condition.hasContext as string]) {
+          match = false;
+        }
       }
 
       if (match) {
-        let monStr: string | undefined = undefined;
-        let monRef: UiMon | undefined = undefined;
-
-        if (
-          "monFromContext" in rule.notice &&
-          rule.notice.monFromContext &&
-          mapped.context[rule.notice.monFromContext as string]
-        ) {
-          const rawCtx = mapped.context[rule.notice.monFromContext as string];
-          const capCtx = capitalizeContextValue(rawCtx);
-          if (typeof capCtx === "string") {
-            monStr = capCtx;
-          } else if (capCtx && typeof capCtx === "object" && "text" in capCtx) {
-            monStr = (capCtx as ContextVar).text;
-            if ((capCtx as ContextVar).monRef) {
-              monRef = (capCtx as ContextVar).monRef;
-            }
-          }
-        } else {
-          const monMeta = mapped.metadata?.mon || mapped.metadata?.target;
-          if (monMeta?.raw_possessive) {
-            monStr = String(monMeta.raw_possessive);
-          }
-          if (monMeta?.ref) {
-            monRef = monMeta.ref;
-          }
-        }
-
         let name = "";
-        if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
-          name = mapped.effect.name;
-        } else if (rule.notice.nameFromContext && mapped.context[rule.notice.nameFromContext]) {
-          name = String(mapped.context[rule.notice.nameFromContext]);
+        if ("nameFromPath" in rule.notice) {
+          if (rule.notice.nameFromPath === "source_effect.name" && mapped.source_effect?.name) {
+            name = mapped.source_effect.name;
+          } else if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
+            name = mapped.effect.name;
+          }
+        }
+        if (!name && "nameFromContext" in rule.notice && rule.notice.nameFromContext) {
+          if (mapped.context[rule.notice.nameFromContext as string]) {
+            name = String(mapped.context[rule.notice.nameFromContext as string]);
+          }
         }
 
-        notices.push({
-          type: rule.notice.type as "Ability",
-          name,
-          mon: monStr,
-          monRef,
-        });
+        if (name) {
+          const { monStr, monRef } = resolveNoticeMon(rule.notice as any, mapped);
+          const exists = notices.some(
+            (n) => n.type === rule.notice.type && n.name === name && n.mon === monStr,
+          );
+          if (!exists) {
+            notices.push({
+              type: rule.notice.type,
+              name,
+              mon: monStr,
+              monRef,
+            });
+          }
+        }
       }
     }
 

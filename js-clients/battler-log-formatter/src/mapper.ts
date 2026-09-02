@@ -358,6 +358,7 @@ export function bindMonParticipant(
     metadata.mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
+      possessive: resolved.possessive.text,
       ref: resolved.ref,
     };
     if (!metadata.target) metadata.target = metadata.mon;
@@ -376,6 +377,7 @@ export function bindMonParticipant(
     metadata.target = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
+      possessive: resolved.possessive.text,
       ref: resolved.ref,
     };
     if (!metadata.mon) metadata.mon = metadata.target;
@@ -386,12 +388,14 @@ export function bindMonParticipant(
     metadata.source = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
+      possessive: resolved.possessive.text,
       ref: resolved.ref,
     };
   } else if (role === "prev_mon") {
     metadata.prev_mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
+      possessive: resolved.possessive.text,
       ref: resolved.ref,
     };
   }
@@ -616,6 +620,9 @@ export function mapUiLogEntry(
     bindMonParticipant("source", entry.source, state, options, context, metadata, tags);
   }
 
+  let primaryEffect = entry.effect;
+  let sourceEffect = entry.source_effect;
+
   if (entry.effect) {
     if (entry.effect.effect_type)
       tags.push(`${entry.effect.effect_type.toLowerCase()}:${entry.effect.name}`);
@@ -693,9 +700,27 @@ export function mapUiLogEntry(
           const fromName = parts.slice(1).join(":");
           context.FROM = fromName;
           context[`FROM_${fromType.toUpperCase()}`] = fromName;
+          if (!sourceEffect) {
+            sourceEffect = {
+              effect_type: fromType.charAt(0).toUpperCase() + fromType.slice(1).toLowerCase(),
+              name: fromName,
+            };
+          }
         } else {
           context.FROM = v;
+          if (!sourceEffect) {
+            sourceEffect = {
+              effect_type: null,
+              name: v,
+            };
+          }
         }
+      }
+
+      if (k === "ability" && typeof v === "string" && !primaryEffect) {
+        primaryEffect = { effect_type: "Ability", name: v };
+      } else if (k === "item" && typeof v === "string" && !primaryEffect) {
+        primaryEffect = { effect_type: "Item", name: v };
       }
 
       // Move name aliases
@@ -782,7 +807,8 @@ export function mapUiLogEntry(
     patterns,
     category,
     context,
-    effect: entry.effect ?? undefined,
+    effect: primaryEffect ?? undefined,
+    source_effect: sourceEffect ?? undefined,
     metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
   };
 }
