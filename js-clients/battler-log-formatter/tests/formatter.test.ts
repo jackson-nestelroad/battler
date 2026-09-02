@@ -138,6 +138,16 @@ describe("LogFormatter", () => {
         ]
       }
     };
+
+    const multiStateLowercase = {
+      battle_type: "multi",
+      field: {
+        sides: [
+          { players: { p1: { name: "Player 1" }, p3: { name: "Player 3" } } },
+          { players: { p2: { name: "Player 2" }, p4: { name: "Player 4" } } }
+        ]
+      }
+    };
     
     const doublesState = {
       battle_type: "Doubles",
@@ -152,10 +162,12 @@ describe("LogFormatter", () => {
     const singlesResult = formatter.format(entry as unknown as UiLogEntry, singlesState as unknown as BattleState);
     const doublesResult = formatter.format(entry as unknown as UiLogEntry, doublesState as unknown as BattleState);
     const multiResult = formatter.format(entry as unknown as UiLogEntry, multiState as unknown as BattleState);
+    const multiLowercaseResult = formatter.format(entry as unknown as UiLogEntry, multiStateLowercase as unknown as BattleState);
 
     const singlesLog = singlesResult!.messages[0];
     const doublesLog = doublesResult!.messages[0];
     const multiLog = multiResult!.messages[0];
+    const multiLowercaseLog = multiLowercaseResult!.messages[0];
 
     expect(singlesLog.key).toBe("crit__battletype_singles");
     expect(stringifyLog(singlesLog)).toBe("A critical hit!");
@@ -165,6 +177,9 @@ describe("LogFormatter", () => {
     
     expect(multiLog.key).toBe("crit");
     expect(stringifyLog(multiLog)).toBe("A critical hit on Player 2's Pikachu!");
+
+    expect(multiLowercaseLog.key).toBe("crit");
+    expect(stringifyLog(multiLowercaseLog)).toBe("A critical hit on Player 2's Pikachu!");
   });
 
   it("should format boost magnitudes correctly", () => {

@@ -281,7 +281,7 @@ export function resolveMonContext(
       text = i18next.t("mon.foe_wild", { name });
       possessiveText = i18next.t("mon.foe_possessive_wild", { name });
     } else {
-      const isMulti = state?.battle_type === "Multi";
+      const isMulti = state?.battle_type?.toLowerCase() === "multi";
       if (isMulti) {
         text = i18next.t("mon.foe_multi", { name, player: playerName });
         possessiveText = i18next.t("mon.foe_possessive_multi", { name, player: playerName });
