@@ -186,6 +186,29 @@ describe("logFormatter", () => {
       }
     });
 
+    it("should preserve proper noun side name in win logs without auto-capitalization", () => {
+      const winEntry: Partial<UiLogEntry> = {
+        title: "win",
+        side: 1,
+        values: {},
+      };
+      const state = {
+        field: {
+          sides: [
+            { name: "jackson", players: { p1: { name: "jackson" } } },
+            { name: "ai-random-1", players: { p2: { name: "ai-random-1" } } },
+          ],
+        },
+      };
+
+      const result = formatUiLogEntry(winEntry as UiLogEntry, state as unknown as BattleState, "p1");
+      expect(result.length).toBe(1);
+      if (result[0].kind === "message") {
+        expect(result[0].message.context.SIDE_NAME).toEqual({ text: "ai-random-1" });
+        expect(result[0].message.context.__CAPITALIZED_SIDE_NAME).toBeUndefined();
+      }
+    });
+
     it("should format turn logs as kind turn", () => {
       const turnEntry: Partial<UiLogEntry> = {
         title: "turn",
@@ -202,7 +225,7 @@ describe("logFormatter", () => {
       });
     });
 
-    it("should format continue and time logs as request-split", () => {
+    it("should format continue and time logs as divider continue", () => {
       const continueEntry: Partial<UiLogEntry> = {
         title: "continue",
         values: {},
@@ -213,10 +236,20 @@ describe("logFormatter", () => {
       };
 
       const contResult = formatUiLogEntry(continueEntry as UiLogEntry, undefined, "p1");
-      expect(contResult).toEqual([{ kind: "request-split" }]);
+      expect(contResult).toEqual([{ kind: "divider", subtype: "continue" }]);
 
       const timeResult = formatUiLogEntry(timeEntry as UiLogEntry, undefined, "p1");
-      expect(timeResult).toEqual([{ kind: "request-split" }]);
+      expect(timeResult).toEqual([{ kind: "divider", subtype: "continue" }]);
+    });
+
+    it("should format residual logs as divider residual", () => {
+      const residualEntry: Partial<UiLogEntry> = {
+        title: "residual",
+        values: {},
+      };
+
+      const result = formatUiLogEntry(residualEntry as UiLogEntry, undefined, "p1");
+      expect(result).toEqual([{ kind: "divider", subtype: "residual" }]);
     });
 
     it("should format ability notices with correct unified capitalization in multi and single battles", () => {

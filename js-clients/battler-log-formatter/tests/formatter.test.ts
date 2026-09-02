@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { LogFormatter, stringifyLog, formatNoticeText, formatUiLogEntry } from "../src/formatter.js";
 import { mapUiLogEntry } from "../src/mapper.js";
 import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
@@ -48,6 +48,31 @@ describe("LogFormatter", () => {
     const log = result!.messages[0];
     expect(log.category).toBe(LogCategory.Primary);
     expect(stringifyLog(log)).toBe("Team Rocket won the battle!");
+  });
+
+  it("should preserve proper noun side name casing on win log without auto-capitalizing", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "win",
+      side: 1,
+      values: {}
+    };
+    const state = {
+      field: {
+        sides: [
+          { name: "jackson", players: { p1: { name: "jackson" } } },
+          { name: "ai-random-1", players: { p2: { name: "ai-random-1" } } },
+        ]
+      }
+    };
+    const result = formatter.format(entry as unknown as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.category).toBe(LogCategory.Primary);
+    expect(log.context.SIDE_NAME).toEqual({ text: "ai-random-1" });
+    expect(log.context.__CAPITALIZED_SIDE_NAME).toBeUndefined();
+    expect(stringifyLog(log)).toBe("ai-random-1 won the battle!");
   });
   it("should format tie log without state using fallback side name", () => {
     const formatter = new LogFormatter();
@@ -1411,6 +1436,69 @@ describe("LogFormatter", () => {
       expect(dragonRes!.messages.length).toBe(2);
       expect(stringifyLog(dragonRes!.messages[0])).toBe("ai-random-1's fervent wish has reached the opposing Rayquaza!");
       expect(stringifyLog(dragonRes!.messages[1])).toBe("The opposing Rayquaza has Mega Evolved into Mega Rayquaza!");
+    });
+
+    it("should format structural log entries (turn, continue, time, residual)", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+      const turnEntry: Partial<UiLogEntry> = {
+        title: "turn",
+        values: { turn: 3n },
+      };
+      expect(formatter.formatEntry(turnEntry as UiLogEntry)).toEqual([
+        { kind: "turn", turn: "3" },
+      ]);
+      expect(formatUiLogEntry(turnEntry as UiLogEntry)).toEqual([
+        { kind: "turn", turn: "3" },
+      ]);
+
+      const continueEntry: Partial<UiLogEntry> = {
+        title: "continue",
+        values: {},
+      };
+      expect(formatter.formatEntry(continueEntry as UiLogEntry)).toEqual([
+        { kind: "divider", subtype: "continue" },
+      ]);
+      expect(formatUiLogEntry(continueEntry as UiLogEntry)).toEqual([
+        { kind: "divider", subtype: "continue" },
+      ]);
+
+      const timeEntry: Partial<UiLogEntry> = {
+        title: "time",
+        values: { value: "100" },
+      };
+      expect(formatter.formatEntry(timeEntry as UiLogEntry)).toEqual([
+        { kind: "divider", subtype: "continue" },
+      ]);
+
+      const residualEntry: Partial<UiLogEntry> = {
+        title: "residual",
+        values: {},
+      };
+      expect(formatter.formatEntry(residualEntry as UiLogEntry)).toEqual([
+        { kind: "divider", subtype: "residual" },
+      ]);
+      expect(formatUiLogEntry(residualEntry as UiLogEntry)).toEqual([
+        { kind: "divider", subtype: "residual" },
+      ]);
+    });
+
+    it("should format notice text correctly", () => {
+      expect(formatNoticeText({ type: "ability", name: "Intimidate", mon: "Gyarados" })).toBe(
+        "[Gyarados Intimidate]"
+      );
+      expect(formatNoticeText({ type: "item", name: "Leftovers", mon: "Snorlax" })).toBe(
+        "[Snorlax Leftovers]"
+      );
+      expect(formatNoticeText({ type: "damage", name: "12%", mon: "Pikachu" })).toBe(
+        "(Pikachu lost 12% HP)"
+      );
+      expect(formatNoticeText({ type: "heal", name: "6%", mon: "Pikachu" })).toBe(
+        "(Pikachu restored 6% HP)"
+      );
+      expect(formatNoticeText({ type: "custom", name: "Special", mon: "Mew" })).toBe(
+        "[custom: Mew Special]"
+      );
     });
   });
 });

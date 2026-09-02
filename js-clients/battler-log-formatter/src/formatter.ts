@@ -9,6 +9,7 @@ import type {
   AnyMappedLog,
   ContextValue,
   ContextVar,
+  FormattedLogDisplayItem,
   FormattedLogEvent,
   LogContext,
   MappedLogParticipantMetadata,
@@ -374,6 +375,81 @@ export class LogFormatter {
 
     return { messages, notices };
   }
+
+  public formatEntry(entry: UiLogEntry, state?: BattleState): FormattedLogDisplayItem[] {
+    const titleLower = entry.title.toLowerCase();
+    if (titleLower === "turn") {
+      const turnVal = entry.values?.turn;
+      const turnStr = turnVal !== undefined ? String(turnVal) : "";
+      return [{ kind: "turn", turn: turnStr }];
+    }
+
+    if (titleLower === "continue" || titleLower === "time") {
+      return [{ kind: "divider", subtype: "continue" }];
+    }
+
+    if (titleLower === "residual") {
+      return [{ kind: "divider", subtype: "residual" }];
+    }
+
+    const event = this.format(entry, state);
+    if (!event) return [];
+
+    const preNotices: FormattedLogDisplayItem[] = [];
+    const postNotices: FormattedLogDisplayItem[] = [];
+
+    for (const notice of event.notices) {
+      const typeLower = notice.type.toLowerCase();
+      if (typeLower === "damage" || typeLower === "heal") {
+        postNotices.push({ kind: "notice", notice });
+      } else {
+        preNotices.push({ kind: "notice", notice });
+      }
+    }
+
+    const messages: FormattedLogDisplayItem[] = event.messages.map((msg) => ({
+      kind: "message",
+      category: msg.category,
+      message: msg,
+    }));
+
+    return [...preNotices, ...messages, ...postNotices];
+  }
+}
+
+export function formatNoticeText(notice: UiNotice): string {
+  switch (notice.type.toLowerCase()) {
+    case "ability":
+    case "item": {
+      const subject = notice.mon ? `${notice.mon} ` : "";
+      return `[${subject}${notice.name}]`;
+    }
+    case "damage": {
+      const subject = notice.mon ? `${notice.mon} ` : "";
+      return `(${subject}lost ${notice.name} HP)`;
+    }
+    case "heal": {
+      const subject = notice.mon ? `${notice.mon} ` : "";
+      return `(${subject}restored ${notice.name} HP)`;
+    }
+    default: {
+      const subject = notice.mon ? `${notice.mon} ` : "";
+      return `[${notice.type}: ${subject}${notice.name}]`;
+    }
+  }
+}
+
+export function formatUiLogEntry(
+  entry: UiLogEntry,
+  state?: BattleState,
+  options?: MapperOptions | string,
+): FormattedLogDisplayItem[] {
+  const mapperOptions: MapperOptions =
+    typeof options === "string"
+      ? { localPlayerId: options, healthFormat: "percentage" }
+      : { healthFormat: "percentage", ...options };
+  const formatter = new LogFormatter(mapperOptions);
+  return formatter.formatEntry(entry, state);
 }
 
 export function stringifyLog(log: FormattedUiLog): string {

@@ -25,6 +25,27 @@ export interface FormattedLogEvent {
   notices: UiNotice[];
 }
 
+export type LogDividerType = "continue" | "residual";
+
+export type FormattedLogDisplayItem =
+  | {
+      kind: "turn";
+      turn: string;
+    }
+  | {
+      kind: "divider";
+      subtype: LogDividerType;
+    }
+  | {
+      kind: "message";
+      category: LogCategory;
+      message: FormattedUiLog;
+    }
+  | {
+      kind: "notice";
+      notice: UiNotice;
+    };
+
 export interface ContextVar {
   text: string;
   monRef?: UiMon; // used for tying UI elements to specific game entities

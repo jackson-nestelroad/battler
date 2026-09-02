@@ -41355,7 +41355,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: win|side:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_SIDE_NAME": {
+          "SIDE_NAME": {
             "text": "Side 0",
           },
         },
@@ -41378,7 +41378,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: win|side:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_SIDE_NAME": {
+          "SIDE_NAME": {
             "text": "Side 1",
           },
         },

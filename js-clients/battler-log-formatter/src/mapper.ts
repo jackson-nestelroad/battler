@@ -142,8 +142,8 @@ export function resolveSideNameContext(
 ): { standard: ContextVar; possessive: ContextVar } {
   const name = getSideName(sideIndex, state);
   return {
-    standard: { text: name },
-    possessive: { text: `${name}'s` },
+    standard: { text: name, noAutoCapitalize: true },
+    possessive: { text: `${name}'s`, noAutoCapitalize: true },
   };
 }
 

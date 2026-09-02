@@ -101,10 +101,16 @@
   }
 }
 
-.requestDivider {
+.continueDivider {
   border: none;
   border-top: 1px solid var(--border-color);
   margin: var(--spacing-s) 0;
+}
+
+.residualDivider {
+  border: none;
+  height: 0;
+  margin: 0;
 }
 
 .logLine {

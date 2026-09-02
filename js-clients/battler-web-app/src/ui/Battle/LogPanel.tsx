@@ -77,12 +77,33 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                 );
               }
 
-              if (item.kind === "request-split") {
+              if (item.kind === "divider") {
                 const prev = visibleLogs[index - 1];
-                if (!prev || prev.kind === "turn" || prev.kind === "request-split") {
+                if (!prev || prev.kind === "turn" || prev.kind === "divider") {
                   return null;
                 }
-                return <hr key={index} className={styles.requestDivider} />;
+
+                let nextNonDivider: FormattedLogDisplayItem | undefined;
+                let hasContinueInGroup = item.subtype === "continue";
+                for (let i = index + 1; i < visibleLogs.length; i++) {
+                  if (visibleLogs[i].kind === "divider") {
+                    if ((visibleLogs[i] as { kind: "divider"; subtype: string }).subtype === "continue") {
+                      hasContinueInGroup = true;
+                    }
+                    continue;
+                  }
+                  nextNonDivider = visibleLogs[i];
+                  break;
+                }
+
+                if (!nextNonDivider || nextNonDivider.kind === "turn") {
+                  return null;
+                }
+
+                if (hasContinueInGroup) {
+                  return <hr key={index} className={styles.continueDivider} />;
+                }
+                return <div key={index} className={styles.residualDivider} aria-hidden="true" />;
               }
 
               if (item.kind === "notice") {
