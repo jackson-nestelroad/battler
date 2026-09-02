@@ -17573,7 +17573,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: dynamax|m
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Chansey dynamaxed!",
+          "text": "The opposing Chansey Dynamaxed!",
         },
         "key": "dynamax",
       },
@@ -17604,7 +17604,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: dynamax|m
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Pyukumuku dynamaxed!",
+          "text": "The opposing Pyukumuku Dynamaxed!",
         },
         "key": "dynamax",
       },
@@ -17635,7 +17635,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: dynamax|m
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Venusaur dynamaxed!",
+          "text": "The opposing Venusaur Dynamaxed!",
         },
         "key": "dynamax",
       },
@@ -20401,7 +20401,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Aegislash,player-1,1|species:Aegislash|from:ability:Stance Change",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Aegislash",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Aegislash",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Aegislash",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Aegislash transformed into Aegislash!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Aegislash's",
@@ -20425,7 +20447,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Aegislash,player-1,1|species:Aegislash-Blade|from:ability:Stance Change",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Aegislash-Blade",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Aegislash",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Aegislash",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Aegislash transformed into Aegislash-Blade!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Aegislash's",
@@ -20449,7 +20493,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Arceus,player-1,1|species:Arceus-Fire|from:ability:Multitype",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Arceus-Fire",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Arceus",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Arceus",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Arceus transformed into Arceus-Fire!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Arceus's",
@@ -20473,7 +20539,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Arceus,player-2,1|species:Arceus-Water|from:ability:Multitype",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Arceus-Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Arceus",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Arceus",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Arceus transformed into Arceus-Water!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Arceus's",
@@ -20497,7 +20585,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Rainy|from:ability:Forecast",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Castform-Rainy",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Castform",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Castform",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Castform transformed into Castform-Rainy!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Castform's",
@@ -20521,7 +20631,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Snowy|from:ability:Forecast",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Castform-Snowy",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Castform",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Castform",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Castform transformed into Castform-Snowy!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Castform's",
@@ -20545,7 +20677,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Castform,player-1,1|species:Castform-Sunny|from:ability:Forecast",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Castform-Sunny",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Castform",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Castform",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Castform transformed into Castform-Sunny!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Castform's",
@@ -20569,7 +20723,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Cherrim,player-1,1|species:Cherrim|from:ability:Flower Gift",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Cherrim",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cherrim",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cherrim",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Cherrim transformed into Cherrim!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cherrim's",
@@ -20593,7 +20769,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Cherrim,player-1,1|species:Cherrim-Sunshine|from:ability:Flower Gift",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Cherrim-Sunshine",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cherrim",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cherrim",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Cherrim transformed into Cherrim-Sunshine!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cherrim's",
@@ -20617,7 +20815,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant|from:ability:Gulp Missile",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Cramorant",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cramorant",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cramorant",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Cramorant transformed into Cramorant!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cramorant's",
@@ -20641,7 +20861,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant-Gorging|from:ability:Gulp Missile",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Cramorant-Gorging",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cramorant",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cramorant",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Cramorant transformed into Cramorant-Gorging!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cramorant's",
@@ -20665,7 +20907,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Cramorant,player-1,1|species:Cramorant-Gulping|from:ability:Gulp Missile",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Cramorant-Gulping",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Cramorant",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Cramorant",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Cramorant transformed into Cramorant-Gulping!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Cramorant's",
@@ -20689,7 +20953,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan|from:ability:Zen Mode",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Darmanitan",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Darmanitan",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Darmanitan",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Darmanitan transformed into Darmanitan!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Darmanitan's",
@@ -20713,7 +20999,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Galar-Zen|from:ability:Zen Mode",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Darmanitan-Galar-Zen",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Darmanitan",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Darmanitan",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Darmanitan transformed into Darmanitan-Galar-Zen!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Darmanitan's",
@@ -20737,7 +21045,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Darmanitan,player-2,1|species:Darmanitan-Zen|from:ability:Zen Mode",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Darmanitan-Zen",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Darmanitan",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Darmanitan",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Darmanitan transformed into Darmanitan-Zen!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Darmanitan's",
@@ -20761,7 +21091,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Eiscue,player-1,1|species:Eiscue-Noice|from:ability:Ice Face",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Eiscue-Noice",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eiscue",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eiscue",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Eiscue transformed into Eiscue-Noice!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Eiscue's",
@@ -20785,7 +21137,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Eiscue,player-2,1|species:Eiscue|from:ability:Ice Face",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Eiscue",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eiscue",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eiscue",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Eiscue transformed into Eiscue!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Eiscue's",
@@ -20809,7 +21183,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Eiscue,player-2,1|species:Eiscue-Noice|from:ability:Ice Face",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Eiscue-Noice",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eiscue",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eiscue",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Eiscue transformed into Eiscue-Noice!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Eiscue's",
@@ -20833,8 +21229,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Giratina,player-1,1|species:Giratina|from:species:Giratina-Origin",
   "result": {
-    "key": "formechange__from_species_giratinaorigin",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Giratina",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Giratina",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Giratina",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Giratina transformed into Giratina!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -20844,8 +21261,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Giratina,player-1,1|species:Giratina-Origin|from:species:Giratina",
   "result": {
-    "key": "formechange__from_species_giratina",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Giratina-Origin",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Giratina",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Giratina",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Giratina transformed into Giratina-Origin!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -20900,8 +21338,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Greninja,player-1,1|species:Greninja-Battle-Bond|from:Faint",
   "result": {
-    "key": "formechange__from_faint",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Greninja-Battle-Bond",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Greninja",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Greninja",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Greninja transformed into Greninja-Battle-Bond!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -20956,8 +21415,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Meloetta,player-1,1|species:Meloetta|from:move:Relic Song",
   "result": {
-    "key": "formechange__from_move_relicsong",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Meloetta",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Meloetta",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Meloetta",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Meloetta transformed into Meloetta!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -20967,8 +21447,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Meloetta,player-1,1|species:Meloetta-Pirouette|from:move:Relic Song",
   "result": {
-    "key": "formechange__from_move_relicsong",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Meloetta-Pirouette",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Meloetta",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Meloetta",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Meloetta transformed into Meloetta-Pirouette!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -20978,8 +21479,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Meloetta,player-2,2|species:Meloetta-Pirouette|from:move:Relic Song",
   "result": {
-    "key": "formechange__from_move_relicsong",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Meloetta-Pirouette",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Meloetta",
+                "player": "player-2",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Meloetta",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Meloetta transformed into Meloetta-Pirouette!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21124,7 +21646,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Minior,player-1,1|species:Minior-Meteor|from:ability:Shields Down",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Minior-Meteor",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Minior",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Minior",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Minior transformed into Minior-Meteor!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Minior's",
@@ -21148,7 +21692,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Minior,player-2,1|species:Minior-Green|from:ability:Shields Down",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Minior-Green",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Minior",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Minior",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Minior transformed into Minior-Green!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Minior's",
@@ -21172,7 +21738,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Minior,player-2,1|species:Minior-Meteor|from:ability:Shields Down",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Minior-Meteor",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Minior",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Minior",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Minior transformed into Minior-Meteor!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Minior's",
@@ -21196,7 +21784,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Morpeko,player-1,1|species:Morpeko|from:ability:Hunger Switch",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Morpeko",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Morpeko",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Morpeko",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Morpeko transformed into Morpeko!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Morpeko's",
@@ -21220,7 +21830,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Morpeko,player-1,1|species:Morpeko-Hangry|from:ability:Hunger Switch",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Morpeko-Hangry",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Morpeko",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Morpeko",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Morpeko transformed into Morpeko-Hangry!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Morpeko's",
@@ -21244,8 +21876,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Cornerstone-Mask-Tera|from:species:Ogerpon-Cornerstone-Mask",
   "result": {
-    "key": "formechange__from_species_ogerponcornerstonemask",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Ogerpon-Cornerstone-Mask-Tera",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Ogerpon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ogerpon",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ogerpon transformed into Ogerpon-Cornerstone-Mask-Tera!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21255,8 +21908,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Hearthflame-Mask-Tera|from:species:Ogerpon-Hearthflame-Mask",
   "result": {
-    "key": "formechange__from_species_ogerponhearthflamemask",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Ogerpon-Hearthflame-Mask-Tera",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Ogerpon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ogerpon",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ogerpon transformed into Ogerpon-Hearthflame-Mask-Tera!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21266,8 +21940,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Teal-Mask-Tera|from:species:Ogerpon",
   "result": {
-    "key": "formechange__from_species_ogerpon",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Ogerpon-Teal-Mask-Tera",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Ogerpon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ogerpon",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ogerpon transformed into Ogerpon-Teal-Mask-Tera!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21277,8 +21972,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Ogerpon,player-1,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask",
   "result": {
-    "key": "formechange__from_species_ogerponwellspringmask",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Ogerpon-Wellspring-Mask-Tera",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Ogerpon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ogerpon",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ogerpon transformed into Ogerpon-Wellspring-Mask-Tera!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21288,8 +22004,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Ogerpon,player-2,1|species:Ogerpon-Wellspring-Mask-Tera|from:species:Ogerpon-Wellspring-Mask",
   "result": {
-    "key": "formechange__from_species_ogerponwellspringmask",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Ogerpon-Wellspring-Mask-Tera",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Ogerpon",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ogerpon",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ogerpon transformed into Ogerpon-Wellspring-Mask-Tera!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21299,7 +22036,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Palafin,player-1,1|species:Palafin-Hero|from:ability:Zero to Hero",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Palafin-Hero",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Palafin",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Palafin",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Palafin transformed into Palafin-Hero!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Palafin's",
@@ -21323,8 +22082,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Shaymin,player-2,1|species:Shaymin|from:species:Shaymin-Sky",
   "result": {
-    "key": "formechange__from_species_shayminsky",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Shaymin",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Shaymin",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Shaymin",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Shaymin transformed into Shaymin!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21334,7 +22114,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Silvally,player-1,1|species:Silvally-Fire|from:ability:RKS System",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Silvally-Fire",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Silvally",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Silvally",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Silvally transformed into Silvally-Fire!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Silvally's",
@@ -21358,7 +22160,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Silvally,player-2,1|species:Silvally-Water|from:ability:RKS System",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Silvally-Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Silvally",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Silvally",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Silvally transformed into Silvally-Water!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Silvally's",
@@ -21382,8 +22206,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Terapagos,player-1,1|species:Terapagos-Stellar|from:species:Terapagos-Terastal",
   "result": {
-    "key": "formechange__from_species_terapagosterastal",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Terapagos-Stellar",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Terapagos",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Terapagos",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Terapagos transformed into Terapagos-Stellar!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21393,7 +22238,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Terapagos,player-1,1|species:Terapagos-Terastal|from:ability:Tera Shift",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Terapagos-Terastal",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Terapagos",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Terapagos",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Terapagos transformed into Terapagos-Terastal!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Terapagos's",
@@ -21417,7 +22284,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Terapagos-Terastal",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Terapagos",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Terapagos",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Terapagos transformed into Terapagos-Terastal!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Terapagos's",
@@ -21441,7 +22330,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Wishiwashi,player-1,1|species:Wishiwashi-School|from:ability:Schooling",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Wishiwashi-School",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Wishiwashi transformed into Wishiwashi-School!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Wishiwashi's",
@@ -21465,7 +22376,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi|from:ability:Schooling",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Wishiwashi",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Wishiwashi transformed into Wishiwashi!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Wishiwashi's",
@@ -21489,7 +22422,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Wishiwashi,player-2,1|species:Wishiwashi-School|from:ability:Schooling",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Wishiwashi-School",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Wishiwashi",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Wishiwashi",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Wishiwashi transformed into Wishiwashi-School!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Wishiwashi's",
@@ -21513,8 +22468,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Xerneas,player-1,1|species:Xerneas|from:species:Xerneas-Neutral",
   "result": {
-    "key": "formechange__from_species_xerneasneutral",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Xerneas",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Xerneas",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Xerneas",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Xerneas transformed into Xerneas!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21524,8 +22500,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Xerneas,player-2,1|species:Xerneas|from:species:Xerneas-Neutral",
   "result": {
-    "key": "formechange__from_species_xerneasneutral",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Xerneas",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Xerneas",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Xerneas",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Xerneas transformed into Xerneas!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21535,8 +22532,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Zacian,player-1,1|species:Zacian-Crowned|from:species:Zacian",
   "result": {
-    "key": "formechange__from_species_zacian",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Zacian-Crowned",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zacian",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zacian",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Zacian transformed into Zacian-Crowned!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21546,8 +22564,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Zamazenta,player-2,1|species:Zamazenta-Crowned|from:species:Zamazenta",
   "result": {
-    "key": "formechange__from_species_zamazenta",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Zamazenta-Crowned",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zamazenta",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zamazenta",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Zamazenta transformed into Zamazenta-Crowned!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21557,8 +22596,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: formechan
 {
   "rawLog": "formechange|mon:Zygarde,player-1,1|species:Zygarde|from:Faint",
   "result": {
-    "key": "formechange__from_faint",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "SPECIES": "Zygarde",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Zygarde",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zygarde",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Zygarde transformed into Zygarde!",
+        },
+        "key": "formechange",
+      },
+    ],
     "notices": [],
   },
 }
@@ -21675,7 +22735,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: gigantama
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Blastoise gigantamaxed!",
+          "text": "The opposing Blastoise Gigantamaxed!",
         },
         "key": "gigantamax",
       },
@@ -21706,7 +22766,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: gigantama
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Machamp gigantamaxed!",
+          "text": "The opposing Machamp Gigantamaxed!",
         },
         "key": "gigantamax",
       },
@@ -21737,7 +22797,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: gigantama
         },
         "formatted": {
           "category": "primary",
-          "text": "The opposing Venusaur gigantamaxed!",
+          "text": "The opposing Venusaur Gigantamaxed!",
         },
         "key": "gigantamax",
       },
@@ -32346,7 +33406,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: resettype
 {
   "rawLog": "resettypechange|mon:Ditto,player-2,1|from:ability:Mimicry",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Ditto",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Ditto's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Ditto's types returned to normal!",
+        },
+        "key": "resettypechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Ditto's",
@@ -32370,7 +33451,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: resettype
 {
   "rawLog": "resettypechange|mon:Stunfisk,player-1,1|from:ability:Mimicry",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Stunfisk",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Stunfisk's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Stunfisk's types returned to normal!",
+        },
+        "key": "resettypechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Stunfisk's",
@@ -32394,7 +33496,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: resettype
 {
   "rawLog": "resettypechange|mon:Stunfisk,player-2,1|from:ability:Mimicry",
   "result": {
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Stunfisk",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Stunfisk's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Stunfisk's types returned to normal!",
+        },
+        "key": "resettypechange",
+      },
+    ],
     "notices": [
       {
         "mon": "The opposing Stunfisk's",
@@ -32753,8 +33876,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertdyn
 {
   "rawLog": "revertdynamax|mon:Machamp,player-1,1",
   "result": {
-    "key": "revertdynamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Machamp",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Machamp's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Machamp's Dynamax ended!",
+        },
+        "key": "revertdynamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32764,8 +33907,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertdyn
 {
   "rawLog": "revertdynamax|mon:Pyukumuku,player-2,1",
   "result": {
-    "key": "revertdynamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pyukumuku",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pyukumuku's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Pyukumuku's Dynamax ended!",
+        },
+        "key": "revertdynamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32775,8 +33938,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertdyn
 {
   "rawLog": "revertdynamax|mon:Venusaur,player-1,1",
   "result": {
-    "key": "revertdynamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Venusaur",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Venusaur's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Venusaur's Dynamax ended!",
+        },
+        "key": "revertdynamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32786,8 +33969,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertgig
 {
   "rawLog": "revertgigantamax|mon:Copperajah,player-1,1|species:Copperajah",
   "result": {
-    "key": "revertgigantamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Copperajah",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Copperajah's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Copperajah's Gigantamax ended!",
+        },
+        "key": "revertgigantamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32797,8 +34000,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertgig
 {
   "rawLog": "revertgigantamax|mon:Machamp,player-1,1|species:Machamp",
   "result": {
-    "key": "revertgigantamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Machamp",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Machamp's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Machamp's Gigantamax ended!",
+        },
+        "key": "revertgigantamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32808,8 +34031,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertgig
 {
   "rawLog": "revertgigantamax|mon:Venusaur,player-1,1|species:Venusaur",
   "result": {
-    "key": "revertgigantamax",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Venusaur",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Venusaur's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Venusaur's Gigantamax ended!",
+        },
+        "key": "revertgigantamax",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32819,8 +34062,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertmeg
 {
   "rawLog": "revertmega|mon:Venusaur,player-1,1|species:Venusaur|from:Faint",
   "result": {
-    "key": "revertmega",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Venusaur",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Venusaur's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Venusaur's Mega Evolution ended!",
+        },
+        "key": "revertmega",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32830,8 +34093,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertmeg
 {
   "rawLog": "revertmega|mon:Zygarde,player-1,1|species:Zygarde|from:Faint",
   "result": {
-    "key": "revertmega",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Zygarde",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Zygarde's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Zygarde's Mega Evolution ended!",
+        },
+        "key": "revertmega",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32841,8 +34124,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertpri
 {
   "rawLog": "revertprimal|mon:Kyogre,player-1,1|species:Kyogre|from:Faint",
   "result": {
-    "key": "revertprimal",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Kyogre",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Kyogre's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Kyogre's Primal Reversion ended!",
+        },
+        "key": "revertprimal",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32852,8 +34155,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertter
 {
   "rawLog": "reverttera|mon:Eevee,player-2,1",
   "result": {
-    "key": "reverttera",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Eevee",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Eevee's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Eevee's Terastallization ended!",
+        },
+        "key": "reverttera",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32863,8 +34186,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertter
 {
   "rawLog": "reverttera|mon:Pikachu,player-1,1",
   "result": {
-    "key": "reverttera",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Pikachu's Terastallization ended!",
+        },
+        "key": "reverttera",
+      },
+    ],
     "notices": [],
   },
 }
@@ -32874,8 +34217,28 @@ exports[`Exhaustive Log Coverage > should parse and format log string: revertult
 {
   "rawLog": "revertultra|mon:Necrozma,player-1,1|species:Necrozma-Dawn-Wings|from:Faint",
   "result": {
-    "key": "revertultra",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON_POSSESSIVE": {
+            "monRef": {
+              "Active": {
+                "name": "Necrozma",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Necrozma's",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Necrozma's Ultra Burst ended!",
+        },
+        "key": "revertultra",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39180,8 +40543,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:
 {
   "rawLog": "swap|mon:Pikachu,player-1,1|position:2|from:Auto-Shift",
   "result": {
-    "key": "swap",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "POSITION": "2",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Pikachu swapped to position 2.",
+        },
+        "key": "swap",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39191,8 +40575,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:
 {
   "rawLog": "swap|mon:Pikachu,player-1,1|position:2|from:Player Choice",
   "result": {
-    "key": "swap",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "POSITION": "2",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Pikachu swapped to position 2.",
+        },
+        "key": "swap",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39202,8 +40607,29 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swap|mon:
 {
   "rawLog": "swap|mon:Pikachu,player-2,1|position:2|from:Auto-Shift",
   "result": {
-    "key": "swap",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "POSITION": "2",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pikachu",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pikachu",
+          },
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "The opposing Pikachu swapped to position 2.",
+        },
+        "key": "swap",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39275,8 +40701,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapplaye
 {
   "rawLog": "swapplayer|player:player-1|position:1",
   "result": {
-    "key": "swapplayer",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "PLAYER": {
+            "text": "PLAYER-1",
+          },
+          "POSITION": "1",
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "PLAYER-1 swapped to position 1.",
+        },
+        "key": "swapplayer",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39286,8 +40725,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapplaye
 {
   "rawLog": "swapplayer|player:player-4|position:1",
   "result": {
-    "key": "swapplayer",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "PLAYER": {
+            "text": "PLAYER-1",
+          },
+          "POSITION": "1",
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "PLAYER-1 swapped to position 1.",
+        },
+        "key": "swapplayer",
+      },
+    ],
     "notices": [],
   },
 }
@@ -39297,8 +40749,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: swapplaye
 {
   "rawLog": "swapplayer|player:player-5|position:2",
   "result": {
-    "key": "swapplayer",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "PLAYER": {
+            "text": "PLAYER-1",
+          },
+          "POSITION": "2",
+        },
+        "formatted": {
+          "category": "hint",
+          "text": "PLAYER-1 swapped to position 2.",
+        },
+        "key": "swapplayer",
+      },
+    ],
     "notices": [],
   },
 }

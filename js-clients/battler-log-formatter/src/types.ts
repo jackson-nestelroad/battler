@@ -4,6 +4,7 @@ import type { FormattedUiLog } from "./formatter.js";
 import type { LogToken } from "./engine.js";
 
 export type LogTemplateKey = keyof typeof en.logs;
+export type HintLogTemplateKey = keyof typeof en.hints.logs;
 
 export enum LogCategory {
   Primary = "primary",     // Main actions (Moves, Switches, Faints, Transformations, Outcomes)

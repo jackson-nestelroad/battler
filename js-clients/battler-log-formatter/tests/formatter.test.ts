@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { LogFormatter, stringifyLog, formatNoticeText, formatUiLogEntry } from "../src/formatter.js";
 import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
+import i18next from "../src/i18n.js";
 
 describe("LogFormatter", () => {
   it("should format tie log correctly", () => {
@@ -1298,6 +1299,27 @@ describe("LogFormatter", () => {
       expect(doneResult).not.toBeNull();
       expect(doneResult!.messages[0].category).toBe(LogCategory.Hint);
       expect(stringifyLog(doneResult!.messages[0])).toBe("The battle is over!");
+    });
+
+    it("should resolve standard log hints from hints.logs as Hint category when logs template is null", () => {
+      i18next.addResource("en", "translation", "hints.logs.ability__ability_gooey", "Contact with {{MON}} lowered the attacker's Speed!");
+
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "ability",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Goodra", player: "p1" } },
+          ability: "Gooey",
+        },
+      };
+
+      const result = formatter.format(entry as UiLogEntry);
+      expect(result).not.toBeNull();
+      expect(result!.messages.length).toBe(1);
+      const msg = result!.messages[0];
+      expect(msg.category).toBe(LogCategory.Hint);
+      expect(msg.key).toBe("ability__ability_gooey");
+      expect(stringifyLog(msg)).toBe("Contact with Goodra lowered the attacker's Speed!");
     });
   });
 

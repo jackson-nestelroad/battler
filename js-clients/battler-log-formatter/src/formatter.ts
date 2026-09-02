@@ -116,7 +116,7 @@ function createFormattedUiLog(
   }
 
   return {
-    key: templateKey.replace(/^(logs|extensions\.[^.]+)\./, ""),
+    key: templateKey.replace(/^(logs|hints\.(logs|extensions\.[^.]+))\./, ""),
     tokens: finalTokens,
     category,
     context: cleanContext,
@@ -174,11 +174,17 @@ function resolveNoticeMon(
   return {};
 }
 
+interface ResolvedTemplate {
+  key: string;
+  category: LogCategory;
+}
+
 function findTemplateKey(
   patterns: string[],
   templateArgs: Record<string, unknown>,
+  category: LogCategory,
   extensionSource?: string | null,
-): string | undefined {
+): ResolvedTemplate | undefined {
   if (!patterns || patterns.length === 0) return undefined;
   for (const pattern of patterns) {
     const parsed = parsePattern(pattern);
@@ -186,12 +192,12 @@ function findTemplateKey(
     const safePattern = patternToKey(serialized);
 
     if (extensionSource) {
-      const extKey = `extensions.${extensionSource}.${safePattern}`;
+      const extKey = `hints.extensions.${extensionSource}.${safePattern}`;
       if (
         i18next.exists(extKey, templateArgs) &&
         i18next.t(extKey, { ...templateArgs, returnObjects: true }) !== null
       ) {
-        return extKey;
+        return { key: extKey, category: LogCategory.Hint };
       }
     }
 
@@ -200,7 +206,15 @@ function findTemplateKey(
       i18next.exists(fullKey, templateArgs) &&
       i18next.t(fullKey, { ...templateArgs, returnObjects: true }) !== null
     ) {
-      return fullKey;
+      return { key: fullKey, category };
+    }
+
+    const hintKey = `hints.logs.${safePattern}`;
+    if (
+      i18next.exists(hintKey, templateArgs) &&
+      i18next.t(hintKey, { ...templateArgs, returnObjects: true }) !== null
+    ) {
+      return { key: hintKey, category: LogCategory.Hint };
     }
   }
   return undefined;
@@ -351,17 +365,25 @@ export class LogFormatter {
       );
     }
 
-    let resolvedKey: string | undefined = undefined;
+    let resolved: ResolvedTemplate | undefined = undefined;
     if (this.options.forceTemplateKey) {
-      resolvedKey = `logs.${this.options.forceTemplateKey}`;
+      resolved = {
+        key: `logs.${this.options.forceTemplateKey}`,
+        category: mapped.category,
+      };
     } else {
-      resolvedKey = findTemplateKey(mapped.patterns, templateArgs, mapped.extension);
+      resolved = findTemplateKey(
+        mapped.patterns,
+        templateArgs,
+        mapped.category,
+        mapped.extension,
+      );
     }
 
-    if (resolvedKey) {
+    if (resolved) {
       pushFormattedMessages(
-        resolvedKey,
-        mapped.category,
+        resolved.key,
+        resolved.category,
         mapped.context,
         templateArgs,
         messages,
