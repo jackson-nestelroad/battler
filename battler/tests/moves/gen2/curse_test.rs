@@ -97,7 +97,7 @@ fn ghost_type_curse_applies_curse_to_target() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Gengar,player-1,1|name:Curse|target:Forretress,player-2,1",
-                "start|mon:Forretress,player-2,1|move:Curse",
+                "start|mon:Forretress,player-2,1|move:Curse|of:Gengar,player-1,1",
                 "split|side:0",
                 "damage|mon:Gengar,player-1,1|health:60/120",
                 "damage|mon:Gengar,player-1,1|health:50/100",

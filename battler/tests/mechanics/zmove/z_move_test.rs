@@ -816,7 +816,7 @@ fn curse_applies_heal_for_ghost_user() {
                 "split|side:0",
                 "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:115/115",
                 "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:100/100",
-                "start|mon:Eevee,player-2,1|move:Curse",
+                "start|mon:Eevee,player-2,1|move:Curse|of:Mimikyu,player-1,1",
                 "split|side:0",
                 "damage|mon:Mimikyu,player-1,1|health:58/115",
                 "damage|mon:Mimikyu,player-1,1|health:51/100",

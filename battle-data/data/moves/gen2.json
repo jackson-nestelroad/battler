@@ -234,7 +234,7 @@
     },
     "condition": {
       "callbacks": {
-        "on_start": ["log_start"],
+        "on_start": ["log_start: with_source"],
         "on_residual": ["damage: $target expr($target.base_max_hp / 4)"]
       }
     }
