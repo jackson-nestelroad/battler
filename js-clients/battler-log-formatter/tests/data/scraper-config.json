@@ -17,7 +17,8 @@
     "move|from:move:Sleep Talk|zpower",
     "damage|from:move:G-Max Vine Lash",
     "damage|from:move:G-Max Volcalith",
-    "damage|from:move:G-Max Wildfire"
+    "damage|from:move:G-Max Wildfire",
+    "swapboosts|stats:def,spd|from:move:Guard Swap"
   ],
   "excludeTags": [
     "mon",
@@ -379,7 +380,7 @@
       },
       "strip": ["from"],
       "except": {
-        "from": ["move:Heart Swap", "move:Power Swap"]
+        "from": ["move:Heart Swap", "move:Power Swap", "move:Guard Swap"]
       }
     },
     {

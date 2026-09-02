@@ -885,6 +885,7 @@ status|status:Sleep|from:Disobedience
 supereffective
 supereffective|battletype:singles
 swap
+swapboosts|from:move:Guard Swap
 swapboosts|from:move:Heart Swap
 swapboosts|from:move:Power Swap
 swapplayer
