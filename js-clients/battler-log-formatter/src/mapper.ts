@@ -338,8 +338,21 @@ export function bindMonParticipant(
   const resolved = resolveMonContext(uiMon, state, options);
   const prefix = role.toUpperCase();
 
+  const nameVar: ContextVar = {
+    text: resolved.raw,
+    monRef: resolved.ref,
+    noAutoCapitalize: false,
+  };
+  const namePossessiveVar: ContextVar = {
+    text: resolved.raw_possessive,
+    monRef: resolved.ref,
+    noAutoCapitalize: false,
+  };
+
   context[prefix] = resolved.standard;
   context[`${prefix}_POSSESSIVE`] = resolved.possessive;
+  context[`${prefix}_NAME`] = nameVar;
+  context[`${prefix}_NAME_POSSESSIVE`] = namePossessiveVar;
   context[`${prefix}_PLAYER`] = resolved.player;
   context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
 
@@ -349,6 +362,8 @@ export function bindMonParticipant(
     if (!context.TARGET) {
       context.TARGET = resolved.standard;
       context.TARGET_POSSESSIVE = resolved.possessive;
+      context.TARGET_NAME = nameVar;
+      context.TARGET_NAME_POSSESSIVE = namePossessiveVar;
       context.TARGET_PLAYER = resolved.player;
       context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
     }
@@ -366,6 +381,8 @@ export function bindMonParticipant(
     if (!context.MON) {
       context.MON = resolved.standard;
       context.MON_POSSESSIVE = resolved.possessive;
+      context.MON_NAME = nameVar;
+      context.MON_NAME_POSSESSIVE = namePossessiveVar;
       context.MON_PLAYER = resolved.player;
       context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
     }
@@ -384,6 +401,8 @@ export function bindMonParticipant(
   } else if (role === "source") {
     context.OF = resolved.standard;
     context.OF_POSSESSIVE = resolved.possessive;
+    context.OF_NAME = nameVar;
+    context.OF_NAME_POSSESSIVE = namePossessiveVar;
     context.OF_OR_MON_POSSESSIVE = resolved.possessive;
     metadata.source = {
       raw: resolved.raw,
@@ -392,6 +411,12 @@ export function bindMonParticipant(
       ref: resolved.ref,
     };
   } else if (role === "prev_mon") {
+    context.PREV_MON = resolved.standard;
+    context.PREV_MON_POSSESSIVE = resolved.possessive;
+    context.PREV_MON_NAME = nameVar;
+    context.PREV_MON_NAME_POSSESSIVE = namePossessiveVar;
+    context.PREV_MON_PLAYER = resolved.player;
+    context.PREV_MON_PLAYER_POSSESSIVE = resolved.player_possessive;
     metadata.prev_mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,

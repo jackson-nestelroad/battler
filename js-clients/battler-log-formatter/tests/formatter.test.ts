@@ -1252,4 +1252,166 @@ describe("LogFormatter", () => {
       expect(stringifyLog(doneResult!.messages[0])).toBe("The battle is over!");
     });
   });
+
+  describe("MON_NAME context variable usage", () => {
+    const singleState: BattleState = {
+      battle_type: "singles",
+      field: {
+        sides: [
+          { name: "Side 1", players: { p1: { name: "Jackson" } } },
+          { name: "Side 2", players: { p2: { name: "ai-random-1" } } },
+        ],
+      },
+    } as unknown as BattleState;
+
+    const multiState: BattleState = {
+      battle_type: "multi",
+      field: {
+        sides: [
+          { name: "Side 1", players: { p1: { name: "Jackson" }, p3: { name: "Alice" } } },
+          { name: "Side 2", players: { p2: { name: "Bob" }, p4: { name: "Charlie" } } },
+        ],
+      },
+    } as unknown as BattleState;
+
+    it("should format switch logs using MON_NAME without redundant prefixes", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+      // Local player switch
+      const selfSwitch: UiLogEntry = {
+        title: "switch",
+        player: "p1",
+        values: {
+          name: "Ninetales",
+          player: "p1",
+          position: 0,
+        },
+      };
+      const selfRes = formatter.format(selfSwitch, singleState);
+      expect(selfRes).not.toBeNull();
+      expect(stringifyLog(selfRes!.messages[0])).toBe("You sent out Ninetales!");
+
+      // Foe single battle switch
+      const foeSwitch: UiLogEntry = {
+        title: "switch",
+        player: "p2",
+        values: {
+          name: "Ninetales",
+          player: "p2",
+          position: 0,
+        },
+      };
+      const foeRes = formatter.format(foeSwitch, singleState);
+      expect(foeRes).not.toBeNull();
+      expect(stringifyLog(foeRes!.messages[0])).toBe("ai-random-1 sent out Ninetales!");
+
+      // Foe multi battle switch (should not say Bob sent out Bob's Ninetales)
+      const foeMultiSwitch: UiLogEntry = {
+        title: "switch",
+        player: "p2",
+        values: {
+          name: "Ninetales",
+          player: "p2",
+          position: 0,
+        },
+      };
+      const foeMultiRes = formatter.format(foeMultiSwitch, multiState);
+      expect(foeMultiRes).not.toBeNull();
+      expect(stringifyLog(foeMultiRes!.messages[0])).toBe("Bob sent out Ninetales!");
+
+      // Ally multi battle switch (should not say Alice sent out Alice's Ninetales)
+      const allyMultiSwitch: UiLogEntry = {
+        title: "switch",
+        player: "p3",
+        values: {
+          name: "Ninetales",
+          player: "p3",
+          position: 1,
+        },
+      };
+      const allyMultiRes = formatter.format(allyMultiSwitch, multiState);
+      expect(allyMultiRes).not.toBeNull();
+      expect(stringifyLog(allyMultiRes!.messages[0])).toBe("Alice sent out Ninetales!");
+    });
+
+    it("should format switchout logs using MON_NAME when switching out previous Mon", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+      const foeSwitchWithPrev: UiLogEntry = {
+        title: "switch",
+        player: "p2",
+        values: {
+          name: "Vulpix",
+          player: "p2",
+          position: 0,
+          prev_mon: {
+            Active: {
+              name: "Ninetales",
+              player: "p2",
+              position: 0,
+              side: 1,
+            },
+          },
+        },
+      };
+
+      const foeRes = formatter.format(foeSwitchWithPrev, singleState);
+      expect(foeRes).not.toBeNull();
+      expect(foeRes!.messages.length).toBe(2);
+      expect(stringifyLog(foeRes!.messages[0])).toBe("ai-random-1 withdrew Ninetales!");
+      expect(stringifyLog(foeRes!.messages[1])).toBe("ai-random-1 sent out Vulpix!");
+    });
+
+    it("should format mega evolution logs using MON_POSSESSIVE and MON", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+      const megaEntry: UiLogEntry = {
+        title: "mega",
+        target: {
+          Active: {
+            name: "Charizard",
+            player: "p2",
+            position: 0,
+            side: 1,
+          },
+        },
+        values: {
+          from_item: "Charizardite X",
+          species: "Mega Charizard X",
+        },
+      };
+
+      const megaRes = formatter.format(megaEntry, singleState);
+      expect(megaRes).not.toBeNull();
+      expect(megaRes!.messages.length).toBe(2);
+      expect(stringifyLog(megaRes!.messages[0])).toBe("The opposing Charizard's Charizardite X is reacting to ai-random-1's Mega Bracelet!");
+      expect(stringifyLog(megaRes!.messages[1])).toBe("The opposing Charizard has Mega Evolved into Mega Charizard X!");
+
+      const dragonAscentMega: UiLogEntry = {
+        title: "mega",
+        target: {
+          Active: {
+            name: "Rayquaza",
+            player: "p2",
+            position: 0,
+            side: 1,
+          },
+        },
+        source_effect: {
+          id: "dragonascent",
+          name: "Dragon Ascent",
+          effect_type: "Move",
+        },
+        values: {
+          species: "Mega Rayquaza",
+        },
+      };
+
+      const dragonRes = formatter.format(dragonAscentMega, singleState);
+      expect(dragonRes).not.toBeNull();
+      expect(dragonRes!.messages.length).toBe(2);
+      expect(stringifyLog(dragonRes!.messages[0])).toBe("ai-random-1's fervent wish has reached the opposing Rayquaza!");
+      expect(stringifyLog(dragonRes!.messages[1])).toBe("The opposing Rayquaza has Mega Evolved into Mega Rayquaza!");
+    });
+  });
 });

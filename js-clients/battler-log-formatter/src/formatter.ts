@@ -317,6 +317,8 @@ export class LogFormatter {
           ...mapped.context,
           MON: mapped.context.PREV_MON,
           MON_POSSESSIVE: mapped.context.PREV_MON_POSSESSIVE,
+          MON_NAME: mapped.context.PREV_MON_NAME,
+          MON_NAME_POSSESSIVE: mapped.context.PREV_MON_NAME_POSSESSIVE,
           MON_PLAYER: mapped.context.PREV_MON_PLAYER,
           MON_PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
           PLAYER: mapped.context.PREV_MON_PLAYER,

@@ -39356,7 +39356,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Bulbasaur",
@@ -39365,7 +39365,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Bulbasaur",
+            "text": "Bulbasaur",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39373,13 +39373,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-2 withdrew PLAYER-2's Bulbasaur!",
+          "text": "PLAYER-2 withdrew Bulbasaur!",
         },
         "key": "switchout",
       },
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Entei",
@@ -39388,7 +39388,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Entei",
+            "text": "Entei",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39396,7 +39396,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "primary",
-          "text": "PLAYER-2 sent out PLAYER-2's Entei!",
+          "text": "PLAYER-2 sent out Entei!",
         },
         "key": "switch",
       },
@@ -39413,7 +39413,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Bulbasaur",
@@ -39422,7 +39422,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Bulbasaur",
+            "text": "Bulbasaur",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39430,13 +39430,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-2 withdrew PLAYER-2's Bulbasaur!",
+          "text": "PLAYER-2 withdrew Bulbasaur!",
         },
         "key": "switchout",
       },
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Entei",
@@ -39445,7 +39445,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Entei",
+            "text": "Entei",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39453,7 +39453,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "primary",
-          "text": "PLAYER-2 sent out PLAYER-2's Entei!",
+          "text": "PLAYER-2 sent out Entei!",
         },
         "key": "switch",
       },
@@ -39470,7 +39470,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Bulbasaur",
@@ -39479,7 +39479,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Bulbasaur",
+            "text": "Bulbasaur",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39487,13 +39487,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-2 withdrew PLAYER-2's Bulbasaur!",
+          "text": "PLAYER-2 withdrew Bulbasaur!",
         },
         "key": "switchout",
       },
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Shedinja",
@@ -39502,7 +39502,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Shedinja",
+            "text": "Shedinja",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39510,7 +39510,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switch|pl
         },
         "formatted": {
           "category": "primary",
-          "text": "PLAYER-2 sent out PLAYER-2's Shedinja!",
+          "text": "PLAYER-2 sent out Shedinja!",
         },
         "key": "switch",
       },
@@ -39527,7 +39527,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Cyclizar",
@@ -39536,7 +39536,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Cyclizar",
+            "text": "Cyclizar",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39544,7 +39544,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Cyclizar!",
+          "text": "PLAYER-1 withdrew Cyclizar!",
         },
         "key": "switchout",
       },
@@ -39561,7 +39561,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Espeon",
@@ -39570,7 +39570,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Espeon",
+            "text": "Espeon",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39578,7 +39578,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Espeon!",
+          "text": "PLAYER-1 withdrew Espeon!",
         },
         "key": "switchout",
       },
@@ -39595,7 +39595,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Espeon",
@@ -39604,7 +39604,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-2's Espeon",
+            "text": "Espeon",
           },
           "PLAYER": {
             "text": "PLAYER-2",
@@ -39612,7 +39612,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-2 withdrew PLAYER-2's Espeon!",
+          "text": "PLAYER-2 withdrew Espeon!",
         },
         "key": "switchout",
       },
@@ -39629,7 +39629,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Golisopod",
@@ -39638,7 +39638,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Golisopod",
+            "text": "Golisopod",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39646,7 +39646,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Golisopod!",
+          "text": "PLAYER-1 withdrew Golisopod!",
         },
         "key": "switchout",
       },
@@ -39663,7 +39663,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Oricorio",
@@ -39672,7 +39672,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Oricorio",
+            "text": "Oricorio",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39680,7 +39680,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Oricorio!",
+          "text": "PLAYER-1 withdrew Oricorio!",
         },
         "key": "switchout",
       },
@@ -39697,7 +39697,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Palafin",
@@ -39706,7 +39706,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Palafin",
+            "text": "Palafin",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39714,7 +39714,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Palafin!",
+          "text": "PLAYER-1 withdrew Palafin!",
         },
         "key": "switchout",
       },
@@ -39731,7 +39731,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
     "messages": [
       {
         "context": {
-          "MON": {
+          "MON_NAME": {
             "monRef": {
               "Active": {
                 "name": "Trapinch",
@@ -39740,7 +39740,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
                 "side": 0,
               },
             },
-            "text": "PLAYER-1's Trapinch",
+            "text": "Trapinch",
           },
           "PLAYER": {
             "text": "PLAYER-1",
@@ -39748,7 +39748,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: switchout
         },
         "formatted": {
           "category": "secondary",
-          "text": "PLAYER-1 withdrew PLAYER-1's Trapinch!",
+          "text": "PLAYER-1 withdrew Trapinch!",
         },
         "key": "switchout",
       },
