@@ -548,7 +548,7 @@ fn modify_state_from_effect(
         }
         "copyboosts" => {
             let mon = entry.value_or_else("mon")?;
-            let source = entry.value_or_else("of")?;
+            let source = entry.value_or_else("source")?;
             let source = mons_by_mon_name_require_one(state, &source)?;
             let boosts = state
                 .field

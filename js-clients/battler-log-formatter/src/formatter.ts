@@ -149,11 +149,19 @@ function resolveNoticeMon(
 
   let participant: MappedLogParticipantMetadata | undefined = undefined;
   if (ruleNotice.monResolution === "sourceFirst") {
-    // If of / source is specified, use source; otherwise default to target / mon of log
-    participant = mapped.metadata?.source || mapped.metadata?.target || mapped.metadata?.mon;
+    // If of / source is specified, use of/source; otherwise default to target / mon of log
+    participant =
+      mapped.metadata?.of ||
+      mapped.metadata?.source ||
+      mapped.metadata?.target ||
+      mapped.metadata?.mon;
   } else {
-    // targetFirst: default to target / mon of log, fallback to source
-    participant = mapped.metadata?.mon || mapped.metadata?.target || mapped.metadata?.source;
+    // targetFirst: default to target / mon of log, fallback to of/source
+    participant =
+      mapped.metadata?.mon ||
+      mapped.metadata?.target ||
+      mapped.metadata?.of ||
+      mapped.metadata?.source;
   }
 
   if (participant) {

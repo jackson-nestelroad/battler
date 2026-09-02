@@ -49,7 +49,7 @@ console.log(`Validating ${matrixLogs.length} matrix logs...`);
 
 for (const logString of matrixLogs) {
   const players = new Set<string>();
-  const mons = new Map<string, string>();
+  const monsByPlayer = new Map<string, Map<number, string>>();
 
   const parts = logString.split("|");
   for (const part of parts) {
@@ -64,10 +64,14 @@ for (const logString of matrixLogs) {
       part.startsWith("on:")
     ) {
       const [, val] = part.split(":");
-      const [species, player] = val.split(",");
+      const [species, player, posStr] = val.split(",");
       if (player) {
         players.add(player);
-        mons.set(player, species);
+        if (!monsByPlayer.has(player)) {
+          monsByPlayer.set(player, new Map());
+        }
+        const pos = posStr ? parseInt(posStr, 10) : 1;
+        monsByPlayer.get(player)!.set(pos, species);
       }
     }
   }
@@ -87,8 +91,14 @@ for (const logString of matrixLogs) {
     setupLogs.push(`player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`);
     setupLogs.push(`teamsize|player:${pid}|size:6`);
 
-    const monSpecies = mons.get(pid) || "Pikachu";
-    setupLogs.push(`switch|player:${pid}|position:1|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`);
+    const playerMons = monsByPlayer.get(pid);
+    if (!playerMons || playerMons.size === 0) {
+      setupLogs.push(`switch|player:${pid}|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M`);
+    } else {
+      for (const [pos, monSpecies] of playerMons.entries()) {
+        setupLogs.push(`switch|player:${pid}|position:${pos}|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`);
+      }
+    }
   }
 
   setupLogs.push("teampreviewstart");
@@ -117,7 +127,7 @@ for (const logString of matrixLogs) {
     alteredState = alterBattleState(newBattleState(), testSequence);
   } catch (err) {
     // If it's a known standalone log that requires specific state context, format directly
-    if (logString.startsWith("copyboosts|") || logString.startsWith("start|move:Doom Desire") || logString.startsWith("start|move:Future Sight")) {
+    if (logString.startsWith("start|move:Doom Desire") || logString.startsWith("start|move:Future Sight")) {
       const parts = logString.split("|");
       const title = parts[0];
       const values: Record<string, any> = {};

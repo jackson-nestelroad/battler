@@ -1196,7 +1196,7 @@ mod state_test {
             2
         );
 
-        logs.push("copyboosts|mon:Squirtle,player-1,1|of:Charmander,player-2,1");
+        logs.push("copyboosts|mon:Squirtle,player-1,1|source:Charmander,player-2,1");
         let state = setup_singles_battle(&logs);
         let boosts = state_selectors::mon_boosts(&state, &sq).unwrap();
         assert_eq!(boosts.get(battler::Boost::Atk), 2);
@@ -1217,16 +1217,18 @@ mod state_test {
                             name: "Squirtle".to_owned()
                         }
                     }),
-                    source = ui::Mon::Active(ui::ActiveMonReference {
-                        position: ui::FieldPosition {
-                            side: 1usize,
-                            position: 0usize
-                        },
-                        reference: ui::MonReference {
-                            player: "player-2".to_owned(),
-                            name: "Charmander".to_owned()
-                        }
-                    })
+                    values = {
+                        "source" => ui::Mon::Active(ui::ActiveMonReference {
+                            position: ui::FieldPosition {
+                                side: 1usize,
+                                position: 0usize
+                            },
+                            reference: ui::MonReference {
+                                player: "player-2".to_owned(),
+                                name: "Charmander".to_owned()
+                            }
+                        })
+                    }
                 ),
             ]
         );

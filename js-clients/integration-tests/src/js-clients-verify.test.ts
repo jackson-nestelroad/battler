@@ -995,8 +995,9 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     assert.ok(c3, "Client 3 should exist");
     assert.ok(c4, "Client 4 should exist");
 
+    await new Promise((r) => setTimeout(r, 500));
     await Promise.all([c1.cancel(), c2.cancel(), c3.cancel(), c4.cancel()]);
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 500));
     await Promise.all([
       p1Provider.disconnect(),
       p2Provider.disconnect(),

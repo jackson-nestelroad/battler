@@ -409,9 +409,9 @@ export function bindMonParticipant(
       ref: resolved.ref,
     };
     if (!metadata.mon) metadata.mon = metadata.target;
-  } else if (role === "of" || role === "source") {
+  } else if (role === "of") {
     context.OF_OR_MON_POSSESSIVE = resolved.possessive;
-    metadata.source = {
+    metadata.of = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
       possessive: resolved.possessive,

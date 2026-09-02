@@ -108,6 +108,7 @@ export interface MappedLogMetadata {
   mon?: MappedLogParticipantMetadata;
   target?: MappedLogParticipantMetadata;
   source?: MappedLogParticipantMetadata;
+  of?: MappedLogParticipantMetadata;
   prev_mon?: MappedLogParticipantMetadata;
   [key: string]: MappedLogParticipantMetadata | undefined;
 }

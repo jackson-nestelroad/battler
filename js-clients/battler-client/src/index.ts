@@ -74,11 +74,7 @@ async function backfillLog(
 
 function updateBattleState(state: BattleState, logLines: string[]): BattleState {
   const lines = logLines.filter((l) => l !== undefined);
-  try {
-    return alterBattleState(newBattleState(), lines);
-  } catch (err) {
-    return state;
-  }
+  return alterBattleState(newBattleState(), lines);
 }
 
 export class BattlerClient extends EventEmitter {
