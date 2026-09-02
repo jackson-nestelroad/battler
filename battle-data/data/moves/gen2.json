@@ -1817,18 +1817,7 @@
     },
     "effect": {
       "callbacks": {
-        "on_hit": [
-          "$source.boosts = $target.boosts",
-          "log_custom_effect: copyboosts no_effect with_target use_source with_source use_target_as_source",
-          "$volatiles = [focusenergy]",
-          "foreach $volatile in $volatiles:",
-          [
-            "if func_call(has_volatile: $target $volatile):",
-            ["add_volatile: $source $volatile"],
-            "else:",
-            ["remove_volatile: $source $volatile"]
-          ]
-        ]
+        "on_hit": ["copy_boosts: $source $target"]
       }
     }
   },

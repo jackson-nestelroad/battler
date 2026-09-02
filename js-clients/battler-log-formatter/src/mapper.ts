@@ -328,8 +328,13 @@ export function formatFraction(
   return `${fraction[0]}/${fraction[1]}`;
 }
 
+export function isUiMon(v: unknown): v is UiMon {
+  if (typeof v !== "object" || v === null) return false;
+  return "Active" in v || "Inactive" in v || ("player" in v && "name" in v);
+}
+
 export function bindMonParticipant(
-  role: "mon" | "target" | "source" | "prev_mon",
+  role: string,
   uiMon: UiMon,
   state: BattleState | undefined,
   options: MapperOptions,
@@ -338,8 +343,7 @@ export function bindMonParticipant(
   tags: string[],
 ): void {
   if (role !== "prev_mon") {
-    const tagK = role === "source" ? "of" : role;
-    tags.push(`${tagK}:*`);
+    tags.push(`${role}:*`);
   }
 
   const resolved = resolveMonContext(uiMon, state, options);
@@ -405,11 +409,7 @@ export function bindMonParticipant(
       ref: resolved.ref,
     };
     if (!metadata.mon) metadata.mon = metadata.target;
-  } else if (role === "source") {
-    context.OF = resolved.standard;
-    context.OF_POSSESSIVE = resolved.possessive;
-    context.OF_NAME = nameVar;
-    context.OF_NAME_POSSESSIVE = namePossessiveVar;
+  } else if (role === "of" || role === "source") {
     context.OF_OR_MON_POSSESSIVE = resolved.possessive;
     metadata.source = {
       raw: resolved.raw,
@@ -417,14 +417,8 @@ export function bindMonParticipant(
       possessive: resolved.possessive,
       ref: resolved.ref,
     };
-  } else if (role === "prev_mon") {
-    context.PREV_MON = resolved.standard;
-    context.PREV_MON_POSSESSIVE = resolved.possessive;
-    context.PREV_MON_NAME = nameVar;
-    context.PREV_MON_NAME_POSSESSIVE = namePossessiveVar;
-    context.PREV_MON_PLAYER = resolved.player;
-    context.PREV_MON_PLAYER_POSSESSIVE = resolved.player_possessive;
-    metadata.prev_mon = {
+  } else {
+    metadata[role] = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
       possessive: resolved.possessive,
@@ -557,17 +551,12 @@ export function generateCombinatorics(
     }
 
     // 3. Omit dimension entirely (if omittable)
-    let canOmit = rules.omittableTags.always.includes(k);
-
-    if (dim.includes(":") && !rules.wildcardableTags.includes(k)) {
-      canOmit = true;
-    }
-
+    let canOmit = true;
     const condRule = (
       rules.omittableTags.conditional as Record<string, { excludeTitles: string[] }>
     )[k];
-    if (condRule && !condRule.excludeTitles.includes(title)) {
-      canOmit = true;
+    if (condRule && condRule.excludeTitles.includes(title)) {
+      canOmit = false;
     }
 
     if (canOmit) {
@@ -577,7 +566,65 @@ export function generateCombinatorics(
 
   recurse(0, []);
 
-  return Array.from(results).sort((a, b) => b.length - a.length);
+  return sortPatternsBySpecificity(Array.from(results));
+}
+
+const PRIMARY_TAG_NAMES = new Set([
+  "ability",
+  "item",
+  "move",
+  "effect",
+  "condition",
+  "weather",
+  "status",
+  "volatile",
+  "type",
+  "types",
+  "clause",
+  "species",
+]);
+
+export function calculatePatternScore(pattern: string): number {
+  const parts = pattern.split("|");
+  parts.shift(); // remove title
+
+  let score = 0;
+  for (const part of parts) {
+    if (part.includes(":")) {
+      const firstColon = part.indexOf(":");
+      const k = part.substring(0, firstColon);
+      const v = part.substring(firstColon + 1);
+
+      if (k === "from") {
+        if (v.includes("*")) {
+          score += 30;
+        } else {
+          score += 80;
+        }
+      } else if (PRIMARY_TAG_NAMES.has(k)) {
+        if (v === "*") {
+          score += 50;
+        } else {
+          score += 100;
+        }
+      } else {
+        score += 10;
+      }
+    } else {
+      // Discrete semantic flag
+      score += 20;
+    }
+  }
+
+  return score;
+}
+
+export function sortPatternsBySpecificity(patterns: string[]): string[] {
+  return patterns.sort((a, b) => {
+    const diff = calculatePatternScore(b) - calculatePatternScore(a);
+    if (diff !== 0) return diff;
+    return b.length - a.length;
+  });
 }
 
 function handleBoostsTag(v: unknown, context: LogContext, tags: string[]): void {
@@ -714,7 +761,7 @@ export function mapUiLogEntry(
   }
 
   if (entry.source) {
-    bindMonParticipant("source", entry.source, state, options, context, metadata, tags);
+    bindMonParticipant("of", entry.source, state, options, context, metadata, tags);
   }
 
   let primaryEffect = entry.effect;
@@ -774,19 +821,9 @@ export function mapUiLogEntry(
       if (k === "title" || k === "player" || k === "side") continue;
 
       // Participant references in values map
-      if (k === "mon" || k === "target" || k === "source" || k === "of" || k === "prev_mon") {
-        if (typeof v === "object" && v !== null && ("Active" in v || "Inactive" in v)) {
-          const role =
-            k === "of" || k === "source"
-              ? "source"
-              : k === "target"
-                ? "target"
-                : k === "prev_mon"
-                  ? "prev_mon"
-                  : "mon";
-          bindMonParticipant(role, v as UiMon, state, options, context, metadata, tags);
-          continue;
-        }
+      if (isUiMon(v)) {
+        bindMonParticipant(k, v, state, options, context, metadata, tags);
+        continue;
       }
 
       // From / Effect references in values map

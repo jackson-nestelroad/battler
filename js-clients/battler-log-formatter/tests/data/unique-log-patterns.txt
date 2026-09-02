@@ -876,7 +876,6 @@ start|move:Laser Focus
 start|move:Leech Seed
 start|move:Magnet Rise
 start|move:Mimic
-start|move:Mimic|mimic:*
 start|move:Miracle Eye
 start|move:Nightmare
 start|move:No Retreat

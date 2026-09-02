@@ -746,20 +746,26 @@ function generateMatrix() {
       const allKeys = rawPatterns.map((rp) => patternToKey(rp));
 
       for (const k of allKeys) {
-        if (k.includes("__silent")) continue;
+        if (!k.includes("__silent")) {
+          allGeneratedFallbacks.add(k);
+        }
+      }
 
-        allGeneratedFallbacks.add(k);
-        if (
-          !blockContent.includes(`"${k}":`) &&
-          !blockContent.includes(` ${k}:`) &&
-          !blockContent.includes(`"${k}___`) &&
-          !blockContent.includes(` ${k}___`)
-        ) {
-          if (!newKeys.includes(k)) {
-            newKeys.push(k);
-            added = true;
-            console.log(`Auto-added missing log translation: ${k}`);
-          }
+      const hasMatch = allKeys.some(
+        (k) =>
+          !k.includes("__silent") &&
+          (blockContent.includes(`"${k}":`) ||
+            blockContent.includes(` ${k}:`) ||
+            blockContent.includes(`"${k}___`) ||
+            blockContent.includes(` ${k}___`)),
+      );
+
+      if (!hasMatch) {
+        const primaryKey = patternToKey(p);
+        if (!newKeys.includes(primaryKey)) {
+          newKeys.push(primaryKey);
+          added = true;
+          console.log(`Auto-added missing log translation: ${primaryKey}`);
         }
       }
     }

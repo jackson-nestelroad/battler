@@ -329,8 +329,8 @@ export default function ActionPanel({
 
       const isMonActiveDynamaxed = isMonDynamaxedInState(
         battleSession?.battleState,
-        playerData,
-        activeReq.team_position,
+        playerData?.side ?? 0,
+        currentSlotIndex,
       );
 
       const canShift = canSlotShift(

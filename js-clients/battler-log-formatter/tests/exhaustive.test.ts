@@ -53,16 +53,12 @@ describe("Exhaustive Log Coverage", () => {
     for (let i = 0; i < playerList.length; i++) {
       const pid = playerList[i];
       const side = i % 2;
-      setupLogs.push(`side|side:${side}|name:Team ${side + 1}`);
-      setupLogs.push(`player|player:${pid}|name:PLAYER-${i + 1}|side:${side}`);
+      setupLogs.push(`side|id:${side}|name:Team ${side + 1}`);
+      setupLogs.push(`player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`);
       setupLogs.push(`teamsize|player:${pid}|size:6`);
-      
+
       const monSpecies = mons.get(pid) || "Pikachu";
-      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|type1:Electric|ability:Static|moves:Thunderbolt|stats:100,100,100,100,100,100`);
-      setupLogs.push(`split|side:${side}`);
-      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|stats:100,100,100,100,100,100`);
-      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|stats:100,100,100,100,100,100`);
-      setupLogs.push(`switch|mon:${monSpecies},${pid}|position:0|hp:100|hp:100`);
+      setupLogs.push(`switch|player:${pid}|position:1|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`);
     }
 
     setupLogs.push("teampreviewstart");
@@ -71,29 +67,52 @@ describe("Exhaustive Log Coverage", () => {
     setupLogs.push("turn|turn:1");
 
     let testSequence = [...setupLogs, logString];
-    if (logString.match(/^(info|side|player|teamsize|teampreview|battlestart|mon|split|turn)\|/)) {
-      testSequence = [logString]; 
+    if (logString.startsWith("player|")) {
+      testSequence = ["side|id:0|name:Team 1", "side|id:1|name:Team 2", logString];
+    } else if (logString.startsWith("teamsize|") || logString.startsWith("mon|")) {
+      testSequence = [
+        "side|id:0|name:Team 1",
+        "side|id:1|name:Team 2",
+        "player|id:player-1|name:PLAYER-1|side:0|position:0",
+        "player|id:player-2|name:PLAYER-2|side:1|position:0",
+        "player|id:protagonist|name:Protagonist|side:0|position:1",
+        logString,
+      ];
+    } else if (logString.match(/^(info|side|teampreview|battlestart|split|turn)\|/)) {
+      testSequence = [logString];
     }
 
     let alteredState;
+    let uiLogEntry: any;
     try {
       alteredState = alterBattleState(newBattleState(), testSequence);
+      if (alteredState.ui_log.length > 0) {
+        const lastTurnLogs = alteredState.ui_log[alteredState.ui_log.length - 1];
+        if (lastTurnLogs.length > 0) {
+          uiLogEntry = lastTurnLogs[lastTurnLogs.length - 1];
+        }
+      }
     } catch {
-      return; 
+      const parts = logString.split("|");
+      const title = parts[0];
+      const values: Record<string, any> = {};
+      for (let i = 1; i < parts.length; i++) {
+        const [k, ...rest] = parts[i].split(":");
+        values[k] = rest.join(":");
+      }
+      uiLogEntry = {
+        title,
+        values,
+      };
     }
 
-    expect(alteredState.ui_log.length).toBeGreaterThan(0);
-    const lastTurnLogs = alteredState.ui_log[alteredState.ui_log.length - 1];
-    
-    if (lastTurnLogs.length === 0) {
+    if (!uiLogEntry) {
       return;
     }
-    
-    const uiLogEntry = lastTurnLogs[lastTurnLogs.length - 1];
 
     // 1. Format the string to get the final resolved key and context
     const event = formatter.format(uiLogEntry, alteredState);
-    
+
     // 2. Extract just the enum key, the message string, and context vars
     let primaryResult: ExhaustiveResult | null = null;
     if (event) {

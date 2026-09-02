@@ -450,10 +450,7 @@
     "name": "Magic Bounce",
     "flags": ["Breakable"],
     "effect": {
-      "delegates": ["movecondition:magiccoat"],
-      "callbacks": {
-        "on_start": ["# No log."]
-      }
+      "delegates": ["movecondition:magiccoat;on_start=>"]
     }
   },
   "sapsipper": {

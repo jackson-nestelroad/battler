@@ -15,8 +15,9 @@
     "build": "tsc -b",
     "test": "vitest run tests",
     "extract-logs": "tsx tests/scraper.ts",
+    "validate:logs": "tsx scripts/validate-all-logs.ts",
     "lint:locales": "tsx scripts/validate-locales.ts",
-    "lint": "tsc -b && tsc -p tsconfig.test.json --noEmit && npm run lint:locales"
+    "lint": "tsc -b && tsc -p tsconfig.test.json --noEmit && npm run lint:locales && npm run validate:logs"
   },
   "keywords": [],
   "author": "",
