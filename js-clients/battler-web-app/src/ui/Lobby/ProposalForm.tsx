@@ -13,10 +13,9 @@ import AdvancedRulesSection from "./AdvancedRulesSection";
 import type { FieldSettingsState } from "./FieldSettingsSection";
 import FieldSettingsSection from "./FieldSettingsSection";
 import PlayerSlotCard from "./PlayerSlotCard";
-import type { FormPlayer } from "./proposalTypes";
-import { createDefaultPlayer } from "./proposalTypes";
-import type { TimerSettingsState } from "./TimerSettingsSection";
-import TimerSettingsSection, { TIMER_PRESETS } from "./TimerSettingsSection";
+import type { FormPlayer, TimerSettingsState } from "./proposalTypes";
+import { createDefaultPlayer, TIMER_PRESETS } from "./proposalTypes";
+import TimerSettingsSection from "./TimerSettingsSection";
 
 import styles from "./ProposalForm.module.scss";
 
@@ -267,29 +266,31 @@ export default function ProposalForm() {
     const buildTimer = (secsStr: string, warnings: readonly bigint[] = []) =>
       secsStr ? { secs: parseBigIntSafe(secsStr), warnings: [...warnings] } : null;
 
-    let battleTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
-    let playerTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
-    let actionTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
-    let teamPreviewTimerVal: { secs: bigint; warnings: bigint[] } | null = null;
+    const isCustomTimer = timerSettings.preset === "custom";
+    const preset =
+      timerSettings.preset === "blitz" || timerSettings.preset === "standard"
+        ? TIMER_PRESETS[timerSettings.preset]
+        : null;
 
-    if (timerSettings.preset === "custom") {
-      battleTimerVal = buildTimer(timerSettings.battleTimer);
-      playerTimerVal = buildTimer(timerSettings.playerTimer);
-      actionTimerVal = buildTimer(timerSettings.actionTimer);
-      teamPreviewTimerVal = buildTimer(timerSettings.teamPreviewTimer);
-    } else if (timerSettings.preset !== "none") {
-      const preset = TIMER_PRESETS[timerSettings.preset];
-      battleTimerVal = buildTimer(preset.battleTimer, preset.battleWarnings);
-      playerTimerVal = buildTimer(preset.playerTimer, preset.playerWarnings);
-      actionTimerVal = buildTimer(preset.actionTimer, preset.actionWarnings);
-      teamPreviewTimerVal = buildTimer(preset.teamPreviewTimer, preset.teamPreviewWarnings);
-    }
+    const resolveTimer = (
+      customSecs: string,
+      presetSecs?: string,
+      presetWarnings?: readonly bigint[],
+    ) => {
+      if (isCustomTimer) return buildTimer(customSecs);
+      if (preset && presetSecs) return buildTimer(presetSecs, presetWarnings);
+      return null;
+    };
 
     const timers = {
-      battle: battleTimerVal,
-      player: playerTimerVal,
-      action: actionTimerVal,
-      team_preview: teamPreviewTimerVal,
+      battle: resolveTimer(timerSettings.battleTimer, preset?.battleTimer, preset?.battleWarnings),
+      player: resolveTimer(timerSettings.playerTimer, preset?.playerTimer, preset?.playerWarnings),
+      action: resolveTimer(timerSettings.actionTimer, preset?.actionTimer, preset?.actionWarnings),
+      team_preview: resolveTimer(
+        timerSettings.teamPreviewTimer,
+        preset?.teamPreviewTimer,
+        preset?.teamPreviewWarnings,
+      ),
     };
 
     // Helper to map FormPlayer to PlayerData bindings format

@@ -1,36 +1,50 @@
+import type { TimerSettingsState } from "./proposalTypes";
+import { TIMER_PRESETS } from "./proposalTypes";
 import styles from "./ProposalForm.module.scss";
 
-export interface TimerSettingsState {
-  preset: "none" | "blitz" | "standard" | "custom";
-  battleTimer: string;
-  playerTimer: string;
-  actionTimer: string;
-  teamPreviewTimer: string;
-  proposalTimeout: number;
+export type { TimerSettingsState };
+export { TIMER_PRESETS };
+
+type TimerFieldKey = "actionTimer" | "teamPreviewTimer" | "playerTimer" | "battleTimer";
+
+interface TimerFieldConfig {
+  id: string;
+  field: TimerFieldKey;
+  label: string;
+  min: string;
+  placeholder: string;
 }
 
-export const TIMER_PRESETS = {
-  blitz: {
-    actionTimer: "10",
-    actionWarnings: [5n],
-    teamPreviewTimer: "15",
-    teamPreviewWarnings: [5n],
-    playerTimer: "",
-    playerWarnings: [] as bigint[],
-    battleTimer: "",
-    battleWarnings: [] as bigint[],
+const TIMER_INPUT_FIELDS: readonly TimerFieldConfig[] = [
+  {
+    id: "customActionTimer",
+    field: "actionTimer",
+    label: "Action (secs)",
+    min: "5",
+    placeholder: "e.g., 45",
   },
-  standard: {
-    actionTimer: "45",
-    actionWarnings: [15n, 5n],
-    teamPreviewTimer: "60",
-    teamPreviewWarnings: [30n, 10n],
-    playerTimer: "420",
-    playerWarnings: [300n, 180n, 60n, 30n, 10n],
-    battleTimer: "1200",
-    battleWarnings: [600n, 300n, 60n],
+  {
+    id: "customTeamPreviewTimer",
+    field: "teamPreviewTimer",
+    label: "Team Preview (secs)",
+    min: "5",
+    placeholder: "e.g., 60",
   },
-} as const;
+  {
+    id: "customPlayerTimer",
+    field: "playerTimer",
+    label: "Player (secs)",
+    min: "10",
+    placeholder: "e.g., 420",
+  },
+  {
+    id: "customBattleTimer",
+    field: "battleTimer",
+    label: "Battle (secs)",
+    min: "30",
+    placeholder: "e.g., 1200",
+  },
+] as const;
 
 interface TimerSettingsSectionProps {
   timerSettings: TimerSettingsState;
@@ -41,12 +55,9 @@ export default function TimerSettingsSection({
   timerSettings,
   onChange,
 }: TimerSettingsSectionProps) {
-  const getTimerValue = (
-    field: keyof Pick<
-      TimerSettingsState,
-      "actionTimer" | "teamPreviewTimer" | "playerTimer" | "battleTimer"
-    >,
-  ) => {
+  const isCustom = timerSettings.preset === "custom";
+
+  const getTimerValue = (field: TimerFieldKey) => {
     if (timerSettings.preset === "custom") return timerSettings[field];
     if (timerSettings.preset === "none") return "";
     return TIMER_PRESETS[timerSettings.preset][field];
@@ -83,73 +94,20 @@ export default function TimerSettingsSection({
       </div>
 
       <div className={`${styles.settingsInputsGrid} mt-m`}>
-        <div className="form-group">
-          <label htmlFor="customActionTimer">Action (secs)</label>
-          <input
-            id="customActionTimer"
-            type="number"
-            min="5"
-            placeholder={timerSettings.preset === "custom" ? "e.g., 45" : "None"}
-            value={getTimerValue("actionTimer")}
-            onChange={
-              timerSettings.preset === "custom"
-                ? (e) => onChange({ actionTimer: e.target.value })
-                : undefined
-            }
-            disabled={timerSettings.preset !== "custom"}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="customTeamPreviewTimer">Team Preview (secs)</label>
-          <input
-            id="customTeamPreviewTimer"
-            type="number"
-            min="5"
-            placeholder={timerSettings.preset === "custom" ? "e.g., 60" : "None"}
-            value={getTimerValue("teamPreviewTimer")}
-            onChange={
-              timerSettings.preset === "custom"
-                ? (e) => onChange({ teamPreviewTimer: e.target.value })
-                : undefined
-            }
-            disabled={timerSettings.preset !== "custom"}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="customPlayerTimer">Player (secs)</label>
-          <input
-            id="customPlayerTimer"
-            type="number"
-            min="10"
-            placeholder={timerSettings.preset === "custom" ? "e.g., 420" : "None"}
-            value={getTimerValue("playerTimer")}
-            onChange={
-              timerSettings.preset === "custom"
-                ? (e) => onChange({ playerTimer: e.target.value })
-                : undefined
-            }
-            disabled={timerSettings.preset !== "custom"}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="customBattleTimer">Battle (secs)</label>
-          <input
-            id="customBattleTimer"
-            type="number"
-            min="30"
-            placeholder={timerSettings.preset === "custom" ? "e.g., 1200" : "None"}
-            value={getTimerValue("battleTimer")}
-            onChange={
-              timerSettings.preset === "custom"
-                ? (e) => onChange({ battleTimer: e.target.value })
-                : undefined
-            }
-            disabled={timerSettings.preset !== "custom"}
-          />
-        </div>
+        {TIMER_INPUT_FIELDS.map(({ id, field, label, min, placeholder }) => (
+          <div key={id} className="form-group">
+            <label htmlFor={id}>{label}</label>
+            <input
+              id={id}
+              type="number"
+              min={min}
+              placeholder={isCustom ? placeholder : "None"}
+              value={getTimerValue(field)}
+              onChange={isCustom ? (e) => onChange({ [field]: e.target.value }) : undefined}
+              disabled={!isCustom}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

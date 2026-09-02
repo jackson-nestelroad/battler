@@ -12,6 +12,40 @@ interface LogPanelProps {
   engineLogs?: string[];
 }
 
+function renderLogDivider(
+  visibleLogs: readonly FormattedLogDisplayItem[],
+  index: number,
+  initialSubtype: string,
+) {
+  const prev = visibleLogs[index - 1];
+  if (!prev || prev.kind === "turn" || prev.kind === "divider") {
+    return null;
+  }
+
+  let nextNonDivider: FormattedLogDisplayItem | undefined;
+  let hasContinueInGroup = initialSubtype === "continue";
+  for (let i = index + 1; i < visibleLogs.length; i++) {
+    const nextItem = visibleLogs[i];
+    if (nextItem.kind === "divider") {
+      if (nextItem.subtype === "continue") {
+        hasContinueInGroup = true;
+      }
+      continue;
+    }
+    nextNonDivider = nextItem;
+    break;
+  }
+
+  if (!nextNonDivider || nextNonDivider.kind === "turn") {
+    return null;
+  }
+
+  if (hasContinueInGroup) {
+    return <hr key={index} className={styles.continueDivider} />;
+  }
+  return <div key={index} className={styles.residualDivider} aria-hidden="true" />;
+}
+
 export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPanelProps) {
   const [mode, setMode] = useState<"text" | "json" | "engine">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -78,33 +112,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
               }
 
               if (item.kind === "divider") {
-                const prev = visibleLogs[index - 1];
-                if (!prev || prev.kind === "turn" || prev.kind === "divider") {
-                  return null;
-                }
-
-                let nextNonDivider: FormattedLogDisplayItem | undefined;
-                let hasContinueInGroup = item.subtype === "continue";
-                for (let i = index + 1; i < visibleLogs.length; i++) {
-                  const nextItem = visibleLogs[i];
-                  if (nextItem.kind === "divider") {
-                    if (nextItem.subtype === "continue") {
-                      hasContinueInGroup = true;
-                    }
-                    continue;
-                  }
-                  nextNonDivider = nextItem;
-                  break;
-                }
-
-                if (!nextNonDivider || nextNonDivider.kind === "turn") {
-                  return null;
-                }
-
-                if (hasContinueInGroup) {
-                  return <hr key={index} className={styles.continueDivider} />;
-                }
-                return <div key={index} className={styles.residualDivider} aria-hidden="true" />;
+                return renderLogDivider(visibleLogs, index, item.subtype);
               }
 
               if (item.kind === "notice") {

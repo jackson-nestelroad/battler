@@ -35,3 +35,36 @@ export function createDefaultPlayer(id = ""): FormPlayer {
     wildEncounterType: "Normal",
   };
 }
+
+export interface TimerSettingsState {
+  preset: "none" | "blitz" | "standard" | "custom";
+  battleTimer: string;
+  playerTimer: string;
+  actionTimer: string;
+  teamPreviewTimer: string;
+  proposalTimeout: number;
+}
+
+export const TIMER_PRESETS = {
+  blitz: {
+    actionTimer: "10",
+    actionWarnings: [5n],
+    teamPreviewTimer: "15",
+    teamPreviewWarnings: [5n],
+    playerTimer: "",
+    playerWarnings: [] as bigint[],
+    battleTimer: "",
+    battleWarnings: [] as bigint[],
+  },
+  standard: {
+    actionTimer: "45",
+    actionWarnings: [15n, 5n],
+    teamPreviewTimer: "60",
+    teamPreviewWarnings: [30n, 10n],
+    playerTimer: "420",
+    playerWarnings: [300n, 180n, 60n, 30n, 10n],
+    battleTimer: "1200",
+    battleWarnings: [600n, 300n, 60n],
+  },
+} as const;
+

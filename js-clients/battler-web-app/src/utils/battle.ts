@@ -77,25 +77,30 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   let type: "battle" | "player" | "action" | "teampreview" = "battle";
   let playerId: string | undefined = undefined;
 
+  const extractPlayerId = (val: unknown) =>
+    (typeof val === "string" && val ? val : entry.player) || undefined;
+
   if ("battle" in values) {
     type = "battle";
   } else if ("player" in values) {
     type = "player";
-    playerId = typeof values.player === "string" ? values.player : undefined;
+    playerId = extractPlayerId(values.player);
   } else if ("action" in values) {
     type = "action";
-    playerId = typeof values.action === "string" ? values.action : undefined;
+    playerId = extractPlayerId(values.action);
   } else if ("teampreview" in values) {
     type = "teampreview";
-    playerId = typeof values.teampreview === "string" ? values.teampreview : undefined;
+    playerId = extractPlayerId(values.teampreview);
   } else {
     return null;
   }
 
-  const isWarning = "warning" in values;
-  const isDone = "done" in values || remainingSecs === 0;
-  const isInactive = "inactive" in values;
-  const isClear = "clear" in values;
+  const isFlagTruthy = (val: unknown) => val !== undefined && val !== null && val !== false;
+
+  const isWarning = isFlagTruthy(values.warning);
+  const isDone = isFlagTruthy(values.done) || remainingSecs === 0;
+  const isInactive = isFlagTruthy(values.inactive);
+  const isClear = isFlagTruthy(values.clear);
 
   // Parse absolute deadline timestamp (in seconds)
   const deadlineSecs = parseNumericSafe(values["deadline"], 0);

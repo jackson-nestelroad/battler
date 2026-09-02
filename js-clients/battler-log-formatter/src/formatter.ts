@@ -206,6 +206,29 @@ function findTemplateKey(
   return undefined;
 }
 
+function pushFormattedMessages(
+  key: string,
+  category: LogCategory,
+  context: LogContext,
+  templateArgs: Record<string, unknown>,
+  messages: FormattedUiLog[],
+): void {
+  if (!i18next.exists(key, templateArgs)) return;
+  const rawTemplate = i18next.t(key, { ...templateArgs, returnObjects: true });
+  const templates =
+    typeof rawTemplate === "string"
+      ? [rawTemplate]
+      : Array.isArray(rawTemplate)
+        ? rawTemplate
+        : [];
+  for (const item of templates) {
+    if (typeof item === "string") {
+      const msg = createFormattedUiLog(key, item, category, context);
+      if (msg) messages.push(msg);
+    }
+  }
+}
+
 export class LogFormatter {
   private options: MapperOptions;
 
@@ -308,41 +331,24 @@ export class LogFormatter {
       mapped.patterns[0]?.split("|")[0] === "switch" || entry.title.toLowerCase() === "switch";
     if (isSwitch && mapped.metadata?.prev_mon && mapped.context.PREV_MON) {
       const switchoutKey = "logs.switchout";
-      if (i18next.exists(switchoutKey)) {
-        const switchoutTemplate = i18next.t(switchoutKey, { ...templateArgs, returnObjects: true });
-        const switchoutContext: LogContext = {
-          ...mapped.context,
-          MON: mapped.context.PREV_MON,
-          MON_POSSESSIVE: mapped.context.PREV_MON_POSSESSIVE,
-          MON_NAME: mapped.context.PREV_MON_NAME,
-          MON_NAME_POSSESSIVE: mapped.context.PREV_MON_NAME_POSSESSIVE,
-          MON_PLAYER: mapped.context.PREV_MON_PLAYER,
-          MON_PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
-          PLAYER: mapped.context.PREV_MON_PLAYER,
-          PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
-        };
-        if (typeof switchoutTemplate === "string") {
-          const msg = createFormattedUiLog(
-            switchoutKey,
-            switchoutTemplate,
-            LogCategory.Secondary,
-            switchoutContext,
-          );
-          if (msg) messages.push(msg);
-        } else if (Array.isArray(switchoutTemplate)) {
-          for (const item of switchoutTemplate) {
-            if (typeof item === "string") {
-              const msg = createFormattedUiLog(
-                switchoutKey,
-                item,
-                LogCategory.Secondary,
-                switchoutContext,
-              );
-              if (msg) messages.push(msg);
-            }
-          }
-        }
-      }
+      const switchoutContext: LogContext = {
+        ...mapped.context,
+        MON: mapped.context.PREV_MON,
+        MON_POSSESSIVE: mapped.context.PREV_MON_POSSESSIVE,
+        MON_NAME: mapped.context.PREV_MON_NAME,
+        MON_NAME_POSSESSIVE: mapped.context.PREV_MON_NAME_POSSESSIVE,
+        MON_PLAYER: mapped.context.PREV_MON_PLAYER,
+        MON_PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+        PLAYER: mapped.context.PREV_MON_PLAYER,
+        PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+      };
+      pushFormattedMessages(
+        switchoutKey,
+        LogCategory.Secondary,
+        switchoutContext,
+        templateArgs,
+        messages,
+      );
     }
 
     let resolvedKey: string | undefined = undefined;
@@ -352,19 +358,14 @@ export class LogFormatter {
       resolvedKey = findTemplateKey(mapped.patterns, templateArgs, mapped.extension);
     }
 
-    if (resolvedKey && i18next.exists(resolvedKey, templateArgs)) {
-      const rawTemplate = i18next.t(resolvedKey, { ...templateArgs, returnObjects: true });
-      if (typeof rawTemplate === "string") {
-        const msg = createFormattedUiLog(resolvedKey, rawTemplate, mapped.category, mapped.context);
-        if (msg) messages.push(msg);
-      } else if (Array.isArray(rawTemplate)) {
-        for (const item of rawTemplate) {
-          if (typeof item === "string") {
-            const msg = createFormattedUiLog(resolvedKey, item, mapped.category, mapped.context);
-            if (msg) messages.push(msg);
-          }
-        }
-      }
+    if (resolvedKey) {
+      pushFormattedMessages(
+        resolvedKey,
+        mapped.category,
+        mapped.context,
+        templateArgs,
+        messages,
+      );
     }
 
     if (messages.length === 0 && notices.length === 0) return null;
@@ -414,24 +415,17 @@ export class LogFormatter {
 }
 
 export function formatNoticeText(notice: UiNotice): string {
+  const subject = notice.mon ? `${notice.mon} ` : "";
   switch (notice.type.toLowerCase()) {
     case "ability":
-    case "item": {
-      const subject = notice.mon ? `${notice.mon} ` : "";
+    case "item":
       return `[${subject}${notice.name}]`;
-    }
-    case "damage": {
-      const subject = notice.mon ? `${notice.mon} ` : "";
+    case "damage":
       return `(${subject}lost ${notice.name} HP)`;
-    }
-    case "heal": {
-      const subject = notice.mon ? `${notice.mon} ` : "";
+    case "heal":
       return `(${subject}restored ${notice.name} HP)`;
-    }
-    default: {
-      const subject = notice.mon ? `${notice.mon} ` : "";
+    default:
       return `[${notice.type}: ${subject}${notice.name}]`;
-    }
   }
 }
 
