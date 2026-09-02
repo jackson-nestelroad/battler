@@ -5,7 +5,51 @@ import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
 
 describe("LogFormatter", () => {
-  it("should format string log correctly", () => {
+  it("should format tie log correctly", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "tie",
+      values: {}
+    };
+    const state = {
+      field: {
+        sides: [
+          { name: "Team Rocket", players: { p1: { name: "Player 1" } } },
+          { name: "Team Magma", players: { p2: { name: "Player 2" } } },
+        ]
+      }
+    };
+    const result = formatter.format(entry as unknown as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.category).toBe(LogCategory.Primary);
+    expect(stringifyLog(log)).toBe("You battled to a draw against Team Magma!");
+  });
+
+  it("should format win log correctly with side name", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "win",
+      side: 0,
+      values: {}
+    };
+    const state = {
+      field: {
+        sides: [
+          { name: "Team Rocket", players: { p1: { name: "Player 1" } } },
+          { name: "Team Magma", players: { p2: { name: "Player 2" } } },
+        ]
+      }
+    };
+    const result = formatter.format(entry as unknown as UiLogEntry, state as unknown as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.category).toBe(LogCategory.Primary);
+    expect(stringifyLog(log)).toBe("Team Rocket won the battle!");
+  });
+  it("should format tie log without state using fallback side name", () => {
     const formatter = new LogFormatter();
     const entry: Partial<UiLogEntry> = {
       title: "tie",
@@ -16,8 +60,24 @@ describe("LogFormatter", () => {
     expect(result!.messages.length).toBe(1);
     const log = result!.messages[0];
     expect(log.category).toBe(LogCategory.Primary);
-    expect(stringifyLog(log)).toBe("The battle resulted in a tie!");
+    expect(stringifyLog(log)).toBe("You battled to a draw against Side 2!");
   });
+
+  it("should format win log without state using fallback side name", () => {
+    const formatter = new LogFormatter();
+    const entry: Partial<UiLogEntry> = {
+      title: "win",
+      side: 1,
+      values: {}
+    };
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.category).toBe(LogCategory.Primary);
+    expect(stringifyLog(log)).toBe("Side 2 won the battle!");
+  });
+
 
   it("should format complex Move log", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });

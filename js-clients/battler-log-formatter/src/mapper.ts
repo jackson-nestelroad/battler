@@ -68,9 +68,7 @@ export function isWildPlayer(
         return pType.toLowerCase() === "wild";
       }
       if (typeof pType === "object" && pType !== null) {
-        return (
-          ("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType
-        );
+        return ("type" in pType && (pType as { type: string }).type === "wild") || "Wild" in pType;
       }
     }
   }
@@ -119,6 +117,67 @@ export function resolvePlayerContext(
     standard: { text, noAutoCapitalize: rel === "self" },
     possessive: { text: possessiveText, noAutoCapitalize: rel === "self" },
   };
+}
+
+export function getSideName(sideIndex: number | undefined, state: BattleState | undefined): string {
+  if (sideIndex != null && state?.field?.sides?.[sideIndex]?.name) {
+    return state.field.sides[sideIndex].name;
+  }
+  if (sideIndex != null) {
+    return `Side ${sideIndex + 1}`;
+  }
+  return "Side";
+}
+
+export function resolveSideNameContext(
+  sideIndex: number | undefined,
+  state: BattleState | undefined,
+): { standard: ContextVar; possessive: ContextVar } {
+  const name = getSideName(sideIndex, state);
+  return {
+    standard: { text: name },
+    possessive: { text: `${name}'s` },
+  };
+}
+
+export function getLocalSideIndex(
+  state: BattleState | undefined,
+  localPlayerId: string | undefined,
+): number | undefined {
+  if (!state?.field?.sides || !localPlayerId) return undefined;
+  for (let i = 0; i < state.field.sides.length; i++) {
+    if (state.field.sides[i]?.players?.[localPlayerId]) {
+      return i;
+    }
+  }
+  return undefined;
+}
+
+export function getFoeSideIndex(
+  state: BattleState | undefined,
+  localPlayerId: string | undefined,
+  currentSideIndex?: number,
+): number | undefined {
+  if (!state?.field?.sides || state.field.sides.length === 0) return undefined;
+
+  const localIdx = getLocalSideIndex(state, localPlayerId);
+  if (localIdx !== undefined) {
+    for (let i = 0; i < state.field.sides.length; i++) {
+      if (i !== localIdx) return i;
+    }
+  }
+
+  if (currentSideIndex !== undefined) {
+    for (let i = 0; i < state.field.sides.length; i++) {
+      if (i !== currentSideIndex) return i;
+    }
+  }
+
+  if (state.field.sides.length > 1) {
+    return 1;
+  }
+
+  return undefined;
 }
 
 export function resolveSideContext(
@@ -453,16 +512,12 @@ function handleBoostsTag(v: unknown, context: LogContext, tags: string[]): void 
     .filter(Boolean);
   if (statsList.length === 1) {
     const statKey = statsList[0];
-    const statName = i18next.exists(`stats.${statKey}`)
-      ? i18next.t(`stats.${statKey}`)
-      : statKey;
+    const statName = i18next.exists(`stats.${statKey}`) ? i18next.t(`stats.${statKey}`) : statKey;
     context.STAT = statName;
     context.count = 1;
     tags.push(`boosts:${statKey}`);
   } else if (statsList.length > 1) {
-    const statsWord = i18next.exists("vocabulary.stats")
-      ? i18next.t("vocabulary.stats")
-      : "stats";
+    const statsWord = i18next.exists("vocabulary.stats") ? i18next.t("vocabulary.stats") : "stats";
     context.STAT = statsWord;
     context.count = statsList.length;
     tags.push(`boosts:stats`);
@@ -471,12 +526,7 @@ function handleBoostsTag(v: unknown, context: LogContext, tags: string[]): void 
   }
 }
 
-function handleNumericBucketing(
-  k: string,
-  v: unknown,
-  title: string,
-  tags: string[],
-): boolean {
+function handleNumericBucketing(k: string, v: unknown, title: string, tags: string[]): boolean {
   const num = Number(v);
   if (isNaN(num)) return false;
   for (const bucket of rules.numericBuckets) {
@@ -514,11 +564,39 @@ export function mapUiLogEntry(
     context.PLAYER_POSSESSIVE = resolved.possessive;
   }
 
-  if (entry.side !== undefined && entry.side !== null) {
+  const side =
+    entry.side !== undefined && entry.side !== null
+      ? entry.side
+      : typeof entry.values?.side === "number"
+        ? entry.values.side
+        : undefined;
+
+  if (side !== undefined && side !== null) {
     tags.push("side:*");
-    const resolved = resolveSideContext(entry.side, state, options);
+    const resolved = resolveSideContext(side, state, options);
     context.SIDE = resolved.standard;
     context.SIDE_POSSESSIVE = resolved.possessive;
+
+    const sideNameResolved = resolveSideNameContext(side, state);
+    context.SIDE_NAME = sideNameResolved.standard;
+    context.SIDE_NAME_POSSESSIVE = sideNameResolved.possessive;
+  }
+
+  const foeSideIdx = getFoeSideIndex(state, options.localPlayerId, side);
+  const foeSideNameResolved = resolveSideNameContext(
+    foeSideIdx !== undefined ? foeSideIdx : 1,
+    state,
+  );
+  context.FOE_SIDE_NAME = foeSideNameResolved.standard;
+  context.FOE_SIDE_NAME_POSSESSIVE = foeSideNameResolved.possessive;
+
+  const localSideIdx = getLocalSideIndex(state, options.localPlayerId);
+  if (localSideIdx !== undefined) {
+    const localSideNameResolved = resolveSideNameContext(localSideIdx, state);
+    context.SELF_SIDE_NAME = localSideNameResolved.standard;
+    context.SELF_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
+    context.PLAYER_SIDE_NAME = localSideNameResolved.standard;
+    context.PLAYER_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
   }
 
   if (entry.target) {
