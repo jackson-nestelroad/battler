@@ -186,7 +186,7 @@ function bindClientEvents(
       try {
         const serviceBattle = await connectionManager.serviceClient.battle(battleId);
         dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
-      } catch (e) {
+      } catch {
         // Ignored
       }
     }
@@ -200,7 +200,7 @@ function bindClientEvents(
       try {
         const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
         dispatch(setBattlePlayerData({ battleId, playerData }));
-      } catch (e) {
+      } catch {
         // Ignored
       }
     }
@@ -516,7 +516,7 @@ export const connectWamp = createAsyncThunk<
               await connectionManager.mpServiceClient?.unsubscribe(
                 connectionManager.proposalSubscription,
               );
-            } catch (e) {
+            } catch {
               // Ignore error on dead session
             }
             connectionManager.proposalSubscription = null;
@@ -526,7 +526,7 @@ export const connectWamp = createAsyncThunk<
               await connectionManager.multiplayerClient.proposedBattleUpdates(
                 getProposalUpdateHandler(playerId, dispatch, getState),
               );
-          } catch (e) {
+          } catch {
             // Ignored
           }
         }

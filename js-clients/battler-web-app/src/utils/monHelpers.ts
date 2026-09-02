@@ -1,4 +1,4 @@
-import type { Request, PlayerBattleData, MonMoveSlotData } from "battler-types";
+import type { Request, PlayerBattleData, MonMoveSlotData, MonMoveRequest } from "battler-types";
 import type { BattleState } from "battler-state";
 import { getMonNameFromState } from "./battleState";
 
@@ -201,9 +201,17 @@ export function canSlotSwitch(
  * Resolves the available move list for an active slot, taking modifiers into account.
  */
 export function getAvailableMoves(
-  activeReq: any,
+  activeReq:
+    | MonMoveRequest
+    | {
+        moves?: MonMoveSlotData[];
+        z_moves?: (MonMoveSlotData | null)[];
+        max_moves?: MonMoveSlotData[];
+      }
+    | null
+    | undefined,
   modifiers: { zmove?: boolean; dyna?: boolean },
-): MonMoveSlotData[] {
+): (MonMoveSlotData | null)[] {
   if (modifiers.zmove && activeReq?.z_moves) return activeReq.z_moves;
   if (modifiers.dyna && activeReq?.max_moves) return activeReq.max_moves;
   return activeReq?.moves || [];

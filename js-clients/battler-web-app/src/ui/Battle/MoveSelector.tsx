@@ -41,7 +41,7 @@ export default function MoveSelector({
   const isMaxMoveActive = modifiers.dyna || isDynamaxed;
 
   const hasModifiers = CHOICE_MODIFIER_KEYS.some(
-    (key) => !!(activeReq as any)[CHOICE_MODIFIER_CONFIGS[key].requestFlag],
+    (key) => !!activeReq[CHOICE_MODIFIER_CONFIGS[key].requestFlag],
   );
 
   return (
@@ -53,7 +53,7 @@ export default function MoveSelector({
           <div className={styles.modifiersRow}>
             {UI_MODIFIER_KEYS.map((key) => {
               const config = CHOICE_MODIFIER_CONFIGS[key];
-              let flag = !!(activeReq as any)[config.requestFlag];
+              let flag = !!activeReq[config.requestFlag];
               if (key === "dyna" && isDynamaxed) flag = false;
 
               if (!flag) return null;

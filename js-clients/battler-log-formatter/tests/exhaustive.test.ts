@@ -1,18 +1,30 @@
-import { mapUiLogEntry } from "../src/mapper.js";
-import fs from "fs";
-import path from "path";
-import { describe, it, expect } from "vitest";
-import { LogFormatter, FormattedUiLog, stringifyLog } from "../src/formatter.js";
+import { describe, expect, it } from "vitest";
 import { alterBattleState, newBattleState } from "battler-state";
+import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { mapUiLogEntry } from "../src/mapper.js";
+import type { LogCategory, LogContext, UiNotice } from "../src/types.js";
 import { en } from "../locales/en.js";
 import matrixLogs from "./data/logs-matrix.json" with { type: "json" };
+
+interface ExhaustiveMessage {
+  key?: string;
+  context: LogContext;
+  formatted: {
+    category: LogCategory;
+    text: string;
+  };
+}
+
+interface ExhaustiveResult {
+  notices?: UiNotice[];
+  messages: ExhaustiveMessage[];
+  key?: string;
+}
 
 describe("Exhaustive Log Coverage", () => {
   const formatter = new LogFormatter({ localPlayerId: "p1" });
 
   it.each(matrixLogs)("should parse and format log string: %s", async (logString) => {
-    const state = newBattleState();
-    
     const players = new Set<string>();
     const mons = new Map<string, string>();
     
@@ -29,44 +41,35 @@ describe("Exhaustive Log Coverage", () => {
         }
       }
     }
-    
-    if (players.size === 0) {
-      players.add("p1");
-      players.add("p2");
-    } else if (players.size === 1) {
-      if (!players.has("p1")) players.add("p1");
-      else players.add("p2");
-    }
-    if (!mons.has("p1")) mons.set("p1", "Pikachu");
-    if (!mons.has("p2")) mons.set("p2", "Gyarados");
-    
-    const setupLogs: string[] = [
-      "info|battletype:Multi",
-      "side|id:0|name:Side 0",
-      "side|id:1|name:Side 1"
-    ];
-    
+
+    const setupLogs: string[] = [];
     const playerList = Array.from(players);
+    if (playerList.length === 0) {
+      playerList.push("p1", "p2");
+    } else if (playerList.length === 1) {
+      playerList.push(playerList[0] === "p1" ? "p2" : "p1");
+    }
+
     for (let i = 0; i < playerList.length; i++) {
-      const player = playerList[i];
+      const pid = playerList[i];
       const side = i % 2;
-      const pos = Math.floor(i / 2) + 1;
-      setupLogs.push(`player|id:${player}|name:${player.toUpperCase()}|side:${side}|position:${pos}`);
-      const species = mons.get(player) || "Bulbasaur";
-      setupLogs.push(`mon|player:${player}|species:${species}|level:100|gender:M`);
+      setupLogs.push(`side|side:${side}|name:Team ${side + 1}`);
+      setupLogs.push(`player|player:${pid}|name:PLAYER-${i + 1}|side:${side}`);
+      setupLogs.push(`teamsize|player:${pid}|size:6`);
+      
+      const monSpecies = mons.get(pid) || "Pikachu";
+      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|type1:Electric|ability:Static|moves:Thunderbolt|stats:100,100,100,100,100,100`);
+      setupLogs.push(`split|side:${side}`);
+      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|stats:100,100,100,100,100,100`);
+      setupLogs.push(`mon|player:${pid}|species:${monSpecies}|name:${monSpecies}|level:50|gender:M|hp:100|hp:100|stats:100,100,100,100,100,100`);
+      setupLogs.push(`switch|mon:${monSpecies},${pid}|position:0|hp:100|hp:100`);
     }
-    
+
     setupLogs.push("teampreviewstart");
+    setupLogs.push("teampreview");
     setupLogs.push("battlestart");
-    
-    for (let i = 0; i < playerList.length; i++) {
-      const player = playerList[i];
-      const pos = Math.floor(i / 2) + 1;
-      const species = mons.get(player) || "Bulbasaur";
-      setupLogs.push(`switch|player:${player}|position:${pos}|name:${species}|health:100/100|species:${species}|level:100|gender:M`);
-    }
     setupLogs.push("turn|turn:1");
-    
+
     let testSequence = [...setupLogs, logString];
     if (logString.match(/^(info|side|player|teamsize|teampreview|battlestart|mon|split|turn)\|/)) {
       testSequence = [logString]; 
@@ -75,7 +78,7 @@ describe("Exhaustive Log Coverage", () => {
     let alteredState;
     try {
       alteredState = alterBattleState(newBattleState(), testSequence);
-    } catch (e) {
+    } catch {
       return; 
     }
 
@@ -92,7 +95,7 @@ describe("Exhaustive Log Coverage", () => {
     const event = formatter.format(uiLogEntry, alteredState);
     
     // 2. Extract just the enum key, the message string, and context vars
-    let primaryResult: any = null;
+    let primaryResult: ExhaustiveResult | null = null;
     if (event) {
         primaryResult = {
             notices: event.notices,

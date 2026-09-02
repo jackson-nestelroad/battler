@@ -257,8 +257,8 @@ describe("logFormatter", () => {
         battle_type: "Multi",
         field: {
           sides: [
-            { name: "Side 1", players: { p1: { name: "Player 1" } } } as any,
-            { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } } as any,
+            { name: "Side 1", players: { p1: { name: "Player 1" } } },
+            { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } },
           ],
         },
       } as unknown as BattleState;

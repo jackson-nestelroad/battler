@@ -1,11 +1,9 @@
-import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import type { MonMoveSlotData, PlayerBattleData, Request, MonMoveRequest } from "battler-types";
 import type { BattleState } from "battler-state";
 import { getMonByTeamPosition, getMonForSlot, getAvailableMoves, getSlotMonName } from "./monHelpers";
 import { resolveTargetLabel } from "./targeting";
 import { parseChoiceString, type ParsedChoiceAction } from "./choiceParser";
 import { CHOICE_MODIFIER_KEYS, CHOICE_MODIFIER_CONFIGS } from "./choiceBuilder";
-
-
 
 export interface FormattedChoice {
   slotIndex: number;
@@ -17,7 +15,15 @@ export interface FormattedChoice {
 }
 
 export function resolveSelectedMove(
-  activeReq: any,
+  activeReq:
+    | MonMoveRequest
+    | {
+        moves?: MonMoveSlotData[];
+        z_moves?: (MonMoveSlotData | null)[];
+        max_moves?: MonMoveSlotData[];
+      }
+    | null
+    | undefined,
   parsed: ParsedChoiceAction,
 ): MonMoveSlotData | null {
   const availableMoves = getAvailableMoves(activeReq, parsed.modifiers || {});

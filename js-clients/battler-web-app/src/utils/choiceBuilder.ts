@@ -8,10 +8,17 @@ export interface ChoiceModifiers {
 
 export type ModifierKey = keyof ChoiceModifiers;
 
+export type MoveModifierFlag =
+  | "can_mega_evolve"
+  | "can_terastallize"
+  | "can_z_move"
+  | "can_dynamax"
+  | "can_ultra_burst";
+
 export interface ModifierConfig {
   key: ModifierKey;
   label: string;
-  requestFlag: string;
+  requestFlag: MoveModifierFlag;
 }
 
 export const CHOICE_MODIFIER_CONFIGS: Record<ModifierKey, ModifierConfig> = {

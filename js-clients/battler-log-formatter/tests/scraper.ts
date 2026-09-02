@@ -143,7 +143,7 @@ function extractLogsFromRs(): { raw: string[]; patterns: Set<string> } {
             }
           }
         }
-      } catch (e) {}
+      } catch {}
     }
   }
 
@@ -355,7 +355,7 @@ function extractLogsFromFxlang(): Set<string> {
     visited.add(effect);
 
     const logs: { logType: string; fromEffect: boolean; withMove: boolean }[] = [];
-    const regex = /log_([a-z_]+)(?:\:\s*([^"'\n\]]+))?/g;
+    const regex = /log_([a-z_]+)(?::\s*([^"'\n\]]+))?/g;
     let match;
     while ((match = regex.exec(effect.program)) !== null) {
       const logType = match[1];
@@ -380,7 +380,7 @@ function extractLogsFromFxlang(): Set<string> {
     if (sideRemoveRegex.test(effect.program)) {
       logs.push({ logType: "sideend", fromEffect: false, withMove: false });
     }
-    const formeChangeRegex = /forme_change\:\s*([^"'\n\]]+)/g;
+    const formeChangeRegex = /forme_change:\s*([^"'\n\]]+)/g;
     if (formeChangeRegex.test(effect.program)) {
       logs.push({ logType: "formechange", fromEffect: true, withMove: false });
     }
@@ -495,7 +495,7 @@ function generateMatrix() {
     }
   }
 
-  const manualLogs = (scraperConfig as any).manualLogs || [];
+  const manualLogs = scraperConfig.manualLogs || [];
   for (const pattern of manualLogs) {
     const maskedList = maskLog(pattern);
     for (const masked of maskedList) {

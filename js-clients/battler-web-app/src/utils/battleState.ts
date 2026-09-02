@@ -1,10 +1,16 @@
 import { type BattleState, stateSelectors } from "battler-state";
+import type { PlayerBattleData } from "battler-types";
 
-export function isMonDynamaxedInState(battleState: any, playerData: any, teamPosition: number): boolean {
+export function isMonDynamaxedInState(
+  battleState: BattleState | null | undefined,
+  playerData: PlayerBattleData | { id?: string; name?: string } | null | undefined,
+  teamPosition: number,
+): boolean {
   if (!battleState || !playerData) return false;
   try {
+    const playerKey = playerData.id || playerData.name || "";
     return stateSelectors.monIsDynamaxed(battleState, {
-      player: playerData.id || playerData.name,
+      player: playerKey,
       mon_index: teamPosition,
       battle_appearance_index: 0,
     });

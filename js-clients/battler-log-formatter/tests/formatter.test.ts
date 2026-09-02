@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { LogFormatter, stringifyLog, formatNoticeText, formatUiLogEntry } from "../src/formatter.js";
-import { mapUiLogEntry } from "../src/mapper.js";
 import { BattleState, UiLogEntry } from "battler-state";
 import { LogCategory } from "../src/types.js";
 

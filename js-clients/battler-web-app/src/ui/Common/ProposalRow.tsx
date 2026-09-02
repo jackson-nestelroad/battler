@@ -97,6 +97,5 @@ export default function ProposalRow({
       </div>
     </div>
   );
-
-  return null;
 }
+
