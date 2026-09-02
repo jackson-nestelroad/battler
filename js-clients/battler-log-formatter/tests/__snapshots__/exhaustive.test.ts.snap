@@ -3798,6 +3798,27 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Greninja,player-1,1|move:Mat Block|from:move:Tackle|of:Greninja,player-2,1 1`] = `
+{
+  "rawLog": "activate|mon:Greninja,player-1,1|move:Mat Block|from:move:Tackle|of:Greninja,player-2,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "FROM_MOVE": "Tackle",
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "Tackle was blocked by the kicked-up mat!",
+        },
+        "key": "activate__move_matblock",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Greninja,player-2,1|ability:Battle Bond 1`] = `
 {
   "rawLog": "activate|mon:Greninja,player-2,1|ability:Battle Bond",
@@ -5913,6 +5934,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Snivy,player-2,1|item:Red Card|target:Snivy,player-1,1 1`] = `
+{
+  "rawLog": "activate|mon:Snivy,player-2,1|item:Red Card|target:Snivy,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TARGET": {
+            "monRef": {
+              "Active": {
+                "name": "Snivy",
+                "player": "player-1",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Snivy",
+          },
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Snivy",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Snivy",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Snivy held up its Red Card against the opposing Snivy!",
+        },
+        "key": "activate__item_redcard",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Snorlax,player-1,1|item:Custap Berry 1`] = `
 {
   "rawLog": "activate|mon:Snorlax,player-1,1|item:Custap Berry",
@@ -6107,6 +6170,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "text": "The Passho Berry weakened the damage to the opposing Tepig!",
         },
         "key": "activate__item_any__weaken",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Tepig,player-1,1|item:Red Card|target:Snivy,player-2,1 1`] = `
+{
+  "rawLog": "activate|mon:Tepig,player-1,1|item:Red Card|target:Snivy,player-2,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TARGET": {
+            "monRef": {
+              "Active": {
+                "name": "Snivy",
+                "player": "player-2",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "the opposing Snivy",
+          },
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Tepig",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Tepig",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Tepig held up its Red Card against the opposing Snivy!",
+        },
+        "key": "activate__item_redcard",
       },
     ],
     "notices": [],
@@ -35938,6 +36043,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Eevee,player-2,1|move:Curse|of:Mimikyu,player-1,1 1`] = `
+{
+  "rawLog": "start|mon:Eevee,player-2,1|move:Curse|of:Mimikyu,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Eevee",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "the opposing Eevee",
+          },
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Mimikyu",
+                "player": "player-1",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "The opposing Mimikyu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Mimikyu cut its own HP and put a curse on the opposing Eevee!",
+        },
+        "key": "start__move_curse",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Eevee,player-2,1|move:Encore 1`] = `
 {
   "rawLog": "start|mon:Eevee,player-2,1|move:Encore",
@@ -36254,6 +36401,48 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "formatted": {
           "category": "secondary",
           "text": "The opposing Forretress was cursed!",
+        },
+        "key": "start__move_curse",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Forretress,player-2,1|move:Curse|of:Gengar,player-1,1 1`] = `
+{
+  "rawLog": "start|mon:Forretress,player-2,1|move:Curse|of:Gengar,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MON": {
+            "monRef": {
+              "Active": {
+                "name": "Forretress",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "the opposing Forretress",
+          },
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Gengar",
+                "player": "player-1",
+                "position": 0,
+                "side": 1,
+              },
+            },
+            "text": "The opposing Gengar",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Gengar cut its own HP and put a curse on the opposing Forretress!",
         },
         "key": "start__move_curse",
       },

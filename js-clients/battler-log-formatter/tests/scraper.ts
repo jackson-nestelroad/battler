@@ -619,6 +619,71 @@ function generateMatrix() {
     }
   }
 
+  // Dynamic weather condition expansion from conditions.json
+  const weatherConditionNames = new Set<string>();
+  for (const entry of uniqueEffects) {
+    if (entry.condition_type === "Weather") {
+      weatherConditionNames.add(entry.name);
+    }
+  }
+
+  for (const pattern of Array.from(extracted.patterns)) {
+    const parsed = parsePattern(pattern);
+    for (const wName of weatherConditionNames) {
+      for (const targetName of weatherConditionNames) {
+        if (targetName === wName) continue;
+        let modified = false;
+        const newTags = parsed.tags.map((t) => {
+          if (t === `weather:${wName}`) {
+            modified = true;
+            return `weather:${targetName}`;
+          }
+          if (t === `from:weather:${wName}`) {
+            modified = true;
+            return `from:weather:${targetName}`;
+          }
+          return t;
+        });
+
+        if (modified) {
+          extracted.patterns.add(serializePattern({ ...parsed, tags: newTags }));
+        }
+      }
+    }
+  }
+
+  // Dynamic terrain move expansion
+  const terrainMoveNames = [
+    "Electric Terrain",
+    "Grassy Terrain",
+    "Misty Terrain",
+    "Psychic Terrain",
+  ];
+  for (const pattern of Array.from(extracted.patterns)) {
+    const parsed = parsePattern(pattern);
+    for (const tName of terrainMoveNames) {
+      for (const targetName of terrainMoveNames) {
+        if (targetName === tName) continue;
+        let modified = false;
+        const newTags = parsed.tags.map((t) => {
+          if (t === `move:${tName}`) {
+            modified = true;
+            return `move:${targetName}`;
+          }
+          if (t === `from:move:${tName}`) {
+            modified = true;
+            return `from:move:${targetName}`;
+          }
+          return t;
+        });
+
+        if (modified) {
+          extracted.patterns.add(serializePattern({ ...parsed, tags: newTags }));
+        }
+      }
+    }
+  }
+
   // Build inverted index of pattern -> raw logs in O(N) time
   const patternToRawLogs = new Map<string, string[]>();
   for (const rawLog of extracted.raw) {
@@ -719,7 +784,7 @@ function generateMatrix() {
 
       for (const k of newKeys) {
         const keyRepr = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k) ? k : `"${k}"`;
-        entries.set(k, `    ${keyRepr}: null,`);
+        entries.set(k, `    ${keyRepr}: "[UNHANDLED]",`);
       }
 
       const sortedKeys = Array.from(entries.keys()).sort((a, b) => a.localeCompare(b));

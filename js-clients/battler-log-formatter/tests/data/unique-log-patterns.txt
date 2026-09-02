@@ -165,6 +165,7 @@ activate|move:Fling
 activate|move:Fling|item:*
 activate|move:G-Max Centiferno
 activate|move:G-Max Sandblast
+activate|move:Grassy Terrain
 activate|move:Gravity
 activate|move:Guard Split
 activate|move:Happy Hour
@@ -360,8 +361,14 @@ damage|from:status:Freeze
 damage|from:status:Paralysis
 damage|from:status:Poison
 damage|from:status:Sleep
+damage|from:weather:Extremely Harsh Sunlight
 damage|from:weather:Hail
+damage|from:weather:Harsh Sunlight
+damage|from:weather:Heavy Rain
+damage|from:weather:Rain
 damage|from:weather:Sandstorm
+damage|from:weather:Snow
+damage|from:weather:Strong Winds
 debug
 deductpp|move:*
 didnotlearnmove|move:*
@@ -442,7 +449,13 @@ exp
 fail
 fail|from:Choice Lock
 fail|from:weather:Extremely Harsh Sunlight
+fail|from:weather:Hail
+fail|from:weather:Harsh Sunlight
 fail|from:weather:Heavy Rain
+fail|from:weather:Rain
+fail|from:weather:Sandstorm
+fail|from:weather:Snow
+fail|from:weather:Strong Winds
 fail|what:*|from:move:Uproar
 fail|what:heal
 fail|what:move:Corrosive Gas
@@ -457,6 +470,13 @@ fieldactivate|condition:Stat Shuffle
 fieldactivate|move:Fairy Lock
 fieldactivate|move:Perish Song
 fieldactivate|move:Teatime
+fieldactivate|weather:Extremely Harsh Sunlight
+fieldactivate|weather:Hail
+fieldactivate|weather:Harsh Sunlight
+fieldactivate|weather:Heavy Rain
+fieldactivate|weather:Rain
+fieldactivate|weather:Sandstorm
+fieldactivate|weather:Snow
 fieldactivate|weather:Strong Winds
 fieldend|move:Electric Terrain
 fieldend|move:Grassy Terrain
@@ -469,7 +489,11 @@ fieldend|move:Trick Room
 fieldend|move:Water Sport
 fieldend|move:Wonder Room
 fieldstart|condition:Stat Shuffle
+fieldstart|from:Start|move:Grassy Terrain
+fieldstart|from:Start|move:Misty Terrain
+fieldstart|from:Start|move:Psychic Terrain
 fieldstart|move:Electric Terrain
+fieldstart|move:Electric Terrain|from:Start
 fieldstart|move:Grassy Terrain
 fieldstart|move:Gravity
 fieldstart|move:Ion Deluge
@@ -544,11 +568,14 @@ heal|from:item:Shell Bell
 heal|from:item:Sitrus Berry
 heal|from:item:Sweet Heart
 heal|from:move:Aqua Ring
+heal|from:move:Electric Terrain
 heal|from:move:Grassy Terrain
 heal|from:move:Healing Wish
 heal|from:move:Ingrain
 heal|from:move:Leech Seed
 heal|from:move:Lunar Dance
+heal|from:move:Misty Terrain
+heal|from:move:Psychic Terrain
 heal|from:move:Wish
 hitcount
 immune
@@ -915,19 +942,32 @@ uncatchable
 uncatchable|thief
 useitem
 waiting
+weather|from:Start|weather:Extremely Harsh Sunlight
+weather|from:Start|weather:Hail
+weather|from:Start|weather:Harsh Sunlight
+weather|from:Start|weather:Heavy Rain
+weather|from:Start|weather:Rain
+weather|from:Start|weather:Sandstorm
+weather|from:Start|weather:Snow
+weather|from:Start|weather:Strong Winds
 weather|weather:Extremely Harsh Sunlight
 weather|weather:Extremely Harsh Sunlight|residual
 weather|weather:Hail
+weather|weather:Hail|from:Start
 weather|weather:Hail|residual
 weather|weather:Harsh Sunlight
+weather|weather:Harsh Sunlight|from:Start
 weather|weather:Harsh Sunlight|residual
 weather|weather:Heavy Rain
 weather|weather:Heavy Rain|residual
 weather|weather:Rain
+weather|weather:Rain|from:Start
 weather|weather:Rain|residual
 weather|weather:Sandstorm
+weather|weather:Sandstorm|from:Start
 weather|weather:Sandstorm|residual
 weather|weather:Snow
+weather|weather:Snow|from:Start
 weather|weather:Snow|residual
 weather|weather:Strong Winds
 weather|weather:Strong Winds|residual

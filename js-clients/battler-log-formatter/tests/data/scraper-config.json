@@ -18,7 +18,8 @@
     "damage|from:move:G-Max Vine Lash",
     "damage|from:move:G-Max Volcalith",
     "damage|from:move:G-Max Wildfire",
-    "swapboosts|stats:def,spd|from:move:Guard Swap"
+    "swapboosts|stats:def,spd|from:move:Guard Swap",
+    "fieldstart|move:Electric Terrain|from:Start"
   ],
   "excludeTags": [
     "mon",
@@ -291,9 +292,13 @@
     },
     {
       "match": {
-        "title": "fieldstart"
+        "title": "fieldstart",
+        "from": "*"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Start"
+      }
     },
     {
       "match": {
@@ -329,9 +334,13 @@
     },
     {
       "match": {
-        "title": "weather"
+        "title": "weather",
+        "from": "*"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "Start"
+      }
     },
     {
       "match": {
