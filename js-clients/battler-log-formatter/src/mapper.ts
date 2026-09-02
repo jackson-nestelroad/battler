@@ -82,6 +82,19 @@ export function isWildPlayer(
   return playerId.toLowerCase().startsWith("wild");
 }
 
+export function isSpectator(
+  state: BattleState | undefined,
+  options: MapperOptions,
+): boolean {
+  if (options.isSpectator !== undefined) {
+    return options.isSpectator;
+  }
+  if (!options.localPlayerId) {
+    return true;
+  }
+  return false;
+}
+
 export function resolvePlayerContext(
   playerId: string | undefined,
   state: BattleState | undefined,
@@ -104,7 +117,8 @@ export function resolvePlayerContext(
     };
   }
 
-  const rel = getRelationship(state, options.localPlayerId, playerId);
+  const spectator = isSpectator(state, options);
+  const rel = !spectator ? getRelationship(state, options.localPlayerId, playerId) : "foe";
 
   let text = "";
   let possessiveText = "";
@@ -265,7 +279,8 @@ export function resolveMonContext(
   const name = getMonName(monRef) || "Mon";
   const playerId = getMonPlayerId(monRef) || "";
 
-  const rel = playerId ? getRelationship(state, options.localPlayerId, playerId) : "foe";
+  const spectator = isSpectator(state, options);
+  const rel = playerId && !spectator ? getRelationship(state, options.localPlayerId, playerId) : "foe";
   const playerResolved = resolvePlayerContext(playerId, state, options);
   const playerName = playerResolved.standard.text;
 
@@ -287,6 +302,11 @@ export function resolveMonContext(
     if (isWild) {
       text = i18next.t("mon.foe_wild", { name });
       possessiveText = i18next.t("mon.foe_possessive_wild", { name });
+    } else if (spectator) {
+      text = i18next.t("mon.spectator", { name, player: playerName });
+      possessiveText = i18next.t("mon.spectator_possessive", { name, player: playerName });
+      noAutoCapitalize = true;
+      possessiveNoAutoCapitalize = true;
     } else {
       const isMulti = state?.battle_type?.toLowerCase() === "multi";
       if (isMulti) {

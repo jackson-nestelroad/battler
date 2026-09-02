@@ -60,7 +60,7 @@ describe("LogFormatter", () => {
     const state = {
       field: {
         sides: [
-          { name: "jackson", players: { p1: { name: "jackson" } } },
+          { name: "player-1", players: { p1: { name: "player-1" } } },
           { name: "ai-random-1", players: { p2: { name: "ai-random-1" } } },
         ]
       }
@@ -136,7 +136,7 @@ describe("LogFormatter", () => {
   });
 
   it("should handle battle type disambiguation for critical hits", () => {
-    const formatter = new LogFormatter();
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {
       title: "crit",
       values: {
@@ -276,7 +276,7 @@ describe("LogFormatter", () => {
   });
 
   it("should format plain damage with empty messages and damage with from as Secondary", () => {
-    const formatter = new LogFormatter();
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
     const plainDamageEntry: Partial<UiLogEntry> = {
       title: "damage",
       values: {
@@ -494,7 +494,7 @@ describe("LogFormatter", () => {
     const wildState = {
       field: {
         sides: [
-          { players: { p1: { id: "p1", name: "Jackson", wild: false } } },
+          { players: { p1: { id: "p1", name: "Alice", wild: false } } },
           { players: { "wild-1": { id: "wild-1", name: "Wild", wild: true } } }
         ]
       }
@@ -518,7 +518,7 @@ describe("LogFormatter", () => {
     const wildState = {
       field: {
         sides: [
-          { players: { p1: { id: "p1", name: "Jackson", wild: false } } },
+          { players: { p1: { id: "p1", name: "Alice", wild: false } } },
           { players: { "wild-1": { id: "wild-1", name: "Wild", wild: true } } }
         ]
       }
@@ -1328,7 +1328,7 @@ describe("LogFormatter", () => {
       battle_type: "singles",
       field: {
         sides: [
-          { name: "Side 1", players: { p1: { name: "Jackson" } } },
+          { name: "Side 1", players: { p1: { name: "Alice" } } },
           { name: "Side 2", players: { p2: { name: "ai-random-1" } } },
         ],
       },
@@ -1338,7 +1338,7 @@ describe("LogFormatter", () => {
       battle_type: "multi",
       field: {
         sides: [
-          { name: "Side 1", players: { p1: { name: "Jackson" }, p3: { name: "Alice" } } },
+          { name: "Side 1", players: { p1: { name: "Player 1" }, p3: { name: "Alice" } } },
           { name: "Side 2", players: { p2: { name: "Bob" }, p4: { name: "Charlie" } } },
         ],
       },
@@ -1544,6 +1544,141 @@ describe("LogFormatter", () => {
       expect(formatNoticeText({ type: "custom", name: "Special", mon: "Mew" })).toBe(
         "[custom: Mew Special]"
       );
+    });
+  });
+
+  describe("Spectator Mode", () => {
+    const singlesState = {
+      battle_type: "Singles",
+      field: {
+        sides: [
+          { players: { p1: { id: "p1", name: "Player 1", wild: false } } },
+          { players: { p2: { id: "p2", name: "Player 2", wild: false } } },
+        ],
+      },
+    } as unknown as BattleState;
+
+    const doublesState = {
+      battle_type: "Doubles",
+      field: {
+        sides: [
+          { players: { p1: { id: "p1", name: "Player 1", wild: false } } },
+          { players: { p2: { id: "p2", name: "Player 2", wild: false } } },
+        ],
+      },
+    } as unknown as BattleState;
+
+    const wildState = {
+      battle_type: "Singles",
+      field: {
+        sides: [
+          { players: { p1: { id: "p1", name: "Player 1", wild: false } } },
+          { players: { "wild-1": { id: "wild-1", name: "Wild", wild: true } } },
+        ],
+      },
+    } as unknown as BattleState;
+
+    it("should format mon names with player ownership for spectators in singles battles", () => {
+      const spectatorFormatter = new LogFormatter();
+      const p1MoveEntry: Partial<UiLogEntry> = {
+        title: "move",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+          name: "Thunderbolt",
+        },
+      };
+      const p2MoveEntry: Partial<UiLogEntry> = {
+        title: "move",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } },
+          name: "Flamethrower",
+        },
+      };
+
+      const p1Result = spectatorFormatter.format(p1MoveEntry as UiLogEntry, singlesState);
+      expect(p1Result).not.toBeNull();
+      expect(stringifyLog(p1Result!.messages[0])).toBe("Player 1's Pikachu used Thunderbolt!");
+
+      const p2Result = spectatorFormatter.format(p2MoveEntry as UiLogEntry, singlesState);
+      expect(p2Result).not.toBeNull();
+      expect(stringifyLog(p2Result!.messages[0])).toBe("Player 2's Charizard used Flamethrower!");
+    });
+
+    it("should format ability, item, and damage notices with player ownership for spectators", () => {
+      const spectatorFormatter = new LogFormatter({ healthFormat: "percentage" });
+      const abilityEntry: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+          ability: "Static",
+        },
+      };
+      const damageEntry: Partial<UiLogEntry> = {
+        title: "damage",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } },
+          health: [50n, 100n],
+          damage: [50n, 100n],
+        },
+      };
+
+      const abilityResult = spectatorFormatter.formatEntry(abilityEntry as UiLogEntry, singlesState);
+      expect(abilityResult.length).toBe(1);
+      expect(abilityResult[0].kind).toBe("notice");
+      if (abilityResult[0].kind === "notice") {
+        expect(formatNoticeText(abilityResult[0].notice)).toBe("[Player 1's Pikachu's Static]");
+      }
+
+      const damageResult = spectatorFormatter.formatEntry(damageEntry as UiLogEntry, singlesState);
+      expect(damageResult.length).toBe(1);
+      expect(damageResult[0].kind).toBe("notice");
+      if (damageResult[0].kind === "notice") {
+        expect(formatNoticeText(damageResult[0].notice)).toBe("(Player 2's Charizard lost 50% HP)");
+      }
+    });
+
+    it("should format doubles critical hits with player ownership for spectators", () => {
+      const spectatorFormatter = new LogFormatter();
+      const critEntry: Partial<UiLogEntry> = {
+        title: "crit",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Charizard", player: "p2" } },
+        },
+      };
+
+      const result = spectatorFormatter.format(critEntry as UiLogEntry, doublesState);
+      expect(result).not.toBeNull();
+      expect(stringifyLog(result!.messages[0])).toBe("A critical hit on Player 2's Charizard!");
+    });
+
+    it("should format wild Pokémon as 'the wild' for spectators", () => {
+      const spectatorFormatter = new LogFormatter();
+      const wildMoveEntry: Partial<UiLogEntry> = {
+        title: "move",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Mewtwo", player: "wild-1" } },
+          name: "Psychic",
+        },
+      };
+
+      const result = spectatorFormatter.format(wildMoveEntry as UiLogEntry, wildState);
+      expect(result).not.toBeNull();
+      expect(stringifyLog(result!.messages[0])).toBe("The wild Mewtwo used Psychic!");
+    });
+
+    it("should respect explicit isSpectator: true option even when localPlayerId is provided", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1", isSpectator: true });
+      const moveEntry: Partial<UiLogEntry> = {
+        title: "move",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+          name: "Thunderbolt",
+        },
+      };
+
+      const result = formatter.format(moveEntry as UiLogEntry, singlesState);
+      expect(result).not.toBeNull();
+      expect(stringifyLog(result!.messages[0])).toBe("Player 1's Pikachu used Thunderbolt!");
     });
   });
 });

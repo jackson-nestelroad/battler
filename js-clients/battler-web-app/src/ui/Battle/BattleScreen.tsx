@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { checkBattleStatus, closeBattleSession, refreshBattleSession } from "../../core/wamp";
-import { selectBattle, setBattleError } from "../../store/battlesSlice";
+import { isSpectatorSession, selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
 import { formatUiLogEntry } from "../../utils/logFormatter";
@@ -88,8 +88,14 @@ export default function BattleScreen() {
 
   const visibleLogs = useMemo(() => {
     if (!battleSession || !battleSession.battleState) return [];
+    const isSpectator = isSpectatorSession(battleSession, connection.playerId);
     return battleSession.uiLogs
-      .flatMap((e) => formatUiLogEntry(e, battleSession.battleState!, connection.playerId || undefined));
+      .flatMap((e) =>
+        formatUiLogEntry(e, battleSession.battleState!, {
+          localPlayerId: connection.playerId || undefined,
+          isSpectator,
+        }),
+      );
   }, [battleSession, connection.playerId]);
 
   if (!battleId) {

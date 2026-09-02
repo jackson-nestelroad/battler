@@ -125,6 +125,8 @@ export interface AnyMappedLog {
 
 export interface MapperOptions {
   localPlayerId?: string;
+  isSpectator?: boolean;
   healthFormat?: "fraction" | "percentage";
   forceTemplateKey?: string;
 }
+

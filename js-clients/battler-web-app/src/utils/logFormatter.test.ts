@@ -195,7 +195,7 @@ describe("logFormatter", () => {
       const state = {
         field: {
           sides: [
-            { name: "jackson", players: { p1: { name: "jackson" } } },
+            { name: "player-1", players: { p1: { name: "player-1" } } },
             { name: "ai-random-1", players: { p2: { name: "ai-random-1" } } },
           ],
         },
@@ -314,6 +314,58 @@ describe("logFormatter", () => {
       expect(result[0].kind).toBe("message");
       if (result[0].kind === "message") {
         expect(result[0].category).toBe(LogCategory.Hint);
+      }
+    });
+
+    it("should format mon names with player ownership for spectators in single battles", () => {
+      const singlesState = {
+        battle_type: "Singles",
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Player 1" } } },
+            { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const singleEntry: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Ninetales", player: "ai-random-1" } },
+          ability: "Drought",
+        },
+      };
+
+      const spectatorResult = formatUiLogEntry(singleEntry as UiLogEntry, singlesState, {
+        localPlayerId: "spectator-1",
+        isSpectator: true,
+      });
+      expect(spectatorResult.length).toBe(1);
+      expect(spectatorResult[0].kind).toBe("notice");
+      if (spectatorResult[0].kind === "notice") {
+        expect(formatNoticeText(spectatorResult[0].notice)).toBe(
+          "[ai-random-1's Ninetales's Drought]"
+        );
+      }
+
+      const moveEntry: Partial<UiLogEntry> = {
+        title: "move",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+          name: "Thunderbolt",
+        },
+      };
+
+      const spectatorMoveResult = formatUiLogEntry(moveEntry as UiLogEntry, singlesState, {
+        isSpectator: true,
+      });
+      expect(spectatorMoveResult.length).toBe(1);
+      expect(spectatorMoveResult[0].kind).toBe("message");
+      if (spectatorMoveResult[0].kind === "message") {
+        expect(spectatorMoveResult[0].message.context.MON).toEqual({
+          text: "Player 1's Pikachu",
+          monRef: { Active: { side: 0, position: 0, name: "Pikachu", player: "p1" } },
+        });
       }
     });
   });

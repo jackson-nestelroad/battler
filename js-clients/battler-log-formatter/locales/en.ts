@@ -20,6 +20,8 @@ export const en = {
     foe_possessive_wild: "the wild {{name}}'s",
     foe_multi: "{{player}}'s {{name}}",
     foe_possessive_multi: "{{player}}'s {{name}}'s",
+    spectator: "{{player}}'s {{name}}",
+    spectator_possessive: "{{player}}'s {{name}}'s",
     its: "its",
   },
   player: {
