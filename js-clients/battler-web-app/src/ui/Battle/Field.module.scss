@@ -1,3 +1,5 @@
+@use "../../styles/breakpoints" as *;
+ 
 .arena {
   display: flex;
   flex-direction: column;
@@ -12,21 +14,34 @@
     var(--bg-arena-gradient-start) 0%,
     var(--bg-arena-gradient-end) 100%
   );
+  flex-shrink: 0;
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-m);
+  flex-shrink: 0;
 }
 
 .fieldConditions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--spacing-s);
   font-size: var(--font-size-s);
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .turnLabel {
-  margin-left: auto;
   font-weight: 700;
   color: var(--text-secondary);
   font-size: var(--font-size-s);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: var(--spacing-xxs);
 }
 
 .battleground {
@@ -34,8 +49,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  height: clamp(rem(300px), 44vh, rem(680px));
+  width: auto;
+  max-width: 100%;
   aspect-ratio: 16 / 9; /* Static aspect ratio for canvas scaling consistency */
+  align-self: center;
   border: 1px dashed var(--border-color);
   border-radius: var(--border-radius-m);
   background: var(--bg-subtle-neutral);

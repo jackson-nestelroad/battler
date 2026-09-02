@@ -1,48 +1,46 @@
 @use "../../styles/breakpoints" as *;
 
 .teamSummaryCard {
-  background-color: var(--bg-subtle-neutral);
+  background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-m);
-  padding: var(--spacing-s) var(--spacing-m);
+  padding: var(--spacing-xs) var(--spacing-s);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   position: relative;
   transition: var(--transition-fast);
-  min-height: 5.25rem;
+  min-height: 4.5rem;
 
   &.summaryActive {
     border-color: var(--color-primary);
-    background-color: var(--color-primary-bg);
-    box-shadow:
-      inset 0 0 0 1px var(--color-primary),
-      0 0 0.75rem var(--color-primary-border);
+    background-color: color-mix(in srgb, var(--color-primary) 8%, var(--bg-input));
   }
 
   &.summaryActing {
-    border-color: var(--color-primary);
-    border-width: var(--spacing-xxs);
-    background-color: color-mix(in srgb, var(--color-primary) 18%, var(--bg-subtle-neutral));
-    transform: translateY(calc(-1 * var(--spacing-xxs)));
-    box-shadow:
-      0 0 0 1px var(--color-primary),
-      0 0 var(--spacing-m) var(--color-primary),
-      0 var(--spacing-xs) var(--spacing-s) var(--color-shadow-acting);
+    border: 1px solid var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--bg-input));
+    box-shadow: 0 0 0 1px var(--color-primary-border);
     z-index: 2;
+
+    .summaryMonLevel {
+      visibility: hidden;
+    }
   }
 
   &.summaryFainted {
-    opacity: 0.45;
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
   }
 
   &.clickableSummaryCard {
     cursor: pointer;
     border: 1px dashed var(--color-primary-border);
-    background-color: color-mix(in srgb, var(--color-primary) 1%, transparent);
+    background-color: var(--bg-input);
 
     &:hover {
-      background-color: var(--color-primary-bg);
+      background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
       border-color: var(--color-primary);
       border-style: solid;
       transform: translateY(calc(-1 * var(--spacing-xxs)));
@@ -52,7 +50,7 @@
 
   &.selectedCard {
     border-color: var(--color-primary);
-    background-color: var(--color-primary-bg);
+    background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
     border-style: solid;
   }
 }
@@ -124,17 +122,17 @@
 
 .actingBadge {
   position: absolute;
-  top: calc(-1 * var(--spacing-s));
-  right: var(--spacing-s);
+  top: calc(-1 * var(--spacing-xs));
+  right: var(--spacing-xs);
   background-color: var(--color-primary);
   color: var(--color-white);
   font-size: var(--font-size-xxs);
   font-weight: 800;
   letter-spacing: 0.05em;
   padding: var(--spacing-xxs) var(--spacing-xs);
-  border-radius: var(--border-radius-s);
+  border-radius: var(--border-radius-xs);
   border: 1px solid var(--color-primary-border);
-  box-shadow: 0 0 var(--spacing-s) var(--color-primary-border);
+  box-shadow: var(--shadow-sm);
   text-transform: uppercase;
   z-index: 3;
 }

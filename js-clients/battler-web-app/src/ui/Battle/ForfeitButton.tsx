@@ -43,10 +43,10 @@ export default function ForfeitButton({ onForfeit, isLoading }: ForfeitButtonPro
   if (showForfeitConfirm) {
     return (
       <div className="flex-row gap-xs align-center">
-        <button className="btn btn-danger" onClick={handleForfeitConfirm} disabled={isLoading}>
+        <button className="btn btn-sm btn-danger" onClick={handleForfeitConfirm} disabled={isLoading}>
           Confirm
         </button>
-        <button className="btn btn-secondary" onClick={handleForfeitCancel} disabled={isLoading}>
+        <button className="btn btn-sm btn-secondary" onClick={handleForfeitCancel} disabled={isLoading}>
           Cancel
         </button>
       </div>
@@ -54,7 +54,7 @@ export default function ForfeitButton({ onForfeit, isLoading }: ForfeitButtonPro
   }
 
   return (
-    <button className="btn btn-danger" onClick={handleForfeitClick} disabled={isLoading}>
+    <button className="btn btn-sm btn-danger" onClick={handleForfeitClick} disabled={isLoading}>
       Forfeit
     </button>
   );

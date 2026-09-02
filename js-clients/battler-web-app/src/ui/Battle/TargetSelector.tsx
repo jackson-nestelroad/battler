@@ -6,6 +6,7 @@ interface TargetSelectorProps {
   dynamicTargets: TargetOption[];
   isLoading: boolean;
   onConfirmMove: (targetVal: number | null) => void;
+  onBack?: () => void;
 }
 
 export default function TargetSelector({
@@ -13,12 +14,26 @@ export default function TargetSelector({
   dynamicTargets,
   isLoading,
   onConfirmMove,
+  onBack,
 }: TargetSelectorProps) {
   const requiresSelect = getMoveTargetInfo(selectedMoveTarget).isChoosable;
 
   return (
     <div className={styles.targetCard}>
-      <h4>Select target</h4>
+      <div className={styles.columnHeaderRow}>
+        <h4 className={styles.summaryTitle}>Select target</h4>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="btn btn-sm btn-secondary"
+            disabled={isLoading}
+            title="Go back to move selection"
+          >
+            ← Back
+          </button>
+        )}
+      </div>
 
       <div className="flex-col gap-s">
         {!requiresSelect ? (
@@ -38,9 +53,7 @@ export default function TargetSelector({
                 <button
                   key={`${opt.type}-${opt.value}`}
                   onClick={() => onConfirmMove(opt.value)}
-                  className={`${styles.targetBtn} btn ${
-                    opt.type === "self" ? "btn-primary" : "btn-secondary"
-                  }`}
+                  className={styles.targetBtn}
                   disabled={isLoading}
                 >
                   <span className={styles.targetMonName}>{opt.monName}</span>

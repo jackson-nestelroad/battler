@@ -46,7 +46,7 @@
 
 .workspaceGrid {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: 1fr rem(360px);
   gap: var(--spacing-l);
   flex: 1;
   min-height: 0;
@@ -101,6 +101,7 @@
 .toggleOthersBtn {
   padding: var(--spacing-xxs) var(--spacing-s);
   font-size: var(--font-size-xs);
+  line-height: 1;
   height: auto;
   min-height: auto;
 }

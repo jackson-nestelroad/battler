@@ -24,6 +24,7 @@ interface MoveSelectorProps {
   onClearError: () => void;
   canShift?: boolean;
   onShift?: () => void;
+  onBack?: () => void;
 }
 
 export default function MoveSelector({
@@ -36,6 +37,7 @@ export default function MoveSelector({
   onClearError,
   canShift = false,
   onShift,
+  onBack,
 }: MoveSelectorProps) {
   const isMaxMoveActive = modifiers.dyna || isDynamaxed;
 
@@ -46,7 +48,20 @@ export default function MoveSelector({
   return (
     <div className="flex-col gap-m">
       <div className={styles.movesColumn}>
-        <h4>Select move</h4>
+        <div className={styles.columnHeaderRow}>
+          <h4 className={styles.summaryTitle}>Select move</h4>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="btn btn-sm btn-secondary"
+              disabled={isLoading}
+              title="Go back to previous choice"
+            >
+              ← Back
+            </button>
+          )}
+        </div>
 
         {hasModifiers && (
           <div className={styles.modifiersRow}>

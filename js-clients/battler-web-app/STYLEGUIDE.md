@@ -12,7 +12,7 @@ This guide establishes the rules and conventions for styling the `battler-web-ap
 - **Spacing and Padding**: Use the unified rem-based tokens for all margins, padding, and layout offsets:
   - Tokens: `var(--spacing-xxs)` (2px), `var(--spacing-xs)` (4px), `var(--spacing-s)` (8px), `var(--spacing-m)` (16px), `var(--spacing-l)` (20px), `var(--spacing-xl)` (24px), `var(--spacing-xxl)` (32px).
 - **Font Sizes**: Use standard typography tokens, which automatically resize responsively at small viewport widths:
-  - Tokens: `var(--font-size-xs)` (12px), `var(--font-size-s)` (14px), `var(--font-size-m)` (16px), `var(--font-size-l)` (18px), `var(--font-size-xl)` (20px), `var(--font-size-xxl)` (28px).
+  - Tokens: `var(--font-size-xxs)` (10px), `var(--font-size-xs)` (12px), `var(--font-size-s)` (14px), `var(--font-size-m)` (16px), `var(--font-size-l)` (18px), `var(--font-size-xl)` (20px), `var(--font-size-xxl)` (28px).
 - **Border Radius**: Use standard border radius values:
   - Tokens: `var(--border-radius-xs)` (0.25rem), `var(--border-radius-s)` (0.375rem), `var(--border-radius-m)` (0.5rem), `var(--border-radius-l)` (0.75rem), `var(--border-radius-round)` (50%).
 

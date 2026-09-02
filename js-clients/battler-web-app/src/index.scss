@@ -159,6 +159,7 @@
 
 @include mobile {
   :root {
+    --font-size-xxs: 0.575rem; /* 9.2px */
     --font-size-xs: 0.7rem; /* 11.2px */
     --font-size-s: 0.8rem; /* 12.8px */
     --font-size-m: 0.9rem; /* 14.4px */
@@ -433,13 +434,10 @@ input[type="checkbox"] {
   font-weight: 700;
   padding: var(--spacing-xs) var(--spacing-s);
   border-radius: var(--border-radius-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
   line-height: 1;
 }
 
 .badge-timer {
-  text-transform: none !important;
   font-variant-numeric: tabular-nums;
 }
 
@@ -639,6 +637,13 @@ input[type="checkbox"] {
   text-transform: uppercase;
   color: var(--color-white);
   line-height: 1;
+}
+
+.status-badge.ok {
+  background-color: var(--color-success);
+}
+.status-badge.fnt {
+  background-color: var(--color-danger);
 }
 
 .status-badge.brn {

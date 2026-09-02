@@ -2922,4 +2922,54 @@ mod state_test {
             true
         );
     }
+
+    #[test]
+    fn records_condition_start_and_end_without_mon() {
+        let state = setup_singles_battle(&[
+            "start|move:Future Sight|of:Squirtle,player-1,1",
+            "end|move:Future Sight|of:Squirtle,player-1,1",
+        ]);
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "start",
+                    source = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize,
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned(),
+                        },
+                    }),
+                    effect = ui::Effect {
+                        effect_type: Some("move".to_owned()),
+                        name: "Future Sight".to_owned(),
+                    },
+                    values = { "move" => "Future Sight" }
+                ),
+                ui_log!(
+                    title = "end",
+                    source = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize,
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned(),
+                        },
+                    }),
+                    effect = ui::Effect {
+                        effect_type: Some("move".to_owned()),
+                        name: "Future Sight".to_owned(),
+                    },
+                    values = { "move" => "Future Sight" }
+                ),
+            ]
+        );
+    }
 }

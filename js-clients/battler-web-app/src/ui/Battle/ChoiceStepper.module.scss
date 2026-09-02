@@ -1,7 +1,7 @@
 @use "../../styles/breakpoints" as *;
 
 .choiceStepper {
-  background-color: var(--bg-panel);
+  background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-m);
   padding: var(--spacing-s) var(--spacing-m);
@@ -16,7 +16,7 @@
   align-items: center;
   cursor: pointer;
   user-select: none;
-  padding-bottom: var(--spacing-xs);
+  padding-bottom: var(--spacing-xxs);
 
   &:hover {
     .stepperTitle {
@@ -44,9 +44,9 @@
   align-items: center;
   gap: var(--spacing-s);
   padding: var(--spacing-xs) var(--spacing-s);
-  border-radius: var(--border-radius-s);
+  border-radius: var(--border-radius-m);
   border: 1px solid var(--border-color);
-  background-color: var(--bg-subtle-neutral);
+  background-color: var(--bg-input);
   text-align: left;
   width: 100%;
   transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -55,26 +55,27 @@
 
   &.completed {
     cursor: pointer;
-    background-color: var(--color-success-bg);
+    background-color: color-mix(in srgb, var(--color-success) 10%, var(--bg-input));
     border-color: var(--color-success-border);
 
     &:hover:not(:disabled) {
-      background-color: var(--color-success-border);
+      background-color: color-mix(in srgb, var(--color-success) 18%, var(--bg-input));
     }
   }
 
   &.active {
-    background-color: var(--bg-subtle-hover);
+    background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
     border-color: var(--color-primary);
   }
 
   &.errored {
-    background-color: var(--color-danger-bg);
+    background-color: color-mix(in srgb, var(--color-danger) 10%, var(--bg-input));
     border-color: var(--color-danger-border);
   }
 
   &.pending {
     opacity: 0.5;
+    background-color: var(--bg-input);
   }
 }
 

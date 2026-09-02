@@ -120,7 +120,6 @@ export default function ActionPanel({
   const monToReplace = request?.type === "switch" ? activeMon : undefined;
   const activeSwitchSlot = request?.type === "switch" ? getActiveSlotPosition(request, currentSlotIndex) : undefined;
 
-  const isTeamPreview = request?.type === "team";
   const isSwitch = request?.type === "switch";
   const isTurn = request?.type === "turn";
 
@@ -167,6 +166,8 @@ export default function ActionPanel({
   };
 
   const getHeaderTitle = (): string => {
+    if (isMeReady) return "Waiting";
+    if (playbackPending) return "Turn Resolution";
     if (request?.type === "team") return "Team Preview";
     if (request?.type === "switch") {
       if (activeSwitchSlot === undefined) return "Switch";
@@ -190,7 +191,7 @@ export default function ActionPanel({
   };
 
   const renderPlaceholder = (text: string, showSpinner = false) => (
-    <div className={`${styles.panelPlaceholder} ${styles.reset}`}>
+    <div className={styles.panelPlaceholder}>
       {showSpinner ? (
         <div className="flex-col align-center gap-m">
           <div className={styles.dotPulse} />
@@ -203,7 +204,7 @@ export default function ActionPanel({
   );
 
   const renderChoiceBody = () => {
-    if (!request || isMeReady) return renderPlaceholder("Waiting...");
+    if (!request || isMeReady) return renderPlaceholder("Waiting...", true);
     if (playbackPending) return renderPlaceholder("Playing turn...", true);
 
     if (request.type === "team") {
@@ -224,15 +225,16 @@ export default function ActionPanel({
       };
 
       return (
-        <>
-          <div className="flex-col gap-s">
-            <p className={styles.instructionText}>
-              Select your team order. Remaining spots will be filled automatically when confirming.
-            </p>
-            <span className={styles.selectionProgress}>
-              Selected: <strong>{selectedTeamIndices.length}</strong> / {targetSize}
-            </span>
+        <div className={styles.movesColumn}>
+          <div className={styles.columnHeaderRow}>
+            <h4 className={styles.summaryTitle}>Team preview</h4>
           </div>
+          <p className={styles.instructionText}>
+            Select your team order from the right. Remaining spots will be filled automatically.
+          </p>
+          <span className={styles.selectionProgress}>
+            Selected: <strong>{selectedTeamIndices.length}</strong> / {targetSize}
+          </span>
 
           <div className="flex-row gap-s align-center">
             <button
@@ -252,7 +254,7 @@ export default function ActionPanel({
               </button>
             )}
           </div>
-        </>
+        </div>
       );
     }
 
@@ -272,16 +274,34 @@ export default function ActionPanel({
         advanceSlotOrSubmit(newChoices, totalSlots);
       };
 
-      return canPassSwitch ? (
-        <ActionButton
-          title="Pass"
-          subtitle="Leave slot empty"
-          onClick={handlePassSwitch}
-          disabled={isLoading}
-          typeColor="var(--color-warning)"
-          htmlTitle="Leave slot empty"
-        />
-      ) : null;
+      return (
+        <div className="flex-col gap-m">
+          {showBackButton && (
+            <div className="flex-row">
+              <button
+                type="button"
+                onClick={goBackStep}
+                className="btn btn-sm btn-secondary"
+                disabled={isLoading}
+                title="Go back to previous choice"
+              >
+                ← Back
+              </button>
+            </div>
+          )}
+          {renderPlaceholder("Switching...", true)}
+          {canPassSwitch && (
+            <ActionButton
+              title="Pass"
+              subtitle="Leave slot empty"
+              onClick={handlePassSwitch}
+              disabled={isLoading}
+              typeColor="var(--color-warning)"
+              htmlTitle="Leave slot empty"
+            />
+          )}
+        </div>
+      );
     }
 
     if (request.type === "turn") {
@@ -356,6 +376,7 @@ export default function ActionPanel({
           onShift={handleShift}
           onSelectMove={handleSelectMove}
           onClearError={clearChoiceError}
+          onBack={showBackButton ? goBackStep : undefined}
         />
       ) : (
         <TargetSelector
@@ -363,6 +384,7 @@ export default function ActionPanel({
           dynamicTargets={dynamicTargets}
           isLoading={isLoading}
           onConfirmMove={handleConfirmMove}
+          onBack={showBackButton ? goBackStep : undefined}
         />
       );
     }
@@ -383,7 +405,7 @@ export default function ActionPanel({
   let showHeader = false;
   let showStepper = false;
   if (request && !isMeReady && !playbackPending) {
-    if (isTeamPreview) {
+    if (request.type === "team") {
       showHeader = true;
     } else if (isSwitch) {
       showHeader = activeSwitchSlot !== undefined;
@@ -401,39 +423,37 @@ export default function ActionPanel({
       : false;
 
   return (
-    <div className="flex-col gap-xl">
-      <div className="card flex-col gap-m">
-        {displayErrorMessage && <ErrorBanner message={displayErrorMessage} />}
-        {showHeader && (
-          <RequestHeader
-            title={getHeaderTitle()}
-            onForfeit={handleForfeit}
-            isLoading={isLoading}
-            key={turn}
-          />
-        )}
-        {renderChoiceBody()}
-        {showBackButton && showHeader && (
-          <div className="flex-row">
-            <button onClick={goBackStep} className="btn btn-secondary" disabled={isLoading}>
-              ← Back
-            </button>
-          </div>
-        )}
-        {showStepper && (
-          <ChoiceStepper
-            request={request}
-            playerData={playerData}
-            battleState={battleSession?.battleState}
-            choices={choices}
-            currentSlotIndex={currentSlotIndex}
-            parsedChoiceError={parsedChoiceError}
-            isLoading={isLoading}
-            onJumpToSlot={handleJumpToSlot}
-          />
-        )}
+    <div className={`card flex-col gap-m ${styles.actionPanelCard}`}>
+      {displayErrorMessage && <ErrorBanner message={displayErrorMessage} />}
+      {showHeader && (
+        <RequestHeader
+          title={getHeaderTitle()}
+          onForfeit={handleForfeit}
+          isLoading={isLoading}
+          key={turn}
+        />
+      )}
+
+      <div className={styles.commandDeckGrid}>
+        <div className={styles.commandActionCol}>
+          {renderChoiceBody()}
+          {showStepper && (
+            <ChoiceStepper
+              request={request}
+              playerData={playerData}
+              battleState={battleSession?.battleState}
+              choices={choices}
+              currentSlotIndex={currentSlotIndex}
+              parsedChoiceError={parsedChoiceError}
+              isLoading={isLoading}
+              onJumpToSlot={handleJumpToSlot}
+            />
+          )}
+        </div>
+        <div className={styles.commandTeamCol}>
+          {renderTeamSummary()}
+        </div>
       </div>
-      {renderTeamSummary()}
     </div>
   );
 }

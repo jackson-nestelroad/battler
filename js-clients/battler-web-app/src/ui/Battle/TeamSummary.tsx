@@ -44,7 +44,9 @@ export default function TeamSummary({
 
   return (
     <div className={styles.teamSummarySection}>
-      <h4 className={styles.summaryTitle}>Team</h4>
+      <div className={styles.columnHeaderRow}>
+        <h4 className={styles.summaryTitle}>Team</h4>
+      </div>
       <div className={styles.teamSummaryGrid}>
         {playerData.mons.map((mon, idx) => {
           const name = getMonDisplayName(mon);

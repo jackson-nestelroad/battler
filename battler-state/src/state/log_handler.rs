@@ -490,8 +490,7 @@ fn modify_state_from_effect(
                     let mon = state.field.mon_mut_by_reference_or_else(&mon)?;
                     mon.volatile_data.stat_boosts.clear();
                 }
-            } else {
-                let mon = entry.value_or_else("mon")?;
+            } else if let Some(mon) = entry.value::<MonName>("mon") {
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.stat_boosts.clear();
                 })?;
@@ -598,13 +597,14 @@ fn modify_state_from_effect(
             })?;
         }
         "end" => {
-            let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
-                apply_for_each_mon(state, &mon, |mon, _| {
-                    mon.volatile_data.remove_condition(&effect.name);
-                })?;
+            if let Some(mon) = entry.value::<MonName>("mon") {
+                if let Some(effect) = &ui_entry.effect {
+                    apply_for_each_mon(state, &mon, |mon, _| {
+                        mon.volatile_data.remove_condition(&effect.name);
+                    })?;
 
-                record_effect_from_mon(state, &effect, &mon)?;
+                    record_effect_from_mon(state, &effect, &mon)?;
+                }
             }
         }
         "fieldend" => {
@@ -707,20 +707,21 @@ fn modify_state_from_effect(
             }
         }
         "singlemove" | "singleturn" => {
-            let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
-                let turn = state.turn;
-                let mut data = values_to_condition_data_map(&ui_entry.values);
-                data.insert(entry.title().to_owned(), "".to_owned());
-                apply_for_each_mon(state, &mon, |mon, _| {
-                    mon.volatile_data.record_condition(
-                        effect.name.clone(),
-                        ConditionData {
-                            since_turn: turn,
-                            data: data.clone(),
-                        },
-                    );
-                })?;
+            if let Some(mon) = entry.value::<MonName>("mon") {
+                if let Some(effect) = &ui_entry.effect {
+                    let turn = state.turn;
+                    let mut data = values_to_condition_data_map(&ui_entry.values);
+                    data.insert(entry.title().to_owned(), "".to_owned());
+                    apply_for_each_mon(state, &mon, |mon, _| {
+                        mon.volatile_data.record_condition(
+                            effect.name.clone(),
+                            ConditionData {
+                                since_turn: turn,
+                                data: data.clone(),
+                            },
+                        );
+                    })?;
+                }
             }
         }
         "specieschange" => {
@@ -742,20 +743,21 @@ fn modify_state_from_effect(
             }
         }
         "start" => {
-            let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
-                let turn = state.turn;
-                apply_for_each_mon(state, &mon, |mon, _| {
-                    mon.volatile_data.record_condition(
-                        effect.name.clone(),
-                        ConditionData {
-                            since_turn: turn,
-                            data: values_to_condition_data_map(&ui_entry.values),
-                        },
-                    );
-                })?;
+            if let Some(mon) = entry.value::<MonName>("mon") {
+                if let Some(effect) = &ui_entry.effect {
+                    let turn = state.turn;
+                    apply_for_each_mon(state, &mon, |mon, _| {
+                        mon.volatile_data.record_condition(
+                            effect.name.clone(),
+                            ConditionData {
+                                since_turn: turn,
+                                data: values_to_condition_data_map(&ui_entry.values),
+                            },
+                        );
+                    })?;
 
-                record_effect_from_mon(state, &effect, &mon)?;
+                    record_effect_from_mon(state, &effect, &mon)?;
+                }
             }
         }
         "swapboosts" => {

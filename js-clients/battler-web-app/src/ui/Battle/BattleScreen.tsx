@@ -375,13 +375,12 @@ export default function BattleScreen() {
         </div>
       ) : (
         <div className={styles.workspaceGrid}>
-          {/* Left Arena half */}
+          {/* Left Arena & Command Deck */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
-            <Field battleState={battleSession.battleState} />
-            <BattleTimers
+            <Field
+              battleState={battleSession.battleState}
               activeTimers={battleSession.activeTimers}
               playerId={connection.playerId || undefined}
-              battleState={battleSession.battleState}
               serviceBattle={battleSession.serviceBattle}
               isReplay={isReplay}
             />

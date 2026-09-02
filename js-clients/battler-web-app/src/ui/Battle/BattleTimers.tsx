@@ -123,25 +123,19 @@ export default function BattleTimers({
   };
 
   return (
-    <div className="flex-col gap-xs">
-      <div className="flex-row align-center gap-s flex-wrap">
-        {primaryTimers.map(renderTimerBadge)}
-        {otherTimers.length > 0 && (
-          <button
-            className={`btn btn-sm btn-secondary ${styles.toggleOthersBtn}`}
-            onClick={() => setShowOtherTimers(!showOtherTimers)}
-          >
-            {showOtherTimers ? "Hide" : "Show"} others ({otherTimers.length}){" "}
-            {showOtherTimers ? "▲" : "▼"}
-          </button>
-        )}
-      </div>
-
-      {showOtherTimers && otherTimers.length > 0 && (
-        <div className="flex-row align-center gap-s flex-wrap">
-          {otherTimers.map(renderTimerBadge)}
-        </div>
+    <div className="flex-row align-center gap-s flex-wrap">
+      {primaryTimers.map(renderTimerBadge)}
+      {otherTimers.length > 0 && (
+        <button
+          type="button"
+          className={`btn btn-sm btn-secondary ${styles.toggleOthersBtn}`}
+          onClick={() => setShowOtherTimers(!showOtherTimers)}
+        >
+          {showOtherTimers ? "Hide" : "Show"} others ({otherTimers.length}){" "}
+          {showOtherTimers ? "▲" : "▼"}
+        </button>
       )}
+      {showOtherTimers && otherTimers.map(renderTimerBadge)}
     </div>
   );
 }
