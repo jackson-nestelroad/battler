@@ -23,7 +23,11 @@ use battler::{
     Type,
     teams::MonData,
 };
-use battler_data::ZCrystalSource;
+use battler_data::{
+    ItemData,
+    ItemFlag,
+    ZCrystalSource,
+};
 use rand::prelude::*;
 
 const ALL_NATURES: &[Nature] = &[
@@ -60,6 +64,41 @@ pub struct ItemPools {
     pub type_to_zcrystal: HashMap<Type, String>,
 }
 
+fn is_battle_held_item(item: &ItemData) -> bool {
+    // Player items (balls, medicine, battle consumables) are not held battle items.
+    if item.flags.contains(&ItemFlag::Ball)
+        || item.flags.contains(&ItemFlag::Medicine)
+        || item.flags.contains(&ItemFlag::Battle)
+    {
+        return false;
+    }
+
+    let has_effect_code = |val: &serde_json::Value| {
+        if let Some(obj) = val.as_object() {
+            if obj.contains_key("delegates") {
+                return true;
+            }
+            if let Some(callbacks) = obj.get("callbacks").and_then(|c| c.as_object()) {
+                let keys: Vec<_> = callbacks.keys().map(|s| s.as_str()).collect();
+                if !keys.is_empty()
+                    && keys
+                        .iter()
+                        .all(|&k| k == "on_player_use" || k == "on_player_try_use_item")
+                {
+                    return false;
+                }
+                return !keys.is_empty();
+            }
+        }
+        false
+    };
+
+    has_effect_code(&item.effect)
+        || has_effect_code(&item.condition)
+        || item.special_data.judgment.is_some()
+        || item.special_data.multi_attack.is_some()
+}
+
 pub fn extract_item_pools(store: &dyn DataStore) -> Result<ItemPools> {
     let mut items_pool = Vec::new();
     let mut megastones_map = HashMap::new();
@@ -85,7 +124,7 @@ pub fn extract_item_pools(store: &dyn DataStore) -> Result<ItemPools> {
                 }
                 is_special = true;
             }
-            if !is_special {
+            if !is_special && is_battle_held_item(&item) {
                 items_pool.push(name_str);
             }
         }
@@ -875,6 +914,56 @@ mod tests {
                 "Seed {}: expected no special items when disabled, found {:?}",
                 seed,
                 special_items
+            );
+        }
+    }
+
+    #[test]
+    fn item_pools_filters_out_non_battle_items() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let item_pools = extract_item_pools(&store).unwrap();
+
+        // Ensure key battle items are present.
+        assert!(item_pools.items_pool.contains(&"Leftovers".to_string()));
+        assert!(item_pools.items_pool.contains(&"Choice Band".to_string()));
+        assert!(item_pools.items_pool.contains(&"Choice Scarf".to_string()));
+        assert!(item_pools.items_pool.contains(&"Focus Sash".to_string()));
+        assert!(item_pools.items_pool.contains(&"Life Orb".to_string()));
+        assert!(item_pools.items_pool.contains(&"Flame Orb".to_string()));
+        assert!(item_pools.items_pool.contains(&"Toxic Orb".to_string()));
+        assert!(item_pools.items_pool.contains(&"Iron Plate".to_string()));
+        assert!(item_pools.items_pool.contains(&"Sitrus Berry".to_string()));
+        assert!(item_pools.items_pool.contains(&"Lum Berry".to_string()));
+        assert!(item_pools.items_pool.contains(&"Fire Gem".to_string()));
+
+        // Ensure non-battle and fluff items are filtered out.
+        assert!(!item_pools.items_pool.contains(&"Poké Ball".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Potion".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Guard Spec.".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Poké Doll".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Fluffy Tail".to_string()));
+        assert!(!item_pools.items_pool.contains(&"TR01".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Exp. Candy XL".to_string()));
+        assert!(!item_pools.items_pool.contains(&"Armorite Ore".to_string()));
+        assert!(
+            !item_pools
+                .items_pool
+                .contains(&"Tera Shard Ground".to_string())
+        );
+
+        // Megastones and Z-Crystals should not be in items_pool either.
+        for mega_stone in item_pools.megastones_map.keys() {
+            assert!(
+                !item_pools.items_pool.contains(mega_stone),
+                "items_pool should not contain Mega Stone {}",
+                mega_stone
+            );
+        }
+        for z_crystal in item_pools.type_to_zcrystal.values() {
+            assert!(
+                !item_pools.items_pool.contains(z_crystal),
+                "items_pool should not contain Z-Crystal {}",
+                z_crystal
             );
         }
     }

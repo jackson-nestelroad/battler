@@ -975,14 +975,14 @@
         "hit_effect": {
           "status": "brn"
         }
-      },
-      "effect": {
-        "callbacks": {
-          "on_residual": ["set_status: $target brn"]
-        }
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_residual": ["set_status: $target brn"]
+      }
+    }
   },
   "quickpowder": {
     "name": "Quick Powder",
@@ -1728,7 +1728,15 @@
       }
     },
     "force_forme": "Arceus-Steel",
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["condition:boosttypepowerby20percentitembase"],
+      "local_data": {
+        "values": {
+          "type": "Steel"
+        }
+      }
+    }
   },
   "oddincense": {
     "name": "Odd Incense",
@@ -1840,12 +1848,12 @@
         "hit_effect": {
           "volatile_status": "flinch"
         }
-      },
-      "effect": {
-        "delegates": ["item:kingsrock"]
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "delegates": ["item:kingsrock"]
+    }
   },
   "griseousorb": {
     "name": "Griseous Orb",
@@ -2239,18 +2247,18 @@
     "special_data": {
       "fling": {
         "power": 30
-      },
-      "effect": {
-        "callbacks": {
-          "on_damaging_hit": [
-            "if $move.type == ice and func_call(can_boost: $target 'atk:1'):",
-            ["use_item: $target"]
-          ],
-          "on_use": ["boost: $mon 'atk:1'"]
-        }
       }
     },
-    "flags": []
+    "flags": [],
+    "effect": {
+      "callbacks": {
+        "on_damaging_hit": [
+          "if $move.type == ice and func_call(can_boost: $target 'atk:1'):",
+          ["use_item: $target"]
+        ],
+        "on_use": ["boost: $mon 'atk:1'"]
+      }
+    }
   },
   "safetygoggles": {
     "name": "Safety Goggles",
