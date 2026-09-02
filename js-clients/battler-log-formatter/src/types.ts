@@ -51,7 +51,7 @@ export type RequiredContext<K extends LogTemplateKey> =
 export interface MappedLogParticipantMetadata {
   raw?: string;
   raw_possessive?: string;
-  possessive?: string;
+  possessive?: ContextVar;
   ref?: UiMon;
 }
 

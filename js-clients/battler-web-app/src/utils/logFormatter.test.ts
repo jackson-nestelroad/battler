@@ -218,5 +218,51 @@ describe("logFormatter", () => {
       const timeResult = formatUiLogEntry(timeEntry as UiLogEntry, undefined, "p1");
       expect(timeResult).toEqual([{ kind: "request-split" }]);
     });
+
+    it("should format ability notices with correct unified capitalization in multi and single battles", () => {
+      const multiState: Partial<BattleState> = {
+        battle_type: "Multi",
+        field: {
+          sides: [
+            { name: "Side 1", players: { p1: { name: "Player 1" } } } as any,
+            { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } } as any,
+          ],
+        },
+      };
+
+      const multiEntry: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Great Tusk", player: "ai-random-1" } },
+          ability: "Protosynthesis",
+        },
+      };
+
+      const multiResult = formatUiLogEntry(multiEntry as UiLogEntry, multiState as BattleState, "p1");
+      expect(multiResult.length).toBe(2);
+      expect(multiResult[0].kind).toBe("notice");
+      if (multiResult[0].kind === "notice") {
+        expect(formatNoticeText(multiResult[0].notice)).toBe(
+          "[ai-random-1's Great Tusk's Protosynthesis]"
+        );
+      }
+
+      const singleEntry: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Ninetales", player: "p2" } },
+          ability: "Drought",
+        },
+      };
+
+      const singleResult = formatUiLogEntry(singleEntry as UiLogEntry, undefined, "p1");
+      expect(singleResult.length).toBe(1);
+      expect(singleResult[0].kind).toBe("notice");
+      if (singleResult[0].kind === "notice") {
+        expect(formatNoticeText(singleResult[0].notice)).toBe(
+          "[The opposing Ninetales's Drought]"
+        );
+      }
+    });
   });
 });

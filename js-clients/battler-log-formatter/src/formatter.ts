@@ -160,14 +160,18 @@ function resolveNoticeMon(
   }
 
   if (participant) {
-    let monStr: string | undefined = undefined;
-    if (participant.possessive) {
-      monStr = participant.possessive.charAt(0).toUpperCase() + participant.possessive.slice(1);
-    } else if (participant.raw_possessive) {
-      monStr =
-        participant.raw_possessive.charAt(0).toUpperCase() + participant.raw_possessive.slice(1);
+    const targetVar: ContextVar | string | undefined =
+      participant.possessive || participant.raw_possessive;
+    if (targetVar) {
+      const capCtx = capitalizeContextValue(targetVar);
+      let monStr: string | undefined = undefined;
+      if (typeof capCtx === "string") {
+        monStr = capCtx;
+      } else if (capCtx && typeof capCtx === "object" && "text" in capCtx) {
+        monStr = capCtx.text;
+      }
+      return { monStr, monRef: participant.ref };
     }
-    return { monStr, monRef: participant.ref };
   }
 
   return {};

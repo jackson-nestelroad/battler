@@ -358,7 +358,7 @@ export function bindMonParticipant(
     metadata.mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
-      possessive: resolved.possessive.text,
+      possessive: resolved.possessive,
       ref: resolved.ref,
     };
     if (!metadata.target) metadata.target = metadata.mon;
@@ -377,7 +377,7 @@ export function bindMonParticipant(
     metadata.target = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
-      possessive: resolved.possessive.text,
+      possessive: resolved.possessive,
       ref: resolved.ref,
     };
     if (!metadata.mon) metadata.mon = metadata.target;
@@ -388,14 +388,14 @@ export function bindMonParticipant(
     metadata.source = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
-      possessive: resolved.possessive.text,
+      possessive: resolved.possessive,
       ref: resolved.ref,
     };
   } else if (role === "prev_mon") {
     metadata.prev_mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
-      possessive: resolved.possessive.text,
+      possessive: resolved.possessive,
       ref: resolved.ref,
     };
   }

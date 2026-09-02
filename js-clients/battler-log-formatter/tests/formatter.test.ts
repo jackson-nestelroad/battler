@@ -978,4 +978,58 @@ describe("LogFormatter", () => {
       monRef: { Active: { side: 0, position: 0, name: "Corviknight", player: "p1" } }
     });
   });
+
+  it("should preserve lowercase player handles in multi-battle ability notices and messages", () => {
+    const multiState: Partial<BattleState> = {
+      battle_type: "Multi",
+      field: {
+        sides: [
+          { name: "Side 1", players: { p1: { name: "Player 1" } } } as any,
+          { name: "Side 2", players: { "ai-random-1": { name: "ai-random-1" } } } as any,
+        ]
+      }
+    };
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Great Tusk", player: "ai-random-1" } },
+        ability: "Protosynthesis",
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry, multiState as BattleState);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Protosynthesis",
+      mon: "ai-random-1's Great Tusk's",
+      monRef: { Active: { side: 1, position: 0, name: "Great Tusk", player: "ai-random-1" } }
+    });
+    expect(stringifyLog(result!.messages[0])).toBe(
+      "The harsh sunlight activated ai-random-1's Great Tusk's Protosynthesis!"
+    );
+  });
+
+  it("should capitalize the opposing Mon in single-battle ability notices", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Ninetales", player: "p2" } },
+        ability: "Drought",
+      }
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Drought",
+      mon: "The opposing Ninetales's",
+      monRef: { Active: { side: 1, position: 0, name: "Ninetales", player: "p2" } }
+    });
+  });
 });
