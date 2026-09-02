@@ -13,6 +13,7 @@ interface PlayerSlotCardProps {
   teams: Record<string, MonData[]>;
   teamNames: string[];
   defaultTeam: string | null;
+  isChaos?: boolean;
   onRemove: () => void;
   onChange: (fields: Partial<FormPlayer>) => void;
 }
@@ -26,6 +27,7 @@ export default function PlayerSlotCard({
   teams,
   teamNames,
   defaultTeam,
+  isChaos,
   onRemove,
   onChange,
 }: PlayerSlotCardProps) {
@@ -101,7 +103,7 @@ export default function PlayerSlotCard({
             </select>
           </div>
 
-          {player.controlType === "ai" && (
+          {player.controlType === "ai" && !isChaos && (
             <div className="form-group flex-1">
               <label htmlFor={`ai-team-${side}-${index}`}>AI team</label>
               {teamNames.length > 0 ? (

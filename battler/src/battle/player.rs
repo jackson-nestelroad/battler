@@ -301,6 +301,7 @@ pub struct PlayerOptions {
     pub cannot_dynamax: bool,
 
     /// If the player cannot Terastallize, assuming Terastallization is allowed.
+    #[serde(default)]
     pub cannot_terastallize: bool,
 }
 

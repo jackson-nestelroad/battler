@@ -873,18 +873,20 @@ async fn creates_special_chaos_battle() {
                     mode: battler_multiplayer_service::ChaosBattleMode::Singles6v6,
                 },
             ),
-            side_1: battler_multiplayer_service::ProposedSpecialBattleSide {
+            side_1: SideData {
                 name: "Side 1".to_string(),
-                players: vec![battler_multiplayer_service::ProposedSpecialBattlePlayer {
+                players: vec![PlayerData {
                     id: "player-1".to_string(),
-                    name: Some("Player 1".to_string()),
+                    name: "Player 1".to_string(),
+                    ..Default::default()
                 }],
             },
-            side_2: battler_multiplayer_service::ProposedSpecialBattleSide {
+            side_2: SideData {
                 name: "Side 2".to_string(),
-                players: vec![battler_multiplayer_service::ProposedSpecialBattlePlayer {
+                players: vec![PlayerData {
                     id: "player-2".to_string(),
-                    name: Some("Player 2".to_string()),
+                    name: "Player 2".to_string(),
+                    ..Default::default()
                 }],
             },
             service_options: BattleServiceOptions {

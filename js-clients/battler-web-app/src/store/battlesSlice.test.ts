@@ -62,6 +62,62 @@ describe("battlesSlice active timers", () => {
     });
   });
 
+  it("should parse and retain player bank timer when player is on entry.player", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+    });
+
+    const battleId = "15cf2863-792b-4afc-8852-3aa6481m268e";
+    store.dispatch(battleSessionCreated(battleId));
+
+    // Entry as produced by battler-state WASM parser: player is top-level on entry
+    const playerTimerEntry: UiLogEntry = {
+      title: "timer",
+      side: null,
+      slot: null,
+      player: "player-1",
+      target: null,
+      source: null,
+      effect: null,
+      source_effect: null,
+      values: {
+        source: "-battlerservice",
+        remainingsecs: "420",
+        deadline: "1784498900",
+      },
+    };
+
+    const mockBattleState: BattleState = {
+      turn: 1,
+      phase: "play",
+      ui_log: [[playerTimerEntry]],
+    } as unknown as BattleState;
+
+    store.dispatch(
+      battleStateUpdated({
+        battleId,
+        state: mockBattleState,
+      }),
+    );
+
+    const state = store.getState().battles;
+    const battle = state.battles[battleId];
+    expect(battle).toBeDefined();
+
+    const timers = battle.activeTimers;
+    expect(timers).toBeDefined();
+    expect(timers?.["player:player-1"]).toEqual({
+      type: "player",
+      playerId: "player-1",
+      remainingSecs: 420,
+      deadlineSecs: 1784498900,
+      isDone: false,
+      isInactive: false,
+    });
+  });
+
   it("should delete teampreview timer when it is cleared", () => {
     const store = configureStore({
       reducer: {

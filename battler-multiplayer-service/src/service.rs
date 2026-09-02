@@ -407,8 +407,24 @@ impl ActiveProposedBattleManager {
                                         chaos_opts.mode.team_size(),
                                         None,
                                     )?;
-                                options.side_1.apply_to_side_data(&mut battle_opts.side_1);
-                                options.side_2.apply_to_side_data(&mut battle_opts.side_2);
+                                let mut side_1 = options.side_1;
+                                let mut side_2 = options.side_2;
+                                for (i, player) in side_1.players.iter_mut().enumerate() {
+                                    if let Some(generated_player) =
+                                        battle_opts.side_1.players.get(i)
+                                    {
+                                        player.team = generated_player.team.clone();
+                                    }
+                                }
+                                for (i, player) in side_2.players.iter_mut().enumerate() {
+                                    if let Some(generated_player) =
+                                        battle_opts.side_2.players.get(i)
+                                    {
+                                        player.team = generated_player.team.clone();
+                                    }
+                                }
+                                battle_opts.side_1 = side_1;
+                                battle_opts.side_2 = side_2;
                                 Some((battle_opts, options.service_options))
                             }
                         }

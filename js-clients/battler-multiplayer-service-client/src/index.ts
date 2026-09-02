@@ -4,6 +4,7 @@ import {
   ProposedBattleOptions,
   ProposedBattleResponse,
   ProposedBattleUpdate,
+  ProposedSpecialBattleOptions,
 } from "./bindings/index.js";
 
 import {
@@ -29,6 +30,16 @@ export class BattlerMultiplayerServiceClient {
   async proposeBattle(options: ProposedBattleOptions): Promise<ProposedBattle> {
     const res = await this.session.call<unknown>(
       "com.battler.battler_multiplayer_service.proposed_battles.create",
+      [safeJsonStringify(options)],
+    );
+    const json = getWampResultString(res);
+    if (!json) throw new Error("Invalid WAMP response");
+    return JSON.parse(json);
+  }
+
+  async proposeSpecialBattle(options: ProposedSpecialBattleOptions): Promise<ProposedBattle> {
+    const res = await this.session.call<unknown>(
+      "com.battler.battler_multiplayer_service.proposed_battles.create_special",
       [safeJsonStringify(options)],
     );
     const json = getWampResultString(res);

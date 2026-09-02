@@ -1,12 +1,14 @@
+import type { ChaosBattleMode, ProposedSpecialBattleOptions } from "battler-multiplayer-service-client";
 import type { BattleType, CoreBattleOptions, MonData } from "battler-types";
 import React, { useEffect, useMemo, useState } from "react";
-import { proposeBattle } from "../../core/wamp";
+import { proposeBattle, proposeSpecialBattle } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { updateProposal } from "../../store/proposalsSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 
 import { setConnectionError } from "../../store/connectionSlice";
 
+import Tabs from "../Common/Tabs";
 import TeamSelect from "../Common/TeamSelect";
 import type { CustomRulesState } from "./AdvancedRulesSection";
 import AdvancedRulesSection from "./AdvancedRulesSection";
@@ -24,6 +26,8 @@ const parseBigIntSafe = (val: string): bigint => {
   return isNaN(parsed) ? 0n : BigInt(parsed);
 };
 
+type BattleCategory = "standard" | "chaos";
+
 export default function ProposalForm() {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
@@ -35,7 +39,13 @@ export default function ProposalForm() {
     return teamOrder.length > 0 ? teamOrder.filter((name) => teams[name]) : Object.keys(teams);
   }, [teamOrder, teams]);
 
-  // Proposal form state
+  // Tab state: Standard vs Chaos
+  const [category, setCategory] = useState<BattleCategory>("standard");
+
+  // Chaos battle state
+  const [chaosMode, setChaosMode] = useState<ChaosBattleMode>("singles_6v6");
+
+  // Standard proposal form state
   const [format, setFormat] = useState<BattleType>("Singles");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -197,69 +207,20 @@ export default function ProposalForm() {
       return;
     }
 
-    // Check if any AI player does not have a selected team or if the selected team does not exist
-    const hasEmptyAiTeam =
-      finalSide1.some(
-        (p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]),
-      ) ||
-      finalSide2.some((p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]));
+    // Check if any AI player does not have a selected team (only required for Standard battles)
+    if (category === "standard") {
+      const hasEmptyAiTeam =
+        finalSide1.some(
+          (p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]),
+        ) ||
+        finalSide2.some(
+          (p) => p.controlType === "ai" && (!p.selectedTeam || !teams[p.selectedTeam]),
+        );
 
-    if (hasEmptyAiTeam) {
-      dispatch(setConnectionError("Please select a valid team for all AI players.", null));
-      return;
-    }
-
-    // Build format rules array
-    let rulesArray: string[] = [];
-    if (customRules.preset === "standard") {
-      rulesArray = ["Standard"];
-    } else if (customRules.preset === "standarddoubles") {
-      rulesArray = ["Standard Doubles"];
-    } else if (customRules.preset === "flatrules") {
-      rulesArray = ["Flat Rules"];
-    } else if (customRules.preset === "custom") {
-      if (customRules.sleepClause) rulesArray.push("Sleep Clause");
-      if (customRules.speciesClause) rulesArray.push("Species Clause");
-      if (customRules.itemClause) rulesArray.push("Item Clause");
-      if (customRules.nicknameClause) rulesArray.push("Nickname Clause");
-      if (customRules.ohkoClause) rulesArray.push("OHKO Clause");
-      if (customRules.evasionClause) {
-        rulesArray.push("Evasion Items Clause");
-        rulesArray.push("Evasion Moves Clause");
+      if (hasEmptyAiTeam) {
+        dispatch(setConnectionError("Please select a valid team for all AI players.", null));
+        return;
       }
-      if (customRules.endlessBattleClause) rulesArray.push("Endless Battle Clause");
-      if (customRules.restrictedLegendaries) rulesArray.push("* Restricted Legendary");
-
-      // Custom rule flags (Dynamax, Z-Moves, Mega Evolution, Terastallization)
-      if (customRules.megaEvolution) rulesArray.push("Mega Evolution");
-      if (customRules.zMoves) rulesArray.push("Z-Moves");
-      if (customRules.dynamax) rulesArray.push("Dynamax");
-      if (customRules.terastallization) rulesArray.push("Terastallization");
-      if (customRules.bagItems) rulesArray.push("Bag Items");
-
-      if (customRules.limitRestrictedEnabled) {
-        rulesArray.push(`Limit Restricted = ${customRules.limitRestricted}`);
-      }
-      if (customRules.adjustLevelDownEnabled) {
-        rulesArray.push(`Adjust Level Down = ${customRules.adjustLevelDown}`);
-      }
-      if (customRules.defaultLevel) rulesArray.push(`Default Level = ${customRules.defaultLevel}`);
-      if (customRules.maxLevel) rulesArray.push(`Max Level = ${customRules.maxLevel}`);
-      for (const rule of customRules.rulesList) {
-        rulesArray.push(rule);
-      }
-    }
-
-    // Apply Team Preview and Picked Team Size rules globally
-    if (customRules.teamPreview) {
-      if (customRules.preset === "custom" || customRules.preset === "none") {
-        rulesArray.push("Team Preview");
-      }
-      if (!customRules.pickedTeamSizeAuto) {
-        rulesArray.push(`Picked Team Size = ${customRules.pickedTeamSize}`);
-      }
-    } else {
-      rulesArray.push("! Team Preview");
     }
 
     // Build timers
@@ -338,6 +299,97 @@ export default function ProposalForm() {
     const side1Name = side1PlayersData.map((p) => p.name).join(" / ");
     const side2Name = side2PlayersData.map((p) => p.name).join(" / ");
 
+    // Handle Chaos Battle Proposal
+    if (category === "chaos") {
+      const specialOptions: ProposedSpecialBattleOptions = {
+        special_battle: {
+          type: "chaos",
+          options: {
+            mode: chaosMode,
+          },
+        },
+        side_1: {
+          name: side1Name,
+          players: side1PlayersData,
+        },
+        side_2: {
+          name: side2Name,
+          players: side2PlayersData,
+        },
+        service_options: {
+          creator: connection.playerId || "",
+          timers: timers,
+          log_timer_deadlines: true,
+        },
+        timeout: { secs: timerSettings.proposalTimeout, nanos: 0 },
+      };
+
+      dispatch(proposeSpecialBattle(specialOptions))
+        .unwrap()
+        .then((proposal) => {
+          setSide2Players([createDefaultPlayer()]);
+          dispatch(updateProposal(proposal));
+          dispatch(selectBattle({ view: "proposal", battleId: proposal.uuid }));
+        })
+        .catch((err) => {
+          dispatch(setConnectionError("Failed to send proposal: " + (err.message || err), err));
+        });
+      return;
+    }
+
+    // Build format rules array for Standard battle
+    let rulesArray: string[] = [];
+    if (customRules.preset === "standard") {
+      rulesArray = ["Standard"];
+    } else if (customRules.preset === "standarddoubles") {
+      rulesArray = ["Standard Doubles"];
+    } else if (customRules.preset === "flatrules") {
+      rulesArray = ["Flat Rules"];
+    } else if (customRules.preset === "custom") {
+      if (customRules.sleepClause) rulesArray.push("Sleep Clause");
+      if (customRules.speciesClause) rulesArray.push("Species Clause");
+      if (customRules.itemClause) rulesArray.push("Item Clause");
+      if (customRules.nicknameClause) rulesArray.push("Nickname Clause");
+      if (customRules.ohkoClause) rulesArray.push("OHKO Clause");
+      if (customRules.evasionClause) {
+        rulesArray.push("Evasion Items Clause");
+        rulesArray.push("Evasion Moves Clause");
+      }
+      if (customRules.endlessBattleClause) rulesArray.push("Endless Battle Clause");
+      if (customRules.restrictedLegendaries) rulesArray.push("* Restricted Legendary");
+
+      // Custom rule flags (Dynamax, Z-Moves, Mega Evolution, Terastallization)
+      if (customRules.megaEvolution) rulesArray.push("Mega Evolution");
+      if (customRules.zMoves) rulesArray.push("Z-Moves");
+      if (customRules.dynamax) rulesArray.push("Dynamax");
+      if (customRules.terastallization) rulesArray.push("Terastallization");
+      if (customRules.bagItems) rulesArray.push("Bag Items");
+
+      if (customRules.limitRestrictedEnabled) {
+        rulesArray.push(`Limit Restricted = ${customRules.limitRestricted}`);
+      }
+      if (customRules.adjustLevelDownEnabled) {
+        rulesArray.push(`Adjust Level Down = ${customRules.adjustLevelDown}`);
+      }
+      if (customRules.defaultLevel) rulesArray.push(`Default Level = ${customRules.defaultLevel}`);
+      if (customRules.maxLevel) rulesArray.push(`Max Level = ${customRules.maxLevel}`);
+      for (const rule of customRules.rulesList) {
+        rulesArray.push(rule);
+      }
+    }
+
+    // Apply Team Preview and Picked Team Size rules globally
+    if (customRules.teamPreview) {
+      if (customRules.preset === "custom" || customRules.preset === "none") {
+        rulesArray.push("Team Preview");
+      }
+      if (!customRules.pickedTeamSizeAuto) {
+        rulesArray.push(`Picked Team Size = ${customRules.pickedTeamSize}`);
+      }
+    } else {
+      rulesArray.push("! Team Preview");
+    }
+
     // Core battle options payload
     const battleOptions = {
       seed: 0n,
@@ -386,24 +438,48 @@ export default function ProposalForm() {
 
   return (
     <section className="card">
-      <div className="card-header">
+      <div className="card-header flex-row justify-between align-center">
         <h3>New Battle Proposal</h3>
+        <Tabs
+          options={[
+            { value: "standard", label: "Standard" },
+            { value: "chaos", label: "Chaos" },
+          ]}
+          active={category}
+          onChange={setCategory}
+        />
       </div>
       <form onSubmit={handleSendProposal} className="w-full flex-col gap-m">
         <div className="w-full flex-row flex-wrap gap-m">
-          <div className={`form-group ${styles.formatField}`}>
-            <label htmlFor="format">Format</label>
-            <select
-              id="format"
-              value={format}
-              onChange={(e) => setFormat(e.target.value as BattleType)}
-            >
-              <option value="Singles">Singles</option>
-              <option value="Doubles">Doubles</option>
-              <option value="Multi">Multi</option>
-              <option value="Triples">Triples</option>
-            </select>
-          </div>
+          {category === "standard" ? (
+            <div className={`form-group ${styles.formatField}`}>
+              <label htmlFor="format">Format</label>
+              <select
+                id="format"
+                value={format}
+                onChange={(e) => setFormat(e.target.value as BattleType)}
+              >
+                <option value="Singles">Singles</option>
+                <option value="Doubles">Doubles</option>
+                <option value="Multi">Multi</option>
+                <option value="Triples">Triples</option>
+              </select>
+            </div>
+          ) : (
+            <div className={`form-group ${styles.formatField}`}>
+              <label htmlFor="chaosMode">Mode</label>
+              <select
+                id="chaosMode"
+                value={chaosMode}
+                onChange={(e) => setChaosMode(e.target.value as ChaosBattleMode)}
+              >
+                <option value="singles_3v3">Singles 3v3</option>
+                <option value="singles_6v6">Singles 6v6</option>
+                <option value="doubles_4v4">Doubles 4v4</option>
+                <option value="doubles_6v6">Doubles 6v6</option>
+              </select>
+            </div>
+          )}
 
           {!isAdvancedView && (
             <>
@@ -417,7 +493,10 @@ export default function ProposalForm() {
                     updatePlayerSlot(2, 0, {
                       controlType: val,
                       id: val === "ai" ? "" : side2Players[0].id,
-                      selectedTeam: val === "ai" ? defaultTeam || teamNames[0] || "" : undefined,
+                      selectedTeam:
+                        val === "ai" && category === "standard"
+                          ? defaultTeam || teamNames[0] || ""
+                          : undefined,
                     });
                   }}
                 >
@@ -438,7 +517,7 @@ export default function ProposalForm() {
                     required
                   />
                 </div>
-              ) : (
+              ) : category === "standard" ? (
                 <div className={`form-group ${styles.opponentField}`}>
                   <label htmlFor="opponentTeam">AI team</label>
                   {teamNames.length > 0 ? (
@@ -454,19 +533,19 @@ export default function ProposalForm() {
                     <span className="text-danger text-sm">No teams. Go to Teams.</span>
                   )}
                 </div>
-              )}
+              ) : null}
             </>
           )}
         </div>
 
-        {/* Player slot editors for Side 1 and Side 2 */}
+        {/* Player slot editors for Side 1 and Side 2 (shown for both Standard and Chaos when advanced) */}
         {isAdvancedView && (
           <div className={styles.sidesContainer}>
             {/* Side 1 */}
             <div className="flex-1 flex-col gap-s">
               <div className="flex-row justify-between align-center">
                 <span className={styles.sideHeaderLabel}>Side 1</span>
-                {format === "Multi" && side1Players.length < 5 && (
+                {category === "standard" && format === "Multi" && side1Players.length < 5 && (
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
@@ -488,6 +567,7 @@ export default function ProposalForm() {
                     teams={teams}
                     teamNames={teamNames}
                     defaultTeam={defaultTeam}
+                    isChaos={category === "chaos"}
                     onRemove={() => removePlayerSlot(1, idx)}
                     onChange={(fields) => updatePlayerSlot(1, idx, fields)}
                   />
@@ -499,7 +579,7 @@ export default function ProposalForm() {
             <div className="flex-1 flex-col gap-s">
               <div className="flex-row justify-between align-center">
                 <span className={styles.sideHeaderLabel}>Side 2</span>
-                {format === "Multi" && side2Players.length < 5 && (
+                {category === "standard" && format === "Multi" && side2Players.length < 5 && (
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
@@ -521,6 +601,7 @@ export default function ProposalForm() {
                     teams={teams}
                     teamNames={teamNames}
                     defaultTeam={defaultTeam}
+                    isChaos={category === "chaos"}
                     onRemove={() => removePlayerSlot(2, idx)}
                     onChange={(fields) => updatePlayerSlot(2, idx, fields)}
                   />
@@ -544,10 +625,12 @@ export default function ProposalForm() {
         {/* Advanced Configurations Section */}
         {showAdvanced && (
           <div className="flex-col gap-m w-full border-top pt-m mt-s">
-            <AdvancedRulesSection
-              customRules={customRules}
-              onChange={(fields) => setCustomRules((prev) => ({ ...prev, ...fields }))}
-            />
+            {category === "standard" && (
+              <AdvancedRulesSection
+                customRules={customRules}
+                onChange={(fields) => setCustomRules((prev) => ({ ...prev, ...fields }))}
+              />
+            )}
 
             <FieldSettingsSection
               fieldSettings={fieldSettings}

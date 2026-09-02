@@ -82,15 +82,15 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
 
   if ("battle" in values) {
     type = "battle";
-  } else if ("player" in values) {
-    type = "player";
-    playerId = extractPlayerId(values.player);
   } else if ("action" in values) {
     type = "action";
     playerId = extractPlayerId(values.action);
   } else if ("teampreview" in values) {
     type = "teampreview";
     playerId = extractPlayerId(values.teampreview);
+  } else if (entry.player || "player" in values) {
+    type = "player";
+    playerId = extractPlayerId(values.player);
   } else {
     return null;
   }

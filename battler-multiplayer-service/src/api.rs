@@ -116,38 +116,6 @@ pub enum SpecialBattle {
     Chaos(ChaosBattleOptions),
 }
 
-/// A player in a proposed Special Battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(export))]
-pub struct ProposedSpecialBattlePlayer {
-    pub id: String,
-    #[serde(default)]
-    pub name: Option<String>,
-}
-
-/// A side in a proposed Special Battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(export))]
-pub struct ProposedSpecialBattleSide {
-    pub name: String,
-    pub players: Vec<ProposedSpecialBattlePlayer>,
-}
-
-impl ProposedSpecialBattleSide {
-    /// Applies this proposed special battle side configuration to a [`SideData`].
-    pub fn apply_to_side_data(&self, side_data: &mut SideData) {
-        side_data.name = self.name.clone();
-        for (i, player) in self.players.iter().enumerate() {
-            if let Some(p) = side_data.players.get_mut(i) {
-                p.id = player.id.clone();
-                p.name = player.name.clone().unwrap_or_else(|| player.id.clone());
-            }
-        }
-    }
-}
-
 /// Options for proposing a Special Battle.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -156,9 +124,9 @@ pub struct ProposedSpecialBattleOptions {
     /// The special battle format and configuration.
     pub special_battle: SpecialBattle,
     /// Side 1 configuration (Side 1 Player 1 is the creator).
-    pub side_1: ProposedSpecialBattleSide,
+    pub side_1: SideData,
     /// Side 2 configuration (Opponents).
-    pub side_2: ProposedSpecialBattleSide,
+    pub side_2: SideData,
     /// Service options.
     pub service_options: BattleServiceOptions,
     /// Timeout, after which the proposed battle will be deleted.
@@ -214,16 +182,6 @@ impl From<&PlayerData> for Player {
     }
 }
 
-impl From<&ProposedSpecialBattlePlayer> for Player {
-    fn from(player: &ProposedSpecialBattlePlayer) -> Self {
-        Self {
-            id: player.id.clone(),
-            name: player.name.clone().unwrap_or_else(|| player.id.clone()),
-            status: None,
-        }
-    }
-}
-
 /// A side in a proposed battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -237,15 +195,6 @@ pub struct Side {
 
 impl From<&SideData> for Side {
     fn from(side: &SideData) -> Self {
-        Self {
-            name: side.name.clone(),
-            players: side.players.iter().map(Player::from).collect(),
-        }
-    }
-}
-
-impl From<&ProposedSpecialBattleSide> for Side {
-    fn from(side: &ProposedSpecialBattleSide) -> Self {
         Self {
             name: side.name.clone(),
             players: side.players.iter().map(Player::from).collect(),

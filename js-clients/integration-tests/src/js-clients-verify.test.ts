@@ -996,11 +996,99 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     assert.ok(c4, "Client 4 should exist");
 
     await Promise.all([c1.cancel(), c2.cancel(), c3.cancel(), c4.cancel()]);
+    await new Promise((r) => setTimeout(r, 100));
     await Promise.all([
       p1Provider.disconnect(),
       p2Provider.disconnect(),
       p3Provider.disconnect(),
       p4Provider.disconnect(),
     ]);
+  });
+
+  test("proposes and plays a chaos battle against CPU", async () => {
+    const p1Provider = new WampSessionProvider({
+      url: wampUrl,
+      realm: "com.battler",
+      max_retries: 5,
+      authmethods: ["wamp-battler-undisputed"],
+      authid: "player_chaos",
+      authextra: { role: "user" },
+      onchallenge: () => "role:user",
+    });
+
+    await p1Provider.connect();
+
+    const p1Multi = new BattlerMultiplayerClient(
+      "player_chaos",
+      new BattlerMultiplayerServiceClient(p1Provider),
+      new BattlerServiceClient(p1Provider),
+    );
+
+    const specialOptions = {
+      special_battle: {
+        type: "chaos" as const,
+        options: {
+          mode: "singles_6v6" as const,
+        },
+      },
+      side_1: {
+        name: "Side 1",
+        players: [
+          {
+            id: "player_chaos",
+            name: "Player Chaos",
+            player_type: { type: "trainer" },
+            player_options: {},
+            team: { members: [], bag: { items: {} } },
+            dex: { species: [] },
+          },
+        ],
+      },
+      side_2: {
+        name: "Side 2",
+        players: [
+          {
+            id: "ai-random-1",
+            name: "CPU",
+            player_type: { type: "trainer" },
+            player_options: {},
+            team: { members: [], bag: { items: {} } },
+            dex: { species: [] },
+          },
+        ],
+      },
+      service_options: {
+        creator: "player_chaos",
+        timers: { battle: null, player: null, action: null, team_preview: null },
+        log_timer_deadlines: false,
+      },
+      timeout: { secs: 30, nanos: 0 },
+    };
+
+    const proposed = await p1Multi.proposeSpecialBattle(specialOptions);
+    assert.ok(proposed.uuid);
+
+    const battleId = await p1Multi.waitForBattleStart(proposed.uuid);
+    assert.ok(battleId);
+
+    const client = await p1Multi.createBattlerClient(battleId);
+    assert.ok(client);
+
+    if (!client.request()) {
+      await new Promise<void>((r) => {
+        const handler = () => {
+          client.off("request", handler);
+          r();
+        };
+        client.on("request", handler);
+      });
+    }
+
+    const req = client.request();
+    assert.ok(req);
+    assert.strictEqual(req.type, "turn");
+
+    await client.cancel();
+    await p1Provider.disconnect();
   });
 });

@@ -9,6 +9,7 @@ import type {
   ProposedBattle,
   ProposedBattleOptions,
   ProposedBattleRejection,
+  ProposedSpecialBattleOptions,
 } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
 import { BattlerServiceClient, ValidationError, type BattlePreview } from "battler-service-client";
@@ -713,6 +714,21 @@ export const proposeBattle = createAsyncThunk(
       return proposal;
     } catch (err: unknown) {
       console.error("[WAMP] Propose battle failed:", err);
+      return rejectWithValue(formatWampError(err));
+    }
+  },
+);
+
+// Propose Special Battle thunk
+export const proposeSpecialBattle = createAsyncThunk(
+  "wamp/proposeSpecialBattle",
+  async (options: ProposedSpecialBattleOptions, { rejectWithValue }) => {
+    if (!connectionManager.multiplayerClient) return rejectWithValue("Not connected");
+    try {
+      const proposal = await connectionManager.multiplayerClient.proposeSpecialBattle(options);
+      return proposal;
+    } catch (err: unknown) {
+      console.error("[WAMP] Propose special battle failed:", err);
       return rejectWithValue(formatWampError(err));
     }
   },

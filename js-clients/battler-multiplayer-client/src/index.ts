@@ -5,6 +5,7 @@ import {
   ProposedBattle,
   ProposedBattleOptions,
   ProposedBattleUpdate,
+  ProposedSpecialBattleOptions,
 } from "battler-multiplayer-service-client";
 import { BattlerServiceClient, TeamData } from "battler-service-client";
 
@@ -17,6 +18,10 @@ export class BattlerMultiplayerClient {
 
   async proposeBattle(options: ProposedBattleOptions): Promise<ProposedBattle> {
     return this.multiplayerService.proposeBattle(options);
+  }
+
+  async proposeSpecialBattle(options: ProposedSpecialBattleOptions): Promise<ProposedBattle> {
+    return this.multiplayerService.proposeSpecialBattle(options);
   }
 
   async proposedBattle(proposedBattleId: string): Promise<ProposedBattle> {

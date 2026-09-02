@@ -28,8 +28,6 @@ mod typescript_tests {
         ChaosBattleMode::export().unwrap();
         ChaosBattleOptions::export().unwrap();
         SpecialBattle::export().unwrap();
-        ProposedSpecialBattlePlayer::export().unwrap();
-        ProposedSpecialBattleSide::export().unwrap();
         ProposedSpecialBattleOptions::export().unwrap();
         ProposedBattleOptions::export().unwrap();
         PlayerStatus::export().unwrap();
