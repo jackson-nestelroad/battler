@@ -1602,16 +1602,16 @@ impl Mon {
 impl Mon {
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData> {
-        let side_position = Self::position_on_side_or_previous(context);
-        let active = context.mon().active
-            || context
+        let player_active_position = if context.mon().active {
+            context.mon().active_position
+        } else {
+            context
                 .player()
-                .active_or_exited_mon_handles()
-                .any(|mon| mon == &context.mon_handle());
-        let player_active_position = context
-            .mon()
-            .active_position
-            .or(context.mon().old_active_position);
+                .active_or_exited_position(&context.mon_handle())
+        };
+        let active = player_active_position.is_some();
+        let side_position = player_active_position
+            .map(|position| Self::position_on_side_by_active_position(context, position));
         let species = context
             .battle()
             .dex

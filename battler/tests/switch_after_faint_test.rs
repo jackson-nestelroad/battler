@@ -333,3 +333,43 @@ fn randomall_handles_forced_passes_during_switch() {
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
     });
 }
+
+#[test]
+fn player_data_correctly_tracks_active_position_after_switches_and_faint() {
+    let mut battle = make_battle(true).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Player 2 switches Bulbasaur out for Squirtle (slot 2)
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "switch 2;pass"),
+        Ok(())
+    );
+
+    // Turn 2: Player 1 attacks Squirtle (slot 0, position 1 on player 2) and faints it
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    // Player 2 needs switch for slot 0 (where Squirtle was)
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Switch(request))) => {
+        assert_eq!(request.needs_switch, vec![0]);
+        let player_data = battle.player_data("player-2").unwrap();
+        // Bulbasaur is on the bench and should NOT have player_active_position
+        assert_eq!(player_data.mons[0].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[0].active, false);
+        assert_eq!(player_data.mons[0].player_active_position, None);
+
+        // Charmander is active in position 1
+        assert_eq!(player_data.mons[1].summary.name, "Charmander");
+        assert_eq!(player_data.mons[1].active, true);
+        assert_eq!(player_data.mons[1].player_active_position, Some(1));
+
+        // Squirtle fainted in position 0 and IS the exiting mon for position 0
+        assert_eq!(player_data.mons[2].summary.name, "Squirtle");
+        assert_eq!(player_data.mons[2].active, true);
+        assert_eq!(player_data.mons[2].player_active_position, Some(0));
+    });
+}
