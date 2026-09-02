@@ -259,7 +259,7 @@ export class LogFormatter {
           const msg = createFormattedUiLog(
             switchoutKey,
             switchoutTemplate,
-            mapped.category,
+            LogCategory.Secondary,
             switchoutContext,
           );
           if (msg) messages.push(msg);
@@ -269,7 +269,7 @@ export class LogFormatter {
               const msg = createFormattedUiLog(
                 switchoutKey,
                 item,
-                mapped.category,
+                LogCategory.Secondary,
                 switchoutContext,
               );
               if (msg) messages.push(msg);

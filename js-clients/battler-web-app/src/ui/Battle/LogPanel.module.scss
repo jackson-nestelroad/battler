@@ -97,17 +97,6 @@
       color: var(--text-secondary);
     }
   }
-
-  &.hint {
-    margin-left: var(--spacing-m);
-    font-style: italic;
-    .text {
-      color: var(--text-muted);
-    }
-    .indicator {
-      color: var(--text-muted);
-    }
-  }
 }
 
 

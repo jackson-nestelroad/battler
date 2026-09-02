@@ -1,33 +1,5 @@
 [
   {
-    "category": "hint",
-    "condition": {
-      "title": "damage",
-      "withoutTags": ["from"]
-    }
-  },
-  {
-    "category": "hint",
-    "condition": {
-      "titleIn": [
-        "addvolatile",
-        "animatemove",
-        "battlestart",
-        "debug",
-        "info",
-        "maxsidelength",
-        "mon",
-        "player",
-        "removevolatile",
-        "split",
-        "teampreview",
-        "teampreviewstart",
-        "teamsize",
-        "time"
-      ]
-    }
-  },
-  {
     "category": "primary",
     "condition": {
       "titleIn": [
@@ -37,17 +9,19 @@
         "faint",
         "mega",
         "primal",
-        "burst",
-        "zpower",
+        "ultra",
         "dynamax",
         "gigantamax",
         "tera",
-        "terastallize",
-        "turn",
+        "useitem",
+        "catch",
+        "catchfailed",
+        "uncatchable",
         "win",
         "tie",
-        "useitem",
-        "residual"
+        "turnlimit",
+        "forfeited",
+        "escaped"
       ]
     }
   },

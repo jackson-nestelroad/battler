@@ -6,9 +6,8 @@ import type { LogToken } from "./engine.js";
 export type LogTemplateKey = keyof typeof en.logs;
 
 export enum LogCategory {
-  Primary = "primary",     // Main actions (Moves, Switches, Faints)
-  Secondary = "secondary", // Modifiers to primary actions (Critical hit, Super effective)
-  Hint = "hint",           // Side-effects, abilities, weather, etc.
+  Primary = "primary",     // Main actions (Moves, Switches, Faints, Transformations, Outcomes)
+  Secondary = "secondary", // Modifiers, effects, abilities, weather, and sub-messages
 }
 
 export type UiToken = LogToken;

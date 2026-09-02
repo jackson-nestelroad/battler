@@ -235,7 +235,7 @@ describe("LogFormatter", () => {
     expect(getUnboostLog(12, true)).toBe("Snorlax minimized its Defense!");
   });
 
-  it("should categorize plain damage as Hint and damage with from as Secondary", () => {
+  it("should format plain damage with empty messages and damage with from as Secondary", () => {
     const formatter = new LogFormatter();
     const plainDamageEntry: Partial<UiLogEntry> = {
       title: "damage",
@@ -408,7 +408,7 @@ describe("LogFormatter", () => {
     expect(stringifyLog(result!.messages[1])).toBe("Kyogre underwent Primal Reversion!");
   });
 
-  it("should format debug logs correctly with Hint category", () => {
+  it("should format debug logs correctly with Secondary category", () => {
     const formatter = new LogFormatter();
     const entry: Partial<UiLogEntry> = {
       title: "debug",
@@ -420,7 +420,7 @@ describe("LogFormatter", () => {
 
     const result = formatter.format(entry as UiLogEntry);
     expect(result).not.toBeNull();
-    expect(result!.messages[0].category).toBe(LogCategory.Hint);
+    expect(result!.messages[0].category).toBe(LogCategory.Secondary);
     expect(stringifyLog(result!.messages[0])).toBe("DEBUG: ModifyDamage: Unexpected state connector");
   });
 
