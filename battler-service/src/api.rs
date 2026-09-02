@@ -83,6 +83,11 @@ pub struct BattleMetadata {
     pub rules: Vec<String>,
     /// Timer configuration.
     pub timers: Timers,
+    /// Special battle format type (e.g. "Chaos (Singles 6v6)").
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub special: Option<String>,
 }
 
 /// A battle.
@@ -143,4 +148,9 @@ pub struct BattlePreview {
     pub state: BattleState,
     /// The current turn number.
     pub turn: u64,
+    /// Special battle format type (e.g. "Chaos (Singles 6v6)").
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub special: Option<String>,
 }

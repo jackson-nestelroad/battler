@@ -98,6 +98,17 @@ impl ChaosBattleMode {
     }
 }
 
+impl std::fmt::Display for ChaosBattleMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Singles3v3 => write!(f, "Singles 3v3"),
+            Self::Singles6v6 => write!(f, "Singles 6v6"),
+            Self::Doubles4v4 => write!(f, "Doubles 4v4"),
+            Self::Doubles6v6 => write!(f, "Doubles 6v6"),
+        }
+    }
+}
+
 /// Options for configuring a Chaos Battle.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -114,6 +125,14 @@ pub struct ChaosBattleOptions {
 pub enum SpecialBattle {
     #[serde(rename = "chaos")]
     Chaos(ChaosBattleOptions),
+}
+
+impl std::fmt::Display for SpecialBattle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Chaos(opts) => write!(f, "Chaos ({})", opts.mode),
+        }
+    }
 }
 
 /// Options for proposing a Special Battle.
@@ -229,6 +248,11 @@ pub struct ProposedBattle {
     pub rules: Vec<String>,
     /// Timer configuration.
     pub timers: Timers,
+    /// Special battle configuration.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub special: Option<SpecialBattle>,
 }
 
 /// A player's response to a proposed battle.

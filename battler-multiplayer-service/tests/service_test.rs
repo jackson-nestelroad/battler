@@ -25,13 +25,17 @@ use battler::{
 };
 use battler_multiplayer_service::{
     BattlerMultiplayerService,
+    ChaosBattleMode,
+    ChaosBattleOptions,
     Player,
     PlayerStatus,
     ProposedBattleOptions,
     ProposedBattleRejection,
     ProposedBattleResponse,
     ProposedBattleUpdate,
+    ProposedSpecialBattleOptions,
     Side,
+    SpecialBattle,
 };
 use battler_service::{
     BattleServiceOptions,
@@ -867,12 +871,10 @@ async fn creates_special_chaos_battle() {
     let service = battler_multiplayer_service().await;
     let proposed = service
         .clone()
-        .propose_special_battle(battler_multiplayer_service::ProposedSpecialBattleOptions {
-            special_battle: battler_multiplayer_service::SpecialBattle::Chaos(
-                battler_multiplayer_service::ChaosBattleOptions {
-                    mode: battler_multiplayer_service::ChaosBattleMode::Singles6v6,
-                },
-            ),
+        .propose_special_battle(ProposedSpecialBattleOptions {
+            special_battle: SpecialBattle::Chaos(ChaosBattleOptions {
+                mode: ChaosBattleMode::Singles6v6,
+            }),
             side_1: SideData {
                 name: "Side 1".to_string(),
                 players: vec![PlayerData {
@@ -903,6 +905,12 @@ async fn creates_special_chaos_battle() {
         Some(PlayerStatus::Accepted)
     );
     assert_eq!(proposed.sides[1].players[0].status, None);
+    assert_eq!(
+        proposed.special,
+        Some(SpecialBattle::Chaos(ChaosBattleOptions {
+            mode: ChaosBattleMode::Singles6v6,
+        }))
+    );
 
     // Opponent accepts
     let updated = service
@@ -919,4 +927,10 @@ async fn creates_special_chaos_battle() {
         Some(PlayerStatus::Accepted)
     );
     assert!(updated.battle.is_some());
+    assert_eq!(
+        updated.special,
+        Some(SpecialBattle::Chaos(ChaosBattleOptions {
+            mode: ChaosBattleMode::Singles6v6,
+        }))
+    );
 }

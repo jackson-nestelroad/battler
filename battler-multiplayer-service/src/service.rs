@@ -82,6 +82,7 @@ impl ActiveProposedBattle {
             battle_type: options.battle_options.format.battle_type,
             rules: options.battle_options.format.rules.clone(),
             timers: options.service_options.timers.clone(),
+            special: None,
         };
         Self {
             kind: Some(ActiveProposedBattleKind::Standard(options)),
@@ -106,6 +107,7 @@ impl ActiveProposedBattle {
             battle_type,
             rules,
             timers: options.service_options.timers.clone(),
+            special: Some(options.special_battle.clone()),
         };
         Self {
             kind: Some(ActiveProposedBattleKind::Special(options)),
@@ -398,7 +400,7 @@ impl ActiveProposedBattleManager {
                         Some((options.battle_options, options.service_options))
                     }
                     Some(ActiveProposedBattleKind::Special(options)) => {
-                        match options.special_battle {
+                        match &options.special_battle {
                             SpecialBattle::Chaos(chaos_opts) => {
                                 let mut battle_opts =
                                     battler_fuzz_test_generator::generate_random_battle(
@@ -425,7 +427,10 @@ impl ActiveProposedBattleManager {
                                 }
                                 battle_opts.side_1 = side_1;
                                 battle_opts.side_2 = side_2;
-                                Some((battle_opts, options.service_options))
+                                let mut service_options = options.service_options;
+                                service_options.special =
+                                    Some(format!("{}", options.special_battle));
+                                Some((battle_opts, service_options))
                             }
                         }
                     }

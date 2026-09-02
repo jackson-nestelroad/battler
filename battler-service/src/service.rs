@@ -75,7 +75,7 @@ use crate::{
 };
 
 /// Options for configuring how [`BattlerService`] manages an individual battle.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct BattleServiceOptions {
@@ -90,6 +90,12 @@ pub struct BattleServiceOptions {
     /// Log absolute deadlines for timers.
     #[serde(default)]
     pub log_timer_deadlines: bool,
+
+    /// Special battle format type.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub special: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -114,6 +120,7 @@ struct LiveBattle<'d> {
     sides: Vec<Side>,
     error: Option<String>,
     logs: SplitLogs,
+    special: Option<String>,
 
     timers: BTreeMap<TimerType, TimerState>,
     timers_config: Timers,
@@ -163,6 +170,7 @@ impl<'d> LiveBattle<'d> {
             sides,
             error: None,
             logs,
+            special: service_options.special,
             timers,
             timers_config: service_options.timers,
             choice_made_tx,
@@ -242,6 +250,7 @@ impl<'d> LiveBattle<'d> {
                 battle_type: self.battle.battle_type(),
                 rules: self.battle.rules(),
                 timers: self.timers_config.clone(),
+                special: self.special.clone(),
             },
         }
     }
@@ -270,6 +279,7 @@ impl<'d> LiveBattle<'d> {
             battle_type: self.battle.battle_type(),
             state: self.battle_state(),
             turn: self.battle.turn(),
+            special: self.special.clone(),
         }
     }
 
