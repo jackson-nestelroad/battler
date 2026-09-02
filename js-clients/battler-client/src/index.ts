@@ -83,7 +83,6 @@ export class BattlerClient extends EventEmitter {
   private currentBattleState: BattleState;
   private _role: Role;
   private isCanceled = false;
-  private lastEmittedRequest: string | null = null;
   private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
   private hasDoneSignal = false;
@@ -203,11 +202,7 @@ export class BattlerClient extends EventEmitter {
   private async checkAndEmitRequest(): Promise<void> {
     if (this._role.type === "spectator") return;
     const request = await this.fetchRequest();
-    const requestStr = JSON.stringify(request);
-    if (requestStr !== this.lastEmittedRequest) {
-      this.lastEmittedRequest = requestStr;
-      this.emit("request", request);
-    }
+    this.emit("request", request);
   }
 
   async sync(): Promise<void> {
@@ -226,7 +221,6 @@ export class BattlerClient extends EventEmitter {
       });
     });
     await this.ensureCaughtUp();
-    this.lastEmittedRequest = null;
     await this.checkAndEmitRequest();
   }
 
@@ -245,7 +239,6 @@ export class BattlerClient extends EventEmitter {
   async makeChoice(choice: string): Promise<void> {
     await this.service.makeChoice(this.battleId, this.player, choice);
     this.currentRequest = null;
-    this.lastEmittedRequest = null;
   }
 
   async playerData(): Promise<PlayerBattleData> {

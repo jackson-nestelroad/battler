@@ -100,13 +100,18 @@ export default function MoveSelector({
               }
 
             const isMoveDisabled =
-              isZMoveDisabled || baseMove.disabled || baseMove.pp === 0 || moveToRender.disabled;
+              isZMoveDisabled || baseMove.disabled || moveToRender.disabled;
+
+            const subtitle =
+              baseMove.max_pp > 0
+                ? `${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`
+                : moveToRender.type;
 
             return (
               <ActionButton
                 key={baseMove.id || index}
                 title={moveToRender.name}
-                subtitle={`${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`}
+                subtitle={subtitle}
                 onClick={() => onSelectMove(moveToRender!, index)}
                 disabled={isMoveDisabled || isLoading}
                 typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}

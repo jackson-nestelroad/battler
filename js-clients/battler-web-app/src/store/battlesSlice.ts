@@ -1,9 +1,8 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type { Battle, BattleMetadata } from "battler-service-client";
 import type { BattleState, UiLogEntry } from "battler-state";
 import type { PlayerBattleData, Request } from "battler-types";
-import isEqual from "fast-deep-equal";
 import type { ParsedTimerLog } from "../utils/battle";
 import { parseTimerLog } from "../utils/battle";
 import type { ReplayKeyframe } from "../utils/replay";
@@ -172,17 +171,11 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
-        const prevTurn = battle.battleState?.turn || 0;
         battle.battleState = battleState;
         if (engineLogs) {
           battle.engineLogs = engineLogs;
         }
         battle.uiLogs = battleState.ui_log.flat();
-
-        if (battleState.turn > prevTurn) {
-          battle.choiceSubmitted = false;
-          battle.choiceError = null;
-        }
 
         rebuildActiveTimers(battle);
       }
@@ -192,13 +185,12 @@ const battlesSlice = createSlice({
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
-        const prevRequest = battle.activeRequest ? current(battle.activeRequest) : null;
-        if (!isEqual(prevRequest, request)) {
-          battle.activeRequest = request;
+        battle.activeRequest = request;
+        if (request !== null) {
           battle.choiceSubmitted = false;
           battle.choiceError = null;
-          rebuildActiveTimers(battle);
         }
+        rebuildActiveTimers(battle);
       }
     },
     setBattlePlayerData(

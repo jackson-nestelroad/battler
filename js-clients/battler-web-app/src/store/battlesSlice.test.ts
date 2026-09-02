@@ -1,7 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import type { BattleState, UiLogEntry } from "battler-state";
 import { describe, expect, it } from "vitest";
-import battlesReducer, { battleSessionCreated, battleStateUpdated } from "./battlesSlice";
+import battlesReducer, {
+  battleSessionCreated,
+  battleStateUpdated,
+  setBattleRequest,
+  setChoiceSubmitted,
+} from "./battlesSlice";
 
 describe("battlesSlice active timers", () => {
   it("should retain active timers with isDone status instead of deleting them when they expire", () => {
@@ -238,5 +243,46 @@ describe("battlesSlice active timers", () => {
     expect(battle).toBeDefined();
     expect(battle?.isDeleted).toBe(true);
     expect(battle?.error).toBe("Battle no longer exists");
+  });
+
+  it("should not prematurely clear choiceSubmitted when battleState turn increments", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+    });
+
+    const battleId = "15cf2863-792b-4afc-8852-3aa6481m268e";
+    store.dispatch(battleSessionCreated(battleId));
+    store.dispatch(setChoiceSubmitted({ battleId, submitted: true }));
+
+    expect(store.getState().battles.battles[battleId]?.choiceSubmitted).toBe(true);
+
+    // When a new turn state arrives mid-stream (turn increments from 1 to 2)
+    const mockBattleState: BattleState = {
+      turn: 2,
+      phase: "play",
+      ui_log: [],
+    } as unknown as BattleState;
+
+    store.dispatch(
+      battleStateUpdated({
+        battleId,
+        state: mockBattleState,
+      }),
+    );
+
+    // choiceSubmitted must remain true so choice selection UI does not prematurely pop up
+    expect(store.getState().battles.battles[battleId]?.choiceSubmitted).toBe(true);
+
+    // When the new turn's request actually arrives, choiceSubmitted is cleared
+    store.dispatch(
+      setBattleRequest({
+        battleId,
+        request: { type: "turn", active: [] } as any,
+      }),
+    );
+
+    expect(store.getState().battles.battles[battleId]?.choiceSubmitted).toBe(false);
   });
 });

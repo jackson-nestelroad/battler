@@ -196,7 +196,6 @@ function bindClientEvents(
   client.on("request", async (req) => {
     const session = getState ? getState().battles.battles[battleId] : undefined;
     if (session?.isDeleted) return;
-    dispatch(setBattleRequest({ battleId, request: req }));
     if (connectionManager.serviceClient && client.role().type === "player") {
       try {
         const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
@@ -205,6 +204,7 @@ function bindClientEvents(
         // Ignored
       }
     }
+    dispatch(setBattleRequest({ battleId, request: req }));
   });
 
   client.on("error", (err) => {
