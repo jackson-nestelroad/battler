@@ -25,6 +25,12 @@ mod typescript_tests {
         AiPlayerType::export().unwrap();
         AiPlayerOptions::export().unwrap();
         AiPlayers::export().unwrap();
+        ChaosBattleMode::export().unwrap();
+        ChaosBattleOptions::export().unwrap();
+        SpecialBattle::export().unwrap();
+        ProposedSpecialBattlePlayer::export().unwrap();
+        ProposedSpecialBattleSide::export().unwrap();
+        ProposedSpecialBattleOptions::export().unwrap();
         ProposedBattleOptions::export().unwrap();
         PlayerStatus::export().unwrap();
         Player::export().unwrap();

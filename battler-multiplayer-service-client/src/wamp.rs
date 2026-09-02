@@ -79,6 +79,26 @@ where
         export_proposed_battle(output.0)
     }
 
+    async fn propose_special_battle(
+        &self,
+        options: battler_multiplayer_service::ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        let output = self
+            .consumer
+            .propose_special_battle(
+                battler_multiplayer_service_schema::ProposeSpecialBattleInput(
+                    battler_multiplayer_service_schema::ProposeSpecialBattleInputArgs {
+                        proposed_special_battle_options_json: serde_json::to_string(&options)?,
+                    },
+                ),
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        export_proposed_battle(output.0)
+    }
+
     async fn proposed_battle(&self, uuid: Uuid) -> Result<ProposedBattle> {
         let output = self
             .consumer

@@ -24,6 +24,7 @@ use battler_multiplayer_service::{
     AiPlayers,
     BattlerMultiplayerService,
     ProposedBattleOptions,
+    ProposedSpecialBattleOptions,
     RandomOptions,
 };
 use battler_multiplayer_service_producer::MultiplayerBattleAuthorizer;
@@ -328,6 +329,42 @@ impl MultiplayerBattleAuthorizer for ServerAuthorizer {
             );
             return Err(Error::msg(format!(
                 "caller '{caller_id}' cannot propose a battle on behalf of creator '{creator_id}'"
+            )));
+        }
+        Ok(())
+    }
+
+    async fn authorize_new_proposed_special_battle(
+        &self,
+        peer_info: &PeerInfo,
+        options: &ProposedSpecialBattleOptions,
+    ) -> Result<()> {
+        log::debug!(
+            "Authorizing new proposed special battle request by peer {:?}",
+            peer_info.identity.id
+        );
+        if let ConnectionType::Direct = peer_info.connection_type {
+            return Ok(());
+        }
+
+        let caller_id = &peer_info.identity.id;
+        let creator_id = &options.service_options.creator;
+        if caller_id.is_empty() {
+            log::warn!(
+                "Authorization failed: unauthenticated caller cannot propose a special battle"
+            );
+            return Err(Error::msg(
+                "unauthenticated caller cannot propose a special battle",
+            ));
+        }
+        if caller_id != creator_id {
+            log::warn!(
+                "Authorization failed: caller '{}' cannot propose a special battle on behalf of creator '{}'",
+                caller_id,
+                creator_id
+            );
+            return Err(Error::msg(format!(
+                "caller '{caller_id}' cannot propose a special battle on behalf of creator '{creator_id}'"
             )));
         }
         Ok(())

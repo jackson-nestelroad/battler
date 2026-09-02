@@ -33,6 +33,13 @@ impl<'d> BattlerMultiplayerServiceClient for DirectBattlerMultiplayerServiceClie
         self.service.clone().propose_battle(options).await
     }
 
+    async fn propose_special_battle(
+        &self,
+        options: crate::ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        self.service.clone().propose_special_battle(options).await
+    }
+
     async fn proposed_battle(&self, uuid: Uuid) -> Result<ProposedBattle> {
         self.service.proposed_battle(uuid).await
     }

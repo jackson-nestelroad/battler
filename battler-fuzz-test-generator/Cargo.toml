@@ -12,12 +12,10 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-fu
 ahash = { workspace = true }
 anyhow = { workspace = true }
 rand = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
 
 battler = { workspace = true }
 battler-data = { workspace = true }
-battler-local-data = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }
+battler-local-data = { workspace = true }

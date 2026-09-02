@@ -11,4 +11,11 @@ pub trait MultiplayerBattleAuthorizer: BattleAuthorizer {
         peer_info: &battler_wamp::core::peer_info::PeerInfo,
         options: &ProposedBattleOptions,
     ) -> Result<()>;
+
+    /// Authorizes a new proposed special battle to be created.
+    async fn authorize_new_proposed_special_battle(
+        &self,
+        peer_info: &battler_wamp::core::peer_info::PeerInfo,
+        options: &battler_multiplayer_service::ProposedSpecialBattleOptions,
+    ) -> Result<()>;
 }

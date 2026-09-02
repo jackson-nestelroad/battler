@@ -9,7 +9,11 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service"
 
 [features]
-typescript = ["dep:ts-rs", "battler/typescript", "battler-service/typescript"]
+typescript = [
+    "dep:ts-rs",
+    "battler/typescript",
+    "battler-service/typescript",
+]
 
 [dependencies]
 ahash = { workspace = true }
@@ -19,6 +23,7 @@ async-trait = { workspace = true }
 futures-util = { workspace = true }
 hashbrown = { workspace = true }
 log = { workspace = true }
+rand = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
@@ -29,6 +34,7 @@ uuid = { workspace = true }
 battler = { workspace = true }
 battler-ai = { path = "../battler-ai" }
 battler-client = { path = "../battler-client" }
+battler-fuzz-test-generator = { path = "../battler-fuzz-test-generator" }
 battler-service = { path = "../battler-service" }
 battler-service-client = { path = "../battler-service-client" }
 battler-service-schema = { path = "../battler-service/battler-service-schema" }
@@ -38,6 +44,7 @@ battler-wamp = { workspace = true }
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
 
+battler-local-data = { path = "../battler-local-data" }
 battler-multiplayer-client = { path = "../battler-multiplayer-client" }
 battler-multiplayer-service-client = { path = "../battler-multiplayer-service-client" }
 battler-test-utils = { path = "../battler-test-utils" }

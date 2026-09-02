@@ -861,3 +861,60 @@ async fn proposed_battle_rejects_invalid_options() {
         }
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn creates_special_chaos_battle() {
+    let service = battler_multiplayer_service().await;
+    let proposed = service
+        .clone()
+        .propose_special_battle(battler_multiplayer_service::ProposedSpecialBattleOptions {
+            special_battle: battler_multiplayer_service::SpecialBattle::Chaos(
+                battler_multiplayer_service::ChaosBattleOptions {
+                    mode: battler_multiplayer_service::ChaosBattleMode::Singles6v6,
+                },
+            ),
+            side_1: battler_multiplayer_service::ProposedSpecialBattleSide {
+                name: "Side 1".to_string(),
+                players: vec![battler_multiplayer_service::ProposedSpecialBattlePlayer {
+                    id: "player-1".to_string(),
+                    name: Some("Player 1".to_string()),
+                }],
+            },
+            side_2: battler_multiplayer_service::ProposedSpecialBattleSide {
+                name: "Side 2".to_string(),
+                players: vec![battler_multiplayer_service::ProposedSpecialBattlePlayer {
+                    id: "player-2".to_string(),
+                    name: Some("Player 2".to_string()),
+                }],
+            },
+            service_options: BattleServiceOptions {
+                creator: "player-1".to_string(),
+                ..Default::default()
+            },
+            timeout: Duration::from_secs(60),
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(
+        proposed.sides[0].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert_eq!(proposed.sides[1].players[0].status, None);
+
+    // Opponent accepts
+    let updated = service
+        .respond_to_proposed_battle(
+            proposed.uuid,
+            "player-2",
+            &ProposedBattleResponse { accept: true },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        updated.sides[1].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert!(updated.battle.is_some());
+}

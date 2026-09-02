@@ -91,6 +91,10 @@ where
         service: service.clone(),
         authorizer: authorizer.clone(),
     })?;
+    builder.register_propose_special_battle(handlers::propose_special_battle::Handler {
+        service: service.clone(),
+        authorizer: authorizer.clone(),
+    })?;
     builder.register_proposed_battle(handlers::proposed_battle::Handler {
         service: service.clone(),
     })?;

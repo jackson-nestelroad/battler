@@ -149,6 +149,18 @@ impl MultiplayerBattleAuthorizer for Authorizer {
             Err(Error::msg("not allowed"))
         }
     }
+
+    async fn authorize_new_proposed_special_battle(
+        &self,
+        _: &PeerInfo,
+        _: &battler_multiplayer_service::ProposedSpecialBattleOptions,
+    ) -> Result<()> {
+        if self.allow_propose {
+            Ok(())
+        } else {
+            Err(Error::msg("not allowed"))
+        }
+    }
 }
 
 struct TestContext {

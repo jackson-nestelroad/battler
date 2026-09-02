@@ -53,6 +53,14 @@ impl TestDataStore {
 }
 
 impl DataStore for TestDataStore {
+    fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_ability_ids(filter)
+    }
+
+    fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_item_ids(filter)
+    }
+
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         let mut all_moves = self.local.all_move_ids(filter)?;
         let mut fake_moves = self
@@ -62,6 +70,10 @@ impl DataStore for TestDataStore {
             .collect::<Vec<_>>();
         all_moves.append(&mut fake_moves);
         Ok(all_moves)
+    }
+
+    fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_species_ids(filter)
     }
 
     fn get_type_chart(&self) -> Result<TypeChart> {

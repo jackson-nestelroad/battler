@@ -24,10 +24,7 @@ use anyhow::{
     Error,
     Result,
 };
-use battler::{
-    DataStoreByName,
-    SideData,
-};
+use battler::DataStoreByName;
 use battler_service_client::BattlerServiceClient;
 use futures_util::lock::Mutex;
 use tokio::{
@@ -50,16 +47,24 @@ use crate::{
     ProposedBattleRejection,
     ProposedBattleResponse,
     ProposedBattleUpdate,
+    ProposedSpecialBattleOptions,
     Side,
+    SpecialBattle,
     ai::{
         AiPlayerModules,
         AiPlayerRegistry,
     },
 };
 
+#[derive(Debug, Clone)]
+enum ActiveProposedBattleKind {
+    Standard(ProposedBattleOptions),
+    Special(ProposedSpecialBattleOptions),
+}
+
 #[derive(Debug)]
 struct ActiveProposedBattle {
-    options: ProposedBattleOptions,
+    kind: Option<ActiveProposedBattleKind>,
     proposed_battle: ProposedBattle,
 }
 
@@ -69,8 +74,8 @@ impl ActiveProposedBattle {
         let proposed_battle = ProposedBattle {
             uuid,
             sides: Vec::from_iter([
-                Self::new_side(&options.battle_options.side_1),
-                Self::new_side(&options.battle_options.side_2),
+                Side::from(&options.battle_options.side_1),
+                Side::from(&options.battle_options.side_2),
             ]),
             deadline: SystemTime::now() + timeout,
             battle: None,
@@ -79,23 +84,32 @@ impl ActiveProposedBattle {
             timers: options.service_options.timers.clone(),
         };
         Self {
-            options,
+            kind: Some(ActiveProposedBattleKind::Standard(options)),
             proposed_battle,
         }
     }
 
-    fn new_side(side: &SideData) -> Side {
-        Side {
-            name: side.name.clone(),
-            players: side
-                .players
-                .iter()
-                .map(|player| Player {
-                    id: player.id.clone(),
-                    name: player.name.clone(),
-                    status: None,
-                })
-                .collect(),
+    fn new_special(uuid: Uuid, options: ProposedSpecialBattleOptions) -> Self {
+        let timeout = options.timeout.min(Duration::from_mins(5));
+        let (battle_type, rules) = match &options.special_battle {
+            SpecialBattle::Chaos(chaos_opts) => {
+                let rules =
+                    Vec::from_iter(["Species Clause".to_string(), "Item Clause".to_string()]);
+                (chaos_opts.mode.battle_type(), rules)
+            }
+        };
+        let proposed_battle = ProposedBattle {
+            uuid,
+            sides: Vec::from_iter([Side::from(&options.side_1), Side::from(&options.side_2)]),
+            deadline: SystemTime::now() + timeout,
+            battle: None,
+            battle_type,
+            rules,
+            timers: options.service_options.timers.clone(),
+        };
+        Self {
+            kind: Some(ActiveProposedBattleKind::Special(options)),
+            proposed_battle,
         }
     }
 
@@ -214,6 +228,7 @@ struct ActiveProposedBattleManager {
     players: Vec<String>,
     state: Mutex<ActiveProposedBattleManagerState>,
 
+    data: &'static dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     battler_multiplayer_service_state: Arc<Mutex<BattlerMultiplayerServiceState>>,
 }
@@ -221,6 +236,7 @@ struct ActiveProposedBattleManager {
 impl ActiveProposedBattleManager {
     fn new(
         proposed_battle: ActiveProposedBattle,
+        data: &'static dyn DataStoreByName,
         battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
         battler_multiplayer_service_state: Arc<Mutex<BattlerMultiplayerServiceState>>,
     ) -> Self {
@@ -237,6 +253,7 @@ impl ActiveProposedBattleManager {
                 inflight_state: ActiveProposedBattleInflightState::Idle,
                 join_set: JoinSet::default(),
             }),
+            data,
             battler_service_client,
             battler_multiplayer_service_state,
         }
@@ -369,23 +386,41 @@ impl ActiveProposedBattleManager {
     }
 
     async fn create_battle_if_needed(&self) -> Result<()> {
-        let (battle_options, service_options) = {
+        let options = {
             let mut state = self.state.lock().await;
             if state.battle.is_none()
                 && state.inflight_state == ActiveProposedBattleInflightState::Idle
                 && state.proposed_battle.ready_to_create()
             {
                 state.inflight_state = ActiveProposedBattleInflightState::CreatingBattle;
-                (
-                    Some(state.proposed_battle.options.battle_options.clone()),
-                    Some(state.proposed_battle.options.service_options.clone()),
-                )
+                match state.proposed_battle.kind.take() {
+                    Some(ActiveProposedBattleKind::Standard(options)) => {
+                        Some((options.battle_options, options.service_options))
+                    }
+                    Some(ActiveProposedBattleKind::Special(options)) => {
+                        match options.special_battle {
+                            SpecialBattle::Chaos(chaos_opts) => {
+                                let mut battle_opts =
+                                    battler_fuzz_test_generator::generate_random_battle(
+                                        self.data,
+                                        chaos_opts.mode.battle_type(),
+                                        chaos_opts.mode.team_size(),
+                                        None,
+                                    )?;
+                                options.side_1.apply_to_side_data(&mut battle_opts.side_1);
+                                options.side_2.apply_to_side_data(&mut battle_opts.side_2);
+                                Some((battle_opts, options.service_options))
+                            }
+                        }
+                    }
+                    None => None,
+                }
             } else {
-                (None, None)
+                None
             }
         };
 
-        if let (Some(battle_options), Some(service_options)) = (battle_options, service_options) {
+        if let Some((battle_options, service_options)) = options {
             log::info!("Creating battle for proposed battle {}", self.uuid);
             let result = self
                 .battler_service_client
@@ -715,7 +750,6 @@ impl BattlerMultiplayerServiceState {
 
 /// Service for managing multiplayer battles on the [`battler`] battle engine.
 pub struct BattlerMultiplayerService<'d> {
-    #[allow(unused)]
     data: &'d dyn DataStoreByName,
     battler_service_client: Arc<Box<dyn BattlerServiceClient>>,
     state: Arc<Mutex<BattlerMultiplayerServiceState>>,
@@ -795,6 +829,14 @@ impl<'d> BattlerMultiplayerService<'d> {
         self.create_proposed_battle(options).await
     }
 
+    /// Proposes a special battle.
+    pub async fn propose_special_battle(
+        self: Arc<Self>,
+        options: ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        self.create_proposed_special_battle(options).await
+    }
+
     async fn delete_proposed_battle(
         state: Arc<Mutex<BattlerMultiplayerServiceState>>,
         uuid: Uuid,
@@ -832,42 +874,33 @@ impl<'d> BattlerMultiplayerService<'d> {
         result
     }
 
-    async fn create_proposed_battle_internal(
+    async fn create_proposed_special_battle(
+        self: Arc<Self>,
+        options: ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        let uuid = Uuid::new_v4();
+        let result = self
+            .clone()
+            .create_proposed_special_battle_internal(uuid, options)
+            .await;
+        if let Err(err) = &result {
+            Self::delete_proposed_battle(
+                self.state.clone(),
+                uuid,
+                format!("creation failed: {err:#}"),
+            )
+            .await;
+        }
+        log::info!("Created proposed special battle {uuid}");
+        result
+    }
+
+    async fn register_and_start_proposed_battle(
         self: Arc<Self>,
         uuid: Uuid,
-        options: ProposedBattleOptions,
+        creator: String,
+        active_proposed_battle: ActiveProposedBattle,
     ) -> Result<ProposedBattle> {
-        // Validate battle options early.
-        options
-            .battle_options
-            .validate()
-            .map_err(|err| Error::msg(format!("invalid battle options: {err:#}")))?;
-
-        let creator = options.service_options.creator.clone();
-
-        // Ensure that human players other than the creator do not have pre-specified teams in the
-        // proposal.
-        {
-            let ai_registry = self.ai_player_registry.lock().await;
-            for side in &[
-                &options.battle_options.side_1,
-                &options.battle_options.side_2,
-            ] {
-                for player in &side.players {
-                    if player.id != creator
-                        && !ai_registry.is_ai_player(&player.id)
-                        && !player.team.members.is_empty()
-                    {
-                        return Err(Error::msg(format!(
-                            "cannot pre-specify team for player {}",
-                            player.id
-                        )));
-                    }
-                }
-            }
-        }
-        let active_proposed_battle = ActiveProposedBattle::new(uuid, options);
-
         let players = active_proposed_battle.players();
 
         if !players.contains(&creator) {
@@ -910,8 +943,16 @@ impl<'d> BattlerMultiplayerService<'d> {
             state.player_state(&creator).last_proposed_at = Some(Instant::now());
 
             // 4. Create manager and register proposal.
+            // SAFETY: `data` is valid for `'d` on `BattlerMultiplayerService` and will outlive
+            // active proposed battles managed by this service instance.
+            let data_static = unsafe {
+                std::mem::transmute::<&'d dyn DataStoreByName, &'static dyn DataStoreByName>(
+                    self.data,
+                )
+            };
             let active_proposed_battle_manager = Arc::new(ActiveProposedBattleManager::new(
                 active_proposed_battle,
+                data_static,
                 self.battler_service_client.clone(),
                 self.state.clone(),
             ));
@@ -940,6 +981,56 @@ impl<'d> BattlerMultiplayerService<'d> {
             .await?;
 
         Ok(active_proposed_battle_manager.proposed_battle().await)
+    }
+
+    async fn create_proposed_battle_internal(
+        self: Arc<Self>,
+        uuid: Uuid,
+        options: ProposedBattleOptions,
+    ) -> Result<ProposedBattle> {
+        // Validate battle options early.
+        options
+            .battle_options
+            .validate()
+            .map_err(|err| Error::msg(format!("invalid battle options: {err:#}")))?;
+
+        let creator = options.service_options.creator.clone();
+
+        // Ensure that human players other than the creator do not have pre-specified teams in the
+        // proposal.
+        {
+            let ai_registry = self.ai_player_registry.lock().await;
+            for side in &[
+                &options.battle_options.side_1,
+                &options.battle_options.side_2,
+            ] {
+                for player in &side.players {
+                    if player.id != creator
+                        && !ai_registry.is_ai_player(&player.id)
+                        && !player.team.members.is_empty()
+                    {
+                        return Err(Error::msg(format!(
+                            "cannot pre-specify team for player {}",
+                            player.id
+                        )));
+                    }
+                }
+            }
+        }
+        let active_proposed_battle = ActiveProposedBattle::new(uuid, options);
+        self.register_and_start_proposed_battle(uuid, creator, active_proposed_battle)
+            .await
+    }
+
+    async fn create_proposed_special_battle_internal(
+        self: Arc<Self>,
+        uuid: Uuid,
+        options: ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        let creator = options.service_options.creator.clone();
+        let active_proposed_battle = ActiveProposedBattle::new_special(uuid, options);
+        self.register_and_start_proposed_battle(uuid, creator, active_proposed_battle)
+            .await
     }
 
     async fn clean_up_completed_tasks(

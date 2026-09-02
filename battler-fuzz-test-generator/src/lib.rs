@@ -1,20 +1,13 @@
-use std::{
-    collections::{
-        HashMap,
-        HashSet,
-    },
-    env,
-    fs::File,
-    path::Path,
+use std::collections::{
+    HashMap,
+    HashSet,
 };
 
-use anyhow::{
-    Context,
-    Result,
-};
+use anyhow::Result;
 use battler::{
     BattleType,
     CoreBattleOptions,
+    DataStore,
     FieldData,
     FormatData,
     Gender,
@@ -30,9 +23,8 @@ use battler::{
     Type,
     teams::MonData,
 };
-use battler_local_data::LocalDataStore;
+use battler_data::ZCrystalSource;
 use rand::prelude::*;
-use serde::Deserialize;
 
 const ALL_NATURES: &[Nature] = &[
     Nature::Hardy,
@@ -62,80 +54,61 @@ const ALL_NATURES: &[Nature] = &[
     Nature::Serious,
 ];
 
-// Helper structs to parse minimal data from items files.
-#[derive(Deserialize)]
-struct MegaEvolutionData {
-    from: String,
+pub struct ItemPools {
+    pub items_pool: Vec<String>,
+    pub megastones_map: HashMap<String, String>,
+    pub type_to_zcrystal: HashMap<Type, String>,
 }
 
-#[derive(Deserialize)]
-struct MegaStoneSpecialData {
-    mega_evolution: Option<MegaEvolutionData>,
+pub fn extract_item_pools(store: &dyn DataStore) -> Result<ItemPools> {
+    let mut items_pool = Vec::new();
+    let mut megastones_map = HashMap::new();
+    let mut type_to_zcrystal = HashMap::new();
+
+    let all_item_ids = store.all_item_ids(&|_| true)?;
+    for id in all_item_ids {
+        if let Some(item) = store.get_item(&id)? {
+            // Ensure the item name resolves back to this item ID.
+            if battler::Id::from(item.name.as_str()) != id {
+                continue;
+            }
+
+            let name_str = item.name.clone();
+            let mut is_special = false;
+            if let Some(mega) = &item.special_data.mega_evolution {
+                megastones_map.insert(name_str.clone(), mega.from.clone());
+                is_special = true;
+            }
+            if let Some(z) = &item.special_data.z_crystal {
+                if let Some(ZCrystalSource::Type(typ)) = &z.source {
+                    type_to_zcrystal.insert(*typ, name_str.clone());
+                }
+                is_special = true;
+            }
+            if !is_special {
+                items_pool.push(name_str);
+            }
+        }
+    }
+
+    Ok(ItemPools {
+        items_pool,
+        megastones_map,
+        type_to_zcrystal,
+    })
 }
 
-#[derive(Deserialize)]
-struct MegaStoneEntry {
-    special_data: Option<MegaStoneSpecialData>,
-}
-
-#[derive(Deserialize)]
-struct ZCrystalData {
-    #[serde(rename = "type")]
-    typ: Option<Type>,
-}
-
-#[derive(Deserialize)]
-struct ZCrystalSpecialData {
-    z_crystal: Option<ZCrystalData>,
-}
-
-#[derive(Deserialize)]
-struct ZCrystalEntry {
-    special_data: Option<ZCrystalSpecialData>,
-}
-
-/// Generates a valid, random Pokémon battle configuration.
+/// Generates a valid, random battle configuration with randomized teams.
 pub fn generate_random_battle(
-    store: &LocalDataStore,
+    store: &dyn DataStore,
+    battle_type: BattleType,
+    team_size: usize,
     seed: Option<u64>,
 ) -> Result<CoreBattleOptions> {
     let actual_seed = seed.unwrap_or_else(|| rand::rng().random());
     let mut rng = StdRng::seed_from_u64(actual_seed);
 
-    // 1. Locate items path and load candidate lists.
-    let data_dir = env::var("DATA_DIR").context("DATA_DIR environment variable is not defined")?;
-    let items_path = Path::new(&data_dir).join("items");
-
-    // Load regular items keys.
-    let items_file =
-        File::open(items_path.join("items.json")).context("failed to open items.json")?;
-    let items_map: HashMap<String, serde_json::Value> =
-        serde_json::from_reader(items_file).context("failed to parse items.json")?;
-    let items_pool: Vec<String> = items_map.keys().cloned().collect();
-
-    // Load megastones.
-    let megastones_file =
-        File::open(items_path.join("megastones.json")).context("failed to open megastones.json")?;
-    let megastones_map: HashMap<String, MegaStoneEntry> =
-        serde_json::from_reader(megastones_file).context("failed to parse megastones.json")?;
-
-    // Load zcrystals.
-    let zcrystals_file =
-        File::open(items_path.join("zcrystals.json")).context("failed to open zcrystals.json")?;
-    let zcrystals_map: HashMap<String, ZCrystalEntry> =
-        serde_json::from_reader(zcrystals_file).context("failed to parse zcrystals.json")?;
-
-    // Map Type -> Z-Crystal ID
-    let mut type_to_zcrystal = HashMap::new();
-    for (id, entry) in &zcrystals_map {
-        if let Some(special_data) = &entry.special_data {
-            if let Some(z_crystal) = &special_data.z_crystal {
-                if let Some(typ) = z_crystal.typ {
-                    type_to_zcrystal.insert(typ, id.clone());
-                }
-            }
-        }
-    }
+    let item_pools = extract_item_pools(store)?;
 
     // 2. Select format rules and mechanics.
     let mut rules = Vec::new();
@@ -169,18 +142,16 @@ pub fn generate_random_battle(
         _ => {}
     }
 
-    let format = FormatData {
-        battle_type: BattleType::Doubles,
-        rules,
-    };
+    let format = FormatData { battle_type, rules };
 
     // 3. Generate side teams.
     let side_1_team = generate_random_team(
         store,
         &mut rng,
-        &items_pool,
-        &megastones_map,
-        &type_to_zcrystal,
+        team_size,
+        &item_pools.items_pool,
+        &item_pools.megastones_map,
+        &item_pools.type_to_zcrystal,
         enable_mega,
         enable_z_moves,
         enable_dynamax,
@@ -190,9 +161,10 @@ pub fn generate_random_battle(
     let side_2_team = generate_random_team(
         store,
         &mut rng,
-        &items_pool,
-        &megastones_map,
-        &type_to_zcrystal,
+        team_size,
+        &item_pools.items_pool,
+        &item_pools.megastones_map,
+        &item_pools.type_to_zcrystal,
         enable_mega,
         enable_z_moves,
         enable_dynamax,
@@ -228,11 +200,12 @@ pub fn generate_random_battle(
     })
 }
 
-fn generate_random_team(
-    store: &LocalDataStore,
+pub fn generate_random_team(
+    store: &dyn DataStore,
     rng: &mut StdRng,
+    team_size: usize,
     items_pool: &[String],
-    megastones_map: &HashMap<String, MegaStoneEntry>,
+    megastones_map: &HashMap<String, String>,
     type_to_zcrystal: &HashMap<Type, String>,
     enable_mega: bool,
     enable_z_moves: bool,
@@ -244,16 +217,16 @@ fn generate_random_team(
     let mut chosen_items = HashSet::new();
 
     // Determine if team gets a mega (if Mega is enabled).
-    let mega_index = if enable_mega && rng.random_bool(0.5) {
-        Some(rng.random_range(0..4))
+    let mega_index = if enable_mega && team_size > 0 {
+        Some(rng.random_range(0..team_size))
     } else {
         None
     };
 
     // Determine if team gets a Z-Crystal (if Z-Moves is enabled).
     // Can only be held by a non-Mega Mon.
-    let z_index = if enable_z_moves && rng.random_bool(0.5) {
-        let candidates: Vec<usize> = (0..4).filter(|&i| Some(i) != mega_index).collect();
+    let z_index = if enable_z_moves {
+        let candidates: Vec<usize> = (0..team_size).filter(|&i| Some(i) != mega_index).collect();
         if !candidates.is_empty() {
             Some(*candidates.choose(rng).unwrap())
         } else {
@@ -264,39 +237,31 @@ fn generate_random_team(
     };
 
     // Candidate list of base species (forme is None).
-    let base_species_pool: Vec<(&battler::Id, &battler_data::SpeciesData)> = store
-        .species
-        .iter()
-        .filter(|(_, s)| s.forme.is_none() && !s.battle_only_forme && !s.learnset.is_empty())
-        .collect();
+    let base_species_pool = store.all_species_ids(&|s| {
+        s.forme.is_none() && !s.battle_only_forme && !s.learnset.is_empty()
+    })?;
 
-    for i in 0..4 {
+    for i in 0..team_size {
         let mut selected_species_id: Option<battler::Id> = None;
-        let mut selected_species_data: Option<&battler_data::SpeciesData> = None;
+        let mut selected_species_data: Option<battler_data::SpeciesData> = None;
         let mut held_item = None;
 
         if Some(i) == mega_index {
             // Force Mega species and Mega Stone.
-            // Pick a random Mega Stone that maps to a valid base species.
-            let mut megastone_choices: Vec<(&String, &MegaStoneEntry)> =
-                megastones_map.iter().collect();
+            let mut megastone_choices: Vec<(&String, &String)> = megastones_map.iter().collect();
             megastone_choices.shuffle(rng);
 
-            for (stone_id, entry) in megastone_choices {
-                if let Some(special_data) = &entry.special_data {
-                    if let Some(mega_evo) = &special_data.mega_evolution {
-                        let from_species_id = battler::Id::from(mega_evo.from.as_str());
-                        if let Some(species_data) = store.species.get(&from_species_id) {
-                            if species_data.forme.is_none()
-                                && !species_data.learnset.is_empty()
-                                && !chosen_species.contains(&from_species_id)
-                            {
-                                selected_species_id = Some(from_species_id);
-                                selected_species_data = Some(species_data);
-                                held_item = Some(stone_id.clone());
-                                break;
-                            }
-                        }
+            for (stone_id, from_species_name) in megastone_choices {
+                let from_species_id = battler::Id::from(from_species_name.as_str());
+                if let Some(species_data) = store.get_species(&from_species_id)? {
+                    if species_data.forme.is_none()
+                        && !species_data.learnset.is_empty()
+                        && !chosen_species.contains(&from_species_id)
+                    {
+                        selected_species_id = Some(from_species_id);
+                        selected_species_data = Some(species_data);
+                        held_item = Some(stone_id.clone());
+                        break;
                     }
                 }
             }
@@ -306,11 +271,13 @@ fn generate_random_team(
         if selected_species_id.is_none() {
             let mut pool = base_species_pool.clone();
             pool.shuffle(rng);
-            for (id, s) in pool {
-                if !chosen_species.contains(id) {
-                    selected_species_id = Some((*id).clone());
-                    selected_species_data = Some(s);
-                    break;
+            for id in pool {
+                if !chosen_species.contains(&id) {
+                    if let Some(s) = store.get_species(&id)? {
+                        selected_species_id = Some(id);
+                        selected_species_data = Some(s);
+                        break;
+                    }
                 }
             }
         }
@@ -334,23 +301,19 @@ fn generate_random_team(
             .cloned()
             .unwrap_or_else(|| "No Ability".to_string());
 
-        let mut learnset_moves: Vec<&String> = species_data
-            .learnset
-            .iter()
-            .filter(|(move_name, sources)| {
-                if !store
-                    .moves
-                    .contains_key(&battler::Id::from(move_name.as_str()))
-                {
-                    return false;
-                }
-                sources.iter().any(|source| match source {
-                    battler_data::MoveSource::Level(l) => *l <= 50,
-                    _ => true,
-                })
-            })
-            .map(|(move_name, _)| move_name)
-            .collect();
+        let mut learnset_moves: Vec<&String> = Vec::new();
+        for (move_name, sources) in &species_data.learnset {
+            let move_id = battler::Id::from(move_name.as_str());
+            if store.get_move(&move_id)?.is_none() {
+                continue;
+            }
+            if sources.iter().any(|source| match source {
+                battler_data::MoveSource::Level(l) => *l <= 50,
+                _ => true,
+            }) {
+                learnset_moves.push(move_name);
+            }
+        }
         learnset_moves.shuffle(rng);
         let num_moves = std::cmp::min(4, learnset_moves.len());
         let selected_moves: Vec<String> = learnset_moves
@@ -363,17 +326,28 @@ fn generate_random_team(
         if held_item.is_none() {
             if Some(i) == z_index {
                 // Assign Z-Crystal based on one of the move types.
-                let mut move_types: Vec<Type> = selected_moves
-                    .iter()
-                    .filter_map(|move_name| {
-                        let move_id = battler::Id::from(move_name.as_str());
-                        store.moves.get(&move_id).map(|m| m.primary_type)
-                    })
-                    .collect();
+                let mut move_types: Vec<Type> = Vec::new();
+                for move_name in &selected_moves {
+                    let move_id = battler::Id::from(move_name.as_str());
+                    if let Some(m) = store.get_move(&move_id)? {
+                        move_types.push(m.primary_type);
+                    }
+                }
                 move_types.shuffle(rng);
 
                 for typ in move_types {
                     if let Some(z_crystal) = type_to_zcrystal.get(&typ) {
+                        if !chosen_items.contains(z_crystal) {
+                            held_item = Some(z_crystal.clone());
+                            break;
+                        }
+                    }
+                }
+
+                if held_item.is_none() {
+                    let mut crystals: Vec<&String> = type_to_zcrystal.values().collect();
+                    crystals.shuffle(rng);
+                    for z_crystal in crystals {
                         if !chosen_items.contains(z_crystal) {
                             held_item = Some(z_crystal.clone());
                             break;
@@ -509,6 +483,7 @@ mod tests {
         config::Format,
         teams::TeamValidator,
     };
+    use battler_local_data::LocalDataStore;
 
     use super::*;
 
@@ -518,7 +493,7 @@ mod tests {
         let dex = Dex::new(&store).unwrap();
 
         for i in 0..50 {
-            let options = generate_random_battle(&store, Some(i)).unwrap();
+            let options = generate_random_battle(&store, BattleType::Doubles, 4, Some(i)).unwrap();
             options.validate().unwrap();
 
             let format = Format::new(options.format, &dex).unwrap();
@@ -540,6 +515,366 @@ mod tests {
                 "Seed {} - Team 2 has validation problems: {:?}",
                 i,
                 problems_2
+            );
+        }
+    }
+
+    #[test]
+    fn validates_different_battle_types_and_sizes() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&store).unwrap();
+
+        let configurations = [
+            (BattleType::Singles, 3),
+            (BattleType::Singles, 6),
+            (BattleType::Doubles, 4),
+            (BattleType::Doubles, 6),
+        ];
+
+        for (battle_type, team_size) in configurations {
+            for i in 0..10 {
+                let options =
+                    generate_random_battle(&store, battle_type, team_size, Some(i)).unwrap();
+                options.validate().unwrap();
+
+                assert_eq!(options.format.battle_type, battle_type);
+                assert_eq!(options.side_1.players[0].team.members.len(), team_size);
+                assert_eq!(options.side_2.players[0].team.members.len(), team_size);
+
+                let format = Format::new(options.format, &dex).unwrap();
+                let validator = TeamValidator::new(&format, &dex);
+
+                let mut team_1 = options.side_1.players[0].team.clone();
+                let problems_1 = validator.validate_team(&mut team_1);
+                assert!(
+                    problems_1.is_empty(),
+                    "BattleType {:?} TeamSize {} Seed {} - Team 1 problems: {:?}",
+                    battle_type,
+                    team_size,
+                    i,
+                    problems_1
+                );
+
+                let mut team_2 = options.side_2.players[0].team.clone();
+                let problems_2 = validator.validate_team(&mut team_2);
+                assert!(
+                    problems_2.is_empty(),
+                    "BattleType {:?} TeamSize {} Seed {} - Team 2 problems: {:?}",
+                    battle_type,
+                    team_size,
+                    i,
+                    problems_2
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn generates_mega_stone_when_mega_enabled() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&store).unwrap();
+        let item_pools = extract_item_pools(&store).unwrap();
+
+        let mut format_data = FormatData::default();
+        format_data.rules.push("Species Clause".to_string());
+        format_data.rules.push("Item Clause".to_string());
+        format_data.rules.push("Mega Evolution".to_string());
+        let format = Format::new(format_data, &dex).unwrap();
+        let validator = TeamValidator::new(&format, &dex);
+
+        for seed in 0..20 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let mut team = generate_random_team(
+                &store,
+                &mut rng,
+                6,
+                &item_pools.items_pool,
+                &item_pools.megastones_map,
+                &item_pools.type_to_zcrystal,
+                true,  // enable_mega
+                false, // enable_z_moves
+                false, // enable_dynamax
+                false, // enable_tera
+            )
+            .unwrap();
+
+            // Validate that the team is legal according to the engine.
+            let problems = validator.validate_team(&mut team);
+            assert!(
+                problems.is_empty(),
+                "Seed {} team validation failed: {:?}",
+                seed,
+                problems
+            );
+
+            // Exactly 1 mon should hold a Mega Stone matching its species.
+            let mega_mons: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.megastones_map.contains_key(item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+
+            assert_eq!(
+                mega_mons.len(),
+                1,
+                "Seed {}: expected exactly 1 Mega Mon, found {}",
+                seed,
+                mega_mons.len()
+            );
+
+            let mega_mon = mega_mons[0];
+            let held_stone = mega_mon.item.as_ref().unwrap();
+            let required_species = item_pools.megastones_map.get(held_stone).unwrap();
+            assert_eq!(
+                &mega_mon.species, required_species,
+                "Seed {}: Mega Mon species {} did not match required species {} for stone {}",
+                seed, mega_mon.species, required_species, held_stone
+            );
+
+            // No mon should hold a Z-Crystal.
+            let z_crystals: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.type_to_zcrystal.values().any(|z| z == item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+            assert!(
+                z_crystals.is_empty(),
+                "Seed {}: expected no Z-Crystals, found {:?}",
+                seed,
+                z_crystals
+            );
+        }
+    }
+
+    #[test]
+    fn generates_z_crystal_when_z_moves_enabled() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&store).unwrap();
+        let item_pools = extract_item_pools(&store).unwrap();
+
+        let mut format_data = FormatData::default();
+        format_data.rules.push("Species Clause".to_string());
+        format_data.rules.push("Item Clause".to_string());
+        format_data.rules.push("Z-Moves".to_string());
+        let format = Format::new(format_data, &dex).unwrap();
+        let validator = TeamValidator::new(&format, &dex);
+
+        for seed in 0..20 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let mut team = generate_random_team(
+                &store,
+                &mut rng,
+                6,
+                &item_pools.items_pool,
+                &item_pools.megastones_map,
+                &item_pools.type_to_zcrystal,
+                false, // enable_mega
+                true,  // enable_z_moves
+                false, // enable_dynamax
+                false, // enable_tera
+            )
+            .unwrap();
+
+            let problems = validator.validate_team(&mut team);
+            assert!(
+                problems.is_empty(),
+                "Seed {} team validation failed: {:?}",
+                seed,
+                problems
+            );
+
+            // Exactly 1 mon should hold a Z-Crystal.
+            let z_mons: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.type_to_zcrystal.values().any(|z| z == item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+
+            assert_eq!(
+                z_mons.len(),
+                1,
+                "Seed {}: expected exactly 1 Z-Crystal Mon, found {}",
+                seed,
+                z_mons.len()
+            );
+
+            // No mon should hold a Mega Stone.
+            let mega_mons: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.megastones_map.contains_key(item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+            assert!(
+                mega_mons.is_empty(),
+                "Seed {}: expected no Mega Stones, found {:?}",
+                seed,
+                mega_mons
+            );
+        }
+    }
+
+    #[test]
+    fn generates_both_mega_and_z_crystal_when_both_enabled() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&store).unwrap();
+        let item_pools = extract_item_pools(&store).unwrap();
+
+        let mut format_data = FormatData::default();
+        format_data.rules.push("Species Clause".to_string());
+        format_data.rules.push("Item Clause".to_string());
+        format_data.rules.push("Mega Evolution".to_string());
+        format_data.rules.push("Z-Moves".to_string());
+        let format = Format::new(format_data, &dex).unwrap();
+        let validator = TeamValidator::new(&format, &dex);
+
+        for seed in 0..20 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let mut team = generate_random_team(
+                &store,
+                &mut rng,
+                6,
+                &item_pools.items_pool,
+                &item_pools.megastones_map,
+                &item_pools.type_to_zcrystal,
+                true,  // enable_mega
+                true,  // enable_z_moves
+                false, // enable_dynamax
+                false, // enable_tera
+            )
+            .unwrap();
+
+            let problems = validator.validate_team(&mut team);
+            assert!(
+                problems.is_empty(),
+                "Seed {} team validation failed: {:?}",
+                seed,
+                problems
+            );
+
+            let mega_mons: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.megastones_map.contains_key(item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+            assert_eq!(
+                mega_mons.len(),
+                1,
+                "Seed {}: expected 1 Mega Mon, found {}",
+                seed,
+                mega_mons.len()
+            );
+
+            let z_mons: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.type_to_zcrystal.values().any(|z| z == item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+            assert_eq!(
+                z_mons.len(),
+                1,
+                "Seed {}: expected 1 Z-Move Mon, found {}",
+                seed,
+                z_mons.len()
+            );
+
+            // Ensure the Mega Mon and Z-Move Mon are different team members.
+            assert_ne!(
+                mega_mons[0].species, z_mons[0].species,
+                "Seed {}: Mega and Z-Crystal assigned to same mon: {}",
+                seed, mega_mons[0].species
+            );
+        }
+    }
+
+    #[test]
+    fn does_not_generate_special_items_when_disabled() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let dex = Dex::new(&store).unwrap();
+        let item_pools = extract_item_pools(&store).unwrap();
+
+        let mut format_data = FormatData::default();
+        format_data.rules.push("Species Clause".to_string());
+        format_data.rules.push("Item Clause".to_string());
+        let format = Format::new(format_data, &dex).unwrap();
+        let validator = TeamValidator::new(&format, &dex);
+
+        for seed in 0..20 {
+            let mut rng = StdRng::seed_from_u64(seed);
+            let mut team = generate_random_team(
+                &store,
+                &mut rng,
+                6,
+                &item_pools.items_pool,
+                &item_pools.megastones_map,
+                &item_pools.type_to_zcrystal,
+                false, // enable_mega
+                false, // enable_z_moves
+                false, // enable_dynamax
+                false, // enable_tera
+            )
+            .unwrap();
+
+            let problems = validator.validate_team(&mut team);
+            assert!(
+                problems.is_empty(),
+                "Seed {} team validation failed: {:?}",
+                seed,
+                problems
+            );
+
+            let special_items: Vec<_> = team
+                .members
+                .iter()
+                .filter(|m| {
+                    if let Some(ref item) = m.item {
+                        item_pools.megastones_map.contains_key(item)
+                            || item_pools.type_to_zcrystal.values().any(|z| z == item)
+                    } else {
+                        false
+                    }
+                })
+                .collect();
+            assert!(
+                special_items.is_empty(),
+                "Seed {}: expected no special items when disabled, found {:?}",
+                seed,
+                special_items
             );
         }
     }

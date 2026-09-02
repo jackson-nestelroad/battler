@@ -20,8 +20,14 @@ use crate::{
 /// This collection is used for "raw lookup" of resources by ID. Individual dexes may implement
 /// specialized lookup rules over this table, such as resolving aliases or special names.
 pub trait DataStore: Send + Sync {
+    /// Gets all ability IDs, applying the given filter on the underlying data.
+    fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>>;
+    /// Gets all item IDs, applying the given filter on the underlying data.
+    fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>>;
     /// Gets all move IDs, applying the given filter on the underlying data.
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>>;
+    /// Gets all species IDs, applying the given filter on the underlying data.
+    fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>>;
 
     /// Gets the type chart.
     fn get_type_chart(&self) -> Result<TypeChart>;

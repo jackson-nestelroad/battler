@@ -25,6 +25,7 @@ battler-wamprat = { workspace = true }
 battler-wamprat-schema = { workspace = true }
 
 battler = { workspace = true }
+battler-local-data = { path = "../battler-local-data" }
 battler-multiplayer-service = { path = "../battler-multiplayer-service" }
 battler-multiplayer-service-schema = { path = "../battler-multiplayer-service/battler-multiplayer-service-schema" }
 battler-service = { path = "../battler-service" }

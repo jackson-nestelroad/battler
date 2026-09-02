@@ -197,6 +197,26 @@ impl LocalDataStore {
 }
 
 impl DataStore for LocalDataStore {
+    fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>> {
+        let mut ability_ids = Vec::new();
+        for (id, ability_data) in self.abilities.iter() {
+            if filter(ability_data) {
+                ability_ids.push(id.clone());
+            }
+        }
+        Ok(ability_ids)
+    }
+
+    fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>> {
+        let mut item_ids = Vec::new();
+        for (id, item_data) in self.items.iter() {
+            if filter(item_data) {
+                item_ids.push(id.clone());
+            }
+        }
+        Ok(item_ids)
+    }
+
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         let mut move_ids = Vec::new();
         for (id, move_data) in self.moves.iter() {
@@ -205,6 +225,16 @@ impl DataStore for LocalDataStore {
             }
         }
         Ok(move_ids)
+    }
+
+    fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>> {
+        let mut species_ids = Vec::new();
+        for (id, species_data) in self.species.iter() {
+            if filter(species_data) {
+                species_ids.push(id.clone());
+            }
+        }
+        Ok(species_ids)
     }
 
     fn get_type_chart(&self) -> Result<TypeChart> {
