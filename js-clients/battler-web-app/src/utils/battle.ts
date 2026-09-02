@@ -55,15 +55,22 @@ export interface ParsedTimerLog {
 }
 
 export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
-  if (typeof entry !== "object" || entry === null || !("Extension" in entry)) return null;
-  const ext = entry.Extension as { source?: string; title?: string; values?: Record<string, string> } | undefined;
-  if (!ext || ext.source !== "-battlerservice" || ext.title !== "timer") return null;
+  if (typeof entry !== "object" || entry === null) return null;
+  if (entry.title !== "timer" || !entry.values) return null;
+  if (entry.values.source && entry.values.source !== "-battlerservice") return null;
 
-  const values = ext.values;
-  if (!values) return null;
-  const remainingsecsStr = values["remainingsecs"];
-  if (remainingsecsStr === undefined) return null;
-  const remainingSecs = parseInt(remainingsecsStr, 10);
+  const values = entry.values as Record<string, unknown>;
+
+  const remainingsecsVal = values["remainingsecs"];
+  if (remainingsecsVal === undefined) return null;
+  const remainingSecs =
+    typeof remainingsecsVal === "number"
+      ? remainingsecsVal
+      : typeof remainingsecsVal === "bigint"
+        ? Number(remainingsecsVal)
+        : parseInt(String(remainingsecsVal), 10);
+
+  if (isNaN(remainingSecs)) return null;
 
   let type: "battle" | "player" | "action" | "teampreview" = "battle";
   let playerId: string | undefined = undefined;
@@ -72,13 +79,13 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
     type = "battle";
   } else if ("player" in values) {
     type = "player";
-    playerId = values["player"];
+    playerId = typeof values.player === "string" ? values.player : undefined;
   } else if ("action" in values) {
     type = "action";
-    playerId = values["action"];
+    playerId = typeof values.action === "string" ? values.action : undefined;
   } else if ("teampreview" in values) {
     type = "teampreview";
-    playerId = values["teampreview"];
+    playerId = typeof values.teampreview === "string" ? values.teampreview : undefined;
   } else {
     return null;
   }
@@ -89,7 +96,14 @@ export function parseTimerLog(entry: UiLogEntry): ParsedTimerLog | null {
   const isClear = "clear" in values;
 
   // Parse absolute deadline timestamp (in seconds)
-  const deadlineSecs = values["deadline"] ? parseInt(values["deadline"], 10) : 0;
+  const deadlineVal = values["deadline"];
+  const deadlineSecs = deadlineVal
+    ? typeof deadlineVal === "number"
+      ? deadlineVal
+      : typeof deadlineVal === "bigint"
+        ? Number(deadlineVal)
+        : parseInt(String(deadlineVal), 10)
+    : 0;
 
   return {
     type,

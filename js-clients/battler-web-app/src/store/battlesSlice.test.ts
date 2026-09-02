@@ -16,17 +16,22 @@ describe("battlesSlice active timers", () => {
 
     // Construct a mock ui_log containing a timer done event
     const doneTimerEntry: UiLogEntry = {
-      Extension: {
+      title: "timer",
+      side: null,
+      slot: null,
+      player: null,
+      target: null,
+      source: null,
+      effect: null,
+      source_effect: null,
+      values: {
         source: "-battlerservice",
-        title: "timer",
-        values: {
-          action: "player-1",
-          remainingsecs: "0",
-          deadline: "1784498900",
-          done: "",
-        },
+        action: "player-1",
+        remainingsecs: "0",
+        deadline: "1784498900",
+        done: "",
       },
-    } as unknown as UiLogEntry;
+    };
 
     const mockBattleState: BattleState = {
       turn: 1,
@@ -57,7 +62,7 @@ describe("battlesSlice active timers", () => {
     });
   });
 
-  it("should delete teampreview timer when it is cleared or done", () => {
+  it("should delete teampreview timer when it is cleared", () => {
     const store = configureStore({
       reducer: {
         battles: battlesReducer,
@@ -68,17 +73,22 @@ describe("battlesSlice active timers", () => {
     store.dispatch(battleSessionCreated(battleId));
 
     const clearTimerEntry: UiLogEntry = {
-      Extension: {
+      title: "timer",
+      side: null,
+      slot: null,
+      player: null,
+      target: null,
+      source: null,
+      effect: null,
+      source_effect: null,
+      values: {
         source: "-battlerservice",
-        title: "timer",
-        values: {
-          teampreview: "",
-          remainingsecs: "48",
-          deadline: "1784498900",
-          clear: "",
-        },
+        teampreview: "",
+        remainingsecs: "48",
+        deadline: "1784498900",
+        clear: "",
       },
-    } as unknown as UiLogEntry;
+    };
 
     const mockBattleState: BattleState = {
       turn: 0,
@@ -113,17 +123,22 @@ describe("battlesSlice active timers", () => {
     store.dispatch(battleSessionCreated(battleId));
 
     const doneTimerEntry: UiLogEntry = {
-      Extension: {
+      title: "timer",
+      side: null,
+      slot: null,
+      player: null,
+      target: null,
+      source: null,
+      effect: null,
+      source_effect: null,
+      values: {
         source: "-battlerservice",
-        title: "timer",
-        values: {
-          teampreview: "",
-          remainingsecs: "0",
-          deadline: "1784498900",
-          done: "",
-        },
+        teampreview: "",
+        remainingsecs: "0",
+        deadline: "1784498900",
+        done: "",
       },
-    } as unknown as UiLogEntry;
+    };
 
     const mockBattleState: BattleState = {
       turn: 0,
