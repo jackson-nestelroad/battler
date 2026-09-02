@@ -203,7 +203,7 @@
   "activate|move:Magnitude|magnitude:8",
   "activate|move:Magnitude|magnitude:7",
   "activate|move:Magnitude|magnitude:6",
-  "activate|mon:Greninja,player-1,1|move:Mat Block",
+  "activate|mon:Greninja,player-1,1|move:Mat Block|from:move:Tackle|of:Greninja,player-2,1",
   "activate|mon:Venusaur,player-1,1|move:Max Guard",
   "activate|mon:Pikachu,player-1,1|move:Max Guard",
   "activate|mon:Pikachu,player-1,1|move:Mist",

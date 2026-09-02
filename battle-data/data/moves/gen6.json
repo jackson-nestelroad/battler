@@ -50,7 +50,7 @@
             "require func_call(move_has_flag: $move protect) else return",
             "require $move.target != user and $move.category != status else return",
             "if $report:",
-            ["log_activate: with_target"],
+            ["log_activate: with_target with_source_effect no_ignore_active_move_source_effect"],
             "return stop"
           ]
         }

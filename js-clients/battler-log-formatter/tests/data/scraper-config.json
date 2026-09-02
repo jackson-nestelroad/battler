@@ -238,6 +238,10 @@
       "collapse": ["item"]
     },
     {
+      "match": { "title": "activate", "move": "Mat Block" },
+      "strip": ["from"]
+    },
+    {
       "match": {},
       "collapse": [
         "type",

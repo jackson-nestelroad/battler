@@ -1070,7 +1070,7 @@ fn log_effect_activation_base(
             None
         },
         target,
-        ignore_active_move_source_effect: true,
+        ignore_active_move_source_effect: !context.has_flag("no_ignore_active_move_source_effect"),
         ignore_source_effect_equal_to_effect: true,
         source_effect: if context.with_source_effect() {
             context.set_with_source(true);
