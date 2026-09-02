@@ -770,7 +770,10 @@
         "on_end": ["log_end"],
         "on_before_move": {
           "priority": 7,
-          "program": ["if $move.id == $effect_state.move:", ["log_cant: with_move", "return stopfail"]]
+          "program": [
+            "if $move.id == $effect_state.move:",
+            ["log_cant: with_move", "return stopfail"]
+          ]
         },
         "on_disable_move": [
           "foreach $move_slot in $mon.move_slots:",
@@ -1752,7 +1755,7 @@
           "$mimic_index = func_call(move_slot_index: $source $this.id)",
           "require $mimic_index.is_defined",
           "overwrite_move_slot: $source $mimic_index func_call(move_slot: $last_move)",
-          "log_start: str('mimic:{}', $last_move.name)"
+          "log_start: use_source str('mimic:{}', $last_move.name)"
         ]
       }
     }
