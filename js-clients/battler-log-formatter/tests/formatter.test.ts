@@ -1042,7 +1042,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           action: "p1",
           warning: true,
-          remainingsecs: 10,
+          remainingsecs: 10n,
         }
       };
       const state = {
@@ -1071,7 +1071,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           action: "p2",
           done: true,
-          remainingsecs: 0,
+          remainingsecs: 0n,
         }
       };
       const state = {
@@ -1100,7 +1100,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           player: "p2",
           warning: true,
-          remainingsecs: 5,
+          remainingsecs: 5n,
         }
       };
       const state = {
@@ -1129,7 +1129,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           player: "p2",
           done: true,
-          remainingsecs: 0,
+          remainingsecs: 0n,
         }
       };
       const state = {
@@ -1158,7 +1158,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           teampreview: true,
           warning: true,
-          remainingsecs: 15,
+          remainingsecs: 15n,
         }
       };
 
@@ -1175,7 +1175,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           teampreview: true,
           done: true,
-          remainingsecs: 0,
+          remainingsecs: 0n,
         }
       };
       const doneResult = formatter.format(doneEntry as UiLogEntry);
@@ -1191,7 +1191,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           battle: true,
           warning: true,
-          remainingsecs: 60,
+          remainingsecs: 60n,
         }
       };
       const warningResult = formatter.format(warningEntry as UiLogEntry);
@@ -1204,7 +1204,7 @@ describe("LogFormatter", () => {
           source: "-battlerservice",
           battle: true,
           done: true,
-          remainingsecs: 0,
+          remainingsecs: 0n,
         }
       };
       const doneResult = formatter.format(doneEntry as UiLogEntry);
@@ -1219,7 +1219,7 @@ describe("LogFormatter", () => {
         values: {
           source: "-battlerservice",
           player: "p1",
-          remainingsecs: 47,
+          remainingsecs: 47n,
         }
       };
 
@@ -1278,58 +1278,58 @@ describe("LogFormatter", () => {
       const formatter = new LogFormatter({ localPlayerId: "p1" });
 
       // Local player switch
-      const selfSwitch: UiLogEntry = {
+      const selfSwitch: Partial<UiLogEntry> = {
         title: "switch",
         player: "p1",
         values: {
           name: "Ninetales",
           player: "p1",
-          position: 0,
+          position: 0n,
         },
       };
-      const selfRes = formatter.format(selfSwitch, singleState);
+      const selfRes = formatter.format(selfSwitch as UiLogEntry, singleState);
       expect(selfRes).not.toBeNull();
       expect(stringifyLog(selfRes!.messages[0])).toBe("You sent out Ninetales!");
 
       // Foe single battle switch
-      const foeSwitch: UiLogEntry = {
+      const foeSwitch: Partial<UiLogEntry> = {
         title: "switch",
         player: "p2",
         values: {
           name: "Ninetales",
           player: "p2",
-          position: 0,
+          position: 0n,
         },
       };
-      const foeRes = formatter.format(foeSwitch, singleState);
+      const foeRes = formatter.format(foeSwitch as UiLogEntry, singleState);
       expect(foeRes).not.toBeNull();
       expect(stringifyLog(foeRes!.messages[0])).toBe("ai-random-1 sent out Ninetales!");
 
       // Foe multi battle switch (should not say Bob sent out Bob's Ninetales)
-      const foeMultiSwitch: UiLogEntry = {
+      const foeMultiSwitch: Partial<UiLogEntry> = {
         title: "switch",
         player: "p2",
         values: {
           name: "Ninetales",
           player: "p2",
-          position: 0,
+          position: 0n,
         },
       };
-      const foeMultiRes = formatter.format(foeMultiSwitch, multiState);
+      const foeMultiRes = formatter.format(foeMultiSwitch as UiLogEntry, multiState);
       expect(foeMultiRes).not.toBeNull();
       expect(stringifyLog(foeMultiRes!.messages[0])).toBe("Bob sent out Ninetales!");
 
       // Ally multi battle switch (should not say Alice sent out Alice's Ninetales)
-      const allyMultiSwitch: UiLogEntry = {
+      const allyMultiSwitch: Partial<UiLogEntry> = {
         title: "switch",
         player: "p3",
         values: {
           name: "Ninetales",
           player: "p3",
-          position: 1,
+          position: 1n,
         },
       };
-      const allyMultiRes = formatter.format(allyMultiSwitch, multiState);
+      const allyMultiRes = formatter.format(allyMultiSwitch as UiLogEntry, multiState);
       expect(allyMultiRes).not.toBeNull();
       expect(stringifyLog(allyMultiRes!.messages[0])).toBe("Alice sent out Ninetales!");
     });
@@ -1337,13 +1337,13 @@ describe("LogFormatter", () => {
     it("should format switchout logs using MON_NAME when switching out previous Mon", () => {
       const formatter = new LogFormatter({ localPlayerId: "p1" });
 
-      const foeSwitchWithPrev: UiLogEntry = {
+      const foeSwitchWithPrev: Partial<UiLogEntry> = {
         title: "switch",
         player: "p2",
         values: {
           name: "Vulpix",
           player: "p2",
-          position: 0,
+          position: 0n,
           prev_mon: {
             Active: {
               name: "Ninetales",
@@ -1355,7 +1355,7 @@ describe("LogFormatter", () => {
         },
       };
 
-      const foeRes = formatter.format(foeSwitchWithPrev, singleState);
+      const foeRes = formatter.format(foeSwitchWithPrev as UiLogEntry, singleState);
       expect(foeRes).not.toBeNull();
       expect(foeRes!.messages.length).toBe(2);
       expect(stringifyLog(foeRes!.messages[0])).toBe("ai-random-1 withdrew Ninetales!");
@@ -1365,7 +1365,7 @@ describe("LogFormatter", () => {
     it("should format mega evolution logs using MON_POSSESSIVE and MON", () => {
       const formatter = new LogFormatter({ localPlayerId: "p1" });
 
-      const megaEntry: UiLogEntry = {
+      const megaEntry: Partial<UiLogEntry> = {
         title: "mega",
         target: {
           Active: {
@@ -1381,13 +1381,13 @@ describe("LogFormatter", () => {
         },
       };
 
-      const megaRes = formatter.format(megaEntry, singleState);
+      const megaRes = formatter.format(megaEntry as UiLogEntry, singleState);
       expect(megaRes).not.toBeNull();
       expect(megaRes!.messages.length).toBe(2);
       expect(stringifyLog(megaRes!.messages[0])).toBe("The opposing Charizard's Charizardite X is reacting to ai-random-1's Mega Bracelet!");
       expect(stringifyLog(megaRes!.messages[1])).toBe("The opposing Charizard has Mega Evolved into Mega Charizard X!");
 
-      const dragonAscentMega: UiLogEntry = {
+      const dragonAscentMega: Partial<UiLogEntry> = {
         title: "mega",
         target: {
           Active: {
@@ -1398,7 +1398,6 @@ describe("LogFormatter", () => {
           },
         },
         source_effect: {
-          id: "dragonascent",
           name: "Dragon Ascent",
           effect_type: "Move",
         },
@@ -1407,7 +1406,7 @@ describe("LogFormatter", () => {
         },
       };
 
-      const dragonRes = formatter.format(dragonAscentMega, singleState);
+      const dragonRes = formatter.format(dragonAscentMega as UiLogEntry, singleState);
       expect(dragonRes).not.toBeNull();
       expect(dragonRes!.messages.length).toBe(2);
       expect(stringifyLog(dragonRes!.messages[0])).toBe("ai-random-1's fervent wish has reached the opposing Rayquaza!");
