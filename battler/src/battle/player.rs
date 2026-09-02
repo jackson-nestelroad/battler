@@ -708,7 +708,13 @@ impl Player {
         context.player().mons.iter().filter_map(|mon_handle| {
             context
                 .mon(*mon_handle)
-                .is_ok_and(|mon| !mon.active)
+                .is_ok_and(|mon| {
+                    !mon.active
+                        && !context
+                            .player()
+                            .active_or_exited
+                            .contains(&Some(*mon_handle))
+                })
                 .then_some(mon_handle)
         })
     }
@@ -1102,15 +1108,6 @@ impl Player {
             .wrap_expectation_with_format(format_args!(
                 "you do not have a mon in slot {slot} to switch to"
             ))?;
-        if context.player().active.contains(&Some(target_mon_handle)) {
-            return Err(general_error("you cannot switch to an active mon"));
-        }
-        if context.player().choice.switch_ins.contains(&slot) {
-            return Err(general_error(format!(
-                "the mon in slot {slot} can only switch in once",
-            )));
-        }
-
         let target_context = context
             .as_battle_context_mut()
             .mon_context(target_mon_handle)?;
@@ -1123,6 +1120,19 @@ impl Player {
                 return Err(general_error("you cannot switch to a caught mon"));
             }
             None => (),
+        }
+
+        if context
+            .player()
+            .active_or_exited
+            .contains(&Some(target_mon_handle))
+        {
+            return Err(general_error("you cannot switch to an active mon"));
+        }
+        if context.player().choice.switch_ins.contains(&slot) {
+            return Err(general_error(format!(
+                "the mon in slot {slot} can only switch in once",
+            )));
         }
 
         let active_mon = context.mon(active_mon_handle)?;

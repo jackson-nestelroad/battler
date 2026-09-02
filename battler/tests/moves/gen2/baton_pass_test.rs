@@ -196,3 +196,71 @@ fn baton_pass_does_not_activate_pursuit() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn baton_pass_cannot_switch_to_mon_that_just_switched_out() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "switch 0"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to an active mon")
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
+            "switchout|mon:Espeon,player-1,1|copyvolatile",
+            "continue",
+            "split|side:0",
+            ["switch", "player-1", "Umbreon"],
+            ["switch", "player-1", "Umbreon"],
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    // On turn 2, switching back to Espeon (slot 0) should now succeed.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "Espeon"],
+            ["switch", "player-1", "Espeon"],
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
+
+#[test]
+fn baton_pass_fails_if_no_switchable_mons() {
+    let mut team_1 = team().unwrap();
+    team_1.members.truncate(1);
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Espeon,player-1,1|name:Baton Pass|noanim",
+            "fail|mon:Espeon,player-1,1",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}

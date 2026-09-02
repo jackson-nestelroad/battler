@@ -1602,7 +1602,16 @@ impl Mon {
 impl Mon {
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData> {
-        let side_position = Self::position_on_side(context);
+        let side_position = Self::position_on_side_or_previous(context);
+        let active = context.mon().active
+            || context
+                .player()
+                .active_or_exited_mon_handles()
+                .any(|mon| mon == &context.mon_handle());
+        let player_active_position = context
+            .mon()
+            .active_position
+            .or(context.mon().old_active_position);
         let species = context
             .battle()
             .dex
@@ -1640,10 +1649,10 @@ impl Mon {
             max_hp: context.mon().max_hp,
             health: context.mon().actual_health_string(),
             types: context.mon().volatile_state.types.clone(),
-            active: context.mon().active,
+            active,
             player_team_position: context.mon().team_position,
             player_effective_team_position: context.mon().effective_team_position,
-            player_active_position: context.mon().active_position,
+            player_active_position,
             side_position,
             stats: context.mon().volatile_state.stats.without_hp(),
             boosts: context.mon().volatile_state.boosts.clone(),
