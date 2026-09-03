@@ -20329,12 +20329,63 @@ exports[`Exhaustive Log Coverage > should parse and format log string: fieldstar
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Trick Room 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Trick Room|of:Porygon-Z,player-1,1 1`] = `
 {
-  "rawLog": "fieldstart|move:Trick Room",
+  "rawLog": "fieldstart|move:Trick Room|of:Porygon-Z,player-1,1",
   "result": {
-    "key": "fieldstart__move_trickroom",
-    "messages": [],
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Porygon-Z",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Porygon-Z",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Porygon-Z twisted the dimensions!",
+        },
+        "key": "fieldstart__move_trickroom",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: fieldstart|move:Trick Room|of:Rillaboom,player-1,1 1`] = `
+{
+  "rawLog": "fieldstart|move:Trick Room|of:Rillaboom,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Rillaboom",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Rillaboom",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Rillaboom twisted the dimensions!",
+        },
+        "key": "fieldstart__move_trickroom",
+      },
+    ],
     "notices": [],
   },
 }

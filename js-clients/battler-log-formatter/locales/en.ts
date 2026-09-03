@@ -669,7 +669,7 @@ export const en = {
     fieldstart__move_mistyterrain: "Mist swirled around the battlefield!",
     fieldstart__move_mudsport: "Electricity's power was weakened!",
     fieldstart__move_psychicterrain: "The battlefield got weird!",
-    fieldstart__move_trickroom: "{{MON}} twisted the dimensions!",
+    fieldstart__move_trickroom: "{{OF}} twisted the dimensions!",
     fieldstart__move_watersport: "Fire's power was weakened!",
     fieldstart__move_wonderroom:
       "It created a bizarre area in which Defense and Sp. Def stats are swapped!",

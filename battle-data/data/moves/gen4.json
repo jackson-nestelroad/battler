@@ -1660,7 +1660,7 @@
     "condition": {
       "duration": 5,
       "callbacks": {
-        "on_field_start": ["log_field_start"],
+        "on_field_start": ["log_field_start: with_source"],
         "on_field_restart": ["remove_pseudo_weather: $this.id"],
         "on_modify_action_speed": ["$spe = $spe % 10000", "return (10000 - $spe) % 8192"],
         "on_field_end": ["log_field_end"]

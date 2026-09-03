@@ -90,7 +90,7 @@ fn trick_room_reverses_speed_order() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Porygon-Z,player-1,1|name:Trick Room",
-            "fieldstart|move:Trick Room",
+            "fieldstart|move:Trick Room|of:Porygon-Z,player-1,1",
             "residual",
             "turn|turn:2",
             "continue",
@@ -123,7 +123,7 @@ fn trick_room_does_not_reverse_priority_order() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Porygon-Z,player-1,1|name:Trick Room",
-            "fieldstart|move:Trick Room",
+            "fieldstart|move:Trick Room|of:Porygon-Z,player-1,1",
             "residual",
             "turn|turn:2",
             "continue",
