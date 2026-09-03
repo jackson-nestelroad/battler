@@ -210,7 +210,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+        "on_immunity": ["if [psn, tox, sandstormweather] has $effect.id:", ["return false"]]
       }
     }
   },
