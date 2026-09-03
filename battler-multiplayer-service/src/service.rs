@@ -76,8 +76,9 @@ struct ActiveProposedBattle {
 }
 
 impl ActiveProposedBattle {
-    fn new(uuid: Uuid, options: ProposedBattleOptions) -> Self {
+    fn new(uuid: Uuid, mut options: ProposedBattleOptions) -> Self {
         let timeout = options.timeout.min(Duration::from_mins(5));
+        options.service_options.no_team_validation = Some(false);
         let proposed_battle = ProposedBattle {
             uuid,
             sides: Vec::from_iter([
@@ -105,12 +106,21 @@ impl ActiveProposedBattle {
         let timeout = options.timeout.min(Duration::from_mins(5));
         let (battle_options, service_options) = match &options.special_battle {
             SpecialBattle::Chaos(chaos_opts) => {
-                let mut battle_opts = battler_fuzz_test_generator::generate_random_battle(
-                    data,
-                    chaos_opts.mode.battle_type(),
-                    chaos_opts.mode.team_size(),
-                    None,
-                )?;
+                let mut battle_opts = if chaos_opts.true_chaos {
+                    battler_fuzz_test_generator::generate_full_random_battle(
+                        data,
+                        chaos_opts.mode.battle_type(),
+                        chaos_opts.mode.team_size(),
+                        None,
+                    )?
+                } else {
+                    battler_fuzz_test_generator::generate_random_battle(
+                        data,
+                        chaos_opts.mode.battle_type(),
+                        chaos_opts.mode.team_size(),
+                        None,
+                    )?
+                };
                 let mut side_1 = options.side_1;
                 let mut side_2 = options.side_2;
                 for (i, player) in side_1.players.iter_mut().enumerate() {
@@ -129,6 +139,7 @@ impl ActiveProposedBattle {
                     .validate()
                     .map_err(|err| Error::msg(format!("invalid battle options: {err:#}")))?;
                 let mut service_options = options.service_options;
+                service_options.no_team_validation = Some(chaos_opts.true_chaos);
                 service_options.special = Some(format!("{}", options.special_battle));
                 (battle_opts, service_options)
             }

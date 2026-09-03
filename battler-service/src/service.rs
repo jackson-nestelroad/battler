@@ -96,6 +96,12 @@ pub struct BattleServiceOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub special: Option<String>,
+
+    /// Disable team validation prior to the battle starting.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub no_team_validation: Option<bool>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -141,11 +147,14 @@ struct LiveBattle<'d> {
 impl<'d> LiveBattle<'d> {
     fn new(
         options: CoreBattleOptions,
-        engine_options: CoreBattleEngineOptions,
+        mut engine_options: CoreBattleEngineOptions,
         service_options: BattleServiceOptions,
         data: &'d dyn DataStore,
         global_log_tx: mpsc::Sender<GlobalLogEntry>,
     ) -> Result<Self> {
+        if service_options.no_team_validation.unwrap_or(false) {
+            engine_options.validate_teams = false;
+        }
         let uuid = Uuid::new_v4();
         let sides = Vec::from_iter([
             Self::new_side(&options.side_1),

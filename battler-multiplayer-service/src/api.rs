@@ -115,6 +115,8 @@ impl std::fmt::Display for ChaosBattleMode {
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct ChaosBattleOptions {
     pub mode: ChaosBattleMode,
+    #[serde(default)]
+    pub true_chaos: bool,
 }
 
 /// A Special Battle format.
@@ -130,7 +132,14 @@ pub enum SpecialBattle {
 impl std::fmt::Display for SpecialBattle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Chaos(opts) => write!(f, "Chaos ({})", opts.mode),
+            Self::Chaos(opts) => {
+                let prefix = if opts.true_chaos {
+                    "True Chaos"
+                } else {
+                    "Chaos"
+                };
+                write!(f, "{prefix} ({})", opts.mode)
+            }
         }
     }
 }

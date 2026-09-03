@@ -914,23 +914,27 @@ impl<'d> CoreBattle<'d> {
         // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
         // the interface into the battle engine can do additional validation (i.e., the player is
         // not using Mons it does not truly own).
-        let mut problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
-            context,
-            fxlang::BattleEvent::ValidateTeam,
-            Vec::default(),
-        );
+        let mut problems = Vec::new();
         if context.player().team_size() == 0 {
             problems.push("Empty team is not allowed.".to_owned());
         }
-        for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
-            let mut context = context.mon_context(mon)?;
-
-            let mut mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
-                &mut context,
-                fxlang::BattleEvent::ValidateMon,
+        if context.battle().engine_options.validate_teams {
+            let team_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
+                context,
+                fxlang::BattleEvent::ValidateTeam,
                 Vec::default(),
             );
-            problems.append(&mut mon_problems);
+            problems.extend(team_problems);
+            for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+                let mut context = context.mon_context(mon)?;
+
+                let mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
+                    &mut context,
+                    fxlang::BattleEvent::ValidateMon,
+                    Vec::default(),
+                );
+                problems.extend(mon_problems);
+            }
         }
 
         // Commit logs, since debug logs end up here. This is somewhat fine because program errors

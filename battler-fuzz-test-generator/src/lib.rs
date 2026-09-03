@@ -137,6 +137,327 @@ pub fn extract_item_pools(store: &dyn DataStore) -> Result<ItemPools> {
     })
 }
 
+pub struct FullRandomPools {
+    pub base_species: Vec<battler::Id>,
+    pub abilities: Vec<String>,
+    pub moves: Vec<String>,
+    pub item_pools: ItemPools,
+}
+
+pub fn extract_full_random_pools(store: &dyn DataStore) -> Result<FullRandomPools> {
+    let item_pools = extract_item_pools(store)?;
+
+    let base_species = store.all_species_ids(&|s| s.forme.is_none() && !s.battle_only_forme)?;
+
+    let mut abilities = Vec::new();
+    for id in store.all_ability_ids(&|_| true)? {
+        if let Some(ability) = store.get_ability(&id)? {
+            if battler::Id::from(ability.name.as_str()) == id {
+                abilities.push(ability.name);
+            }
+        }
+    }
+
+    let mut moves = Vec::new();
+    for id in store.all_move_ids(&|_| true)? {
+        if let Some(mov) = store.get_move(&id)? {
+            if battler::Id::from(mov.name.as_str()) == id {
+                moves.push(mov.name);
+            }
+        }
+    }
+
+    Ok(FullRandomPools {
+        base_species,
+        abilities,
+        moves,
+        item_pools,
+    })
+}
+
+/// Generates an unconstrained "True Chaos" battle with completely randomized teams and stackable
+/// mechanics.
+pub fn generate_full_random_battle(
+    store: &dyn DataStore,
+    battle_type: BattleType,
+    team_size: usize,
+    seed: Option<u64>,
+) -> Result<CoreBattleOptions> {
+    let actual_seed = seed.unwrap_or_else(|| rand::rng().random());
+    let mut rng = StdRng::seed_from_u64(actual_seed);
+
+    let pools = extract_full_random_pools(store)?;
+
+    let mut rules = Vec::new();
+    let enable_mega = rng.random_bool(0.5);
+    let enable_z_moves = rng.random_bool(0.5);
+    let enable_dynamax = rng.random_bool(0.5);
+    let enable_tera = rng.random_bool(0.5);
+
+    if enable_mega {
+        rules.push("Mega Evolution".to_owned());
+    }
+    if enable_z_moves {
+        rules.push("Z-Moves".to_owned());
+    }
+    if enable_dynamax {
+        rules.push("Dynamax".to_owned());
+    }
+    if enable_tera {
+        rules.push("Terastallization".to_owned());
+    }
+
+    let format = FormatData { battle_type, rules };
+
+    let side_1_team = generate_full_random_team(
+        store,
+        &mut rng,
+        team_size,
+        &pools,
+        enable_mega,
+        enable_z_moves,
+        enable_dynamax,
+        enable_tera,
+    )?;
+
+    let side_2_team = generate_full_random_team(
+        store,
+        &mut rng,
+        team_size,
+        &pools,
+        enable_mega,
+        enable_z_moves,
+        enable_dynamax,
+        enable_tera,
+    )?;
+
+    Ok(CoreBattleOptions {
+        seed: Some(actual_seed),
+        format,
+        field: FieldData::default(),
+        side_1: SideData {
+            name: "Side 1".to_string(),
+            players: vec![PlayerData {
+                id: "player-1".to_string(),
+                name: "Player 1".to_string(),
+                player_type: PlayerType::Trainer,
+                player_options: PlayerOptions::default(),
+                team: side_1_team,
+                dex: PlayerDex::default(),
+            }],
+        },
+        side_2: SideData {
+            name: "Side 2".to_string(),
+            players: vec![PlayerData {
+                id: "player-2".to_string(),
+                name: "Player 2".to_string(),
+                player_type: PlayerType::Trainer,
+                player_options: PlayerOptions::default(),
+                team: side_2_team,
+                dex: PlayerDex::default(),
+            }],
+        },
+    })
+}
+
+pub fn generate_full_random_team(
+    store: &dyn DataStore,
+    rng: &mut StdRng,
+    team_size: usize,
+    pools: &FullRandomPools,
+    enable_mega: bool,
+    enable_z_moves: bool,
+    enable_dynamax: bool,
+    enable_tera: bool,
+) -> Result<TeamData> {
+    let mut members = Vec::new();
+
+    let mega_index = if enable_mega && team_size > 0 {
+        Some(rng.random_range(0..team_size))
+    } else {
+        None
+    };
+
+    let z_index = if enable_z_moves {
+        let candidates: Vec<usize> = (0..team_size).filter(|&i| Some(i) != mega_index).collect();
+        if !candidates.is_empty() {
+            Some(*candidates.choose(rng).unwrap())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    for i in 0..team_size {
+        let (_species_id, species_data, mut held_item) = if Some(i) == mega_index {
+            if let Some((stone, base_species_name)) =
+                pools.item_pools.megastones_map.iter().choose(rng)
+            {
+                let base_species_id = battler::Id::from(base_species_name.as_str());
+                let s_data = store
+                    .get_species(&base_species_id)?
+                    .ok_or_else(|| anyhow::anyhow!("Species not found: {base_species_id}"))?;
+                (base_species_id, s_data, Some(stone.clone()))
+            } else {
+                let s_id = pools
+                    .base_species
+                    .choose(rng)
+                    .ok_or_else(|| anyhow::anyhow!("No base species available"))?
+                    .clone();
+                let s_data = store
+                    .get_species(&s_id)?
+                    .ok_or_else(|| anyhow::anyhow!("Species not found: {s_id}"))?;
+                (s_id, s_data, None)
+            }
+        } else {
+            let s_id = pools
+                .base_species
+                .choose(rng)
+                .ok_or_else(|| anyhow::anyhow!("No base species available"))?
+                .clone();
+            let s_data = store
+                .get_species(&s_id)?
+                .ok_or_else(|| anyhow::anyhow!("Species not found: {s_id}"))?;
+            (s_id, s_data, None)
+        };
+        let species_name = species_data.name.clone();
+
+        // Random ability from ALL abilities.
+        let ability = pools
+            .abilities
+            .choose(rng)
+            .cloned()
+            .unwrap_or_else(|| "No Ability".to_string());
+
+        // Random 4 moves from ALL moves.
+        let num_moves = std::cmp::min(4, pools.moves.len());
+        let selected_moves: Vec<String> = pools.moves.sample(rng, num_moves).cloned().collect();
+
+        // Held item assignment.
+        if held_item.is_none() {
+            if Some(i) == z_index {
+                let mut move_types: Vec<Type> = Vec::new();
+                for move_name in &selected_moves {
+                    let move_id = battler::Id::from(move_name.as_str());
+                    if let Some(m) = store.get_move(&move_id)? {
+                        move_types.push(m.primary_type);
+                    }
+                }
+                if let Some(typ) = move_types.choose(rng) {
+                    if let Some(z_crystal) = pools.item_pools.type_to_zcrystal.get(typ) {
+                        held_item = Some(z_crystal.clone());
+                    }
+                }
+                if held_item.is_none() {
+                    if let Some(z_crystal) = pools.item_pools.type_to_zcrystal.values().choose(rng)
+                    {
+                        held_item = Some(z_crystal.clone());
+                    }
+                }
+            } else if let Some(item) = pools.item_pools.items_pool.choose(rng) {
+                held_item = Some(item.clone());
+            }
+        }
+
+        let nature = *ALL_NATURES.choose(rng).unwrap();
+
+        let gender = match species_data.gender_ratio {
+            0 => Gender::Male,
+            254 => Gender::Female,
+            255 => Gender::Unknown,
+            ratio => {
+                let val = rng.random_range(1..=252);
+                if val < ratio {
+                    Gender::Female
+                } else {
+                    Gender::Male
+                }
+            }
+        };
+
+        let ivs = StatTable {
+            hp: 31,
+            atk: 31,
+            def: 31,
+            spa: 31,
+            spd: 31,
+            spe: 31,
+        };
+
+        let mut evs = StatTable::default();
+        let mut ev_stats = [
+            Stat::HP,
+            Stat::Atk,
+            Stat::Def,
+            Stat::SpAtk,
+            Stat::SpDef,
+            Stat::Spe,
+        ];
+        ev_stats.shuffle(rng);
+        evs.set(ev_stats[0], 252);
+        evs.set(ev_stats[1], 252);
+
+        let dynamax_level = if enable_dynamax { 10 } else { 0 };
+
+        let tera_type = if enable_tera {
+            let all_types = [
+                Type::Normal,
+                Type::Fighting,
+                Type::Flying,
+                Type::Poison,
+                Type::Ground,
+                Type::Rock,
+                Type::Bug,
+                Type::Ghost,
+                Type::Steel,
+                Type::Fire,
+                Type::Water,
+                Type::Grass,
+                Type::Electric,
+                Type::Psychic,
+                Type::Ice,
+                Type::Dragon,
+                Type::Dark,
+                Type::Fairy,
+            ];
+            Some(*all_types.choose(rng).unwrap())
+        } else {
+            None
+        };
+
+        members.push(MonData {
+            name: species_name.clone(),
+            species: species_name,
+            ability,
+            moves: selected_moves,
+            item: held_item,
+            pp_boosts: Vec::new(),
+            nature,
+            true_nature: None,
+            gender,
+            evs,
+            ivs,
+            level: 50,
+            experience: 0,
+            shiny: rng.random_bool(0.01),
+            friendship: 255,
+            ball: Some("pokeball".to_string()),
+            hidden_power_type: None,
+            different_original_trainer: false,
+            dynamax_level,
+            gigantamax_factor: false,
+            tera_type,
+            persistent_battle_data: Default::default(),
+        });
+    }
+
+    Ok(TeamData {
+        members,
+        bag: Default::default(),
+    })
+}
+
 /// Generates a valid, random battle configuration with randomized teams.
 pub fn generate_random_battle(
     store: &dyn DataStore,
@@ -965,6 +1286,31 @@ mod tests {
                 "items_pool should not contain Z-Crystal {}",
                 z_crystal
             );
+        }
+    }
+
+    #[test]
+    fn generates_full_random_battles() {
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+
+        for i in 0..10 {
+            let options =
+                generate_full_random_battle(&store, BattleType::Singles, 6, Some(i)).unwrap();
+            options.validate().unwrap();
+
+            assert_eq!(options.format.battle_type, BattleType::Singles);
+            assert_eq!(options.side_1.players[0].team.members.len(), 6);
+            assert_eq!(options.side_2.players[0].team.members.len(), 6);
+            assert!(!options.format.rules.contains(&"Species Clause".to_string()));
+            assert!(!options.format.rules.contains(&"Item Clause".to_string()));
+
+            for player in &options.side_1.players {
+                for mon in &player.team.members {
+                    assert!(!mon.species.is_empty());
+                    assert!(!mon.ability.is_empty());
+                    assert_eq!(mon.moves.len(), 4);
+                }
+            }
         }
     }
 }

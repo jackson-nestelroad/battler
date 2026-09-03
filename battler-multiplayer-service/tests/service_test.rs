@@ -874,6 +874,7 @@ async fn creates_special_chaos_battle() {
         .propose_special_battle(ProposedSpecialBattleOptions {
             special_battle: SpecialBattle::Chaos(ChaosBattleOptions {
                 mode: ChaosBattleMode::Singles6v6,
+                true_chaos: false,
             }),
             side_1: SideData {
                 name: "Side 1".to_string(),
@@ -925,4 +926,72 @@ async fn creates_special_chaos_battle() {
     );
     assert!(updated.battle.is_some());
     assert_eq!(updated.special, Some("Chaos (Singles 6v6)".to_string()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn creates_special_true_chaos_battle() {
+    let service = battler_multiplayer_service().await;
+    let proposed = service
+        .clone()
+        .propose_special_battle(ProposedSpecialBattleOptions {
+            special_battle: SpecialBattle::Chaos(ChaosBattleOptions {
+                mode: ChaosBattleMode::Singles6v6,
+                true_chaos: true,
+            }),
+            side_1: SideData {
+                name: "Side 1".to_string(),
+                players: vec![PlayerData {
+                    id: "player-1".to_string(),
+                    name: "Player 1".to_string(),
+                    ..Default::default()
+                }],
+            },
+            side_2: SideData {
+                name: "Side 2".to_string(),
+                players: vec![PlayerData {
+                    id: "player-2".to_string(),
+                    name: "Player 2".to_string(),
+                    ..Default::default()
+                }],
+            },
+            service_options: BattleServiceOptions {
+                creator: "player-1".to_string(),
+                ..Default::default()
+            },
+            timeout: Duration::from_secs(60),
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(
+        proposed.sides[0].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert_eq!(proposed.sides[1].players[0].status, None);
+    assert_eq!(
+        proposed.special,
+        Some("True Chaos (Singles 6v6)".to_string())
+    );
+    assert!(!proposed.rules.contains(&"Species Clause".to_string()));
+    assert!(!proposed.rules.contains(&"Item Clause".to_string()));
+
+    // Opponent accepts
+    let updated = service
+        .respond_to_proposed_battle(
+            proposed.uuid,
+            "player-2",
+            &ProposedBattleResponse { accept: true },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        updated.sides[1].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert!(updated.battle.is_some());
+    assert_eq!(
+        updated.special,
+        Some("True Chaos (Singles 6v6)".to_string())
+    );
 }

@@ -47,6 +47,7 @@ export default function ProposalForm() {
 
   // Chaos battle state
   const [chaosMode, setChaosMode] = useState<ChaosBattleMode>("doubles_4v4");
+  const [trueChaos, setTrueChaos] = useState<boolean>(false);
 
   // Standard proposal form state
   const [format, setFormat] = useState<BattleType>("Singles");
@@ -309,6 +310,7 @@ export default function ProposalForm() {
           type: "chaos",
           options: {
             mode: chaosMode,
+            true_chaos: trueChaos,
           },
         },
         side_1: {
@@ -481,6 +483,14 @@ export default function ProposalForm() {
                 <option value="doubles_4v4">Doubles 4v4</option>
                 <option value="doubles_6v6">Doubles 6v6</option>
               </select>
+              <label className={`${styles.checkboxLabel} mt-xs`}>
+                <input
+                  type="checkbox"
+                  checked={trueChaos}
+                  onChange={(e) => setTrueChaos(e.target.checked)}
+                />
+                <span>True Chaos</span>
+              </label>
             </div>
           )}
 
