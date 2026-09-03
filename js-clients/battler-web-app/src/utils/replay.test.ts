@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { precomputeReplayKeyframes, resolveReplayTurnState } from "./replay";
+import {
+  downloadDebugInfoFile,
+  downloadReplayFile,
+  precomputeReplayKeyframes,
+  resolveReplayTurnState,
+} from "./replay";
 
 describe("replay utilities", () => {
   const mockLogs = [
@@ -67,5 +72,94 @@ describe("replay utilities", () => {
     // Step 3: End state (after turn 2 moves)
     const step3State = resolveReplayTurnState(session, 3);
     expect(step3State.turn).toBe(2);
+  });
+
+  it("should create and trigger download anchor for downloadReplayFile", () => {
+    let clicked = false;
+    let removed = false;
+    let downloadedFilename = "";
+    let downloadHref = "";
+
+    const mockAnchor = {
+      setAttribute: (name: string, value: string) => {
+        if (name === "download") downloadedFilename = value;
+        if (name === "href") downloadHref = value;
+      },
+      click: () => {
+        clicked = true;
+      },
+      remove: () => {
+        removed = true;
+      },
+    };
+
+    const mockDocument = {
+      createElement: (tagName: string) => {
+        if (tagName === "a") return mockAnchor;
+        return {};
+      },
+      body: {
+        appendChild: (node: unknown) => node,
+      },
+    };
+
+    (globalThis as unknown as { document: unknown }).document = mockDocument;
+
+    try {
+      downloadReplayFile({
+        battleId: "test-battle-123",
+        engineLogs: ["info|battletype:singles"],
+      });
+
+      expect(clicked).toBe(true);
+      expect(removed).toBe(true);
+      expect(downloadedFilename).toBe("replay-test-battle-123.battler");
+      expect(downloadHref.length).toBeGreaterThan(0);
+    } finally {
+      delete (globalThis as unknown as { document?: unknown }).document;
+    }
+  });
+
+  it("should create and trigger download anchor for downloadDebugInfoFile", () => {
+    let clicked = false;
+    let removed = false;
+    let downloadedFilename = "";
+    let downloadHref = "";
+
+    const mockAnchor = {
+      setAttribute: (name: string, value: string) => {
+        if (name === "download") downloadedFilename = value;
+        if (name === "href") downloadHref = value;
+      },
+      click: () => {
+        clicked = true;
+      },
+      remove: () => {
+        removed = true;
+      },
+    };
+
+    const mockDocument = {
+      createElement: (tagName: string) => {
+        if (tagName === "a") return mockAnchor;
+        return {};
+      },
+      body: {
+        appendChild: (node: unknown) => node,
+      },
+    };
+
+    (globalThis as unknown as { document: unknown }).document = mockDocument;
+
+    try {
+      downloadDebugInfoFile("test-battle-123", { debug: true });
+
+      expect(clicked).toBe(true);
+      expect(removed).toBe(true);
+      expect(downloadedFilename).toBe("debug-test-battle-123.json");
+      expect(downloadHref.length).toBeGreaterThan(0);
+    } finally {
+      delete (globalThis as unknown as { document?: unknown }).document;
+    }
   });
 });

@@ -1,5 +1,5 @@
 import { useAppSelector } from "../../store/store";
-import { encodeBase64Utf8 } from "../../utils/replay";
+import { downloadReplayFile } from "../../utils/replay";
 import styles from "./BattleFinishedPanel.module.scss";
 
 interface BattleFinishedPanelProps {
@@ -11,20 +11,14 @@ export default function BattleFinishedPanel({ battleId }: BattleFinishedPanelPro
 
   const handleExport = () => {
     if (!battleSession) return;
-    const replayData = {
+    const engineLogs = battleSession.isReplay
+      ? battleSession.replayEngineLogs
+      : battleSession.engineLogs;
+    downloadReplayFile({
       battleId,
-      engineLogs: battleSession.engineLogs,
+      engineLogs,
       metadata: battleSession.serviceBattle?.metadata || battleSession.metadata,
-    };
-    const jsonStr = JSON.stringify(replayData);
-    const base64Str = encodeBase64Utf8(jsonStr);
-    const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(base64Str);
-    const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `replay-${battleId}.battler`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    });
   };
 
   return (

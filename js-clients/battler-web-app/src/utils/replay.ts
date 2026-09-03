@@ -149,3 +149,47 @@ export function decodeBase64Utf8(base64Str: string): string {
   }
   return new TextDecoder().decode(bytes);
 }
+
+/**
+ * Downloads a replay file (.battler) with Base64-encoded JSON.
+ */
+export function downloadReplayFile(replay: SavedReplay): void {
+  const jsonStr = JSON.stringify(replay);
+  const base64Str = encodeBase64Utf8(jsonStr);
+  const blob = new Blob([base64Str], { type: "text/plain;charset=utf-8" });
+  const url =
+    typeof URL.createObjectURL === "function"
+      ? URL.createObjectURL(blob)
+      : "data:text/plain;charset=utf-8," + encodeURIComponent(base64Str);
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.setAttribute("href", url);
+  downloadAnchor.setAttribute("download", `replay-${replay.battleId}.battler`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  if (typeof URL.revokeObjectURL === "function" && url.startsWith("blob:")) {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
+ * Downloads debug info as a formatted JSON file.
+ */
+export function downloadDebugInfoFile(battleId: string, data: unknown): void {
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url =
+    typeof URL.createObjectURL === "function"
+      ? URL.createObjectURL(blob)
+      : "data:application/json;charset=utf-8," + encodeURIComponent(jsonStr);
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.setAttribute("href", url);
+  downloadAnchor.setAttribute("download", `debug-${battleId}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  if (typeof URL.revokeObjectURL === "function" && url.startsWith("blob:")) {
+    URL.revokeObjectURL(url);
+  }
+}
+

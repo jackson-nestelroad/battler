@@ -18,11 +18,14 @@ import BattleTimers from "./BattleTimers";
 import Field from "./Field";
 import LogPanel from "./LogPanel";
 import ReplayPanel from "./ReplayPanel";
+import { downloadDebugInfoFile, downloadReplayFile } from "../../utils/replay";
 
 export default function BattleScreen() {
   const dispatch = useAppDispatch();
   const [showDebug, setShowDebug] = useState(false);
-  const [debugTab, setDebugTab] = useState<"state" | "ui_log" | "request" | "player" | "metadata">("state");
+  const [debugTab, setDebugTab] = useState<
+    "state" | "ui_log" | "engine_log" | "request" | "player" | "metadata"
+  >("state");
 
   const battleId = useAppSelector((state) => state.battles.activeBattleId);
   const currentView = useAppSelector((state) => state.battles.currentView);
@@ -56,6 +59,35 @@ export default function BattleScreen() {
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleExportReplay = () => {
+    if (!battleSession || !battleId) return;
+    const engineLogs = battleSession.isReplay
+      ? battleSession.replayEngineLogs
+      : battleSession.engineLogs;
+    downloadReplayFile({
+      battleId,
+      engineLogs,
+      metadata,
+    });
+  };
+
+  const handleExportDebugInfo = () => {
+    if (!battleSession || !battleId) return;
+    downloadDebugInfoFile(battleId, {
+      battleId,
+      metadata,
+      battleState: battleSession.battleState,
+      activeRequest: battleSession.activeRequest,
+      playerData: battleSession.playerData,
+      uiLogs: battleSession.uiLogs,
+      engineLogs: battleSession.isReplay
+        ? battleSession.replayEngineLogs
+        : battleSession.engineLogs,
+      error: battleSession.error,
+      choiceError: battleSession.choiceError,
+    });
   };
 
   const activeProposal = useAppSelector((state) => {
@@ -292,17 +324,38 @@ export default function BattleScreen() {
 
       {showDebug ? (
         <div className={`card ${styles.debugContainer} flex-col gap-m`}>
-          <Tabs
-            active={debugTab}
-            onChange={setDebugTab}
-            options={[
-              { value: "state", label: "State" },
-              { value: "ui_log", label: "UI Log" },
-              { value: "request", label: "Request" },
-              { value: "player", label: "Player" },
-              { value: "metadata", label: "Metadata" },
-            ]}
-          />
+          <div className="flex-row justify-between align-center gap-m flex-wrap">
+            <Tabs
+              active={debugTab}
+              onChange={setDebugTab}
+              options={[
+                { value: "state", label: "State" },
+                { value: "ui_log", label: "UI Log" },
+                { value: "engine_log", label: "Engine Log" },
+                { value: "request", label: "Request" },
+                { value: "player", label: "Player" },
+                { value: "metadata", label: "Metadata" },
+              ]}
+            />
+            <div className="flex-row gap-s align-center flex-wrap">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleExportReplay}
+                title="Save .battler replay file"
+              >
+                Save replay
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleExportDebugInfo}
+                title="Save debug info JSON"
+              >
+                Save debug info
+              </button>
+            </div>
+          </div>
           <div className={styles.debugJsonContainer}>
             {debugTab === "state" && (
               <>
@@ -323,6 +376,20 @@ export default function BattleScreen() {
                 <h4>UI Log</h4>
                 <pre className={styles.debugJson}>
                   {JSON.stringify(battleSession.battleState?.ui_log, null, 2)}
+                </pre>
+              </>
+            )}
+            {debugTab === "engine_log" && (
+              <>
+                <h4>Engine Log</h4>
+                <pre className={styles.debugJson}>
+                  {JSON.stringify(
+                    battleSession.isReplay
+                      ? battleSession.replayEngineLogs
+                      : battleSession.engineLogs,
+                    null,
+                    2
+                  )}
                 </pre>
               </>
             )}
