@@ -254,7 +254,7 @@ describe("monTooltipModel", () => {
       expect(vm.originalSpecies).toBe("Ditto");
 
       expect(vm.ability).toBe("Dauntless Shield");
-      expect(vm.item).toBe("None (was: Focus Sash)");
+      expect(vm.item).toBe("None (was Focus Sash)");
       expect(vm.moves[0].disabled).toBe(true);
 
       // Verify baseSummary reflects original Ditto
@@ -280,7 +280,7 @@ describe("monTooltipModel", () => {
       };
 
       const vm = monBattleDataToTooltip(monWithConsumedGem);
-      expect(vm.item).toBe("None (was: Ghost Gem)");
+      expect(vm.item).toBe("None (was Ghost Gem)");
       expect(vm.baseSummary?.item).toBe("Ghost Gem");
     });
 
@@ -829,6 +829,68 @@ describe("monTooltipModel", () => {
       expect(vm?.ability).toBe("Cursed Body");
       expect(vm?.item).toBe("Life Orb");
       expect(vm?.moves[0].name).toBe("Shadow Ball");
+    });
+
+    it("shows None (was ...) for opponent when item was consumed/lost and previous_item is known", () => {
+      const consumedState: any = {
+        field: {
+          sides: [
+            {
+              players: {
+                "opponent-1": {
+                  id: "opponent-1",
+                  mons: [
+                    {
+                      physical_appearance: {
+                        name: "Gengar",
+                        species: "Gengar",
+                      },
+                      battle_appearances: [
+                        {
+                          active: {
+                            primary_battle_appearance: {
+                              level: { known: 50n },
+                              health: { known: [100n, 100n] },
+                              status: { known: "" },
+                              ability: { known: "Cursed Body" },
+                              item: { known: "" },
+                              previous_item: { known: "Focus Sash" },
+                              terastallization: { known: "" },
+                              moves: { known: ["Shadow Ball"], possibly_includes: [] },
+                              move_history: ["Shadow Ball"],
+                            },
+                          },
+                        },
+                      ],
+                      volatile_data: {
+                        moves: [],
+                        ability: null,
+                        conditions: {},
+                        types: [],
+                        stat_boosts: {},
+                      },
+                    },
+                  ],
+                },
+              },
+              active: [
+                {
+                  player: "opponent-1",
+                  mon_index: 0,
+                  battle_appearance_index: 0,
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      const vm = publicMonStateToTooltip(consumedState, {
+        Active: { side: 0, position: 0, player: "opponent-1", name: "Gengar" },
+      });
+
+      expect(vm).toBeDefined();
+      expect(vm?.item).toBe("None (was Focus Sash)");
     });
   });
 });

@@ -208,6 +208,15 @@ export function monItem(state: BattleState, monRef: MonBattleAppearanceReference
   return val && val !== "" ? val : null;
 }
 
+export function monPreviousItem(
+  state: BattleState,
+  monRef: MonBattleAppearanceReference,
+): string | null {
+  const app = monBattleAppearanceOrElse(state, monRef);
+  const val = knownValue(app.previous_item);
+  return val && val !== "" ? val : null;
+}
+
 export function monSpecies(state: BattleState, monRef: MonBattleAppearanceReference): string {
   const m = monOrElse(state, monRef);
   if (m.volatile_data.transformed) {

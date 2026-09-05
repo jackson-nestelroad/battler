@@ -248,6 +248,18 @@ pub fn mon_item<'s>(
         .filter(|s| !s.is_empty()))
 }
 
+/// The previous item of a Mon.
+pub fn mon_previous_item<'s>(
+    state: &'s BattleState,
+    mon: &MonBattleAppearanceReference,
+) -> Result<Option<&'s str>> {
+    Ok(mon_battle_appearance_or_else(state, mon)?
+        .previous_item
+        .known()
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
+}
+
 /// The species of a Mon.
 pub fn mon_species<'s>(
     state: &'s BattleState,

@@ -151,6 +151,7 @@ pub struct MonBattleAppearance {
     pub status: DiscoveryRequired<String>,
     pub ability: DiscoveryRequired<String>,
     pub item: DiscoveryRequired<String>,
+    pub previous_item: DiscoveryRequired<String>,
     pub terastallization: DiscoveryRequired<String>,
 
     pub moves: DiscoveryRequiredSet<String>,
@@ -167,6 +168,11 @@ impl MonBattleAppearance {
                 || self.status.known().is_some_and(|status| status.is_empty()))
             && self.ability.is_empty()
             && self.item.is_empty()
+            && (self.previous_item.is_empty()
+                || self
+                    .previous_item
+                    .known()
+                    .is_some_and(|item| item.is_empty()))
             && (self.terastallization.is_empty()
                 || self
                     .terastallization
@@ -181,6 +187,7 @@ impl MonBattleAppearance {
         self.status = self.status.make_ambiguous();
         self.ability = self.ability.make_ambiguous();
         self.item = self.item.make_ambiguous();
+        self.previous_item = self.previous_item.make_ambiguous();
         self.terastallization = self.terastallization.make_ambiguous();
         self.moves = self.moves.make_ambiguous();
         self
@@ -242,6 +249,18 @@ impl MonBattleAppearance {
         };
     }
 
+    pub(crate) fn record_previous_item(
+        &mut self,
+        previous_item: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.previous_item = if ambiguity == Ambiguity::Ambiguous {
+            self.previous_item.take().merge(previous_item)
+        } else {
+            self.previous_item.take().record(previous_item)
+        };
+    }
+
     pub(crate) fn record_terastallization(
         &mut self,
         terastallization: DiscoveryRequired<String>,
@@ -284,6 +303,7 @@ impl MonBattleAppearance {
         self.record_status(other.status, Ambiguity::Precise);
         self.record_ability(other.ability, Ambiguity::Precise);
         self.record_item(other.item, Ambiguity::Precise);
+        self.record_previous_item(other.previous_item, Ambiguity::Precise);
         self.record_terastallization(other.terastallization, Ambiguity::Precise);
 
         for mov in other.moves.known().iter().cloned() {
@@ -454,6 +474,16 @@ impl MonBattleAppearanceWithRecovery {
     pub(crate) fn record_item(&mut self, item: DiscoveryRequired<String>, ambiguity: Ambiguity) {
         self.apply_for_each_battle_appearance(|appearance| {
             appearance.record_item(item.clone(), ambiguity);
+        });
+    }
+
+    pub(crate) fn record_previous_item(
+        &mut self,
+        previous_item: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.apply_for_each_battle_appearance(|appearance| {
+            appearance.record_previous_item(previous_item.clone(), ambiguity);
         });
     }
 

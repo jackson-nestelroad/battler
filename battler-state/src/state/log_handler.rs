@@ -287,19 +287,11 @@ fn ui_log_entry_from_log_entry(
     })
 }
 
-fn values_to_condition_data_map(values: &HashMap<String, ui::LogValue>) -> HashMap<String, String> {
-    values
-        .iter()
-        .map(|(k, v)| {
-            let v_str = match v {
-                ui::LogValue::String(s) => s.clone(),
-                ui::LogValue::Number(n) => format!("{n}"),
-                ui::LogValue::Boolean(_) => String::default(),
-                ui::LogValue::Fraction(n, d) => format!("{n}/{d}"),
-                _ => String::default(),
-            };
-            (k.clone(), v_str)
-        })
+fn values_to_condition_data_map(entry: &LogEntry) -> HashMap<String, String> {
+    entry
+        .values()
+        .filter(|(k, _)| !matches!(*k, "from" | "mon" | "of" | "player" | "side" | "slot"))
+        .map(|(k, v)| (k.to_owned(), v.to_owned()))
         .collect()
 }
 
@@ -456,16 +448,29 @@ fn record_source_base_ability_if_unknown(
     })
 }
 
+fn record_source_previous_item_if_unknown(
+    state: &mut BattleState,
+    mon: &MonName,
+    item: String,
+) -> Result<()> {
+    apply_for_each_mon_battle_appearance(state, mon, |mon, ambiguity| {
+        if mon.primary().previous_item.known().is_some() {
+            return;
+        }
+        mon.record_previous_item(item.clone().into(), ambiguity);
+    })
+}
+
 fn record_effect_from_mon(
     state: &mut BattleState,
-    effect: &ui::Effect,
+    effect: &EffectName,
     mon: &MonName,
 ) -> Result<()> {
-    match effect.effect_type.as_ref().map(|s| s.as_str()) {
-        Some("ability") | Some("abilitystart") => {
+    match effect.effect_type.as_deref() {
+        Some("ability") => {
             record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
         }
-        Some("item") | Some("itemstart") => {
+        Some("item") => {
             record_item_for_mon(state, mon, effect.name.clone(), false)?;
         }
         _ => (),
@@ -473,50 +478,32 @@ fn record_effect_from_mon(
     Ok(())
 }
 
-fn record_source_effect_from_entry(
-    state: &mut BattleState,
-    entry: &LogEntry,
-    ui_entry: &ui::UiLogEntry,
-) -> Result<()> {
-    if let Some(source_effect) = &ui_entry.source_effect {
+fn record_source_effect_from_entry(state: &mut BattleState, entry: &LogEntry) -> Result<()> {
+    if let Ok(source_effect) = effect_from_log_entry(entry, Some("from")) {
         if let Some(source) = entry.value::<MonName>("of") {
-            record_effect_from_mon(state, source_effect, &source)?;
+            record_effect_from_mon(state, &source_effect, &source)?;
         } else if let Some(target) = entry
             .value::<MonName>("mon")
             .or_else(|| mon_name_from_log_entry(entry).ok())
         {
-            record_effect_from_mon(state, source_effect, &target)?;
+            record_effect_from_mon(state, &source_effect, &target)?;
         }
     }
     Ok(())
 }
 
-fn modify_state_from_effect(
-    state: &mut BattleState,
-    entry: &LogEntry,
-    ui_entry: &ui::UiLogEntry,
-) -> Result<()> {
+fn modify_state_from_effect(state: &mut BattleState, entry: &LogEntry) -> Result<()> {
     let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
     match title {
         "ability" => {
             let mon = entry.value_or_else("mon")?;
-            let ability = ui_entry
-                .effect
-                .as_ref()
-                .map(|effect| effect.name.clone())
-                .or_else(|| entry.value::<String>("ability"));
-            if let Some(ability) = ability {
+            if let Some(ability) = entry.value::<String>("ability") {
                 record_activated_ability_for_each_mon(state, &mon, ability)?;
             }
         }
         "abilitystart" => {
             let mon = entry.value_or_else("mon")?;
-            let ability = ui_entry
-                .effect
-                .as_ref()
-                .map(|effect| effect.name.clone())
-                .or_else(|| entry.value::<String>("ability"));
-            if let Some(ability) = ability {
+            if let Some(ability) = entry.value::<String>("ability") {
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_ability(ability.clone());
                 })?;
@@ -529,8 +516,8 @@ fn modify_state_from_effect(
             let mon = entry.value_or_else("mon")?;
 
             // We get to see the ability as it ends.
-            if let Some(effect) = &ui_entry.effect {
-                record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
+            if let Some(ability) = entry.value::<String>("ability") {
+                record_activated_ability_for_each_mon(state, &mon, ability)?;
             }
 
             apply_for_each_mon(state, &mon, |mon, _| {
@@ -548,9 +535,6 @@ fn modify_state_from_effect(
                 if let Some(ability) = entry.value::<String>("ability") {
                     record_activated_ability_for_each_mon(state, &mon, ability)?;
                 }
-            }
-            if let (Some(effect), Some(mon)) = (&ui_entry.effect, entry.value::<MonName>("mon")) {
-                record_effect_from_mon(state, effect, &mon)?;
             }
         }
         "boost" | "unboost" => {
@@ -681,14 +665,14 @@ fn modify_state_from_effect(
                     "Dynamax".to_owned(),
                     ConditionData {
                         since_turn: turn,
-                        data: values_to_condition_data_map(&ui_entry.values),
+                        data: values_to_condition_data_map(entry),
                     },
                 );
             })?;
         }
         "end" => {
             if let Some(mon) = entry.value::<MonName>("mon") {
-                if let Some(effect) = &ui_entry.effect {
+                if let Ok(effect) = effect_from_log_entry(entry, None) {
                     apply_for_each_mon(state, &mon, |mon, _| {
                         mon.volatile_data.remove_condition(&effect.name);
                     })?;
@@ -698,17 +682,17 @@ fn modify_state_from_effect(
             }
         }
         "fieldend" => {
-            if let Some(effect) = &ui_entry.effect {
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
                 state.field.conditions.remove(&effect.name);
             }
         }
         "fieldstart" => {
-            if let Some(effect) = &ui_entry.effect {
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
                 state.field.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        data: values_to_condition_data_map(&ui_entry.values),
+                        data: values_to_condition_data_map(entry),
                     },
                 );
             }
@@ -723,35 +707,44 @@ fn modify_state_from_effect(
         }
         "item" | "itemstart" => {
             let mon = entry.value_or_else("mon")?;
-            let item = ui_entry
-                .effect
-                .as_ref()
-                .filter(|effect| {
-                    effect.effect_type.as_deref() == Some("item")
-                        || effect.effect_type.as_deref() == Some("itemstart")
-                })
-                .map(|effect| effect.name.clone())
-                .or_else(|| entry.value::<String>("item"));
-            if let Some(item) = item {
-                record_item_for_mon(state, &mon, item, true)?;
+            if let Some(item) = entry.value::<String>("item") {
+                record_item_for_mon(state, &mon, item.clone(), true)?;
+                if let Some(source) = entry.value::<MonName>("source") {
+                    record_source_previous_item_if_unknown(state, &source, item)?;
+                }
             }
         }
         "itemend" => {
             let mon = entry.value_or_else("mon")?;
+            let ending_item = entry.value::<String>("item");
+
             apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                if let Some(ending_item) = &ending_item {
+                    mon.record_previous_item(ending_item.clone().into(), ambiguity);
+                } else if let Some(current_item) = mon.primary().item.known()
+                    && !current_item.is_empty()
+                {
+                    mon.record_previous_item(current_item.clone().into(), ambiguity);
+                }
                 mon.record_item(String::default().into(), ambiguity);
             })?;
+
+            if let Some(source) = entry.value::<MonName>("source")
+                && let Some(ending_item) = &ending_item
+            {
+                record_source_previous_item_if_unknown(state, &source, ending_item.clone())?;
+            }
         }
         "prepare" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
+            if let Some(mov) = entry.value::<String>("move") {
                 let turn = state.turn;
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
-                        effect.name.clone(),
+                        mov.clone(),
                         ConditionData {
                             since_turn: turn,
-                            data: values_to_condition_data_map(&ui_entry.values),
+                            data: values_to_condition_data_map(entry),
                         },
                     );
                 })?;
@@ -786,28 +779,28 @@ fn modify_state_from_effect(
         "sideend" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &ui_entry.effect {
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
                 side.conditions.remove(&effect.name);
             }
         }
         "sidestart" => {
             let side = entry.value_or_else("side")?;
             let side = state.field.side_mut_or_else(side)?;
-            if let Some(effect) = &ui_entry.effect {
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
                 side.conditions.insert(
                     effect.name.clone(),
                     ConditionData {
                         since_turn: state.turn,
-                        data: values_to_condition_data_map(&ui_entry.values),
+                        data: values_to_condition_data_map(entry),
                     },
                 );
             }
         }
         "singlemove" | "singleturn" => {
             if let Some(mon) = entry.value::<MonName>("mon") {
-                if let Some(effect) = &ui_entry.effect {
+                if let Ok(effect) = effect_from_log_entry(entry, None) {
                     let turn = state.turn;
-                    let mut data = values_to_condition_data_map(&ui_entry.values);
+                    let mut data = values_to_condition_data_map(entry);
                     data.insert(entry.title().to_owned(), "".to_owned());
                     apply_for_each_mon(state, &mon, |mon, _| {
                         mon.volatile_data.record_condition(
@@ -833,22 +826,22 @@ fn modify_state_from_effect(
         }
         "status" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
+            if let Some(status) = entry.value::<String>("status") {
                 apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                    mon.record_status(effect.name.clone().into(), ambiguity);
+                    mon.record_status(status.clone().into(), ambiguity);
                 })?;
             }
         }
         "start" => {
             if let Some(mon) = entry.value::<MonName>("mon") {
-                if let Some(effect) = &ui_entry.effect {
+                if let Ok(effect) = effect_from_log_entry(entry, None) {
                     let turn = state.turn;
                     apply_for_each_mon(state, &mon, |mon, _| {
                         mon.volatile_data.record_condition(
                             effect.name.clone(),
                             ConditionData {
                                 since_turn: turn,
-                                data: values_to_condition_data_map(&ui_entry.values),
+                                data: values_to_condition_data_map(entry),
                             },
                         );
                     })?;
@@ -956,8 +949,8 @@ fn modify_state_from_effect(
             })?;
         }
         "weather" => {
-            if let Some(effect) = &ui_entry.effect {
-                state.field.weather = Some(effect.name.clone());
+            if let Some(weather) = entry.value::<String>("weather") {
+                state.field.weather = Some(weather);
             }
         }
         _ => (),
@@ -971,7 +964,7 @@ fn alter_battle_state_for_entry(
     entry: &LogEntry,
 ) -> Result<()> {
     let mut ui_entry = ui_log_entry_from_log_entry(state, entry)?;
-    record_source_effect_from_entry(state, entry, &ui_entry)?;
+    record_source_effect_from_entry(state, entry)?;
 
     let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
     match title {
@@ -1051,7 +1044,7 @@ fn alter_battle_state_for_entry(
                 None
             };
 
-            modify_state_from_effect(state, entry, &ui_entry)?;
+            modify_state_from_effect(state, entry)?;
 
             // Generate UI log for the effect. Some effects may have special logs.
             match title {

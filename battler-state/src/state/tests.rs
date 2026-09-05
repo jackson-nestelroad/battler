@@ -715,6 +715,10 @@ mod state_test {
         let sq = squirtle_ref();
         assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            Some("Leftovers")
+        );
+        assert_eq!(
             state.ui_log[1],
             vec![
                 ui_log!(title = "turn", values = { "turn" => 1 }),
@@ -813,6 +817,14 @@ mod state_test {
             Some("Safety Goggles")
         );
         assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Safety Goggles")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            None
+        );
     }
 
     #[test]
@@ -849,6 +861,14 @@ mod state_test {
             state_selectors::mon_item(&state, &ch).unwrap(),
             Some("Safety Goggles")
         );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            Some("Safety Goggles")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Choice Band")
+        );
     }
 
     #[test]
@@ -866,6 +886,25 @@ mod state_test {
             Some("Safety Goggles")
         );
         assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            Some("Focus Sash")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Safety Goggles")
+        );
+    }
+
+    #[test]
+    fn itemend_records_previous_item() {
+        let state = setup_singles_battle(&["itemend|mon:Charmander,player-2,1|item:Focus Sash"]);
+        let ch = charmander_ref();
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Focus Sash")
+        );
     }
 
     #[test]
@@ -876,6 +915,29 @@ mod state_test {
         ]);
         let ch = charmander_ref();
         assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Misty Seed")
+        );
+    }
+
+    #[test]
+    fn itemend_with_source_records_source_previous_item() {
+        let state = setup_singles_battle(&[
+            "itemend|mon:Squirtle,player-1,1|item:Leftovers|source:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            Some("Leftovers")
+        );
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Leftovers")
+        );
     }
 
     #[test]

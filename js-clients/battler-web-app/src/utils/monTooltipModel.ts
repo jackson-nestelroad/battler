@@ -317,12 +317,19 @@ export function monBattleDataToTooltip(
   let conditions: string[] = [];
   let activeTera: string | null = null;
   let isDynamaxed = false;
+  let previousItem: string | null = null;
 
   if (state) {
     const resolvedRef = resolveMonRefForBattleData(state, mon);
     if (resolvedRef) {
       try {
         conditions = stateSelectors.monConditions(state, resolvedRef) || [];
+      } catch {
+        // Ignore error
+      }
+
+      try {
+        previousItem = stateSelectors.monPreviousItem(state, resolvedRef);
       } catch {
         // Ignore error
       }
@@ -401,12 +408,16 @@ export function monBattleDataToTooltip(
     mon.item !== undefined
       ? mon.item && mon.item !== ""
         ? mon.item
+        : previousItem
+          ? `None (was ${previousItem})`
+          : summary?.item
+            ? `None (was ${summary.item})`
+            : "None"
+      : previousItem
+        ? `None (was ${previousItem})`
         : summary?.item
-          ? `None (was: ${summary.item})`
-          : "None"
-      : summary?.item
-        ? summary.item
-        : "None";
+          ? summary.item
+          : "None";
 
   let baseSummary: MonTooltipViewModel | null = null;
   if (summary) {
@@ -676,7 +687,17 @@ export function publicMonStateToTooltip(
     // Item: distinguished between unrevealed (null), known empty ("None"), or known item name
     let item: string | null = null;
     if (app && "known" in app.item) {
-      item = app.item.known !== "" ? app.item.known : "None";
+      if (app.item.known !== "") {
+        item = app.item.known;
+      } else if (
+        app.previous_item &&
+        "known" in app.previous_item &&
+        app.previous_item.known !== ""
+      ) {
+        item = `None (was ${app.previous_item.known})`;
+      } else {
+        item = "None";
+      }
     }
 
     // Check Terastallization
