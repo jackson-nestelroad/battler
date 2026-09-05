@@ -122,6 +122,23 @@ function createFormattedUiLog(
     context: cleanContext,
   };
 }
+function areUiMonsEqual(a?: UiMon, b?: UiMon): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if ("Active" in a && "Active" in b) {
+    return (
+      a.Active.side === b.Active.side &&
+      a.Active.position === b.Active.position &&
+      a.Active.player === b.Active.player &&
+      a.Active.name === b.Active.name
+    );
+  }
+  if ("Inactive" in a && "Inactive" in b) {
+    return a.Inactive.player === b.Inactive.player && a.Inactive.name === b.Inactive.name;
+  }
+  return false;
+}
+
 
 function resolveNoticeMon(
   ruleNotice: NoticeRuleNotice,
@@ -148,18 +165,14 @@ function resolveNoticeMon(
   }
 
   let participant: MappedLogParticipantMetadata | undefined = undefined;
-  if (ruleNotice.monResolution === "sourceFirst") {
+  if (ruleNotice.monResolution === "sourceOnly") {
+    participant = mapped.metadata?.source;
+  } else if (ruleNotice.monResolution === "sourceFirst") {
     // If 'of' is specified, use of (source of effect); otherwise default to mon / target of log
-    participant =
-      mapped.metadata?.of ||
-      mapped.metadata?.mon ||
-      mapped.metadata?.target;
+    participant = mapped.metadata?.of || mapped.metadata?.mon || mapped.metadata?.target;
   } else {
     // targetFirst: default to mon / target of log, fallback to of
-    participant =
-      mapped.metadata?.mon ||
-      mapped.metadata?.target ||
-      mapped.metadata?.of;
+    participant = mapped.metadata?.mon || mapped.metadata?.target || mapped.metadata?.of;
   }
 
   if (participant) {
@@ -236,11 +249,7 @@ function pushFormattedMessages(
   if (!i18next.exists(key, templateArgs)) return;
   const rawTemplate = i18next.t(key, { ...templateArgs, returnObjects: true });
   const templates =
-    typeof rawTemplate === "string"
-      ? [rawTemplate]
-      : Array.isArray(rawTemplate)
-        ? rawTemplate
-        : [];
+    typeof rawTemplate === "string" ? [rawTemplate] : Array.isArray(rawTemplate) ? rawTemplate : [];
   for (const item of templates) {
     if (typeof item === "string") {
       const msg = createFormattedUiLog(key, item, category, context);
@@ -284,62 +293,66 @@ export class LogFormatter {
 
     const notices: UiNotice[] = [];
 
-    for (const rule of (noticeRules as NoticeRule[])) {
-      let match = true;
+    for (const rule of noticeRules as NoticeRule[]) {
       if (rule.condition.hasSourceEffectType) {
         const reqType = rule.condition.hasSourceEffectType.toLowerCase();
         const actualType = mapped.source_effect?.effect_type?.toLowerCase();
-        if (actualType !== reqType) {
-          match = false;
-        }
+        if (actualType !== reqType) continue;
       }
       if (rule.condition.hasEffectType) {
         const reqType = rule.condition.hasEffectType.toLowerCase();
         const actualType = mapped.effect?.effect_type?.toLowerCase();
-        if (actualType !== reqType) {
-          match = false;
-        }
+        if (actualType !== reqType) continue;
       }
       if (rule.condition.titleIn) {
         const title = mapped.patterns[0]?.split("|")[0] || entry.title.toLowerCase();
-        if (!title || !rule.condition.titleIn.includes(title)) {
-          match = false;
-        }
+        if (!title || !rule.condition.titleIn.includes(title)) continue;
+      }
+      if (rule.condition.titleNotIn) {
+        const title = mapped.patterns[0]?.split("|")[0] || entry.title.toLowerCase();
+        if (title && rule.condition.titleNotIn.includes(title)) continue;
+      }
+      if (rule.condition.hasSource !== undefined) {
+        const hasSource = Boolean(mapped.metadata?.source);
+        if (hasSource !== rule.condition.hasSource) continue;
+      }
+      if (rule.condition.hasOf !== undefined) {
+        const hasOf = Boolean(mapped.metadata?.of);
+        if (hasOf !== rule.condition.hasOf) continue;
       }
       if (rule.condition.hasContext) {
-        if (!mapped.context[rule.condition.hasContext]) {
-          match = false;
+        if (!mapped.context[rule.condition.hasContext]) continue;
+      }
+
+      let name = "";
+      if (rule.notice.nameFromPath) {
+        if (rule.notice.nameFromPath === "source_effect.name" && mapped.source_effect?.name) {
+          name = mapped.source_effect.name;
+        } else if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
+          name = mapped.effect.name;
+        }
+      }
+      if (!name && rule.notice.nameFromContext) {
+        if (mapped.context[rule.notice.nameFromContext]) {
+          name = String(mapped.context[rule.notice.nameFromContext]);
         }
       }
 
-      if (match) {
-        let name = "";
-        if (rule.notice.nameFromPath) {
-          if (rule.notice.nameFromPath === "source_effect.name" && mapped.source_effect?.name) {
-            name = mapped.source_effect.name;
-          } else if (rule.notice.nameFromPath === "effect.name" && mapped.effect?.name) {
-            name = mapped.effect.name;
-          }
-        }
-        if (!name && rule.notice.nameFromContext) {
-          if (mapped.context[rule.notice.nameFromContext]) {
-            name = String(mapped.context[rule.notice.nameFromContext]);
-          }
-        }
-
-        if (name) {
-          const { monStr, monRef } = resolveNoticeMon(rule.notice, mapped);
-          const exists = notices.some(
-            (n) => n.type === rule.notice.type && n.name === name && n.mon === monStr,
-          );
-          if (!exists) {
-            notices.push({
-              type: rule.notice.type,
-              name,
-              mon: monStr,
-              monRef,
-            });
-          }
+      if (name) {
+        const { monStr, monRef } = resolveNoticeMon(rule.notice, mapped);
+        const exists = notices.some(
+          (n) =>
+            n.type === rule.notice.type &&
+            n.name === name &&
+            areUiMonsEqual(n.monRef, monRef),
+        );
+        if (!exists) {
+          notices.push({
+            type: rule.notice.type,
+            name,
+            mon: monStr,
+            monRef,
+          });
         }
       }
     }
@@ -378,12 +391,7 @@ export class LogFormatter {
         category: mapped.category,
       };
     } else {
-      resolved = findTemplateKey(
-        mapped.patterns,
-        templateArgs,
-        mapped.category,
-        mapped.extension,
-      );
+      resolved = findTemplateKey(mapped.patterns, templateArgs, mapped.category, mapped.extension);
     }
 
     if (resolved) {

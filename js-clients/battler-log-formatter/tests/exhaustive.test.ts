@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import { alterBattleState, newBattleState, UiLogEntry } from "battler-state";
+import { describe, expect, it } from "vitest";
+import { en } from "../locales/en.js";
 import { LogFormatter, stringifyLog } from "../src/formatter.js";
 import { mapUiLogEntry } from "../src/mapper.js";
 import type { LogCategory, LogContext, UiNotice } from "../src/types.js";
-import { en } from "../locales/en.js";
 import matrixLogs from "./data/logs-matrix.json" with { type: "json" };
 
 interface ExhaustiveMessage {
@@ -27,12 +27,18 @@ describe("Exhaustive Log Coverage", () => {
   it.each(matrixLogs)("should parse and format log string: %s", async (logString) => {
     const players = new Set<string>();
     const mons = new Map<string, string>();
-    
+
     const parts = logString.split("|");
     for (const part of parts) {
       if (part.startsWith("player:")) {
         players.add(part.split(":")[1]);
-      } else if (part.startsWith("mon:") || part.startsWith("of:") || part.startsWith("source:") || part.startsWith("into:") || part.startsWith("target:")) {
+      } else if (
+        part.startsWith("mon:") ||
+        part.startsWith("of:") ||
+        part.startsWith("source:") ||
+        part.startsWith("into:") ||
+        part.startsWith("target:")
+      ) {
         const [, val] = part.split(":");
         const [species, player] = val.split(",");
         if (player) {
@@ -54,11 +60,15 @@ describe("Exhaustive Log Coverage", () => {
       const pid = playerList[i];
       const side = i % 2;
       setupLogs.push(`side|id:${side}|name:Team ${side + 1}`);
-      setupLogs.push(`player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`);
+      setupLogs.push(
+        `player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`,
+      );
       setupLogs.push(`teamsize|player:${pid}|size:6`);
 
       const monSpecies = mons.get(pid) || "Pikachu";
-      setupLogs.push(`switch|player:${pid}|position:1|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`);
+      setupLogs.push(
+        `switch|player:${pid}|position:1|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`,
+      );
     }
 
     setupLogs.push("teampreviewstart");
@@ -103,7 +113,7 @@ describe("Exhaustive Log Coverage", () => {
       uiLogEntry = {
         title,
         values,
-      };
+      } as unknown as UiLogEntry;
     }
 
     if (!uiLogEntry) {
@@ -116,56 +126,56 @@ describe("Exhaustive Log Coverage", () => {
     // 2. Extract just the enum key, the message string, and context vars
     let primaryResult: ExhaustiveResult | null = null;
     if (event) {
-        primaryResult = {
-            notices: event.notices,
-            messages: event.messages.map((msg) => ({
-                key: msg.key,
-                context: msg.context,
-                formatted: {
-                    category: msg.category,
-                    text: stringifyLog(msg)
-                }
-            }))
-        };
+      primaryResult = {
+        notices: event.notices,
+        messages: event.messages.map((msg) => ({
+          key: msg.key,
+          context: msg.context,
+          formatted: {
+            category: msg.category,
+            text: stringifyLog(msg),
+          },
+        })),
+      };
     } else {
-        const mapped = mapUiLogEntry(uiLogEntry, alteredState, { localPlayerId: "p1" });
-        let matchedKey: string | undefined = undefined;
-        if (mapped) {
-          for (const pattern of mapped.patterns) {
-            const patternParts = pattern.split("|");
-            const title = patternParts.shift()!;
-            const tags = patternParts.filter((x) => x.includes(":"));
-            const flags = patternParts.filter((x) => !x.includes(":"));
-            tags.sort();
-            flags.sort();
-            const p = [title, ...tags, ...flags].join("|");
-            const safePattern = p
-              .replace(/\|/g, "__")
-              .replace(/:/g, "_")
-              .replace(/\*/g, "any")
-              .toLowerCase()
-              .replace(/[^a-z0-9_]/g, "");
+      const mapped = mapUiLogEntry(uiLogEntry, alteredState, { localPlayerId: "p1" });
+      let matchedKey: string | undefined = undefined;
+      if (mapped) {
+        for (const pattern of mapped.patterns) {
+          const patternParts = pattern.split("|");
+          const title = patternParts.shift()!;
+          const tags = patternParts.filter((x) => x.includes(":"));
+          const flags = patternParts.filter((x) => !x.includes(":"));
+          tags.sort();
+          flags.sort();
+          const p = [title, ...tags, ...flags].join("|");
+          const safePattern = p
+            .replace(/\|/g, "__")
+            .replace(/:/g, "_")
+            .replace(/\*/g, "any")
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, "");
 
-            const logKey = safePattern;
-            if (logKey in en.logs || Object.keys(en.logs).some((k) => k.startsWith(`${logKey}___`))) {
-              matchedKey = safePattern;
-              break;
-            }
+          const logKey = safePattern;
+          if (logKey in en.logs || Object.keys(en.logs).some((k) => k.startsWith(`${logKey}___`))) {
+            matchedKey = safePattern;
+            break;
           }
         }
-        if (matchedKey) {
-          primaryResult = {
-            key: matchedKey,
-            messages: [],
-            notices: []
-          };
-        }
+      }
+      if (matchedKey) {
+        primaryResult = {
+          key: matchedKey,
+          messages: [],
+          notices: [],
+        };
+      }
     }
 
     // 3. Snapshot the result
     expect({
-        rawLog: logString,
-        result: primaryResult
+      rawLog: logString,
+      result: primaryResult,
     }).toMatchSnapshot();
   });
 });

@@ -409,12 +409,16 @@ fn record_item_for_mon(
     force: bool,
 ) -> Result<()> {
     apply_for_each_mon_battle_appearance(state, mon, |mon, ambiguity| {
-        // If we know that the Mon does not have an item, then this effect is presumably
-        // after the item ended.
-        if !force
-            && let Some(item) = mon.primary().item.known()
-            && item.is_empty()
-        {
+        if !force && let Some(current_item) = mon.primary().item.known() {
+            // If we know the Mon has no item (its item ended), this effect reveals what it had
+            // previously.
+            if current_item.is_empty() {
+                if mon.primary().previous_item.known().is_none() {
+                    mon.record_previous_item(item.clone().into(), ambiguity);
+                }
+                return;
+            }
+            // If the Mon already has a known item, do not overwrite it.
             return;
         }
 
@@ -468,7 +472,7 @@ fn record_effect_from_mon(
 ) -> Result<()> {
     match effect.effect_type.as_deref() {
         Some("ability") => {
-            record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
+            record_source_base_ability_if_unknown(state, mon, effect.name.clone())?;
         }
         Some("item") => {
             record_item_for_mon(state, mon, effect.name.clone(), false)?;
@@ -717,8 +721,9 @@ fn modify_state_from_effect(state: &mut BattleState, entry: &LogEntry) -> Result
         "itemend" => {
             let mon = entry.value_or_else("mon")?;
             let ending_item = entry.value::<String>("item");
+            let target = entry.value::<MonName>("source").unwrap_or(mon);
 
-            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+            apply_for_each_mon_battle_appearance(state, &target, |mon, ambiguity| {
                 if let Some(ending_item) = &ending_item {
                     mon.record_previous_item(ending_item.clone().into(), ambiguity);
                 } else if let Some(current_item) = mon.primary().item.known()
@@ -728,23 +733,19 @@ fn modify_state_from_effect(state: &mut BattleState, entry: &LogEntry) -> Result
                 }
                 mon.record_item(String::default().into(), ambiguity);
             })?;
-
-            if let Some(source) = entry.value::<MonName>("source")
-                && let Some(ending_item) = &ending_item
-            {
-                record_source_previous_item_if_unknown(state, &source, ending_item.clone())?;
-            }
         }
         "prepare" => {
             let mon = entry.value_or_else("mon")?;
             if let Some(mov) = entry.value::<String>("move") {
                 let turn = state.turn;
+                let mut data = values_to_condition_data_map(entry);
+                data.insert("prepare".to_owned(), "".to_owned());
                 apply_for_each_mon(state, &mon, |mon, _| {
                     mon.volatile_data.record_condition(
                         mov.clone(),
                         ConditionData {
                             since_turn: turn,
-                            data: values_to_condition_data_map(entry),
+                            data: data.clone(),
                         },
                     );
                 })?;
@@ -1210,7 +1211,11 @@ fn alter_battle_state_for_entry(
             }
 
             apply_for_each_mon(state, &mon, |mon, _| {
-                mon.volatile_data.remove_condition(&name);
+                if let Some(condition) = mon.volatile_data.conditions.get(&name)
+                    && condition.data.contains_key("prepare")
+                {
+                    mon.volatile_data.remove_condition(&name);
+                }
 
                 for name in mon
                     .volatile_data

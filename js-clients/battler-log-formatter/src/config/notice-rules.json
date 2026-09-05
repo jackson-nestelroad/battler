@@ -1,7 +1,8 @@
 [
   {
     "condition": {
-      "hasSourceEffectType": "Ability"
+      "hasSourceEffectType": "Ability",
+      "titleNotIn": ["abilitystart"]
     },
     "notice": {
       "type": "Ability",
@@ -11,12 +12,61 @@
   },
   {
     "condition": {
-      "hasSourceEffectType": "Item"
+      "hasSourceEffectType": "Ability",
+      "titleIn": ["abilitystart"],
+      "hasOf": true
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasSourceEffectType": "Item",
+      "titleNotIn": ["itemstart", "itemend"]
     },
     "notice": {
       "type": "Item",
       "nameFromPath": "source_effect.name",
       "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasSourceEffectType": "Item",
+      "titleIn": ["itemstart", "itemend"],
+      "hasOf": true
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["abilitystart"],
+      "hasContext": "ABILITY",
+      "hasSource": true
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromContext": "ABILITY",
+      "monResolution": "sourceOnly"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["itemstart", "itemend"],
+      "hasContext": "ITEM",
+      "hasSource": true
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM",
+      "monResolution": "sourceOnly"
     }
   },
   {
@@ -42,7 +92,8 @@
   },
   {
     "condition": {
-      "hasEffectType": "Item"
+      "hasEffectType": "Item",
+      "titleNotIn": ["itemend"]
     },
     "notice": {
       "type": "Item",
@@ -52,8 +103,20 @@
   },
   {
     "condition": {
-      "titleIn": ["item", "itemstart", "itemend", "activate"],
+      "titleIn": ["item", "itemstart", "activate"],
       "hasContext": "ITEM"
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["itemend"],
+      "hasContext": "ITEM",
+      "hasSource": false
     },
     "notice": {
       "type": "Item",

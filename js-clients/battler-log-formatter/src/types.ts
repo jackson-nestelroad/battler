@@ -1,15 +1,15 @@
+import type { Effect, UiMon } from "battler-state";
 import { en } from "../locales/en.js";
-import type { UiMon, Effect } from "battler-state";
-import type { FormattedUiLog } from "./formatter.js";
 import type { LogToken } from "./engine.js";
+import type { FormattedUiLog } from "./formatter.js";
 
 export type LogTemplateKey = keyof typeof en.logs;
 export type HintLogTemplateKey = keyof typeof en.hints.logs;
 
 export enum LogCategory {
-  Primary = "primary",     // Main actions (Moves, Switches, Faints, Transformations, Outcomes)
+  Primary = "primary", // Main actions (Moves, Switches, Faints, Transformations, Outcomes)
   Secondary = "secondary", // Modifiers, effects, abilities, weather, and sub-messages
-  Hint = "hint",           // System hints, timer warnings, and informational notices
+  Hint = "hint", // System hints, timer warnings, and informational notices
 }
 
 export type UiToken = LogToken;
@@ -67,14 +67,17 @@ export interface NoticeRuleCondition {
   hasEffectType?: string;
   hasSourceEffectType?: string;
   titleIn?: string[];
+  titleNotIn?: string[];
   hasContext?: string;
+  hasSource?: boolean;
+  hasOf?: boolean;
 }
 
 export interface NoticeRuleNotice {
   type: string;
   nameFromPath?: string;
   nameFromContext?: string;
-  monResolution?: "fromContext" | "sourceFirst" | "targetFirst";
+  monResolution?: "fromContext" | "sourceFirst" | "targetFirst" | "sourceOnly";
   monFromContext?: string;
 }
 
@@ -83,19 +86,6 @@ export interface NoticeRule {
   notice: NoticeRuleNotice;
 }
 
-export type ExtractVariables<T> =
-  T extends string
-    ? (T extends `${string}{{${infer Var}}}${infer Rest}` ? Var | ExtractVariables<Rest> : never)
-    : T extends readonly (infer U)[]
-      ? ExtractVariables<U>
-      : T extends (infer U)[]
-        ? ExtractVariables<U>
-        : never;
-
-export type RequiredContext<K extends LogTemplateKey> = 
-  ExtractVariables<NonNullable<typeof en.logs[K]>> extends never
-    ? { count?: number }
-    : Record<ExtractVariables<NonNullable<typeof en.logs[K]>>, ContextValue> & { count?: number };
 
 export interface MappedLogParticipantMetadata {
   raw?: string;
@@ -129,4 +119,3 @@ export interface MapperOptions {
   healthFormat?: "fraction" | "percentage";
   forceTemplateKey?: string;
 }
-

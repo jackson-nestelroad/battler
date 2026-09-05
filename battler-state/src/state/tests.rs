@@ -931,12 +931,52 @@ mod state_test {
         assert_eq!(state_selectors::mon_item(&state, &sq).unwrap(), None);
         assert_eq!(
             state_selectors::mon_previous_item(&state, &sq).unwrap(),
-            Some("Leftovers")
+            None
         );
         assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
         assert_eq!(
             state_selectors::mon_previous_item(&state, &ch).unwrap(),
             Some("Leftovers")
+        );
+    }
+
+    #[test]
+    fn itemend_with_source_preserves_target_held_item() {
+        let state = setup_singles_battle(&[
+            "itemstart|mon:Squirtle,player-1,1|item:Life Orb",
+            "itemstart|mon:Charmander,player-2,1|item:Sitrus Berry",
+            "itemend|mon:Squirtle,player-1,1|item:Sitrus Berry|eat|source:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Life Orb")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &sq).unwrap(),
+            None
+        );
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Sitrus Berry")
+        );
+    }
+
+    #[test]
+    fn itemend_with_source_updates_source_existing_previous_item() {
+        let state = setup_singles_battle(&[
+            "itemstart|mon:Charmander,player-2,1|item:Focus Sash",
+            "itemend|mon:Charmander,player-2,1|item:Focus Sash",
+            "itemstart|mon:Charmander,player-2,1|item:Sitrus Berry",
+            "itemend|mon:Squirtle,player-1,1|item:Sitrus Berry|eat|source:Charmander,player-2,1",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state, &ch).unwrap(),
+            Some("Sitrus Berry")
         );
     }
 
@@ -1246,6 +1286,82 @@ mod state_test {
                 ui_log!(title = "turn", values = { "turn" => 1 }),
                 ui_log!(title = "prepare", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Solar Beam".to_owned() }, values = { "move" => "Solar Beam" }),
             ]
+        );
+    }
+
+    #[test]
+    fn removes_prepare_volatile_when_move_is_used() {
+        let mut logs = Vec::from_iter(["prepare|mon:Squirtle,player-1,1|move:Solar Beam"]);
+        let state = setup_singles_battle(&logs);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Solar Beam"));
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            vec!["Solar Beam"]
+        );
+
+        logs.push("move|mon:Squirtle,player-1,1|name:Solar Beam|target:Charmander,player-2,1");
+        let state = setup_singles_battle(&logs);
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(!sq_mon.volatile_data.conditions.contains_key("Solar Beam"));
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            Vec::<&str>::new()
+        );
+    }
+
+    #[test]
+    fn does_not_remove_multi_turn_volatile_on_subsequent_move_turns() {
+        let mut logs = Vec::from_iter([
+            "move|mon:Squirtle,player-1,1|name:Bide|target:Squirtle,player-1,1",
+            "start|mon:Squirtle,player-1,1|move:Bide",
+        ]);
+        let state = setup_singles_battle(&logs);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Bide"));
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            vec!["Bide"]
+        );
+
+        // Turn 2 of Bide: mon stores energy and uses Bide again. Volatile must NOT be removed.
+        logs.extend([
+            "turn|turn:2",
+            "activate|mon:Squirtle,player-1,1|move:Bide",
+            "move|mon:Squirtle,player-1,1|name:Bide|target:Squirtle,player-1,1",
+        ]);
+        let state = setup_singles_battle(&logs);
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Bide"));
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            vec!["Bide"]
+        );
+
+        // Turn 3 of Bide: Bide ends, then unleash damage. Volatile is removed by end.
+        logs.extend([
+            "turn|turn:3",
+            "end|mon:Squirtle,player-1,1|move:Bide",
+            "move|mon:Squirtle,player-1,1|name:Bide|target:Charmander,player-2,1",
+        ]);
+        let state = setup_singles_battle(&logs);
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(!sq_mon.volatile_data.conditions.contains_key("Bide"));
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            Vec::<&str>::new()
         );
     }
 
@@ -3156,6 +3272,196 @@ mod state_test {
             Some("Insomnia")
         );
         assert_eq!(state_selectors::mon_ability(&state, &ch).unwrap(), None);
+    }
+
+    #[test]
+    fn abilitystart_with_source_and_from_binds_from_to_target_and_ability_to_both() {
+        let state = setup_singles_battle(&[
+            "abilitystart|mon:Squirtle,player-1,1|ability:Refrigerate|source:Charmander,player-2,1|from:ability:Trace",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+
+        // Target (Squirtle): volatile ability is Refrigerate, base ability is Trace
+        // (from:ability:Trace on target)
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Refrigerate")
+        );
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Refrigerate"));
+        assert_eq!(
+            state_selectors::mon_battle_appearance_or_else(&state, &sq)
+                .unwrap()
+                .ability
+                .known(),
+            Some(&"Trace".to_owned())
+        );
+
+        // Source (Charmander): revealed base ability is Refrigerate (never Trace!)
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Refrigerate")
+        );
+        let ch_mon = state.field.mon_by_reference_or_else(&ch).unwrap();
+        assert_eq!(ch_mon.volatile_data.ability, None);
+        assert_eq!(
+            state_selectors::mon_battle_appearance_or_else(&state, &ch)
+                .unwrap()
+                .ability
+                .known(),
+            Some(&"Refrigerate".to_owned())
+        );
+    }
+
+    #[test]
+    fn abilitystart_does_not_overwrite_source_known_ability() {
+        let state = setup_singles_battle(&[
+            "ability|mon:Charmander,player-2,1|ability:Blaze",
+            "abilitystart|mon:Squirtle,player-1,1|ability:Solar Power|source:Charmander,player-2,1|from:move:Role Play",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Solar Power")
+        );
+        // Charmander already knew Blaze, so it is not clobbered
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Blaze")
+        );
+    }
+
+    #[test]
+    fn abilitystart_with_from_ability_and_of_records_of_base_ability() {
+        let state = setup_singles_battle(&[
+            "abilitystart|mon:Squirtle,player-1,1|ability:Lingering Aroma|from:ability:Lingering Aroma|of:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+
+        // Target (Squirtle): volatile ability is Lingering Aroma
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Lingering Aroma")
+        );
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(
+            sq_mon.volatile_data.ability.as_deref(),
+            Some("Lingering Aroma")
+        );
+
+        // Source of effect (Charmander): base appearance ability is Lingering Aroma
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Lingering Aroma")
+        );
+        assert_eq!(
+            state_selectors::mon_battle_appearance_or_else(&state, &ch)
+                .unwrap()
+                .ability
+                .known(),
+            Some(&"Lingering Aroma".to_owned())
+        );
+    }
+
+    #[test]
+    fn abilityend_with_from_ability_and_of_records_of_base_ability_and_clears_volatile() {
+        let state = setup_singles_battle(&[
+            "abilitystart|mon:Squirtle,player-1,1|ability:Libero",
+            "abilityend|mon:Squirtle,player-1,1|ability:Libero|from:ability:Neutralizing Gas|of:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+
+        // Target (Squirtle): volatile ability is cleared
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some(""));
+
+        // Source of effect (Charmander): base appearance ability is Neutralizing Gas
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Neutralizing Gas")
+        );
+        assert_eq!(
+            state_selectors::mon_battle_appearance_or_else(&state, &ch)
+                .unwrap()
+                .ability
+                .known(),
+            Some(&"Neutralizing Gas".to_owned())
+        );
+    }
+
+    #[test]
+    fn itemstart_with_and_without_source() {
+        // Without source: target has item
+        let state1 = setup_singles_battle(&["itemstart|mon:Squirtle,player-1,1|item:Choice Band"]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state1, &sq).unwrap(),
+            Some("Choice Band")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state1, &sq).unwrap(),
+            None
+        );
+
+        // With source: target has item, source HAD item previously only if not known
+        let state2 = setup_singles_battle(&[
+            "itemstart|mon:Squirtle,player-1,1|item:Leftovers|source:Charmander,player-2,1",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state2, &sq).unwrap(),
+            Some("Leftovers")
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state2, &sq).unwrap(),
+            None
+        );
+        assert_eq!(
+            state_selectors::mon_previous_item(&state2, &ch).unwrap(),
+            Some("Leftovers")
+        );
+    }
+
+    #[test]
+    fn from_without_of_defaults_to_target_and_never_source() {
+        let state = setup_singles_battle(&["damage|mon:Squirtle,player-1,1|from:item:Life Orb"]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Life Orb")
+        );
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+    }
+
+    #[test]
+    fn from_item_does_not_overwrite_known_item_and_records_previous_if_empty() {
+        // Mon with already known item does not get overwritten by from:item
+        let state1 = setup_singles_battle(&[
+            "itemstart|mon:Squirtle,player-1,1|item:Choice Specs",
+            "damage|mon:Squirtle,player-1,1|from:item:Life Orb",
+        ]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state1, &sq).unwrap(),
+            Some("Choice Specs")
+        );
+
+        // Mon whose item ended previously records previous item from from:item
+        let state2 = setup_singles_battle(&[
+            "itemend|mon:Squirtle,player-1,1|item:Focus Sash",
+            "damage|mon:Squirtle,player-1,1|from:item:Focus Sash",
+        ]);
+        assert_eq!(state_selectors::mon_item(&state2, &sq).unwrap(), None);
+        assert_eq!(
+            state_selectors::mon_previous_item(&state2, &sq).unwrap(),
+            Some("Focus Sash")
+        );
     }
 
     #[test]

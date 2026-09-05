@@ -1,10 +1,10 @@
 import { alterBattleState, newBattleState, UiLogEntry } from "battler-state";
-import { LogFormatter } from "../src/formatter.js";
-import { mapUiLogEntry } from "../src/mapper.js";
-import { parsePattern, serializePattern, patternToKey } from "../src/pattern.js";
 import { en } from "../locales/en.js";
-import matrixLogs from "../tests/data/logs-matrix.json" with { type: "json" };
 import { parseTemplateToTokens } from "../src/engine.js";
+import { LogFormatter, stringifyLog } from "../src/formatter.js";
+import { mapUiLogEntry } from "../src/mapper.js";
+import { parsePattern, patternToKey, serializePattern } from "../src/pattern.js";
+import matrixLogs from "../tests/data/logs-matrix.json" with { type: "json" };
 
 const formatter = new LogFormatter({ localPlayerId: "p1" });
 
@@ -83,15 +83,21 @@ for (const logString of matrixLogs) {
     const pid = playerList[i];
     const side = i % 2;
     setupLogs.push(`side|id:${side}|name:Team ${side + 1}`);
-    setupLogs.push(`player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`);
+    setupLogs.push(
+      `player|id:${pid}|name:PLAYER-${i + 1}|side:${side}|position:${Math.floor(i / 2)}`,
+    );
     setupLogs.push(`teamsize|player:${pid}|size:6`);
 
     const playerMons = monsByPlayer.get(pid);
     if (!playerMons || playerMons.size === 0) {
-      setupLogs.push(`switch|player:${pid}|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M`);
+      setupLogs.push(
+        `switch|player:${pid}|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M`,
+      );
     } else {
       for (const [pos, monSpecies] of playerMons.entries()) {
-        setupLogs.push(`switch|player:${pid}|position:${pos}|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`);
+        setupLogs.push(
+          `switch|player:${pid}|position:${pos}|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`,
+        );
       }
     }
   }
@@ -122,7 +128,10 @@ for (const logString of matrixLogs) {
     alteredState = alterBattleState(newBattleState(), testSequence);
   } catch (err) {
     // If it's a known standalone log that requires specific state context, format directly
-    if (logString.startsWith("start|move:Doom Desire") || logString.startsWith("start|move:Future Sight")) {
+    if (
+      logString.startsWith("start|move:Doom Desire") ||
+      logString.startsWith("start|move:Future Sight")
+    ) {
       const logParts = logString.split("|");
       const title = logParts[0];
       const values: Record<string, string> = {};
@@ -181,8 +190,7 @@ for (const logString of matrixLogs) {
   const event = formatter.format(uiLogEntry, alteredState);
 
   const isIntentionallyEmpty =
-    matchedVal === null ||
-    (Array.isArray(matchedVal) && matchedVal.length === 0);
+    matchedVal === null || (Array.isArray(matchedVal) && matchedVal.length === 0);
 
   // If a template was defined (not null/empty), formatter must produce message(s)
   if (matchedKey && !isIntentionallyEmpty) {
@@ -192,6 +200,8 @@ for (const logString of matrixLogs) {
         "cannotescape",
         "fieldstart__move_trickroom",
         "itemstart__from_ability_magician__item_any",
+        "start__move_doomdesire",
+        "start__move_futuresight",
       ]);
 
       const tmpl = Array.isArray(matchedVal) ? matchedVal[0] : matchedVal;
@@ -237,6 +247,8 @@ if (failures.length > 0) {
   }
   process.exit(1);
 } else {
-  console.log(`\n✅ All ${matrixLogs.length} matrix logs and all locale templates validated successfully!`);
+  console.log(
+    `\n✅ All ${matrixLogs.length} matrix logs and all locale templates validated successfully!`,
+  );
   process.exit(0);
 }

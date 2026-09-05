@@ -1840,6 +1840,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Banette",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Soundproof",
+        "type": "Ability",
+      },
+      {
+        "mon": "The opposing Banette's",
+        "monRef": {
+          "Active": {
+            "name": "Banette",
             "player": "player-1",
             "position": 0,
             "side": 0,
@@ -1859,6 +1872,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
   "result": {
     "messages": [],
     "notices": [
+      {
+        "mon": "The opposing Budew's",
+        "monRef": {
+          "Active": {
+            "name": "Budew",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "No Ability",
+        "type": "Ability",
+      },
       {
         "mon": "The opposing Budew's",
         "monRef": {
@@ -1964,6 +1990,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "name": "Mummy",
         "type": "Ability",
       },
+      {
+        "mon": "The opposing Conkeldurr's",
+        "monRef": {
+          "Active": {
+            "name": "Conkeldurr",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Mummy",
+        "type": "Ability",
+      },
     ],
   },
 }
@@ -2008,6 +2047,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Grafaiai's",
+        "monRef": {
+          "Active": {
+            "name": "Grafaiai",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Speed Boost",
+        "type": "Ability",
+      },
       {
         "mon": "The opposing Grafaiai's",
         "monRef": {
@@ -2065,6 +2117,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Grafaiai's",
+        "monRef": {
+          "Active": {
+            "name": "Grafaiai",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Speed Boost",
+        "type": "Ability",
+      },
       {
         "mon": "The opposing Grafaiai's",
         "monRef": {
@@ -2136,6 +2201,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
     "messages": [],
     "notices": [
       {
+        "mon": "The opposing Magcargo's",
+        "monRef": {
+          "Active": {
+            "name": "Magcargo",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Magma Armor",
+        "type": "Ability",
+      },
+      {
         "mon": "The opposing Linoone's",
         "monRef": {
           "Active": {
@@ -2159,6 +2237,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
   "result": {
     "messages": [],
     "notices": [
+      {
+        "mon": "The opposing Linoone's",
+        "monRef": {
+          "Active": {
+            "name": "Linoone",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "No Ability",
+        "type": "Ability",
+      },
       {
         "mon": "The opposing Magcargo's",
         "monRef": {
@@ -2217,6 +2308,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "name": "Lingering Aroma",
         "type": "Ability",
       },
+      {
+        "mon": "The opposing Oinkologne's",
+        "monRef": {
+          "Active": {
+            "name": "Oinkologne",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Lingering Aroma",
+        "type": "Ability",
+      },
     ],
   },
 }
@@ -2251,16 +2355,16 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
     ],
     "notices": [
       {
-        "mon": "The opposing Passimian's",
+        "mon": "The opposing Oranguru's",
         "monRef": {
           "Active": {
-            "name": "Passimian",
+            "name": "Oranguru",
             "player": "player-1",
-            "position": 0,
+            "position": 1,
             "side": 0,
           },
         },
-        "name": "Receiver",
+        "name": "Speed Boost",
         "type": "Ability",
       },
       {
@@ -2325,12 +2429,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Ralts",
-            "player": "player-1",
+            "player": "player-2",
             "position": 0,
-            "side": 0,
+            "side": 1,
           },
         },
-        "name": "Trace",
+        "name": "Insomnia",
         "type": "Ability",
       },
       {
@@ -2408,12 +2512,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Runerigus",
-            "player": "player-1",
+            "player": "player-2",
             "position": 0,
-            "side": 0,
+            "side": 1,
           },
         },
-        "name": "Wandering Spirit",
+        "name": "Mold Breaker",
         "type": "Ability",
       },
       {
@@ -2453,6 +2557,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "name": "Wandering Spirit",
         "type": "Ability",
       },
+      {
+        "mon": "The opposing Runerigus's",
+        "monRef": {
+          "Active": {
+            "name": "Runerigus",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Wandering Spirit",
+        "type": "Ability",
+      },
     ],
   },
 }
@@ -2469,12 +2586,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Runerigus",
-            "player": "player-2",
+            "player": "player-1",
             "position": 0,
-            "side": 0,
+            "side": 1,
           },
         },
-        "name": "Wandering Spirit",
+        "name": "Mold Breaker",
         "type": "Ability",
       },
       {
@@ -30043,6 +30160,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
     ],
     "notices": [
       {
+        "mon": "The opposing Ditto's",
+        "monRef": {
+          "Active": {
+            "name": "Ditto",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
+      {
         "mon": "The opposing Castform's",
         "monRef": {
           "Active": {
@@ -30088,6 +30218,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Luxray's",
+        "monRef": {
+          "Active": {
+            "name": "Luxray",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Utility Umbrella",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Cherrim's",
         "monRef": {
@@ -30145,6 +30288,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Crobat's",
+        "monRef": {
+          "Active": {
+            "name": "Crobat",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Crobat's",
         "monRef": {
@@ -30257,6 +30413,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Delphox",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Leppa Berry",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Delphox's",
+        "monRef": {
+          "Active": {
+            "name": "Delphox",
             "player": "player-1",
             "position": 0,
             "side": 0,
@@ -30351,6 +30520,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Empoleon",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Griseous Orb",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Empoleon's",
+        "monRef": {
+          "Active": {
+            "name": "Empoleon",
             "player": "player-2",
             "position": 0,
             "side": 0,
@@ -30422,6 +30604,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
           "Active": {
             "name": "Florges",
             "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Florges's",
+        "monRef": {
+          "Active": {
+            "name": "Florges",
+            "player": "player-2",
             "position": 1,
             "side": 0,
           },
@@ -30462,6 +30657,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Pikachu's",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-2",
+            "position": 1,
+            "side": 1,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Golisopod's",
         "monRef": {
@@ -30631,6 +30839,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Lopunny",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Lopunny's",
+        "monRef": {
+          "Active": {
+            "name": "Lopunny",
             "player": "player-1",
             "position": 0,
             "side": 0,
@@ -30768,6 +30989,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "name": "Sticky Barb",
         "type": "Item",
       },
+      {
+        "mon": "The opposing Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
     ],
   },
 }
@@ -30787,6 +31021,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
             "player": "player-1",
             "position": 0,
             "side": 1,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Pachirisu's",
+        "monRef": {
+          "Active": {
+            "name": "Pachirisu",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
           },
         },
         "name": "Sticky Barb",
@@ -30825,6 +31072,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Pidove's",
+        "monRef": {
+          "Active": {
+            "name": "Pidove",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Sticky Barb",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Pidove's",
         "monRef": {
@@ -30882,6 +31142,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Drifblim's",
+        "monRef": {
+          "Active": {
+            "name": "Drifblim",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Cheri Berry",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Porygon-Z's",
         "monRef": {
@@ -31071,6 +31344,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Torchic",
+            "player": "player-2",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Choice Band",
+        "type": "Item",
+      },
+      {
+        "mon": "The opposing Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
             "player": "player-1",
             "position": 0,
             "side": 0,
@@ -31112,6 +31398,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
       },
     ],
     "notices": [
+      {
+        "mon": "The opposing Torchic's",
+        "monRef": {
+          "Active": {
+            "name": "Torchic",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Safety Goggles",
+        "type": "Item",
+      },
       {
         "mon": "The opposing Torchic's",
         "monRef": {
@@ -31240,6 +31539,19 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         },
         "name": "Pickpocket",
         "type": "Ability",
+      },
+      {
+        "mon": "The opposing Weavile's",
+        "monRef": {
+          "Active": {
+            "name": "Weavile",
+            "player": "player-1",
+            "position": 0,
+            "side": 1,
+          },
+        },
+        "name": "Toxic Orb",
+        "type": "Item",
       },
       {
         "mon": "The opposing Weavile's",
