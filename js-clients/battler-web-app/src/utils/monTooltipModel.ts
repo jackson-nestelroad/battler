@@ -1,7 +1,11 @@
 import type { BattleState, UiMon, MonBattleAppearanceReference } from "battler-state";
 import { stateSelectors } from "battler-state";
 import type { BoostTable, MonBattleData, Nature, Stat } from "battler-types";
-import { formatStatusBadge } from "./monHelpers";
+import {
+  computeHpPercentage,
+  getMonDisplayName,
+  normalizeStatusCode,
+} from "./monHelpers";
 
 export interface NatureModifier {
   plus?: string;
@@ -60,7 +64,7 @@ export interface ExpMetrics {
 }
 
 export function formatWeightKg(hectograms?: number | null): number | null {
-  if (hectograms === undefined || hectograms === null) return null;
+  if (hectograms == null) return null;
   return Math.round((hectograms / 10) * 10) / 10;
 }
 
@@ -69,7 +73,7 @@ export function computeExpMetrics(
   levelExperience?: number | null,
   nextLevelExperience?: number | null,
 ): ExpMetrics {
-  if (experience === undefined || experience === null) {
+  if (experience == null) {
     return {};
   }
 
@@ -85,7 +89,7 @@ export function computeExpMetrics(
   }
 
   // Level bounds provided
-  if (levelExperience !== undefined && levelExperience !== null && nextLevelExperience !== undefined) {
+  if (levelExperience != null && nextLevelExperience != null) {
     const span = Math.max(1, nextLevelExperience - levelExperience);
     const progress = Math.max(0, experience - levelExperience);
     const percent = Math.min(100, Math.max(0, Math.round((progress / span) * 100)));
@@ -170,6 +174,99 @@ const STAT_DISPLAY_NAMES: Record<string, string> = {
   eva: "Eva",
 };
 
+export type SummaryStatKey = "hp" | "atk" | "def" | "spa" | "spd" | "spe";
+
+const STAT_COLUMNS: Array<{ key: SummaryStatKey; label: string; statKey: Stat }> = [
+  { key: "hp", label: "HP", statKey: "HP" },
+  { key: "atk", label: "Atk", statKey: "Atk" },
+  { key: "def", label: "Def", statKey: "Def" },
+  { key: "spa", label: "SpA", statKey: "SpAtk" },
+  { key: "spd", label: "SpD", statKey: "SpDef" },
+  { key: "spe", label: "Spe", statKey: "Spe" },
+];
+
+function createStatsTable(
+  summary?: MonBattleData["summary"],
+  mon?: MonBattleData | null,
+  natureMods?: NatureModifier | null,
+): TooltipStatRow[] {
+  return STAT_COLUMNS.map(({ key, label, statKey }) => {
+    const value = (mon ? mon.stats?.[statKey] : undefined) ?? summary?.stats?.[key];
+    const ev = summary?.evs?.[key];
+    const iv = summary?.ivs?.[key];
+    const boostVal = mon && key !== "hp" && mon.boosts ? mon.boosts[key as keyof BoostTable] : 0;
+
+    return {
+      stat: label,
+      label,
+      value,
+      ev,
+      iv,
+      boost: boostVal || 0,
+      isPlus: natureMods?.plus === label,
+      isMinus: natureMods?.minus === label,
+    };
+  });
+}
+
+function formatLostItem(item: string): string {
+  if (!item || item === "None") return "None";
+  return `None (was ${item})`;
+}
+
+interface StateMonData {
+  physical_appearance?: {
+    name?: string;
+    species?: string;
+    gender?: string;
+    shiny?: boolean;
+  };
+  volatile_data?: {
+    forme_change?: string;
+    transformed?: Array<{
+      name?: string;
+      species?: string;
+    }>;
+  };
+  battle_appearances?: unknown[];
+}
+
+interface StatePlayerData {
+  id?: string;
+  mons?: StateMonData[];
+}
+
+function resolveAppearanceRef(
+  state: BattleState,
+  playerId: string,
+  monIndex: number,
+  mon?: StateMonData | null,
+  sideIndex?: number,
+): MonBattleAppearanceReference {
+  try {
+    const resolvedSideIndex = sideIndex ?? stateSelectors.sideForPlayer(state, playerId);
+    const side = stateSelectors.side(state, resolvedSideIndex);
+    const activeRef = side?.active?.find(
+      (a) =>
+        a != null &&
+        a.player === playerId &&
+        a.mon_index === monIndex,
+    );
+    if (activeRef) {
+      return activeRef;
+    }
+  } catch {
+    // Ignore error
+  }
+
+  const appearanceIndex = Math.max(0, (mon?.battle_appearances?.length || 1) - 1);
+  return {
+    player: playerId,
+    mon_index: monIndex,
+    battle_appearance_index: appearanceIndex,
+  };
+}
+
 /**
  * Normalizes stat boost records into clean array of active (non-zero) stages.
  */
@@ -201,11 +298,11 @@ function cleanMonName(name: string): string {
 }
 
 function findMonInPlayer(
-  player: any,
+  player: StatePlayerData,
   targetName: string,
-): { monIndex: number; mon: any } | null {
+): { monIndex: number; mon: StateMonData } | null {
   const cleanTarget = cleanMonName(targetName);
-  const monIndex = (player.mons || []).findIndex((m: any) => {
+  const monIndex = (player.mons || []).findIndex((m) => {
     const phys = m.physical_appearance;
     if (!phys) return false;
     const cleanPhysName = cleanMonName(phys.name || "");
@@ -228,8 +325,34 @@ function findMonInPlayer(
     return false;
   });
 
-  if (monIndex !== -1) {
+  if (monIndex !== -1 && player.mons) {
     return { monIndex, mon: player.mons[monIndex] };
+  }
+  return null;
+}
+
+function findMonInAllSides(
+  state: BattleState,
+  targetName: string,
+): { playerId: string; monIndex: number; mon: StateMonData; sideIndex: number } | null {
+  if (!state.field?.sides) return null;
+  try {
+    for (let sIdx = 0; sIdx < state.field.sides.length; sIdx++) {
+      const players = stateSelectors.sidePlayers(state, sIdx);
+      for (const p of players) {
+        const found = findMonInPlayer(p as StatePlayerData, targetName);
+        if (found) {
+          return {
+            playerId: p.id || "",
+            monIndex: found.monIndex,
+            mon: found.mon,
+            sideIndex: sIdx,
+          };
+        }
+      }
+    }
+  } catch {
+    // Ignore error
   }
   return null;
 }
@@ -241,43 +364,13 @@ export function resolveMonRefForBattleData(
   state: BattleState,
   mon: MonBattleData,
 ): MonBattleAppearanceReference | null {
-  const targetName = mon.summary?.name || mon.species;
+  const targetName = getMonDisplayName(mon);
   if (!targetName) return null;
 
-  if (state.field?.sides) {
-    for (let sIdx = 0; sIdx < state.field.sides.length; sIdx++) {
-      const players = stateSelectors.sidePlayers(state, sIdx);
-      for (const p of players) {
-        const found = findMonInPlayer(p, targetName);
-        if (found) {
-          const resolvedPlayerId = p.id || "";
-          const { monIndex } = found;
+  const match = findMonInAllSides(state, targetName);
+  if (!match) return null;
 
-          const side = stateSelectors.side(state, sIdx);
-          const activeRef = side?.active?.find(
-            (a) =>
-              a !== null &&
-              a !== undefined &&
-              a.player === resolvedPlayerId &&
-              a.mon_index === monIndex,
-          );
-          if (activeRef) {
-            return activeRef;
-          }
-
-          const pMon = p.mons?.[monIndex];
-          const appearanceIndex = Math.max(0, (pMon?.battle_appearances?.length || 1) - 1);
-          return {
-            player: resolvedPlayerId,
-            mon_index: monIndex,
-            battle_appearance_index: appearanceIndex,
-          };
-        }
-      }
-    }
-  }
-
-  return null;
+  return resolveAppearanceRef(state, match.playerId, match.monIndex, match.mon, match.sideIndex);
 }
 
 /**
@@ -290,7 +383,7 @@ export function monBattleDataToTooltip(
 ): MonTooltipViewModel {
   const summary = mon.summary;
   const species = mon.species || summary?.species || "Unknown";
-  const name = summary?.name || mon.species || species;
+  const name = getMonDisplayName(mon) || species;
   const level = summary?.level ?? 50;
   const gender = summary?.gender ?? null;
   const shiny = !!summary?.shiny;
@@ -298,8 +391,9 @@ export function monBattleDataToTooltip(
 
   const hp = mon.hp;
   const maxHp = mon.max_hp;
-  const hpPercentage = maxHp > 0 ? Math.round((Math.max(0, hp) / maxHp) * 100) : 0;
-  const isFainted = hp <= 0 || mon.status?.toLowerCase() === "fnt";
+  const hpPercentage = computeHpPercentage(hp, maxHp);
+  const status = normalizeStatusCode(mon.status);
+  const isFainted = hp <= 0 || status === "fnt";
 
   const nature = summary?.nature as Nature | undefined;
   const natureMods = nature ? NATURE_MODIFIERS[nature] || null : null;
@@ -375,49 +469,23 @@ export function monBattleDataToTooltip(
   }));
 
   // Build stats table (HP, Atk, Def, SpA, SpD, Spe)
-  const statKeys: Array<{ key: keyof typeof summary.stats; label: string; statKey: Stat }> = [
-    { key: "hp", label: "HP", statKey: "HP" },
-    { key: "atk", label: "Atk", statKey: "Atk" },
-    { key: "def", label: "Def", statKey: "Def" },
-    { key: "spa", label: "SpA", statKey: "SpAtk" },
-    { key: "spd", label: "SpD", statKey: "SpDef" },
-    { key: "spe", label: "Spe", statKey: "Spe" },
-  ];
-
-  const statsTable: TooltipStatRow[] = statKeys.map(({ key, label, statKey }) => {
-    const value = mon.stats?.[statKey] ?? summary?.stats?.[key];
-    const ev = summary?.evs?.[key];
-    const iv = summary?.ivs?.[key];
-    const boostVal = key !== "hp" && mon.boosts ? mon.boosts[key as keyof BoostTable] : 0;
-
-    return {
-      stat: label,
-      label,
-      value,
-      ev,
-      iv,
-      boost: boostVal || 0,
-      isPlus: natureMods?.plus === label,
-      isMinus: natureMods?.minus === label,
-    };
-  });
+  const statsTable = createStatsTable(summary, mon, natureMods);
 
   const currentAbility = mon.ability || summary?.ability || null;
 
-  const currentItem =
-    mon.item !== undefined
-      ? mon.item && mon.item !== ""
-        ? mon.item
-        : previousItem
-          ? `None (was ${previousItem})`
-          : summary?.item
-            ? `None (was ${summary.item})`
-            : "None"
-      : previousItem
-        ? `None (was ${previousItem})`
-        : summary?.item
-          ? summary.item
-          : "None";
+  let currentItem = "None";
+  const wasItem = previousItem || summary?.item;
+  if (mon.item !== undefined) {
+    if (mon.item && mon.item !== "") {
+      currentItem = mon.item;
+    } else if (wasItem) {
+      currentItem = formatLostItem(wasItem);
+    }
+  } else if (previousItem) {
+    currentItem = formatLostItem(previousItem);
+  } else if (summary?.item) {
+    currentItem = summary.item;
+  }
 
   let baseSummary: MonTooltipViewModel | null = null;
   if (summary) {
@@ -438,31 +506,13 @@ export function monBattleDataToTooltip(
       };
     });
 
-    const baseStatsTable: TooltipStatRow[] = statKeys.map(({ key, label }) => {
-      const value = summary.stats?.[key];
-      const ev = summary.evs?.[key];
-      const iv = summary.ivs?.[key];
-      return {
-        stat: label,
-        label,
-        value,
-        ev,
-        iv,
-        boost: 0,
-        isPlus: natureMods?.plus === label,
-        isMinus: natureMods?.minus === label,
-      };
-    });
+    const baseStatsTable = createStatsTable(summary, null, natureMods);
 
     const summaryMaxHp = summary.stats?.hp || summary.hp;
     const summaryHp = Math.min(summary.hp, summaryMaxHp);
-    const summaryHpPercentage =
-      summaryMaxHp > 0
-        ? Math.min(100, Math.max(0, Math.round((Math.max(0, summaryHp) / summaryMaxHp) * 100)))
-        : 0;
-    const summaryStatus = summary.status ? formatStatusBadge(summary.status)?.code || summary.status : null;
-    const summaryIsFainted =
-      summaryHp === 0 || summaryStatus?.toLowerCase() === "fnt";
+    const summaryHpPercentage = computeHpPercentage(summaryHp, summaryMaxHp);
+    const summaryStatus = normalizeStatusCode(summary.status);
+    const summaryIsFainted = summaryHp <= 0 || summaryStatus === "fnt";
 
     baseSummary = {
       species: summary.species,
@@ -481,15 +531,11 @@ export function monBattleDataToTooltip(
       hpPercentage: summaryHpPercentage,
       status: summaryStatus,
       isFainted: summaryIsFainted,
-      experience: expMetrics.experience,
-      levelExperience: expMetrics.levelExperience,
-      nextLevelExperience: expMetrics.nextLevelExperience,
-      expToNextLevel: expMetrics.expToNextLevel,
-      expProgressPercent: expMetrics.expProgressPercent,
+      ...expMetrics,
       boosts: [],
       conditions: [],
       ability: summary.ability,
-      item: summary.item ? summary.item : "None",
+      item: summary.item || "None",
       nature: nature || null,
       natureModifiers: natureMods,
       hiddenPowerType: summary.hidden_power_type ? String(summary.hidden_power_type) : null,
@@ -510,7 +556,7 @@ export function monBattleDataToTooltip(
 
   return {
     species,
-    name: name || species,
+    name,
     level,
     gender,
     shiny,
@@ -523,13 +569,9 @@ export function monBattleDataToTooltip(
     hp,
     maxHp,
     hpPercentage,
-    status: mon.status ? formatStatusBadge(mon.status)?.code || mon.status : null,
+    status,
     isFainted,
-    experience: expMetrics.experience,
-    levelExperience: expMetrics.levelExperience,
-    nextLevelExperience: expMetrics.nextLevelExperience,
-    expToNextLevel: expMetrics.expToNextLevel,
-    expProgressPercent: expMetrics.expProgressPercent,
+    ...expMetrics,
     boosts: formatActiveBoosts(mon.boosts),
     conditions,
     ability: currentAbility,
@@ -547,6 +589,16 @@ export function monBattleDataToTooltip(
   };
 }
 
+function getUiMonInfo(uiMon: UiMon): { name: string; player: string; side?: number } {
+  if ("Active" in uiMon) {
+    return { name: uiMon.Active.name, player: uiMon.Active.player, side: uiMon.Active.side };
+  }
+  if ("Inactive" in uiMon) {
+    return { name: uiMon.Inactive.name, player: uiMon.Inactive.player, side: undefined };
+  }
+  return { name: "", player: "", side: undefined };
+}
+
 /**
  * Resolves a UiMon into a MonBattleAppearanceReference against a BattleState.
  * Identifies the Pokémon by its player and name, then checks if it is currently
@@ -556,22 +608,19 @@ export function resolveBattleMonRef(
   state: BattleState,
   uiMon: UiMon,
 ): MonBattleAppearanceReference | null {
-  const targetName =
-    "Active" in uiMon ? uiMon.Active.name : "Inactive" in uiMon ? uiMon.Inactive.name : "";
-  const targetPlayer =
-    "Active" in uiMon ? uiMon.Active.player : "Inactive" in uiMon ? uiMon.Inactive.player : "";
-  const sideHint = "Active" in uiMon ? uiMon.Active.side : undefined;
+  const { name: targetName, player: targetPlayer, side: sideHint } = getUiMonInfo(uiMon);
 
   if (!targetName) return null;
 
   let resolvedPlayerId = targetPlayer;
-  let found: { monIndex: number; mon: any } | null = null;
+  let found: { monIndex: number; mon: StateMonData } | null = null;
+  let resolvedSideIndex: number | undefined = sideHint;
 
   // 1. Try finding in the specified player's roster
   if (targetPlayer) {
     const p = stateSelectors.player(state, targetPlayer);
     if (p) {
-      found = findMonInPlayer(p, targetName);
+      found = findMonInPlayer(p as StatePlayerData, targetName);
       if (found) {
         resolvedPlayerId = p.id || targetPlayer;
       }
@@ -579,11 +628,11 @@ export function resolveBattleMonRef(
   }
 
   // 2. If not found and side hint exists, search players on that side
-  if (!found && sideHint !== undefined && state.field?.sides?.[sideHint]) {
+  if (!found && sideHint != null && state.field?.sides?.[sideHint]) {
     try {
       const players = stateSelectors.sidePlayers(state, sideHint);
       for (const p of players) {
-        found = findMonInPlayer(p, targetName);
+        found = findMonInPlayer(p as StatePlayerData, targetName);
         if (found) {
           resolvedPlayerId = p.id || targetPlayer;
           break;
@@ -595,52 +644,34 @@ export function resolveBattleMonRef(
   }
 
   // 3. Fallback: Search all players across all sides in the battle
-  if (!found && state.field?.sides) {
-    try {
-      for (let sIdx = 0; sIdx < state.field.sides.length; sIdx++) {
-        const players = stateSelectors.sidePlayers(state, sIdx);
-        for (const p of players) {
-          found = findMonInPlayer(p, targetName);
-          if (found) {
-            resolvedPlayerId = p.id || targetPlayer;
-            break;
-          }
-        }
-        if (found) break;
-      }
-    } catch {
-      // Ignore error
+  if (!found) {
+    const match = findMonInAllSides(state, targetName);
+    if (match) {
+      resolvedPlayerId = match.playerId || targetPlayer;
+      found = match;
+      resolvedSideIndex = match.sideIndex;
     }
   }
 
   if (!found) return null;
 
-  const { monIndex, mon } = found;
+  return resolveAppearanceRef(
+    state,
+    resolvedPlayerId,
+    found.monIndex,
+    found.mon,
+    resolvedSideIndex,
+  );
+}
 
-  // Check if this exact Pokémon is currently active on its side
-  try {
-    const sideIndex = stateSelectors.sideForPlayer(state, resolvedPlayerId);
-    const side = stateSelectors.side(state, sideIndex);
-    const activeRef = side?.active.find(
-      (a) =>
-        a !== null &&
-        a !== undefined &&
-        a.player === resolvedPlayerId &&
-        a.mon_index === monIndex,
-    );
-    if (activeRef) {
-      return activeRef;
-    }
-  } catch {
-    // Ignore error
-  }
-
-  // Pokémon is currently not active on the field (it is benched or fainted)
-  const appearanceIndex = Math.max(0, mon.battle_appearances.length - 1);
+function makeEmptyPublicTooltip(species: string, player?: string): MonTooltipViewModel {
   return {
-    player: resolvedPlayerId,
-    mon_index: monIndex,
-    battle_appearance_index: appearanceIndex,
+    species,
+    ownerLabel: player ? `Player: ${player}` : null,
+    boosts: [],
+    conditions: [],
+    moves: [],
+    stats: null,
   };
 }
 
@@ -655,18 +686,12 @@ export function publicMonStateToTooltip(
   if (!state) return null;
 
   const monRef = resolveBattleMonRef(state, uiMon);
-  const fallbackPlayer = "Active" in uiMon ? uiMon.Active.player : "Inactive" in uiMon ? uiMon.Inactive.player : "";
-  const fallbackName = "Active" in uiMon ? uiMon.Active.name : "Inactive" in uiMon ? uiMon.Inactive.name : "Mon";
+  const { name: targetName, player: targetPlayer } = getUiMonInfo(uiMon);
+  const fallbackPlayer = targetPlayer;
+  const fallbackName = targetName || "Mon";
 
   if (!monRef) {
-    return {
-      species: fallbackName,
-      ownerLabel: fallbackPlayer ? `Player: ${fallbackPlayer}` : null,
-      boosts: [],
-      conditions: [],
-      moves: [],
-      stats: null,
-    };
+    return makeEmptyPublicTooltip(fallbackName, fallbackPlayer);
   }
 
   try {
@@ -675,7 +700,7 @@ export function publicMonStateToTooltip(
     const level = stateSelectors.monLevel(state, monRef);
     const health = stateSelectors.monHealth(state, monRef);
     const rawStatus = stateSelectors.monStatus(state, monRef);
-    const status = rawStatus ? formatStatusBadge(rawStatus)?.code || rawStatus : null;
+    const status = normalizeStatusCode(rawStatus);
     const isFainted = stateSelectors.monIsFainted(state, monRef);
     const ability = stateSelectors.monAbility(state, monRef);
     const rawBoosts = stateSelectors.monBoosts(state, monRef);
@@ -694,7 +719,7 @@ export function publicMonStateToTooltip(
         "known" in app.previous_item &&
         app.previous_item.known !== ""
       ) {
-        item = `None (was ${app.previous_item.known})`;
+        item = formatLostItem(app.previous_item.known);
       } else {
         item = "None";
       }
@@ -716,7 +741,7 @@ export function publicMonStateToTooltip(
     if (health) {
       hp = health[0];
       maxHp = health[1];
-      hpPercentage = maxHp > 0 ? Math.round((Math.max(0, hp) / maxHp) * 100) : 0;
+      hpPercentage = computeHpPercentage(hp, maxHp);
     }
 
     // Known / revealed moves (only include moves that have actually been seen in battle)
@@ -771,13 +796,6 @@ export function publicMonStateToTooltip(
     };
   } catch (err) {
     console.error("Failed to resolve public mon tooltip from state:", err);
-    return {
-      species: fallbackName,
-      ownerLabel: fallbackPlayer ? `Player: ${fallbackPlayer}` : null,
-      boosts: [],
-      conditions: [],
-      moves: [],
-      stats: null,
-    };
+    return makeEmptyPublicTooltip(fallbackName, fallbackPlayer);
   }
 }

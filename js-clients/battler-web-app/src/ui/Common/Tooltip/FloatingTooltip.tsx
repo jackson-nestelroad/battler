@@ -1,11 +1,17 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import styles from "./FloatingTooltip.module.scss";
 
 interface FloatingTooltipProps {
   isOpen: boolean;
   targetRect: DOMRect | null;
-  children: React.ReactNode;
+  children: ReactNode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 }

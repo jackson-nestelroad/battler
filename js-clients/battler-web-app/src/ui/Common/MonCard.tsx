@@ -1,7 +1,8 @@
 import type { BattleState } from "battler-state";
 import type { MonBattleData } from "battler-types";
-import { formatStatusBadge } from "../../utils/monHelpers";
+import { normalizeStatusCode } from "../../utils/monHelpers";
 import HpBar from "./HpBar";
+import StatusBadge from "./StatusBadge";
 import styles from "./MonCard.module.scss";
 import MonTooltipTrigger from "./Tooltip/MonTooltipTrigger";
 
@@ -32,20 +33,22 @@ export default function MonCard({
   onClick,
   selectionOrder,
   isActing,
-  actingBadgeText = "ACTING",
+  actingBadgeText = "Acting",
   monBattleData,
   battleState,
 }: MonCardProps) {
+  const isFainted = hp <= 0 || normalizeStatusCode(status) === "fnt";
+
   const cardContent = (
     <div
       onClick={isClickable ? onClick : undefined}
       className={`${styles.teamSummaryCard} ${active ? styles.summaryActive : ""} ${
         isActing ? styles.summaryActing : ""
-      } ${hp === 0 ? styles.summaryFainted : ""} ${
+      } ${isFainted ? styles.summaryFainted : ""} ${
         isClickable ? styles.clickableSummaryCard : ""
-      } ${selectionOrder !== undefined ? styles.selectedCard : ""}`}
+      } ${selectionOrder != null ? styles.selectedCard : ""}`}
     >
-      {selectionOrder !== undefined && (
+      {selectionOrder != null && (
         <div className={styles.selectionBadge}>{selectionOrder}</div>
       )}
       {isActing && <div className={styles.actingBadge}>{actingBadgeText}</div>}
@@ -55,18 +58,7 @@ export default function MonCard({
       </div>
 
       <div className={styles.summaryCardMetaRow}>
-        <div className={styles.summaryCardMeta}>
-          {(() => {
-            const statusBadge = formatStatusBadge(status);
-            return hp === 0 || statusBadge?.code === "fnt" ? (
-              <span className="status-badge fnt">FNT</span>
-            ) : statusBadge ? (
-              <span className={`status-badge ${statusBadge.code}`}>{statusBadge.label}</span>
-            ) : (
-              <span className="status-badge ok">OK</span>
-            );
-          })()}
-        </div>
+        <StatusBadge status={status} isFainted={isFainted} />
         <span className={styles.summaryHpText}>
           {hp}/{maxHp}
         </span>
@@ -81,6 +73,7 @@ export default function MonCard({
       <MonTooltipTrigger
         mon={monBattleData}
         battleState={battleState}
+        as="div"
         className="flex-col w-full h-full"
       >
         {cardContent}

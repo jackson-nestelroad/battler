@@ -7,8 +7,8 @@
   overflow: hidden;
   min-height: 0; // Ensure parent flex container doesn't overflow
   transition:
-    height 0.2s ease,
-    flex 0.2s ease;
+    height var(--transition-duration) var(--transition-timing),
+    flex var(--transition-duration) var(--transition-timing);
 
   @include tablet {
     &.collapsed {
@@ -47,7 +47,7 @@
   padding: var(--spacing-xxs) var(--spacing-s);
   border-radius: var(--border-radius-xs);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-fast);
 
   &:hover {
     color: var(--text-primary);
@@ -240,7 +240,7 @@
   cursor: help;
   text-decoration: underline dotted var(--text-muted);
   text-underline-offset: var(--spacing-xxs);
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  transition: var(--transition-fast);
 
   &:hover {
     color: var(--color-primary);

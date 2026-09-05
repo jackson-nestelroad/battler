@@ -46,7 +46,7 @@
   padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
   border: 1px solid transparent;
-  transition: all 0.15s ease;
+  transition: var(--transition-fast);
 
   input {
     cursor: pointer;

@@ -267,6 +267,33 @@ describe("monTooltipModel", () => {
       expect(vm.baseSummary?.moves[0].type).toBe("Normal");
     });
 
+    it("identifies fainted status correctly for varied status inputs", () => {
+      const faintedMon1 = {
+        ...mockMonBattleData,
+        hp: 0,
+        status: null,
+      };
+      expect(monBattleDataToTooltip(faintedMon1).isFainted).toBe(true);
+
+      const faintedMon2 = {
+        ...mockMonBattleData,
+        hp: 100,
+        status: "fainted",
+      };
+      const vm2 = monBattleDataToTooltip(faintedMon2);
+      expect(vm2.status).toBe("fnt");
+      expect(vm2.isFainted).toBe(true);
+
+      const faintedMon3 = {
+        ...mockMonBattleData,
+        hp: 100,
+        status: "FNT",
+      };
+      const vm3 = monBattleDataToTooltip(faintedMon3);
+      expect(vm3.status).toBe("fnt");
+      expect(vm3.isFainted).toBe(true);
+    });
+
     it("preserves base item on Summary tab and shows was-annotation on Battle tab when item is consumed", () => {
       const monWithConsumedGem: any = {
         ...mockMonBattleData,
@@ -892,5 +919,68 @@ describe("monTooltipModel", () => {
       expect(vm).toBeDefined();
       expect(vm?.item).toBe("None (was Focus Sash)");
     });
+
+    it("displays None when previous_item is None or empty", () => {
+      const emptyPrevState: any = {
+        field: {
+          sides: [
+            {
+              players: {
+                "opponent-1": {
+                  id: "opponent-1",
+                  mons: [
+                    {
+                      physical_appearance: {
+                        name: "Gengar",
+                        species: "Gengar",
+                      },
+                      battle_appearances: [
+                        {
+                          active: {
+                            primary_battle_appearance: {
+                              level: { known: 50n },
+                              health: { known: [100n, 100n] },
+                              status: { known: "" },
+                              ability: { known: "Cursed Body" },
+                              item: { known: "" },
+                              previous_item: { known: "None" },
+                              terastallization: { known: "" },
+                              moves: { known: ["Shadow Ball"], possibly_includes: [] },
+                              move_history: ["Shadow Ball"],
+                            },
+                          },
+                        },
+                      ],
+                      volatile_data: {
+                        moves: [],
+                        ability: null,
+                        conditions: {},
+                        types: [],
+                        stat_boosts: {},
+                      },
+                    },
+                  ],
+                },
+              },
+              active: [
+                {
+                  player: "opponent-1",
+                  mon_index: 0,
+                  battle_appearance_index: 0,
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      const vm = publicMonStateToTooltip(emptyPrevState, {
+        Active: { side: 0, position: 0, player: "opponent-1", name: "Gengar" },
+      });
+
+      expect(vm).toBeDefined();
+      expect(vm?.item).toBe("None");
+    });
   });
 });
+

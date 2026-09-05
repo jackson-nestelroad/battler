@@ -1,41 +1,29 @@
 import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
-import { formatBallName, formatStatusBadge } from "../../../utils/monHelpers";
+import { computeHpPercentage, formatBallName, normalizeStatusCode } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
+import StatusBadge from "../StatusBadge";
 import styles from "./PokemonTooltipCard.module.scss";
 
 interface PokemonTooltipCardProps {
   data: MonTooltipViewModel;
 }
 
-interface TooltipHeaderProps {
-  species: string;
-  name?: string;
-  level?: number | null;
-  gender?: string | null;
-  shiny?: boolean;
-  ownerBadge?: string | null;
-  isTransformed?: boolean;
-  isDynamaxed?: boolean;
-  types?: string[];
-  teraType?: string | null;
-  isTerastallized?: boolean;
-}
-
-function TooltipHeader({
-  species,
-  name,
-  level,
-  gender,
-  shiny,
-  ownerBadge,
-  isTransformed,
-  isDynamaxed,
-  types,
-  teraType,
-  isTerastallized,
-}: TooltipHeaderProps) {
+function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
+  const {
+    species,
+    name,
+    level,
+    gender,
+    shiny,
+    ownerLabel,
+    isTransformed,
+    isDynamaxed,
+    types,
+    teraType,
+    isTerastallized,
+  } = data;
   const genderLower = gender?.toLowerCase();
   const isMale = genderLower === "m" || genderLower === "male";
   const isFemale = genderLower === "f" || genderLower === "female";
@@ -46,7 +34,7 @@ function TooltipHeader({
       <div className={styles.headerTop}>
         <div className={styles.identity}>
           <span className={styles.monName}>{displayName}</span>
-          {level !== null && level !== undefined && (
+          {level != null && (
             <span className={styles.levelBadge}>L{level}</span>
           )}
           {isMale && <span className={styles.genderMale}>♂</span>}
@@ -57,7 +45,7 @@ function TooltipHeader({
             </span>
           )}
         </div>
-        {ownerBadge && <span className={styles.ownerBadge}>{ownerBadge}</span>}
+        {ownerLabel && <span className={styles.ownerBadge}>{ownerLabel}</span>}
       </div>
 
       <span className={styles.speciesSubtitle}>{species}</span>
@@ -112,10 +100,9 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
 
   const hp = current.hp ?? 0;
   const maxHp = current.maxHp ?? 100;
-  const hpPct = current.hpPercentage ?? (maxHp > 0 ? Math.round((hp / maxHp) * 100) : 0);
+  const hpPct = current.hpPercentage ?? computeHpPercentage(hp, maxHp);
 
-  const statusBadge = formatStatusBadge(current.status);
-  const isFainted = current.isFainted || hp === 0 || statusBadge?.code === "fnt";
+  const isFainted = current.isFainted || hp <= 0 || normalizeStatusCode(current.status) === "fnt";
 
   return (
     <div className={styles.card}>
@@ -140,56 +127,34 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       )}
 
       {/* Header */}
-      <TooltipHeader
-        species={current.species}
-        name={current.name}
-        level={current.level}
-        gender={current.gender}
-        shiny={current.shiny}
-        ownerBadge={current.ownerLabel}
-        isTransformed={current.isTransformed}
-        isDynamaxed={current.isDynamaxed}
-        types={current.types}
-        teraType={current.teraType}
-        isTerastallized={current.isTerastallized}
-      />
+      <TooltipHeader data={current} />
 
       {/* Health & Status bar */}
       <section className={styles.healthSection}>
         <div className={styles.healthMeta}>
-          <div>
-            {isFainted ? (
-              <span className="status-badge fnt">FNT</span>
-            ) : statusBadge ? (
-              <span className={`status-badge ${statusBadge.code}`}>{statusBadge.label}</span>
-            ) : (
-              <span className="status-badge ok">OK</span>
-            )}
-          </div>
+          <StatusBadge status={current.status} isFainted={isFainted} />
           <span className={styles.hpText}>
-            {current.maxHp !== null && current.maxHp !== undefined
+            {current.maxHp != null
               ? `${Math.max(0, hp)}/${maxHp} (${hpPct}%)`
               : `${hpPct}%`}
           </span>
         </div>
         <HpBar hp={Math.max(0, hp)} maxHp={maxHp} />
-        {current.experience !== undefined && current.experience !== null && (
+        {current.experience != null && (
           <div className={styles.expSection}>
             <div className={styles.expMeta}>
               <span className={styles.expLabel}>EXP</span>
               <span className={styles.expText}>
-                {(current.level !== null && current.level !== undefined && current.level >= 100) ||
-                current.nextLevelExperience === null ? (
+                {(current.level ?? 0) >= 100 || current.nextLevelExperience === null ? (
                   "MAX"
                 ) : (
                   <>
                     {current.experience.toLocaleString()}
-                    {current.expToNextLevel !== undefined &&
-                      current.expToNextLevel !== null && (
-                        <span className={styles.expToNext}>
-                          {" "}(Next: {current.expToNextLevel.toLocaleString()})
-                        </span>
-                      )}
+                    {current.expToNextLevel != null && (
+                      <span className={styles.expToNext}>
+                        {" "}(Next: {current.expToNextLevel.toLocaleString()})
+                      </span>
+                    )}
                   </>
                 )}
               </span>
@@ -201,7 +166,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
 
       {/* Modifiers (Stat stages and conditions) */}
       {(current.boosts.length > 0 || current.conditions.length > 0) && (
-        <section className={styles.modifiersSection}>
+        <section className="flex-row align-center gap-xs flex-wrap">
           {current.boosts.map((boost) => (
             <span
               key={boost.stat}
@@ -224,7 +189,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       <section className={styles.traitsGrid}>
         <div className={styles.traitRow}>
           <span className={styles.traitLabel}>Ability:</span>
-          {current.ability && current.ability.trim() !== "" ? (
+          {current.ability?.trim() ? (
             <span className={styles.traitValue}>{current.ability}</span>
           ) : (
             <span className={styles.traitUnknown}>???</span>
@@ -233,7 +198,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
 
         <div className={styles.traitRow}>
           <span className={styles.traitLabel}>Item:</span>
-          {current.item && current.item.trim() !== "" ? (
+          {current.item?.trim() ? (
             <span className={styles.traitValue}>{current.item}</span>
           ) : (
             <span className={styles.traitUnknown}>???</span>
@@ -247,7 +212,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
           </div>
         )}
 
-        {current.weightKg !== undefined && current.weightKg !== null && (
+        {current.weightKg != null && (
           <div className={styles.traitRow}>
             <span className={styles.traitLabel}>Weight:</span>
             <span className={styles.traitValue}>{current.weightKg} kg</span>
@@ -280,7 +245,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
           </div>
         )}
 
-        {current.friendship !== undefined && current.friendship !== null && (
+        {current.friendship != null && (
           <div className={styles.traitRow}>
             <span className={styles.traitLabel}>Friendship:</span>
             <span className={styles.traitValue}>{current.friendship}</span>
@@ -311,9 +276,9 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
               if (move.type) {
                 metaParts.push(move.type);
               }
-              if (move.pp !== undefined) {
+              if (move.pp != null) {
                 metaParts.push(
-                  move.maxPp !== undefined
+                  move.maxPp != null
                     ? `PP: ${move.pp}/${move.maxPp}`
                     : `PP: ${move.pp}`,
                 );
@@ -322,17 +287,15 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
 
               return (
                 <div
-                  key={idx}
+                  key={move.name ? `${move.name}-${idx}` : idx}
                   className={`${styles.moveSlot} type-border ${
                     move.disabled ? styles.moveDisabled : ""
                   }`}
                   style={{ "--type-color": typeColor } as CSSProperties}
                 >
-                  <div className={styles.moveTop}>
-                    <span className={styles.moveName} title={move.name}>
-                      {move.name}
-                    </span>
-                  </div>
+                  <span className={styles.moveName} title={move.name}>
+                    {move.name}
+                  </span>
                   {metaText && (
                     <span className={styles.moveMeta}>
                       {metaText}
@@ -370,8 +333,8 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
                     : "";
 
                 let boostLabel = "-";
-                let boostClass = styles.statBoostZero;
-                if (statRow.boost && statRow.boost !== 0) {
+                let boostClass = "";
+                if (statRow.boost) {
                   boostLabel = statRow.boost > 0 ? `+${statRow.boost}` : `${statRow.boost}`;
                   boostClass = statRow.boost > 0 ? styles.statBoostPos : styles.statBoostNeg;
                 }

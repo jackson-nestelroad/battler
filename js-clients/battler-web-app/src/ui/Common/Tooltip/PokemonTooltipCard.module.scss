@@ -31,7 +31,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: var(--transition-fast);
 
   &:hover {
     color: var(--text-primary);
@@ -203,12 +203,6 @@
   color: var(--text-muted);
 }
 
-.modifiersSection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
 /* Base modifier badge (Boosts and conditions) */
 .modifierBadge {
   font-size: var(--font-size-xxs);
@@ -313,13 +307,6 @@
   &.moveDisabled {
     opacity: 0.4;
   }
-}
-
-.moveTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-xxs);
 }
 
 .moveName {

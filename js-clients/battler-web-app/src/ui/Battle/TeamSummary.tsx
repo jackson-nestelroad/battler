@@ -55,9 +55,7 @@ export default function TeamSummary({
           const name = getMonDisplayName(mon);
           const monPos = getMonTeamPosition(mon, idx);
           const isActing =
-            activeMonTeamPosition !== undefined &&
-            activeMonTeamPosition !== null &&
-            monPos === activeMonTeamPosition;
+            activeMonTeamPosition != null && monPos === activeMonTeamPosition;
 
           // Check if card is clickable for switching or team preview
           let isClickable = false;

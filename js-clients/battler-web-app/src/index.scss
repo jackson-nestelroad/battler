@@ -678,6 +678,9 @@ input[type="checkbox"] {
   display: flex;
   flex-direction: row;
 }
+.gap-xxs {
+  gap: var(--spacing-xxs);
+}
 .gap-xs {
   gap: var(--spacing-xs);
 }

@@ -7,10 +7,11 @@ interface ExpBarProps {
 
 export default function ExpBar({ progressPercent, className }: ExpBarProps) {
   const percent = Math.max(0, Math.min(100, Math.round(progressPercent)));
+  const containerClass = `${styles.expBarContainer}${className ? ` ${className}` : ""}`;
 
   return (
     <div
-      className={`${styles.expBarContainer} ${className || ""}`}
+      className={containerClass}
       aria-label={`EXP progress ${percent}%`}
       role="progressbar"
       aria-valuenow={percent}

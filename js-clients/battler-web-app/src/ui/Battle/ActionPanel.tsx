@@ -180,7 +180,7 @@ export default function ActionPanel({
         selectedTeamIndices={selectedTeamIndices}
         onSelectMon={handleSelectMon}
         activeMonTeamPosition={activeMonTeamPosition}
-        actingBadgeText={request?.type === "switch" ? "SWITCHING" : "ACTING"}
+        actingBadgeText={request?.type === "switch" ? "Switching" : "Acting"}
         battleState={battleSession?.battleState}
       />
     );

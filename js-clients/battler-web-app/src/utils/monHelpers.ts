@@ -281,3 +281,19 @@ export function formatBallName(ball?: string | null): string {
   }
   return ball.charAt(0).toUpperCase() + ball.slice(1);
 }
+
+/**
+ * Computes a clamped integer percentage [0, 100] of HP remaining.
+ */
+export function computeHpPercentage(hp: number, maxHp: number): number {
+  if (maxHp <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((hp / maxHp) * 100)));
+}
+
+/**
+ * Normalizes a status condition string (e.g. "Burn", "brn", "Fainted", "fnt") to its canonical lowercase code (e.g. "brn", "fnt").
+ */
+export function normalizeStatusCode(status?: string | null): string | null {
+  if (!status) return null;
+  return formatStatusBadge(status)?.code ?? status.toLowerCase();
+}

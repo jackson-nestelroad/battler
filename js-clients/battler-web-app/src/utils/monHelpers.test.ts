@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canSlotShift,
   canSlotSwitch,
+  computeHpPercentage,
   formatBallName,
   formatStatusBadge,
   getMonDisplayName,
@@ -10,6 +11,7 @@ import {
   getMonTeamPosition,
   getRequestSlotCount,
   getSlotLabel,
+  normalizeStatusCode,
 } from "./monHelpers";
 
 describe("monHelpers", () => {
@@ -168,6 +170,44 @@ describe("monHelpers", () => {
     expect(formatBallName("master-ball")).toBe("Master Ball");
     expect(formatBallName("cherishball")).toBe("Cherish Ball");
     expect(formatBallName("ball")).toBe("Ball");
+  });
+
+  it("computes clamped integer HP percentage correctly", () => {
+    expect(computeHpPercentage(50, 100)).toBe(50);
+    expect(computeHpPercentage(100, 100)).toBe(100);
+    expect(computeHpPercentage(0, 100)).toBe(0);
+    expect(computeHpPercentage(-10, 100)).toBe(0);
+    expect(computeHpPercentage(150, 100)).toBe(100);
+    expect(computeHpPercentage(1, 3)).toBe(33);
+    expect(computeHpPercentage(2, 3)).toBe(67);
+    expect(computeHpPercentage(0, 0)).toBe(0);
+    expect(computeHpPercentage(50, 0)).toBe(0);
+    expect(computeHpPercentage(10, -5)).toBe(0);
+  });
+
+  it("normalizes status codes correctly", () => {
+    expect(normalizeStatusCode(null)).toBeNull();
+    expect(normalizeStatusCode(undefined)).toBeNull();
+    expect(normalizeStatusCode("")).toBeNull();
+    expect(normalizeStatusCode("brn")).toBe("brn");
+    expect(normalizeStatusCode("Burn")).toBe("brn");
+    expect(normalizeStatusCode("psn")).toBe("psn");
+    expect(normalizeStatusCode("Poison")).toBe("psn");
+    expect(normalizeStatusCode("tox")).toBe("tox");
+    expect(normalizeStatusCode("Toxic")).toBe("tox");
+    expect(normalizeStatusCode("Bad Poison")).toBe("tox");
+    expect(normalizeStatusCode("par")).toBe("par");
+    expect(normalizeStatusCode("Paralysis")).toBe("par");
+    expect(normalizeStatusCode("slp")).toBe("slp");
+    expect(normalizeStatusCode("Sleep")).toBe("slp");
+    expect(normalizeStatusCode("frz")).toBe("frz");
+    expect(normalizeStatusCode("Freeze")).toBe("frz");
+    expect(normalizeStatusCode("fnt")).toBe("fnt");
+    expect(normalizeStatusCode("FNT")).toBe("fnt");
+    expect(normalizeStatusCode("Fainted")).toBe("fnt");
+    expect(normalizeStatusCode("faint")).toBe("fnt");
+    expect(normalizeStatusCode("ok")).toBe("ok");
+    expect(normalizeStatusCode("OK")).toBe("ok");
   });
 });
 

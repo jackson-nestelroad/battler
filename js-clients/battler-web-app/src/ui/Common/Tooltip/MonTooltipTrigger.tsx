@@ -1,6 +1,6 @@
 import type { BattleState, UiMon } from "battler-state";
 import type { MonBattleData } from "battler-types";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   monBattleDataToTooltip,
   publicMonStateToTooltip,
@@ -20,7 +20,7 @@ function useInteractiveTooltip(viewModel: unknown) {
     }
   };
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
+  const handleMouseEnter = (e: MouseEvent<HTMLElement>) => {
     if (!viewModel) return;
     clearCloseTimer();
     const el = e.currentTarget;
@@ -32,18 +32,7 @@ function useInteractiveTooltip(viewModel: unknown) {
     setIsOpen(true);
   };
 
-  const handleMouseLeave = () => {
-    clearCloseTimer();
-    closeTimerRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 40);
-  };
-
-  const handleTooltipMouseEnter = () => {
-    clearCloseTimer();
-  };
-
-  const handleTooltipMouseLeave = () => {
+  const scheduleClose = () => {
     clearCloseTimer();
     closeTimerRef.current = setTimeout(() => {
       setIsOpen(false);
@@ -60,9 +49,9 @@ function useInteractiveTooltip(viewModel: unknown) {
     isOpen,
     targetRect,
     handleMouseEnter,
-    handleMouseLeave,
-    handleTooltipMouseEnter,
-    handleTooltipMouseLeave,
+    handleMouseLeave: scheduleClose,
+    handleTooltipMouseEnter: clearCloseTimer,
+    handleTooltipMouseLeave: scheduleClose,
   };
 }
 
@@ -70,8 +59,9 @@ export interface MonTooltipTriggerProps {
   mon?: MonBattleData | null;
   monRef?: UiMon;
   battleState?: BattleState | null;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
+  as?: "span" | "div";
 }
 
 export default function MonTooltipTrigger({
@@ -80,9 +70,8 @@ export default function MonTooltipTrigger({
   battleState,
   children,
   className,
+  as = "span",
 }: MonTooltipTriggerProps) {
-  const triggerRef = useRef<HTMLSpanElement | null>(null);
-
   const viewModel = useMemo(() => {
     if (mon) {
       return monBattleDataToTooltip(mon, battleState);
@@ -102,20 +91,21 @@ export default function MonTooltipTrigger({
     handleTooltipMouseLeave,
   } = useInteractiveTooltip(viewModel);
 
+  const Component = as;
+
   if (!viewModel) {
-    return <span className={className}>{children}</span>;
+    return <Component className={className}>{children}</Component>;
   }
 
   return (
     <>
-      <span
-        ref={triggerRef}
+      <Component
         className={className}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         {children}
-      </span>
+      </Component>
       <FloatingTooltip
         isOpen={isOpen}
         targetRect={targetRect}

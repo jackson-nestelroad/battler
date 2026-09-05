@@ -1,6 +1,7 @@
-import type { BattleState, UiLogEntry, UiMon } from "battler-state";
+import type { BattleState, UiLogEntry } from "battler-state";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
+import type { ContextValue } from "battler-log-formatter";
 import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFormatter";
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
@@ -49,22 +50,21 @@ function renderLogDivider(
 }
 
 function renderTokenValue(
-  ctxVal: unknown,
+  ctxVal: ContextValue | undefined,
   battleState: BattleState | null | undefined,
   key: string | number,
 ) {
-  if (ctxVal === undefined || ctxVal === null) return null;
+  if (ctxVal == null) return null;
 
   if (
     typeof ctxVal === "object" &&
     !Array.isArray(ctxVal) &&
     "monRef" in ctxVal &&
-    (ctxVal as { monRef?: UiMon }).monRef
+    ctxVal.monRef
   ) {
-    const monRef = (ctxVal as { monRef: UiMon }).monRef;
-    const text = formatContextValue(ctxVal as any);
+    const text = formatContextValue(ctxVal);
     return (
-      <MonTooltipTrigger key={key} monRef={monRef} battleState={battleState}>
+      <MonTooltipTrigger key={key} monRef={ctxVal.monRef} battleState={battleState}>
         <span className={styles.monHoverTrigger}>{text}</span>
       </MonTooltipTrigger>
     );
@@ -83,7 +83,7 @@ function renderTokenValue(
     );
   }
 
-  return <Fragment key={key}>{formatContextValue(ctxVal as any)}</Fragment>;
+  return <Fragment key={key}>{formatContextValue(ctxVal)}</Fragment>;
 }
 
 export default function LogPanel({
