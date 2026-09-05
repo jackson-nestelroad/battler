@@ -437,7 +437,7 @@ fn record_effect_from_mon(
     Ok(())
 }
 
-fn modify_state_from_effect(
+fn record_source_effect_from_entry(
     state: &mut BattleState,
     entry: &LogEntry,
     ui_entry: &ui::UiLogEntry,
@@ -445,16 +445,48 @@ fn modify_state_from_effect(
     if let Some(source_effect) = &ui_entry.source_effect {
         if let Some(source) = entry.value::<MonName>("of") {
             record_effect_from_mon(state, source_effect, &source)?;
-        } else if let Some(target) = entry.value::<MonName>("mon") {
+        } else if let Some(target) = entry
+            .value::<MonName>("mon")
+            .or_else(|| mon_name_from_log_entry(entry).ok())
+        {
             record_effect_from_mon(state, source_effect, &target)?;
         }
     }
+    Ok(())
+}
 
-    match entry.title() {
-        "ability" | "abilitystart" => {
+fn modify_state_from_effect(
+    state: &mut BattleState,
+    entry: &LogEntry,
+    ui_entry: &ui::UiLogEntry,
+) -> Result<()> {
+    let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
+    match title {
+        "ability" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
-                record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
+            let ability = ui_entry
+                .effect
+                .as_ref()
+                .map(|effect| effect.name.clone())
+                .or_else(|| entry.value::<String>("ability"));
+            if let Some(ability) = ability {
+                record_activated_ability_for_each_mon(state, &mon, ability)?;
+            }
+        }
+        "abilitystart" => {
+            let mon = entry.value_or_else("mon")?;
+            let ability = ui_entry
+                .effect
+                .as_ref()
+                .map(|effect| effect.name.clone())
+                .or_else(|| entry.value::<String>("ability"));
+            if let Some(ability) = ability {
+                apply_for_each_mon(state, &mon, |mon, _| {
+                    mon.volatile_data.record_ability(ability.clone());
+                })?;
+                if let Some(source) = entry.value::<MonName>("source") {
+                    record_activated_ability_for_each_mon(state, &source, ability)?;
+                }
             }
         }
         "abilityend" => {
@@ -473,6 +505,16 @@ fn modify_state_from_effect(
             (Some(effect), Some(mon)) => record_effect_from_mon(state, effect, &mon)?,
             _ => (),
         },
+        "boost" | "unboost" => {
+            let mon = entry.value_or_else("mon")?;
+            let stat: String = entry.value_or_else("stat")?;
+            let by: i64 = entry.value_or_else("by")?;
+            let by = if entry.title() == "unboost" { -by } else { by };
+
+            apply_for_each_mon(state, &mon, |mon, _| {
+                mon.volatile_data.record_stat_boost(stat.clone(), by);
+            })?;
+        }
         "catch" | "faint" => {
             let mon = entry.value_or_else("mon")?;
             apply_for_each_mon(state, &mon, |mon, _| {
@@ -874,6 +916,8 @@ fn alter_battle_state_for_entry(
     entry: &LogEntry,
 ) -> Result<()> {
     let mut ui_entry = ui_log_entry_from_log_entry(state, entry)?;
+    record_source_effect_from_entry(state, entry, &ui_entry)?;
+
     let title = entry.title().strip_prefix("-").unwrap_or(entry.title());
     match title {
         "ability"
@@ -882,6 +926,7 @@ fn alter_battle_state_for_entry(
         | "activate"
         | "addedtype"
         | "block"
+        | "boost"
         | "cant"
         | "catch"
         | "catchfailed"
@@ -942,6 +987,7 @@ fn alter_battle_state_for_entry(
         | "transform"
         | "typechange"
         | "ultra"
+        | "unboost"
         | "uncatchable"
         | "weather" => {
             let old_health = if matches!(title, "damage" | "heal") {
@@ -976,17 +1022,6 @@ fn alter_battle_state_for_entry(
         }
         "battlestart" => {
             state.phase = BattlePhase::Battle;
-        }
-        "boost" | "unboost" => {
-            let mon: MonName = entry.value_or_else("mon")?;
-
-            let stat: String = entry.value_or_else("stat")?;
-            let by: i64 = entry.value_or_else("by")?;
-            let by = if entry.title() == "unboost" { -by } else { by };
-
-            apply_for_each_mon(state, &mon, |mon, _| {
-                mon.volatile_data.record_stat_boost(stat.clone(), by);
-            })?;
         }
         "escaped" | "forfeited" => {
             let player: String = entry.value_or_else("player")?;
@@ -1330,6 +1365,20 @@ fn alter_battle_state_for_entry(
             state.phase = BattlePhase::Finished;
             let side = entry.value_or_else("side")?;
             state.winning_side = Some(side);
+        }
+        "turn" => {
+            if let Some(turn) = entry.value::<usize>("turn") {
+                state.turn = turn;
+            }
+            for side in &mut state.field.sides {
+                for player in side.players.values_mut() {
+                    for mon in &mut player.mons {
+                        mon.volatile_data
+                            .conditions
+                            .retain(|_, condition| !condition.data.contains_key("singleturn"));
+                    }
+                }
+            }
         }
         "swap" => {
             let mon_name = entry.value_or_else::<MonName>("mon")?;

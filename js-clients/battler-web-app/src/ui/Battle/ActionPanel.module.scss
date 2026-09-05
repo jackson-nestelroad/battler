@@ -129,6 +129,14 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-s);
+
+  @include mobile-sm {
+    grid-template-columns: 1fr;
+  }
+
+  @container (max-width: 26rem) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .moveBtn {
@@ -144,6 +152,7 @@
   gap: var(--spacing-xxs);
   min-height: 3.5rem;
   transition: var(--transition-fast);
+  overflow: hidden;
 
   .moveHeaderRow {
     display: flex;
@@ -158,12 +167,16 @@
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .moveMeta {
     font-size: var(--font-size-xs);
     color: var(--text-secondary);
     line-height: 1.2;
+    white-space: nowrap;
   }
 
   &:hover:not(:disabled) {
@@ -308,6 +321,7 @@
 
 .actionPanelCard {
   flex-shrink: 0;
+  container-type: inline-size;
 }
 
 .commandDeckGrid {
@@ -316,7 +330,11 @@
   gap: var(--spacing-m);
   align-items: start;
 
-  @include mobile {
+  @include tablet {
+    grid-template-columns: 1fr;
+  }
+
+  @container (max-width: 52rem) {
     grid-template-columns: 1fr;
   }
 }
@@ -337,18 +355,21 @@
   padding-left: var(--spacing-m);
 
   .teamSummaryGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   }
 
-  @include mobile {
+  @include tablet {
     border-left: none;
     border-top: 1px solid var(--border-color);
     padding-left: 0;
     padding-top: var(--spacing-m);
+  }
 
-    .teamSummaryGrid {
-      grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
-    }
+  @container (max-width: 52rem) {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding-left: 0;
+    padding-top: var(--spacing-m);
   }
 }
 
@@ -371,7 +392,7 @@
 
 .teamSummaryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
   gap: var(--spacing-s);
   padding: 0;
 }

@@ -1,8 +1,9 @@
-import type { UiLogEntry } from "battler-state";
+import type { BattleState, UiLogEntry, UiMon } from "battler-state";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
 import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFormatter";
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
+import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
 
 import styles from "./LogPanel.module.scss";
 
@@ -10,6 +11,7 @@ interface LogPanelProps {
   visibleLogs: FormattedLogDisplayItem[];
   uiLogs: UiLogEntry[];
   engineLogs?: string[];
+  battleState?: BattleState | null;
 }
 
 function renderLogDivider(
@@ -46,7 +48,50 @@ function renderLogDivider(
   return <div key={index} className={styles.residualDivider} aria-hidden="true" />;
 }
 
-export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPanelProps) {
+function renderTokenValue(
+  ctxVal: unknown,
+  battleState: BattleState | null | undefined,
+  key: string | number,
+) {
+  if (ctxVal === undefined || ctxVal === null) return null;
+
+  if (
+    typeof ctxVal === "object" &&
+    !Array.isArray(ctxVal) &&
+    "monRef" in ctxVal &&
+    (ctxVal as { monRef?: UiMon }).monRef
+  ) {
+    const monRef = (ctxVal as { monRef: UiMon }).monRef;
+    const text = formatContextValue(ctxVal as any);
+    return (
+      <MonTooltipTrigger key={key} monRef={monRef} battleState={battleState}>
+        <span className={styles.monHoverTrigger}>{text}</span>
+      </MonTooltipTrigger>
+    );
+  }
+
+  if (Array.isArray(ctxVal)) {
+    return (
+      <Fragment key={key}>
+        {ctxVal.map((item, idx) => (
+          <Fragment key={idx}>
+            {renderTokenValue(item, battleState, `${key}-${idx}`)}
+            {idx < ctxVal.length - 1 ? ", " : ""}
+          </Fragment>
+        ))}
+      </Fragment>
+    );
+  }
+
+  return <Fragment key={key}>{formatContextValue(ctxVal as any)}</Fragment>;
+}
+
+export default function LogPanel({
+  visibleLogs,
+  uiLogs,
+  engineLogs = [],
+  battleState,
+}: LogPanelProps) {
   const [mode, setMode] = useState<"text" | "json" | "engine">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -118,10 +163,22 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
               if (item.kind === "notice") {
                 const noticeType = item.notice.type.toLowerCase();
                 const noticeClass = `${styles.noticeLine} ${styles[`${noticeType}Notice`] || ""}`;
+                const noticeText = formatNoticeText(item.notice);
 
                 return (
                   <div key={index} className={noticeClass}>
-                    <span className={styles.text}>{formatNoticeText(item.notice)}</span>
+                    <span className={styles.text}>
+                      {item.notice.monRef ? (
+                        <MonTooltipTrigger
+                          monRef={item.notice.monRef}
+                          battleState={battleState}
+                        >
+                          <span className={styles.monHoverTrigger}>{noticeText}</span>
+                        </MonTooltipTrigger>
+                      ) : (
+                        noticeText
+                      )}
+                    </span>
                   </div>
                 );
               }
@@ -137,7 +194,7 @@ export default function LogPanel({ visibleLogs, uiLogs, engineLogs = [] }: LogPa
                       }
                       const ctxVal = message.context[token.value];
                       if (ctxVal === undefined) return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
-                      return <Fragment key={i}>{formatContextValue(ctxVal)}</Fragment>;
+                      return renderTokenValue(ctxVal, battleState, i);
                     })}
                   </span>
                 </div>

@@ -936,6 +936,28 @@ describe("LogFormatter", () => {
     expect(stringifyLog(result!.messages[0])).toBe("Runerigus swapped Abilities with its target!");
   });
 
+  it("should attribute ability notice to mon rather than donor source on copyboosts (Costar)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "copyboosts",
+      values: {
+        mon: { Active: { side: 1, position: 0, name: "Prinplup", player: "p2" } },
+        source: { Active: { side: 1, position: 1, name: "Gholdengo", player: "p2" } },
+        from: "ability:Costar",
+      },
+    };
+
+    const result = formatter.format(entry as UiLogEntry);
+    expect(result).not.toBeNull();
+    expect(result!.notices.length).toBe(1);
+    expect(result!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Costar",
+      mon: "The opposing Prinplup's",
+      monRef: { Active: { side: 1, position: 0, name: "Prinplup", player: "p2" } },
+    });
+  });
+
   it("should format two ability notices simultaneously on abilityend with from:ability (Mummy)", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {

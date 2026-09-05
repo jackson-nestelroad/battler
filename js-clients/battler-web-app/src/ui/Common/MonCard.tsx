@@ -1,5 +1,9 @@
+import type { BattleState } from "battler-state";
+import type { MonBattleData } from "battler-types";
+import { formatStatusBadge } from "../../utils/monHelpers";
 import HpBar from "./HpBar";
 import styles from "./MonCard.module.scss";
+import MonTooltipTrigger from "./Tooltip/MonTooltipTrigger";
 
 interface MonCardProps {
   name: string;
@@ -13,6 +17,8 @@ interface MonCardProps {
   selectionOrder?: number;
   isActing?: boolean;
   actingBadgeText?: string;
+  monBattleData?: MonBattleData;
+  battleState?: BattleState | null;
 }
 
 export default function MonCard({
@@ -27,8 +33,10 @@ export default function MonCard({
   selectionOrder,
   isActing,
   actingBadgeText = "ACTING",
+  monBattleData,
+  battleState,
 }: MonCardProps) {
-  return (
+  const cardContent = (
     <div
       onClick={isClickable ? onClick : undefined}
       className={`${styles.teamSummaryCard} ${active ? styles.summaryActive : ""} ${
@@ -48,13 +56,16 @@ export default function MonCard({
 
       <div className={styles.summaryCardMetaRow}>
         <div className={styles.summaryCardMeta}>
-          {hp === 0 || status?.toLowerCase() === "fnt" ? (
-            <span className="status-badge fnt">FNT</span>
-          ) : status ? (
-            <span className={`status-badge ${status.toLowerCase()}`}>{status}</span>
-          ) : (
-            <span className="status-badge ok">OK</span>
-          )}
+          {(() => {
+            const statusBadge = formatStatusBadge(status);
+            return hp === 0 || statusBadge?.code === "fnt" ? (
+              <span className="status-badge fnt">FNT</span>
+            ) : statusBadge ? (
+              <span className={`status-badge ${statusBadge.code}`}>{statusBadge.label}</span>
+            ) : (
+              <span className="status-badge ok">OK</span>
+            );
+          })()}
         </div>
         <span className={styles.summaryHpText}>
           {hp}/{maxHp}
@@ -64,4 +75,18 @@ export default function MonCard({
       <HpBar hp={hp} maxHp={maxHp} />
     </div>
   );
+
+  if (monBattleData) {
+    return (
+      <MonTooltipTrigger
+        mon={monBattleData}
+        battleState={battleState}
+        className={styles.cardWrapper}
+      >
+        {cardContent}
+      </MonTooltipTrigger>
+    );
+  }
+
+  return cardContent;
 }

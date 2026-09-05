@@ -181,6 +181,7 @@ export default function ActionPanel({
         onSelectMon={handleSelectMon}
         activeMonTeamPosition={activeMonTeamPosition}
         actingBadgeText={request?.type === "switch" ? "SWITCHING" : "ACTING"}
+        battleState={battleSession?.battleState}
       />
     );
   };

@@ -223,3 +223,48 @@ export function getAvailableMoves(
 export function getSlotMonName(mon: MonLike | null | undefined, slotIndex: number): string {
   return getMonDisplayName(mon) || `Mon #${slotIndex + 1}`;
 }
+
+export interface StatusDisplayInfo {
+  code: string;
+  label: string;
+}
+
+/**
+ * Normalizes Pokémon status strings (whether from engine request IDs like "psn"
+ * or battle log condition names like "Poison") into standard 3-letter badge codes and labels.
+ */
+export function formatStatusBadge(status?: string | null): StatusDisplayInfo | null {
+  if (!status) return null;
+  const s = status.trim().toLowerCase();
+  switch (s) {
+    case "psn":
+    case "poison":
+      return { code: "psn", label: "PSN" };
+    case "tox":
+    case "bad poison":
+    case "toxic":
+      return { code: "tox", label: "TOX" };
+    case "brn":
+    case "burn":
+      return { code: "brn", label: "BRN" };
+    case "par":
+    case "paralysis":
+    case "paralyze":
+      return { code: "par", label: "PAR" };
+    case "slp":
+    case "sleep":
+    case "asleep":
+      return { code: "slp", label: "SLP" };
+    case "frz":
+    case "freeze":
+    case "frozen":
+      return { code: "frz", label: "FRZ" };
+    case "fnt":
+    case "faint":
+    case "fainted":
+      return { code: "fnt", label: "FNT" };
+    default:
+      return { code: s, label: status.toUpperCase() };
+  }
+}
+

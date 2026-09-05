@@ -236,3 +236,15 @@
   }
 }
 
+.monHoverTrigger {
+  cursor: help;
+  text-decoration: underline dotted var(--text-muted);
+  text-underline-offset: var(--spacing-xxs);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+
+  &:hover {
+    color: var(--color-primary);
+    text-decoration-color: var(--color-primary);
+  }
+}
+

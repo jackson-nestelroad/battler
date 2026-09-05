@@ -1,0 +1,42 @@
+@use "../../../styles/breakpoints" as *;
+
+.floatingPortal {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: calc(100vw - var(--spacing-l) * 2);
+}
+
+.bridgeTop::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--spacing-s));
+  height: calc(var(--spacing-s) + var(--spacing-xs));
+  pointer-events: auto;
+}
+
+.bridgeBottom::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-1 * var(--spacing-s));
+  height: calc(var(--spacing-s) + var(--spacing-xs));
+  pointer-events: auto;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition: opacity 0.12s cubic-bezier(0, 0, 0.2, 1), transform 0.12s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.hidden {
+  opacity: 0;
+  transform: translateY(var(--spacing-xs)) scale(0.98);
+  pointer-events: none;
+  transition: none;
+}

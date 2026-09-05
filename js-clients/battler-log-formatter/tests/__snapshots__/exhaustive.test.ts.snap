@@ -2251,12 +2251,12 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
     ],
     "notices": [
       {
-        "mon": "The opposing Oranguru's",
+        "mon": "The opposing Passimian's",
         "monRef": {
           "Active": {
-            "name": "Oranguru",
+            "name": "Passimian",
             "player": "player-1",
-            "position": 1,
+            "position": 0,
             "side": 0,
           },
         },
@@ -2325,9 +2325,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Ralts",
-            "player": "player-2",
+            "player": "player-1",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Trace",
@@ -2408,9 +2408,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Runerigus",
-            "player": "player-2",
+            "player": "player-1",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Wandering Spirit",
@@ -2469,9 +2469,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: abilityst
         "monRef": {
           "Active": {
             "name": "Runerigus",
-            "player": "player-1",
+            "player": "player-2",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Wandering Spirit",
@@ -30244,9 +30244,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Delphox",
-            "player": "player-2",
+            "player": "player-1",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Magician",
@@ -31233,9 +31233,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: itemstart
         "monRef": {
           "Active": {
             "name": "Weavile",
-            "player": "player-1",
+            "player": "player-2",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Pickpocket",
@@ -32491,13 +32491,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
     ],
     "notices": [
       {
-        "mon": "The opposing Seviper's",
+        "mon": "The opposing Grumpig's",
         "monRef": {
           "Active": {
-            "name": "Seviper",
-            "player": "player-2",
-            "position": 1,
-            "side": 1,
+            "name": "Grumpig",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
           },
         },
         "name": "Magic Bounce",
@@ -32861,9 +32861,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         "monRef": {
           "Active": {
             "name": "Oricorio",
-            "player": "player-2",
+            "player": "player-1",
             "position": 0,
-            "side": 1,
+            "side": 0,
           },
         },
         "name": "Dancer",
@@ -32953,9 +32953,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: move|mon:
         "monRef": {
           "Active": {
             "name": "Oricorio",
-            "player": "player-1",
-            "position": 0,
-            "side": 1,
+            "player": "player-2",
+            "position": 1,
+            "side": 0,
           },
         },
         "name": "Dancer",

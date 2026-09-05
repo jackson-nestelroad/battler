@@ -559,6 +559,54 @@ mod state_test {
     }
 
     #[test]
+    fn records_ability_from_boost() {
+        let state = setup_singles_battle(&[
+            "boost|mon:Squirtle,player-1,1|stat:atk|by:2|from:ability:Moody",
+        ]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Moody")
+        );
+    }
+
+    #[test]
+    fn records_ability_from_unboost_source() {
+        let state = setup_singles_battle(&[
+            "unboost|mon:Squirtle,player-1,1|stat:atk|by:1|from:ability:Intimidate|of:Charmander,player-2,1",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Intimidate")
+        );
+    }
+
+    #[test]
+    fn records_ability_from_move_source_effect() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Pound|target:Charmander,player-2,1|from:ability:Dancer",
+        ]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Dancer")
+        );
+    }
+
+    #[test]
+    fn records_item_from_drag_source_effect() {
+        let state = setup_singles_battle(&[
+            "drag|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M|from:item:Red Card|of:Charmander,player-2,1",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &ch).unwrap(),
+            Some("Red Card")
+        );
+    }
+
+    #[test]
     fn records_item_from_source_effect() {
         let state = setup_singles_battle(&[
             "item|mon:Squirtle,player-1,1|item:Leftovers|from:item:Leftovers|of:Charmander,player-2,1",
@@ -958,6 +1006,23 @@ mod state_test {
                 ui_log!(title = "singlemove", target = ui::Mon::Active(ui::ActiveMonReference { position: ui::FieldPosition { side: 0usize, position: 0usize }, reference: ui::MonReference { player: "player-1".to_owned(), name: "Squirtle".to_owned() } }), effect = ui::Effect { effect_type: Some("move".to_owned()), name: "Destiny Bond".to_owned() }, values = { "move" => "Destiny Bond" }),
             ]
         );
+    }
+
+    #[test]
+    fn removes_single_move_volatile_on_next_move() {
+        let mut logs = Vec::from_iter([
+            "move|mon:Squirtle,player-1,1|name:Destiny Bond|target:Charmander,player-2,1",
+            "singlemove|mon:Squirtle,player-1,1|move:Destiny Bond",
+        ]);
+        let state = setup_singles_battle(&logs);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Destiny Bond"));
+
+        logs.push("move|mon:Squirtle,player-1,1|name:Tackle|target:Charmander,player-2,1");
+        let state = setup_singles_battle(&logs);
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(!sq_mon.volatile_data.conditions.contains_key("Destiny Bond"));
     }
 
     #[test]
@@ -2048,6 +2113,20 @@ mod state_test {
     }
 
     #[test]
+    fn removes_single_turn_volatile_on_next_turn() {
+        let mut logs = Vec::from_iter(["singleturn|mon:Squirtle,player-1,1|move:Protect"]);
+        let state = setup_singles_battle(&logs);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Protect"));
+
+        logs.push("turn|turn:2");
+        let state = setup_singles_battle(&logs);
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(!sq_mon.volatile_data.conditions.contains_key("Protect"));
+    }
+
+    #[test]
     fn records_volatile_end() {
         let mut logs = Vec::from_iter(["start|mon:Squirtle,player-1,1|volatile:Substitute"]);
         let state = setup_singles_battle(&logs);
@@ -2777,6 +2856,50 @@ mod state_test {
             state_selectors::mon_ability(&state, &sq).unwrap(),
             Some("Flash Fire")
         );
+    }
+
+    #[test]
+    fn records_ability_and_source_ability_from_abilitystart() {
+        let state = setup_singles_battle(&[
+            "abilitystart|mon:Squirtle,player-1,1|ability:Sticky Hold|source:Charmander,player-2,1|from:move:Role Play",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Sticky Hold")
+        );
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Sticky Hold")
+        );
+
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Sticky Hold"));
+
+        let ch_mon = state.field.mon_by_reference_or_else(&ch).unwrap();
+        assert_eq!(ch_mon.volatile_data.ability, None);
+        assert_eq!(
+            state_selectors::mon_battle_appearance_or_else(&state, &ch)
+                .unwrap()
+                .ability
+                .known(),
+            Some(&"Sticky Hold".to_owned())
+        );
+    }
+
+    #[test]
+    fn records_ability_from_abilitystart_without_source() {
+        let state = setup_singles_battle(&[
+            "abilitystart|mon:Squirtle,player-1,1|ability:Insomnia|from:move:Worry Seed|of:Charmander,player-2,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Insomnia")
+        );
+        assert_eq!(state_selectors::mon_ability(&state, &ch).unwrap(), None);
     }
 
     #[test]

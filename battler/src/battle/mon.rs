@@ -303,6 +303,10 @@ impl MonMoveSlotData {
 pub struct MonPersistentMoveData {
     pub name: String,
     pub pp: u8,
+    #[serde(default)]
+    pub max_pp: u8,
+    #[serde(default)]
+    pub typ: Type,
 }
 
 /// Data about a single [`Mon`]'s summary, which is its out-of-battle state.
@@ -320,6 +324,10 @@ pub struct MonSummaryData {
     pub hp: u16,
     pub friendship: u8,
     pub experience: u32,
+    #[serde(default)]
+    pub level_experience: u32,
+    #[serde(default)]
+    pub next_level_experience: Option<u32>,
     pub stats: StatTable,
     pub evs: StatTable,
     pub ivs: StatTable,
@@ -328,6 +336,10 @@ pub struct MonSummaryData {
     pub item: Option<String>,
     pub status: Option<String>,
     pub hidden_power_type: Type,
+    #[serde(default)]
+    pub tera_type: Type,
+    #[serde(default)]
+    pub weight: u32,
 }
 
 /// Data about a single [`Mon`]'s battle state.
@@ -353,6 +365,8 @@ pub struct MonBattleData {
     pub ability: String,
     pub item: Option<String>,
     pub status: Option<String>,
+    #[serde(default)]
+    pub weight: u32,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -1642,6 +1656,7 @@ impl Mon {
         } else {
             None
         };
+        let weight = Self::get_weight(context);
         Ok(MonBattleData {
             summary: Self::summary_request_data(context)?,
             species,
@@ -1671,6 +1686,7 @@ impl Mon {
                 .status
                 .as_ref()
                 .map(|status| status.to_string()),
+            weight,
         })
     }
 
@@ -1680,10 +1696,17 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().original_base_species)?
-            .data
-            .name
-            .clone();
+            .get_by_id(&context.mon().original_base_species)?;
+        let species_name = species.data.name.clone();
+        let leveling_rate = species.data.leveling_rate;
+        let weight = species.data.weight;
+        let level = context.mon().level;
+        let level_experience = leveling_rate.exp_at_level(level);
+        let next_level_experience = if level < 100 {
+            Some(leveling_rate.exp_at_level(level + 1))
+        } else {
+            None
+        };
         let ability = context
             .battle()
             .dex
@@ -1692,7 +1715,7 @@ impl Mon {
             .data
             .name
             .clone();
-        let item = match &context.mon().item {
+        let item = match &context.mon().original_item {
             Some(item) => Some(
                 context
                     .battle()
@@ -1720,15 +1743,17 @@ impl Mon {
         };
         Ok(MonSummaryData {
             name: context.mon().name.clone(),
-            species,
+            species: species_name,
             level: context.mon().level,
             gender: context.mon().gender,
             nature: context.mon().nature,
             shiny: context.mon().shiny,
             ball,
-            hp: context.mon().hp,
+            hp: context.mon().undynamaxed_hp(),
             friendship: context.mon().friendship,
             experience: context.mon().experience,
+            level_experience,
+            next_level_experience,
             stats: context.mon().base_stored_stats.clone(),
             evs: context.mon().evs.clone(),
             ivs: context.mon().ivs.clone(),
@@ -1740,6 +1765,8 @@ impl Mon {
                 .map(|move_slot| MonPersistentMoveData {
                     name: move_slot.name.clone(),
                     pp: move_slot.pp,
+                    max_pp: move_slot.max_pp,
+                    typ: move_slot.typ,
                 })
                 .collect::<Vec<_>>(),
             ability,
@@ -1750,6 +1777,8 @@ impl Mon {
                 .as_ref()
                 .map(|status| status.to_string()),
             hidden_power_type: context.mon().hidden_power_type,
+            tera_type: context.mon().tera_type,
+            weight,
         })
     }
 

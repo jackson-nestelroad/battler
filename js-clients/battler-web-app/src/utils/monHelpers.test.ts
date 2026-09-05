@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canSlotShift,
   canSlotSwitch,
+  formatStatusBadge,
   getMonDisplayName,
   getMonForSlot,
   getMonTeamPosition,
@@ -132,4 +133,29 @@ describe("monHelpers", () => {
     expect(canSlotSwitch(switchReq, 0, null)).toBe(true);
     expect(canSlotSwitch(switchReq, 1, null)).toBe(false);
   });
+
+  it("normalizes status codes and condition names into standard badges", () => {
+    // Log condition names
+    expect(formatStatusBadge("Poison")).toEqual({ code: "psn", label: "PSN" });
+    expect(formatStatusBadge("Bad Poison")).toEqual({ code: "tox", label: "TOX" });
+    expect(formatStatusBadge("Burn")).toEqual({ code: "brn", label: "BRN" });
+    expect(formatStatusBadge("Paralysis")).toEqual({ code: "par", label: "PAR" });
+    expect(formatStatusBadge("Sleep")).toEqual({ code: "slp", label: "SLP" });
+    expect(formatStatusBadge("Freeze")).toEqual({ code: "frz", label: "FRZ" });
+    expect(formatStatusBadge("Fainted")).toEqual({ code: "fnt", label: "FNT" });
+
+    // Request engine IDs
+    expect(formatStatusBadge("psn")).toEqual({ code: "psn", label: "PSN" });
+    expect(formatStatusBadge("tox")).toEqual({ code: "tox", label: "TOX" });
+    expect(formatStatusBadge("brn")).toEqual({ code: "brn", label: "BRN" });
+    expect(formatStatusBadge("par")).toEqual({ code: "par", label: "PAR" });
+    expect(formatStatusBadge("slp")).toEqual({ code: "slp", label: "SLP" });
+    expect(formatStatusBadge("frz")).toEqual({ code: "frz", label: "FRZ" });
+    expect(formatStatusBadge("fnt")).toEqual({ code: "fnt", label: "FNT" });
+
+    // Empty / null
+    expect(formatStatusBadge(null)).toBeNull();
+    expect(formatStatusBadge("")).toBeNull();
+  });
 });
+

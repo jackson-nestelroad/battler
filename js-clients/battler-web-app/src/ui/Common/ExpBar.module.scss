@@ -1,0 +1,16 @@
+@use "../../styles/breakpoints" as *;
+
+.expBarContainer {
+  width: 100%;
+  height: rem(4px);
+  background-color: color-mix(in srgb, var(--bg-primary) 50%, transparent);
+  border-radius: var(--border-radius-xs);
+  overflow: hidden;
+}
+
+.expBarFill {
+  height: 100%;
+  background-color: var(--color-info);
+  border-radius: var(--border-radius-xs);
+  transition: width 0.3s ease;
+}

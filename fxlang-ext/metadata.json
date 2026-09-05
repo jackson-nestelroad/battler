@@ -113,6 +113,10 @@
         "description": "",
         "type": "Boolean"
       },
+      "is_condition": {
+        "description": "",
+        "type": "Boolean"
+      },
       "is_item": {
         "description": "",
         "type": "Boolean"
@@ -4774,13 +4778,13 @@
       "parameters": [
         {
           "name": "boosts",
-          "type": "Object",
+          "type": "BoostTable",
           "description": "The boost table.",
           "optional": false
         },
         {
           "name": "boost",
-          "type": "Stat",
+          "type": "Boost",
           "description": "The stat to boost.",
           "optional": false
         },
@@ -4792,7 +4796,7 @@
         }
       ],
       "flags": [],
-      "type": "Object",
+      "type": "BoostTable",
       "returns_item_from_list": false
     },
     "set_friendship": {
@@ -4919,6 +4923,32 @@
       ],
       "flags": [],
       "type": "Boolean",
+      "returns_item_from_list": false
+    },
+    "set_stat": {
+      "description": "Sets a stat value in a stat table.",
+      "parameters": [
+        {
+          "name": "stats",
+          "type": "StatTable",
+          "description": "The stat table.",
+          "optional": false
+        },
+        {
+          "name": "stat",
+          "type": "Stat",
+          "description": "The stat to modify.",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Fraction",
+          "description": "The stat value.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "StatTable",
       "returns_item_from_list": false
     },
     "set_status": {
@@ -5647,6 +5677,7 @@
     "use_source_effect",
     "use_target_as_origin",
     "use_target_as_source",
+    "with_move",
     "with_source",
     "with_source_effect",
     "with_target"

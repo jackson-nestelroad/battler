@@ -350,6 +350,7 @@ pub fn run_function(
         "set_item" => set_item(context).map(|val| Some(val)),
         "set_needs_switch" => set_needs_switch(context).map(|()| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
+        "set_stat" => set_stat(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_terrain" => set_terrain(context).map(|val| Some(val)),
@@ -2463,10 +2464,10 @@ fn get_boost(mut context: FunctionContext) -> Result<Value> {
 
 /// Sets a boost value in a boost table.
 ///
-/// @param {[`ValueType::Object`]} boosts The boost table.
-/// @param {[`ValueType::Stat`]} boost The stat to boost.
+/// @param {[`ValueType::BoostTable`]} boosts The boost table.
+/// @param {[`ValueType::Boost`]} boost The stat to boost.
 /// @param {[`ValueType::Fraction`]} value The boost value.
-/// @returns {[`ValueType::Object`]} The modified boost table.
+/// @returns {[`ValueType::BoostTable`]} The modified boost table.
 fn set_boost(mut context: FunctionContext) -> Result<Value> {
     let mut boosts = context
         .pop_front()
@@ -2485,6 +2486,32 @@ fn set_boost(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid boost value")?;
     boosts.set(boost, value);
     Ok(Value::BoostTable(boosts))
+}
+
+/// Sets a stat value in a stat table.
+///
+/// @param {[`ValueType::StatTable`]} stats The stat table.
+/// @param {[`ValueType::Stat`]} stat The stat to modify.
+/// @param {[`ValueType::Fraction`]} value The stat value.
+/// @returns {[`ValueType::StatTable`]} The modified stat table.
+fn set_stat(mut context: FunctionContext) -> Result<Value> {
+    let mut stats = context
+        .pop_front()
+        .wrap_expectation("missing stats")?
+        .stat_table()
+        .wrap_error_with_message("invalid stats")?;
+    let stat = context
+        .pop_front()
+        .wrap_expectation("missing stat")?
+        .stat()
+        .wrap_error_with_message("invalid stat")?;
+    let value = context
+        .pop_front()
+        .wrap_expectation("missing stat value")?
+        .integer_u16()
+        .wrap_error_with_message("invalid stat value")?;
+    stats.set(stat, value);
+    Ok(Value::StatTable(stats))
 }
 
 /// Checks if a Mon has a specific type.

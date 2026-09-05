@@ -437,6 +437,7 @@ export default function BattleScreen() {
               visibleLogs={visibleLogs}
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
+              battleState={battleSession.battleState}
             />
           </section>
         </div>
@@ -477,6 +478,7 @@ export default function BattleScreen() {
               visibleLogs={visibleLogs}
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
+              battleState={battleSession.battleState}
             />
           </section>
         </div>

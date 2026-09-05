@@ -1273,7 +1273,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.atk = $evs.atk + 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs atk expr($evs.atk + 8)", "return $evs"]
       }
     }
   },
@@ -1288,7 +1288,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.def = $evs.def + 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs def expr($evs.def + 8)", "return $evs"]
       }
     }
   },
@@ -1303,7 +1303,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.spa = $evs.spa + 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs spa expr($evs.spa + 8)", "return $evs"]
       }
     }
   },
@@ -1318,7 +1318,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.spd = $evs.spd = 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs spd expr($evs.spd + 8)", "return $evs"]
       }
     }
   },
@@ -1333,7 +1333,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.spe = $evs.spe + 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs spe expr($evs.spe + 8)", "return $evs"]
       }
     }
   },
@@ -1348,7 +1348,7 @@
     "effect": {
       "callbacks": {
         "on_modify_spe": ["return $spe / 2"],
-        "on_modify_ev_yield": ["$evs.hp = $evs.hp + 8", "return $evs"]
+        "on_modify_ev_yield": ["set_stat: $evs hp expr($evs.hp + 8)", "return $evs"]
       }
     }
   },

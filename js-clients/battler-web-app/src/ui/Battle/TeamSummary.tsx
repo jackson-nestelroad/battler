@@ -1,3 +1,4 @@
+import type { BattleState } from "battler-state";
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { 
   getMonDisplayName, 
@@ -22,6 +23,7 @@ interface TeamSummaryProps {
   onSelectMon?: (idx: number) => void;
   activeMonTeamPosition?: number | null;
   actingBadgeText?: string;
+  battleState?: BattleState | null;
 }
 
 export default function TeamSummary({
@@ -37,6 +39,7 @@ export default function TeamSummary({
   onSelectMon,
   activeMonTeamPosition,
   actingBadgeText,
+  battleState,
 }: TeamSummaryProps) {
   if (!playerData || !playerData.mons) return null;
 
@@ -95,6 +98,8 @@ export default function TeamSummary({
               selectionOrder={selectionOrder}
               isActing={isActing}
               actingBadgeText={actingBadgeText}
+              monBattleData={mon}
+              battleState={battleState}
             />
           );
         })}
