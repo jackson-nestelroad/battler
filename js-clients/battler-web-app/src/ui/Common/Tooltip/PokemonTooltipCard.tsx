@@ -1,6 +1,6 @@
 import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
-import { computeHpPercentage, formatBallName, normalizeStatusCode } from "../../../utils/monHelpers";
+import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
 import StatusBadge from "../StatusBadge";
@@ -102,7 +102,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
   const maxHp = current.maxHp ?? 100;
   const hpPct = current.hpPercentage ?? computeHpPercentage(hp, maxHp);
 
-  const isFainted = current.isFainted || hp <= 0 || normalizeStatusCode(current.status) === "fnt";
+  const isFainted = Boolean(current.isFainted || hp <= 0 || current.status === "fnt");
 
   return (
     <div className={styles.card}>

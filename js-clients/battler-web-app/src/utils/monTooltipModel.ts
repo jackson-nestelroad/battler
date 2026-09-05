@@ -453,9 +453,6 @@ export function monBattleDataToTooltip(
         // Ignore error
       }
     }
-  } else {
-    isTransformed = Boolean(summary?.species && mon.species && mon.species !== summary.species);
-    originalSpecies = isTransformed ? summary?.species : undefined;
   }
 
   // Moves: all 4 moves with current PP / max PP

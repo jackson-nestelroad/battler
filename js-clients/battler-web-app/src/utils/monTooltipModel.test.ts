@@ -240,6 +240,7 @@ describe("monTooltipModel", () => {
         ],
         summary: {
           ...mockMonBattleData.summary,
+          name: "Ditto",
           species: "Ditto",
           ability: "Imposter",
           item: "Focus Sash",
@@ -247,11 +248,53 @@ describe("monTooltipModel", () => {
         },
       };
 
-      const vm = monBattleDataToTooltip(transformedDitto);
+      const mockState: any = {
+        field: {
+          sides: [
+            {
+              players: {
+                "player-1": {
+                  id: "player-1",
+                  mons: [
+                    {
+                      physical_appearance: {
+                        name: "Ditto",
+                        species: "Ditto",
+                      },
+                      battle_appearances: [{}],
+                      volatile_data: {
+                        transformed: [
+                          { species: "Zamazenta", name: "Zamazenta" },
+                          { player: "player-2", mon_index: 0 },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+              active: [
+                {
+                  player: "player-1",
+                  mon_index: 0,
+                  battle_appearance_index: 0,
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      // When battleState is available, live transformation is resolved
+      const vm = monBattleDataToTooltip(transformedDitto, mockState);
 
       expect(vm.species).toBe("Zamazenta");
       expect(vm.isTransformed).toBe(true);
       expect(vm.originalSpecies).toBe("Ditto");
+
+      // Without battleState, transformation is not falsely inferred (e.g. for in-battle forme changes)
+      const vmNoState = monBattleDataToTooltip(transformedDitto);
+      expect(vmNoState.isTransformed).toBe(false);
+      expect(vmNoState.originalSpecies).toBeUndefined();
 
       expect(vm.ability).toBe("Dauntless Shield");
       expect(vm.item).toBe("None (was Focus Sash)");
