@@ -268,3 +268,16 @@ export function formatStatusBadge(status?: string | null): StatusDisplayInfo | n
   }
 }
 
+/**
+ * Formats a Poké Ball identifier (e.g. "pokeball", "ultra_ball", "masterball") into human-readable display text.
+ */
+export function formatBallName(ball?: string | null): string {
+  if (!ball) return "";
+  const lower = ball.toLowerCase().replace(/[-_ ]/g, "");
+  if (lower === "pokeball") return "Poké Ball";
+  if (lower.endsWith("ball") && lower !== "ball") {
+    const prefix = lower.slice(0, -4);
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1) + " Ball";
+  }
+  return ball.charAt(0).toUpperCase() + ball.slice(1);
+}

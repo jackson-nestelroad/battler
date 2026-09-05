@@ -354,10 +354,6 @@
   border-left: 1px solid var(--border-color);
   padding-left: var(--spacing-m);
 
-  .teamSummaryGrid {
-    grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-  }
-
   @include tablet {
     border-left: none;
     border-top: 1px solid var(--border-color);

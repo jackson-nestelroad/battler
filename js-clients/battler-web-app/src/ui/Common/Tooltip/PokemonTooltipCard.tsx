@@ -1,23 +1,12 @@
 import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
-import { formatStatusBadge } from "../../../utils/monHelpers";
+import { formatBallName, formatStatusBadge } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
 import styles from "./PokemonTooltipCard.module.scss";
 
 interface PokemonTooltipCardProps {
   data: MonTooltipViewModel;
-}
-
-function formatBallName(ball?: string | null): string {
-  if (!ball) return "";
-  const lower = ball.toLowerCase().replace(/[-_ ]/g, "");
-  if (lower === "pokeball") return "Poké Ball";
-  if (lower.endsWith("ball") && lower !== "ball") {
-    const prefix = lower.slice(0, -4);
-    return prefix.charAt(0).toUpperCase() + prefix.slice(1) + " Ball";
-  }
-  return ball.charAt(0).toUpperCase() + ball.slice(1);
 }
 
 interface TooltipHeaderProps {
@@ -71,13 +60,11 @@ function TooltipHeader({
         {ownerBadge && <span className={styles.ownerBadge}>{ownerBadge}</span>}
       </div>
 
-      <div className={styles.speciesRow}>
-        <span className={styles.speciesSubtitle}>{species}</span>
-      </div>
+      <span className={styles.speciesSubtitle}>{species}</span>
 
       {/* Types (on their own line) */}
       {types && types.length > 0 && (
-        <div className={styles.badgesRow}>
+        <div className="flex-row align-center gap-xs flex-wrap">
           {types.map((type) => (
             <span
               key={type}
@@ -94,19 +81,19 @@ function TooltipHeader({
 
       {/* Active Battle Modifiers (Tera, Dynamax, Transformed) */}
       {(teraType || isDynamaxed || isTransformed) && (
-        <div className={styles.modifiersRow}>
+        <div className="flex-row align-center gap-xs flex-wrap">
           {teraType && (
-            <span className={styles.teraBadge}>
+            <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
               {isTerastallized ? `Terastallized: ${teraType}` : `Tera Type: ${teraType}`}
             </span>
           )}
           {isDynamaxed && (
-            <span className={styles.dynamaxBadge}>
+            <span className={`${styles.specialBadge} ${styles.dynamaxBadge}`}>
               Dynamax
             </span>
           )}
           {isTransformed && (
-            <span className={styles.transformedBadge}>
+            <span className={`${styles.specialBadge} ${styles.transformedBadge}`}>
               Transformed
             </span>
           )}
@@ -218,13 +205,15 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
           {current.boosts.map((boost) => (
             <span
               key={boost.stat}
-              className={boost.stage > 0 ? styles.boostBadgePositive : styles.boostBadgeNegative}
+              className={`${styles.modifierBadge} ${
+                boost.stage > 0 ? styles.boostBadgePositive : styles.boostBadgeNegative
+              }`}
             >
               {boost.label}
             </span>
           ))}
           {current.conditions.map((condition) => (
-            <span key={condition} className={styles.conditionBadge}>
+            <span key={condition} className={`${styles.modifierBadge} ${styles.conditionBadge}`}>
               {condition}
             </span>
           ))}
@@ -309,7 +298,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       {/* Moveset Grid (only renders when moves are known) */}
       {current.moves.length > 0 && (
         <section className={styles.movesSection}>
-          <span className={styles.movesTitle}>
+          <span className={styles.sectionTitle}>
             Moves
           </span>
           <div className={styles.movesGrid}>
@@ -359,7 +348,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       {/* Stats Table */}
       {current.stats && current.stats.length > 0 && (
         <section className={styles.statsSection}>
-          <span className={styles.statsTitle}>
+          <span className={styles.sectionTitle}>
             Stats
           </span>
           <table className={styles.statsTable}>

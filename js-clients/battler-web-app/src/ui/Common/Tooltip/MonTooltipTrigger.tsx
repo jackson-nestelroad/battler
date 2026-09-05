@@ -127,9 +127,3 @@ export default function MonTooltipTrigger({
     </>
   );
 }
-
-export {
-  MonTooltipTrigger,
-  MonTooltipTrigger as MyMonTooltipTrigger,
-  MonTooltipTrigger as PublicMonTooltipTrigger,
-};

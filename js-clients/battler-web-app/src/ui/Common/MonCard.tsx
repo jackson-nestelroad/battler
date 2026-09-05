@@ -81,7 +81,7 @@ export default function MonCard({
       <MonTooltipTrigger
         mon={monBattleData}
         battleState={battleState}
-        className={styles.cardWrapper}
+        className="flex-col w-full h-full"
       >
         {cardContent}
       </MonTooltipTrigger>

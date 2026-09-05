@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canSlotShift,
   canSlotSwitch,
+  formatBallName,
   formatStatusBadge,
   getMonDisplayName,
   getMonForSlot,
@@ -156,6 +157,17 @@ describe("monHelpers", () => {
     // Empty / null
     expect(formatStatusBadge(null)).toBeNull();
     expect(formatStatusBadge("")).toBeNull();
+  });
+
+  it("formats ball names correctly", () => {
+    expect(formatBallName(null)).toBe("");
+    expect(formatBallName("")).toBe("");
+    expect(formatBallName("pokeball")).toBe("Poké Ball");
+    expect(formatBallName("greatball")).toBe("Great Ball");
+    expect(formatBallName("ultra_ball")).toBe("Ultra Ball");
+    expect(formatBallName("master-ball")).toBe("Master Ball");
+    expect(formatBallName("cherishball")).toBe("Cherish Ball");
+    expect(formatBallName("ball")).toBe("Ball");
   });
 });
 

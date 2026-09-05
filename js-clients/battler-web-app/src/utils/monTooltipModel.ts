@@ -159,8 +159,6 @@ export interface MonTooltipViewModel {
   baseSummary?: MonTooltipViewModel | null;
 }
 
-export type MonBaseSummaryViewModel = MonTooltipViewModel;
-
 const STAT_DISPLAY_NAMES: Record<string, string> = {
   hp: "HP",
   atk: "Atk",
@@ -410,7 +408,7 @@ export function monBattleDataToTooltip(
         ? summary.item
         : "None";
 
-  let baseSummary: MonBaseSummaryViewModel | null = null;
+  let baseSummary: MonTooltipViewModel | null = null;
   if (summary) {
     const baseMoves: TooltipMoveSlot[] = (summary.moves || []).map((m) => {
       const match = mon.moves?.find(
