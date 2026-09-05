@@ -725,6 +725,200 @@ mod state_test {
     }
 
     #[test]
+    fn records_item_from_poltergeist_activation() {
+        let state = setup_singles_battle(&[
+            "activate|mon:Charmander,player-2,1|move:Poltergeist|item:Misty Seed",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &ch).unwrap(),
+            Some("Misty Seed")
+        );
+    }
+
+    #[test]
+    fn records_item_from_fling_activation() {
+        let state = setup_singles_battle(&[
+            "activate|mon:Squirtle,player-1,1|move:Fling|item:Utility Umbrella",
+        ]);
+        let sq = squirtle_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Utility Umbrella")
+        );
+    }
+
+    #[test]
+    fn records_ability_from_activation_with_move() {
+        let state = setup_singles_battle(&[
+            "activate|mon:Charmander,player-2,1|move:SomeMove|ability:Solar Power",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Solar Power")
+        );
+    }
+
+    #[test]
+    fn skill_swap_with_abilitystart_does_not_clobber_volatile_ability() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Skill Swap|target:Charmander,player-2,1",
+            "activate|mon:Charmander,player-2,1|move:Skill Swap|of:Squirtle,player-1,1",
+            "abilityend|mon:Squirtle,player-1,1|ability:Torrent|from:move:Skill Swap",
+            "abilitystart|mon:Squirtle,player-1,1|ability:Blaze|source:Charmander,player-2,1|from:move:Skill Swap",
+            "abilityend|mon:Charmander,player-2,1|ability:Blaze|from:move:Skill Swap|of:Squirtle,player-1,1",
+            "abilitystart|mon:Charmander,player-2,1|ability:Torrent|source:Squirtle,player-1,1|from:move:Skill Swap|of:Squirtle,player-1,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        let ch_mon = state.field.mon_by_reference_or_else(&ch).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Blaze"));
+        assert_eq!(ch_mon.volatile_data.ability.as_deref(), Some("Torrent"));
+        assert_eq!(
+            state_selectors::mon_ability(&state, &sq).unwrap(),
+            Some("Blaze")
+        );
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Torrent")
+        );
+        let sq_app = state
+            .field
+            .mon_battle_appearance_with_recovery_by_reference_or_else(&sq)
+            .unwrap();
+        let ch_app = state
+            .field
+            .mon_battle_appearance_with_recovery_by_reference_or_else(&ch)
+            .unwrap();
+        assert_eq!(
+            sq_app.primary().ability.known(),
+            Some(&"Torrent".to_owned())
+        );
+        assert_eq!(ch_app.primary().ability.known(), Some(&"Blaze".to_owned()));
+    }
+
+    #[test]
+    fn thief_victim_item_remains_empty_after_itemstart_with_source() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Thief|target:Charmander,player-2,1",
+            "itemend|mon:Charmander,player-2,1|item:Safety Goggles|from:move:Thief|of:Squirtle,player-1,1",
+            "itemstart|mon:Squirtle,player-1,1|item:Safety Goggles|source:Charmander,player-2,1|from:move:Thief",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Safety Goggles")
+        );
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+    }
+
+    #[test]
+    fn role_play_discovers_source_base_ability_if_unknown() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Role Play|target:Charmander,player-2,1",
+            "abilitystart|mon:Squirtle,player-1,1|ability:Solar Power|source:Charmander,player-2,1|from:move:Role Play",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Solar Power"));
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Solar Power")
+        );
+    }
+
+    #[test]
+    fn trick_swaps_items_successfully() {
+        let state = setup_singles_battle(&[
+            "itemend|mon:Charmander,player-2,1|item:Choice Band|from:move:Trick|of:Squirtle,player-1,1",
+            "itemend|mon:Squirtle,player-1,1|item:Safety Goggles|from:move:Trick",
+            "itemstart|mon:Squirtle,player-1,1|item:Choice Band|source:Charmander,player-2,1|from:move:Trick",
+            "itemstart|mon:Charmander,player-2,1|item:Safety Goggles|source:Squirtle,player-1,1|from:move:Trick|of:Squirtle,player-1,1",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Choice Band")
+        );
+        assert_eq!(
+            state_selectors::mon_item(&state, &ch).unwrap(),
+            Some("Safety Goggles")
+        );
+    }
+
+    #[test]
+    fn thief_user_with_previously_consumed_item_receives_stolen_item() {
+        let state = setup_singles_battle(&[
+            "itemend|mon:Squirtle,player-1,1|item:Focus Sash",
+            "move|mon:Squirtle,player-1,1|name:Thief|target:Charmander,player-2,1",
+            "itemend|mon:Charmander,player-2,1|item:Safety Goggles|from:move:Thief|of:Squirtle,player-1,1",
+            "itemstart|mon:Squirtle,player-1,1|item:Safety Goggles|source:Charmander,player-2,1|from:move:Thief",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Safety Goggles")
+        );
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+    }
+
+    #[test]
+    fn activate_does_not_resurrect_consumed_item() {
+        let state = setup_singles_battle(&[
+            "itemend|mon:Charmander,player-2,1|item:Misty Seed",
+            "activate|mon:Charmander,player-2,1|move:Poltergeist|item:Misty Seed",
+        ]);
+        let ch = charmander_ref();
+        assert_eq!(state_selectors::mon_item(&state, &ch).unwrap(), None);
+    }
+
+    #[test]
+    fn activate_with_target_in_of_fallback() {
+        let state = setup_singles_battle(&[
+            "activate|of:Squirtle,player-1,1|item:Leftovers",
+            "activate|of:Charmander,player-2,1|ability:Blaze",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Leftovers")
+        );
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Blaze")
+        );
+    }
+
+    #[test]
+    fn role_play_on_source_with_already_known_ability_is_idempotent() {
+        let state = setup_singles_battle(&[
+            "ability|mon:Charmander,player-2,1|ability:Blaze",
+            "move|mon:Squirtle,player-1,1|name:Role Play|target:Charmander,player-2,1",
+            "abilitystart|mon:Squirtle,player-1,1|ability:Blaze|source:Charmander,player-2,1|from:move:Role Play",
+        ]);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert_eq!(sq_mon.volatile_data.ability.as_deref(), Some("Blaze"));
+        assert_eq!(
+            state_selectors::mon_ability(&state, &ch).unwrap(),
+            Some("Blaze")
+        );
+        let ch_app = state
+            .field
+            .mon_battle_appearance_with_recovery_by_reference_or_else(&ch)
+            .unwrap();
+        assert_eq!(ch_app.primary().ability.known(), Some(&"Blaze".to_owned()));
+    }
+
+    #[test]
     fn records_and_switches_out_caught_mon() {
         let state = setup_singles_battle(&[
             "catch|player:player-1|mon:Charmander,player-2,1|item:Ultra Ball|shakes:4",

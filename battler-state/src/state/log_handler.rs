@@ -410,6 +410,52 @@ fn record_activated_ability_for_each_mon(
     })
 }
 
+fn record_item_for_mon(
+    state: &mut BattleState,
+    mon: &MonName,
+    item: String,
+    force: bool,
+) -> Result<()> {
+    apply_for_each_mon_battle_appearance(state, mon, |mon, ambiguity| {
+        // If we know that the Mon does not have an item, then this effect is presumably
+        // after the item ended.
+        if !force
+            && let Some(item) = mon.primary().item.known()
+            && item.is_empty()
+        {
+            return;
+        }
+
+        mon.record_item(item.clone().into(), ambiguity);
+    })
+}
+
+fn record_source_base_ability_if_unknown(
+    state: &mut BattleState,
+    mon: &MonName,
+    ability: String,
+) -> Result<()> {
+    apply_for_each_mon_reference(state, mon, |state, reference, ambiguity| {
+        let has_volatile_ability = state
+            .field
+            .mon_by_reference_or_else(&reference)?
+            .volatile_data
+            .ability
+            .is_some();
+        if has_volatile_ability {
+            return Ok(());
+        }
+        let mon_battle_appearance = state
+            .field
+            .mon_battle_appearance_with_recovery_mut_by_reference_or_else(&reference)?;
+        if mon_battle_appearance.primary().ability.known().is_some() {
+            return Ok(());
+        }
+        mon_battle_appearance.record_ability(ability.clone().into(), ambiguity);
+        Ok(())
+    })
+}
+
 fn record_effect_from_mon(
     state: &mut BattleState,
     effect: &ui::Effect,
@@ -420,17 +466,7 @@ fn record_effect_from_mon(
             record_activated_ability_for_each_mon(state, &mon, effect.name.clone())?;
         }
         Some("item") | Some("itemstart") => {
-            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                // If we know that the Mon does not have an item, then this effect is presumably
-                // after the item ended.
-                if let Some(item) = mon.primary().item.known()
-                    && item.is_empty()
-                {
-                    return;
-                }
-
-                mon.record_item(effect.name.clone().into(), ambiguity);
-            })?;
+            record_item_for_mon(state, mon, effect.name.clone(), false)?;
         }
         _ => (),
     }
@@ -485,7 +521,7 @@ fn modify_state_from_effect(
                     mon.volatile_data.record_ability(ability.clone());
                 })?;
                 if let Some(source) = entry.value::<MonName>("source") {
-                    record_activated_ability_for_each_mon(state, &source, ability)?;
+                    record_source_base_ability_if_unknown(state, &source, ability)?;
                 }
             }
         }
@@ -501,10 +537,22 @@ fn modify_state_from_effect(
                 mon.volatile_data.record_ability(String::default());
             })?;
         }
-        "activate" => match (&ui_entry.effect, entry.value::<MonName>("mon")) {
-            (Some(effect), Some(mon)) => record_effect_from_mon(state, effect, &mon)?,
-            _ => (),
-        },
+        "activate" => {
+            if let Some(mon) = entry
+                .value::<MonName>("mon")
+                .or_else(|| entry.value::<MonName>("of"))
+            {
+                if let Some(item) = entry.value::<String>("item") {
+                    record_item_for_mon(state, &mon, item, false)?;
+                }
+                if let Some(ability) = entry.value::<String>("ability") {
+                    record_activated_ability_for_each_mon(state, &mon, ability)?;
+                }
+            }
+            if let (Some(effect), Some(mon)) = (&ui_entry.effect, entry.value::<MonName>("mon")) {
+                record_effect_from_mon(state, effect, &mon)?;
+            }
+        }
         "boost" | "unboost" => {
             let mon = entry.value_or_else("mon")?;
             let stat: String = entry.value_or_else("stat")?;
@@ -675,10 +723,17 @@ fn modify_state_from_effect(
         }
         "item" | "itemstart" => {
             let mon = entry.value_or_else("mon")?;
-            if let Some(effect) = &ui_entry.effect {
-                apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                    mon.record_item(effect.name.clone().into(), ambiguity);
-                })?;
+            let item = ui_entry
+                .effect
+                .as_ref()
+                .filter(|effect| {
+                    effect.effect_type.as_deref() == Some("item")
+                        || effect.effect_type.as_deref() == Some("itemstart")
+                })
+                .map(|effect| effect.name.clone())
+                .or_else(|| entry.value::<String>("item"));
+            if let Some(item) = item {
+                record_item_for_mon(state, &mon, item, true)?;
             }
         }
         "itemend" => {
