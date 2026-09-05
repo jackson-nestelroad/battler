@@ -195,27 +195,11 @@ for (const logString of matrixLogs) {
   // If a template was defined (not null/empty), formatter must produce message(s)
   if (matchedKey && !isIntentionallyEmpty) {
     if (!event || event.messages.length === 0) {
-      const KNOWN_LEGACY_TEMPLATES = new Set([
-        "activate__move_courtchange",
-        "cannotescape",
-        "fieldstart__move_trickroom",
-        "itemstart__from_ability_magician__item_any",
-        "start__move_doomdesire",
-        "start__move_futuresight",
-      ]);
-
       const tmpl = Array.isArray(matchedVal) ? matchedVal[0] : matchedVal;
       const tokens = parseTemplateToTokens(typeof tmpl === "string" ? tmpl : "");
       const missingVars = tokens
         .filter((t) => t.type === "variable" && mapped.context[t.value] === undefined)
         .map((t) => t.value);
-
-      if (KNOWN_LEGACY_TEMPLATES.has(matchedKey)) {
-        console.warn(
-          `[KNOWN WARNING] Legacy template '${matchedKey}' missing variables: ${missingVars.join(", ")}`,
-        );
-        continue;
-      }
 
       failures.push({
         rawLog: logString,

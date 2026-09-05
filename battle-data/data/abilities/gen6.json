@@ -112,7 +112,7 @@
             "$item = func_call(take_item: $mon)",
             "if !$item:",
             ["continue"],
-            "set_item: $user $item $target",
+            "set_item: $user $item $mon",
             "break"
           ]
         ]

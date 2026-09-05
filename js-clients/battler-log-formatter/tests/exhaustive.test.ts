@@ -26,7 +26,7 @@ describe("Exhaustive Log Coverage", () => {
 
   it.each(matrixLogs)("should parse and format log string: %s", async (logString) => {
     const players = new Set<string>();
-    const mons = new Map<string, string>();
+    const monsByPlayer = new Map<string, Map<number, string>>();
 
     const parts = logString.split("|");
     for (const part of parts) {
@@ -40,10 +40,14 @@ describe("Exhaustive Log Coverage", () => {
         part.startsWith("target:")
       ) {
         const [, val] = part.split(":");
-        const [species, player] = val.split(",");
+        const [species, player, posStr] = val.split(",");
         if (player) {
           players.add(player);
-          mons.set(player, species);
+          if (!monsByPlayer.has(player)) {
+            monsByPlayer.set(player, new Map());
+          }
+          const pos = posStr ? parseInt(posStr, 10) : 1;
+          monsByPlayer.get(player)!.set(isNaN(pos) ? 1 : pos, species);
         }
       }
     }
@@ -65,10 +69,18 @@ describe("Exhaustive Log Coverage", () => {
       );
       setupLogs.push(`teamsize|player:${pid}|size:6`);
 
-      const monSpecies = mons.get(pid) || "Pikachu";
-      setupLogs.push(
-        `switch|player:${pid}|position:1|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`,
-      );
+      const playerMons = monsByPlayer.get(pid);
+      if (playerMons && playerMons.size > 0) {
+        for (const [pos, monSpecies] of playerMons.entries()) {
+          setupLogs.push(
+            `switch|player:${pid}|position:${pos}|name:${monSpecies}|health:100/100|species:${monSpecies}|level:50|gender:M`,
+          );
+        }
+      } else {
+        setupLogs.push(
+          `switch|player:${pid}|position:1|name:Pikachu|health:100/100|species:Pikachu|level:50|gender:M`,
+        );
+      }
     }
 
     setupLogs.push("teampreviewstart");
@@ -126,6 +138,11 @@ describe("Exhaustive Log Coverage", () => {
     // 2. Extract just the enum key, the message string, and context vars
     let primaryResult: ExhaustiveResult | null = null;
     if (event) {
+      for (const msg of event.messages) {
+        const text = stringifyLog(msg);
+        expect(text).not.toMatch(/\{\{[^}]+\}\}/);
+      }
+
       primaryResult = {
         notices: event.notices,
         messages: event.messages.map((msg) => ({

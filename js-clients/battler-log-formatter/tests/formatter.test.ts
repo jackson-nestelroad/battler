@@ -2110,5 +2110,17 @@ describe("LogFormatter", () => {
         },
       ]);
     });
+
+    it("should not drop message if variable is missing in context and formats placeholder directly", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+      const entry: Partial<UiLogEntry> = {
+        title: "cannotescape",
+        values: {},
+      };
+      const result = formatter.format(entry as UiLogEntry);
+      expect(result).not.toBeNull();
+      expect(result!.messages).toHaveLength(1);
+      expect(stringifyLog(result!.messages[0])).toBe("{{PLAYER}} cannot escape!");
+    });
   });
 });

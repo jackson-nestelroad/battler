@@ -58,15 +58,6 @@ function createFormattedUiLog(
   const tokens = parseTemplateToTokens(templateString);
   if (tokens.length === 0) return null;
 
-  // Verify all variable dependencies exist in context
-  for (const token of tokens) {
-    if (token.type === "variable") {
-      if (context[token.value] === undefined) {
-        return null;
-      }
-    }
-  }
-
   let msgContext = { ...context };
   let finalTokens = [...tokens];
 
