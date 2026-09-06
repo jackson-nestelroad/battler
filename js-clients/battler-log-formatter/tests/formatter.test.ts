@@ -183,6 +183,29 @@ describe("LogFormatter", () => {
     expect(stringifyLog(log)).toBe("The opposing Pikachu used Thunderbolt!");
   });
 
+  it("should format move with commas in name (10,000,000 Volt Thunderbolt)", () => {
+    const formatter = new LogFormatter({ localPlayerId: "ash" });
+    const logs = [
+      "side|id:0|name:Side 1",
+      "side|id:1|name:Side 2",
+      "player|id:ash|name:Ash|side:0|position:0",
+      "player|id:ai-random-1|name:AI|side:1|position:0",
+      "battlestart",
+      "switch|player:ash|position:1|name:Gloom|health:100/100|species:Gloom|level:50|gender:M",
+      "switch|player:ai-random-1|position:1|name:Sylveon|health:100/100|species:Sylveon|level:50|gender:F",
+      "turn|turn:1",
+      "move|mon:Gloom,ash,1|name:10,000,000 Volt Thunderbolt|target:Sylveon,ai-random-1,1",
+    ];
+    const state = alterBattleState(newBattleState(), logs);
+    const moveLog = state.ui_log[1][1];
+    const result = formatter.format(moveLog, state);
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.context.MOVE).toBe("10,000,000 Volt Thunderbolt");
+    expect(stringifyLog(log)).toBe("Gloom used 10,000,000 Volt Thunderbolt!");
+  });
+
   it("should handle battle type disambiguation for critical hits", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {

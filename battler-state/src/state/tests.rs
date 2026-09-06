@@ -3201,6 +3201,21 @@ mod state_test {
     }
 
     #[test]
+    fn parses_move_name_with_commas_as_string() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:10,000,000 Volt Thunderbolt|target:Charmander,player-2,1",
+        ]);
+        let move_log = &state.ui_log[1][1];
+        assert_eq!(move_log.title, "move");
+        assert_eq!(
+            move_log.values.get("name"),
+            Some(&ui::LogValue::String(
+                "10,000,000 Volt Thunderbolt".to_owned()
+            ))
+        );
+    }
+
+    #[test]
     fn records_moves_from_transformation() {
         let state = setup_singles_battle(&[
             "transform|mon:Squirtle,player-1,1|species:Charmander|into:Charmander,player-2,1",

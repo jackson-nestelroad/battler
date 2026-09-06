@@ -153,9 +153,9 @@ fn mon_appearance_from_log_entry(
 }
 
 fn mon_name_to_mon_for_ui_log(state: &mut BattleState, mon: &MonName) -> Result<ui::Mon> {
+    let side = state.field.side_for_player(&mon.player)?;
     match mon.position {
         Some(position) => {
-            let side = state.field.side_for_player(&mon.player)?;
             let index = position
                 .checked_sub(1)
                 .ok_or_else(|| Error::msg("position must be greater than 0"))?;
