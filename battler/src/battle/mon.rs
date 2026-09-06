@@ -2055,8 +2055,8 @@ impl Mon {
 
         let new_max_hp = if species.data.max_hp.is_none() && context.mon().dynamaxed {
             let ratio =
-                Fraction::new(3, 2) + Fraction::new(1, 20) * context.mon().dynamax_level as u16;
-            (ratio * context.mon().base_max_hp).floor()
+                Fraction::new(3u64, 2u64) + Fraction::new(1u64, 20u64) * context.mon().dynamax_level as u64;
+            (ratio * context.mon().base_max_hp as u64).floor() as u16
         } else {
             context.mon().base_max_hp
         };
@@ -2121,8 +2121,8 @@ impl Mon {
 
     /// Calculates the un-Dynamaxed HP for a given value.
     pub fn undynamaxed_hp_calculation(&self, hp: u16) -> u16 {
-        if self.dynamaxed {
-            (Fraction::new(self.base_max_hp, self.max_hp) * hp).ceil()
+        if self.dynamaxed && self.max_hp > 0 {
+            (Fraction::new(self.base_max_hp as u64, self.max_hp as u64) * hp as u64).ceil() as u16
         } else {
             hp
         }
