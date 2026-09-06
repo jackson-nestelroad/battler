@@ -37350,9 +37350,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Eevee,player-2,1|condition:Z-Power 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Eevee,player-2,1|condition:Z-Power|from:item:Waterium Z 1`] = `
 {
-  "rawLog": "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
+  "rawLog": "singleturn|mon:Eevee,player-2,1|condition:Z-Power|from:item:Waterium Z",
   "result": {
     "messages": [
       {
@@ -37376,7 +37376,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         "key": "singleturn__condition_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Eevee's",
+        "monRef": {
+          "Active": {
+            "name": "Eevee",
+            "player": "player-2",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Waterium Z",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -37695,9 +37709,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Necrozma,player-1,1|condition:Z-Power 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Necrozma,player-1,1|condition:Z-Power|from:item:Ultranecrozium Z 1`] = `
 {
-  "rawLog": "singleturn|mon:Necrozma,player-1,1|condition:Z-Power",
+  "rawLog": "singleturn|mon:Necrozma,player-1,1|condition:Z-Power|from:item:Ultranecrozium Z",
   "result": {
     "messages": [
       {
@@ -37721,7 +37735,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         "key": "singleturn__condition_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Necrozma's",
+        "monRef": {
+          "Active": {
+            "name": "Necrozma",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Ultranecrozium Z",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;
@@ -37821,9 +37849,9 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Pikachu,player-1,1|condition:Z-Power 1`] = `
+exports[`Exhaustive Log Coverage > should parse and format log string: singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Electrium Z 1`] = `
 {
-  "rawLog": "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+  "rawLog": "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Electrium Z",
   "result": {
     "messages": [
       {
@@ -37847,7 +37875,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
         "key": "singleturn__condition_zpower",
       },
     ],
-    "notices": [],
+    "notices": [
+      {
+        "mon": "The opposing Pikachu's",
+        "monRef": {
+          "Active": {
+            "name": "Pikachu",
+            "player": "player-1",
+            "position": 0,
+            "side": 0,
+          },
+        },
+        "name": "Electrium Z",
+        "type": "Item",
+      },
+    ],
   },
 }
 `;

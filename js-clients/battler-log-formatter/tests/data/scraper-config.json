@@ -462,6 +462,14 @@
     },
     {
       "match": {
+        "title": "singleturn",
+        "condition": "Z-Power",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
         "title": "revive",
         "from": "item:*"
       },

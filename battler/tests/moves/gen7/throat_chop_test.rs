@@ -91,7 +91,7 @@ fn throat_chop_does_not_prevent_z_sound_move() {
             "damage|mon:Incineroar,player-2,1|health:237/300",
             "damage|mon:Incineroar,player-2,1|health:79/100",
             "start|mon:Incineroar,player-2,1|move:Throat Chop|silent",
-            "singleturn|mon:Incineroar,player-2,1|condition:Z-Power",
+            "singleturn|mon:Incineroar,player-2,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Incineroar,player-2,1|name:Growl|zpower",
             "boost|mon:Incineroar,player-2,1|stat:def|by:1|from:Z-Power",
             "unboost|mon:Incineroar,player-1,1|stat:atk|by:1",

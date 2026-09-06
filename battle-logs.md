@@ -736,7 +736,10 @@ Logs the start of a single-turn effect (e.g. Protect, Roost, Focus Punch, Endure
   - `move:MoveName`
   - `of:MonPositionDetails`
   - `condition:ConditionName` (e.g. `condition:Z-Power`)
-- **Example**: `singleturn|mon:Infernape,player-2,1|move:Protect`
+  - `from:EffectName` (e.g. `from:item:Electrium Z`)
+- **Examples**:
+  - `singleturn|mon:Infernape,player-2,1|move:Protect`
+  - `singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Electrium Z`
 
 #### `specieschange` / `replace` / `switch` / `drag` / `appear` / `switchout`
 

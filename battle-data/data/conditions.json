@@ -1137,7 +1137,7 @@
       "duration": 1,
       "no_copy": true,
       "callbacks": {
-        "on_start": ["log_single_turn: with_target"],
+        "on_start": ["log_single_turn: with_target with_source_effect"],
         "on_upgrade_move": [
           "$z_move_id = func_call(z_move: $user $move)",
           "require $z_move_id.is_defined else return",

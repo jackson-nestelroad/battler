@@ -110,7 +110,7 @@ fn ultra_burst_transforms_necrozma_and_then_allows_z_move() {
             "residual",
             "turn|turn:2",
             "continue",
-            "singleturn|mon:Necrozma,player-1,1|condition:Z-Power",
+            "singleturn|mon:Necrozma,player-1,1|condition:Z-Power|from:item:Ultranecrozium Z",
             "move|mon:Necrozma,player-1,1|name:Light That Burns the Sky|target:Necrozma,player-2,1",
             "resisted|mon:Necrozma,player-2,1",
             "split|side:1",

@@ -439,12 +439,13 @@ pub fn do_move_action(
     z_move: bool,
 ) -> Result<()> {
     if z_move {
+        let item = context
+            .mon()
+            .item
+            .clone()
+            .wrap_expectation("expected mon to be holding a z-crystal")?;
         add_volatile(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("playerchoice")),
-                None,
-                None,
-            )?,
+            &mut context.applying_effect_context(EffectHandle::Item(item), None, None)?,
             &Id::from_known("zpower"),
             false,
             None,

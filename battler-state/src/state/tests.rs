@@ -2485,6 +2485,45 @@ mod state_test {
     }
 
     #[test]
+    fn records_z_power_and_reveals_z_crystal() {
+        let state = setup_singles_battle(&[
+            "singleturn|mon:Squirtle,player-1,1|condition:Z-Power|from:item:Waterium Z",
+        ]);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.volatile_data.conditions.contains_key("Z-Power"));
+        assert_eq!(
+            state_selectors::mon_item(&state, &sq).unwrap(),
+            Some("Waterium Z")
+        );
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "singleturn",
+                    target = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition { side: 0usize, position: 0usize },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned(),
+                        }
+                    }),
+                    effect = ui::Effect {
+                        effect_type: Some("condition".to_owned()),
+                        name: "Z-Power".to_owned(),
+                    },
+                    source_effect = ui::Effect {
+                        effect_type: Some("item".to_owned()),
+                        name: "Waterium Z".to_owned(),
+                    },
+                    values = { "condition" => "Z-Power" }
+                ),
+            ]
+        );
+    }
+
+    #[test]
     fn removes_single_turn_volatile_on_next_turn() {
         let mut logs = Vec::from_iter(["singleturn|mon:Squirtle,player-1,1|move:Protect"]);
         let state = setup_singles_battle(&logs);
