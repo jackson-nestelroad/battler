@@ -95,11 +95,10 @@ export function isSpectator(
   return false;
 }
 
-export function resolvePlayerContext(
+export function getPlayerName(
   playerId: string | undefined,
   state: BattleState | undefined,
-  options: MapperOptions,
-): { standard: ContextVar; possessive: ContextVar } {
+): string {
   let name = playerId || "Player";
   if (playerId && state?.field?.sides) {
     for (const side of state.field.sides) {
@@ -109,6 +108,26 @@ export function resolvePlayerContext(
       }
     }
   }
+  return name;
+}
+
+export function resolvePlayerNameContext(
+  playerId: string | undefined,
+  state: BattleState | undefined,
+): { standard: ContextVar; possessive: ContextVar } {
+  const name = getPlayerName(playerId, state);
+  return {
+    standard: { text: name, noAutoCapitalize: true },
+    possessive: { text: `${name}'s`, noAutoCapitalize: true },
+  };
+}
+
+export function resolvePlayerContext(
+  playerId: string | undefined,
+  state: BattleState | undefined,
+  options: MapperOptions,
+): { standard: ContextVar; possessive: ContextVar } {
+  const name = getPlayerName(playerId, state);
 
   if (!playerId) {
     return {
@@ -257,6 +276,8 @@ export function resolveMonContext(
   its: ContextVar;
   player: ContextVar;
   player_possessive: ContextVar;
+  playerName: ContextVar;
+  playerName_possessive: ContextVar;
   playerId?: string;
   raw: string;
   raw_possessive: string;
@@ -270,6 +291,8 @@ export function resolveMonContext(
       its: { text: i18next.t("mon.its") },
       player: { text: "Player", noAutoCapitalize: true },
       player_possessive: { text: "Player's", noAutoCapitalize: true },
+      playerName: { text: "Player", noAutoCapitalize: true },
+      playerName_possessive: { text: "Player's", noAutoCapitalize: true },
       raw: "Mon",
       raw_possessive: "Mon's",
       rel: "foe",
@@ -282,6 +305,7 @@ export function resolveMonContext(
   const spectator = isSpectator(state, options);
   const rel = playerId && !spectator ? getRelationship(state, options.localPlayerId, playerId) : "foe";
   const playerResolved = resolvePlayerContext(playerId, state, options);
+  const playerNameResolved = resolvePlayerNameContext(playerId, state);
   const playerName = playerResolved.standard.text;
 
   let text = name;
@@ -329,6 +353,8 @@ export function resolveMonContext(
     its: { text: itsText, monRef, noAutoCapitalize: false },
     player: playerResolved.standard,
     player_possessive: playerResolved.possessive,
+    playerName: playerNameResolved.standard,
+    playerName_possessive: playerNameResolved.possessive,
     playerId,
     raw: name,
     raw_possessive: `${name}'s`,
@@ -386,10 +412,14 @@ export function bindMonParticipant(
   context[`${prefix}_NAME_POSSESSIVE`] = namePossessiveVar;
   context[`${prefix}_PLAYER`] = resolved.player;
   context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
+  context[`${prefix}_PLAYER_NAME`] = resolved.playerName;
+  context[`${prefix}_PLAYER_NAME_POSSESSIVE`] = resolved.playerName_possessive;
 
   if (role === "mon") {
     if (!context.PLAYER) context.PLAYER = resolved.player;
     if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (!context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
+    if (!context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     if (!context.TARGET) {
       context.TARGET = resolved.standard;
       context.TARGET_POSSESSIVE = resolved.possessive;
@@ -397,6 +427,8 @@ export function bindMonParticipant(
       context.TARGET_NAME_POSSESSIVE = namePossessiveVar;
       context.TARGET_PLAYER = resolved.player;
       context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
+      context.TARGET_PLAYER_NAME = resolved.playerName;
+      context.TARGET_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     }
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
@@ -416,9 +448,13 @@ export function bindMonParticipant(
       context.MON_NAME_POSSESSIVE = namePossessiveVar;
       context.MON_PLAYER = resolved.player;
       context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
+      context.MON_PLAYER_NAME = resolved.playerName;
+      context.MON_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     }
     if (!context.PLAYER) context.PLAYER = resolved.player;
     if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (!context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
+    if (!context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
     }
@@ -709,6 +745,9 @@ export function mapUiLogEntry(
     const resolved = resolvePlayerContext(playerId, state, options);
     context.PLAYER = resolved.standard;
     context.PLAYER_POSSESSIVE = resolved.possessive;
+    const nameResolved = resolvePlayerNameContext(playerId, state);
+    context.PLAYER_NAME = nameResolved.standard;
+    context.PLAYER_NAME_POSSESSIVE = nameResolved.possessive;
   }
 
   if (title === "timer") {

@@ -253,7 +253,7 @@ export const en = {
     activate__move_beatup: "{{HIT}}'s hit!",
     activate__move_bide: "{{MON}} is storing energy!",
     activate__move_bind: "{{MON}} was squeezed by Bind!",
-    activate__move_celebrate: "Congratulations, {{PLAYER}}!",
+    activate__move_celebrate: "Congratulations, {{PLAYER_NAME}}!",
     activate__move_clamp: "{{OF}} clamped down on {{MON}}!",
     activate__move_courtchange:
       "{{OF}} swapped the battle effects affecting each side of the field!",

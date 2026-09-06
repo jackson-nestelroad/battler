@@ -4400,7 +4400,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "PLAYER": {
+          "PLAYER_NAME": {
             "text": "PLAYER-1",
           },
         },

@@ -363,8 +363,12 @@ export class LogFormatter {
         MON_NAME_POSSESSIVE: mapped.context.PREV_MON_NAME_POSSESSIVE,
         MON_PLAYER: mapped.context.PREV_MON_PLAYER,
         MON_PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+        MON_PLAYER_NAME: mapped.context.PREV_MON_PLAYER_NAME,
+        MON_PLAYER_NAME_POSSESSIVE: mapped.context.PREV_MON_PLAYER_NAME_POSSESSIVE,
         PLAYER: mapped.context.PREV_MON_PLAYER,
         PLAYER_POSSESSIVE: mapped.context.PREV_MON_PLAYER_POSSESSIVE,
+        PLAYER_NAME: mapped.context.PREV_MON_PLAYER_NAME,
+        PLAYER_NAME_POSSESSIVE: mapped.context.PREV_MON_PLAYER_NAME_POSSESSIVE,
       };
       pushFormattedMessages(
         switchoutKey,

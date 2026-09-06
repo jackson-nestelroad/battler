@@ -88,6 +88,35 @@ describe("LogFormatter", () => {
     expect(log.context.__CAPITALIZED_SIDE_NAME).toBeUndefined();
     expect(stringifyLog(log)).toBe("ai-random-1 won the battle!");
   });
+
+  it("should format celebrate move with player name instead of 'you' for local player", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+    const entry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { name: "Pikachu", player: "p1", side: 0, position: 0 } },
+        move: "Celebrate",
+      },
+    };
+    const state = {
+      field: {
+        sides: [
+          { name: "Team 1", players: { p1: { name: "Jackson" } } },
+          { name: "Team 2", players: { p2: { name: "Opponent" } } },
+        ],
+      },
+    };
+    const result = formatter.format(
+      entry as unknown as UiLogEntry,
+      state as unknown as BattleState,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.messages.length).toBe(1);
+    const log = result!.messages[0];
+    expect(log.category).toBe(LogCategory.Secondary);
+    expect(log.context.PLAYER_NAME).toEqual({ text: "Jackson" });
+    expect(stringifyLog(log)).toBe("Congratulations, Jackson!");
+  });
   it("should format tie log without state using fallback side name", () => {
     const formatter = new LogFormatter();
     const entry: Partial<UiLogEntry> = {
