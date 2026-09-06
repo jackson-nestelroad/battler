@@ -2054,8 +2054,8 @@ impl Mon {
             .get_by_id(&context.mon().volatile_state.species)?;
 
         let new_max_hp = if species.data.max_hp.is_none() && context.mon().dynamaxed {
-            let ratio =
-                Fraction::new(3u64, 2u64) + Fraction::new(1u64, 20u64) * context.mon().dynamax_level as u64;
+            let ratio = Fraction::new(3u64, 2u64)
+                + Fraction::new(1u64, 20u64) * context.mon().dynamax_level as u64;
             (ratio * context.mon().base_max_hp as u64).floor() as u16
         } else {
             context.mon().base_max_hp

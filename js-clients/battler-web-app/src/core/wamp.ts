@@ -187,8 +187,8 @@ function bindClientEvents(
       try {
         const serviceBattle = await connectionManager.serviceClient.battle(battleId);
         dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
-      } catch {
-        // Ignored
+      } catch (err) {
+        console.warn(`[WAMP] Failed to fetch service battle for battle ${battleId}:`, err);
       }
     }
   });
@@ -201,8 +201,8 @@ function bindClientEvents(
       try {
         const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
         dispatch(setBattlePlayerData({ battleId, playerData }));
-      } catch {
-        // Ignored
+      } catch (err) {
+        console.warn(`[WAMP] Failed to fetch player data for battle ${battleId}:`, err);
       }
     }
   });
@@ -527,8 +527,8 @@ export const connectWamp = createAsyncThunk<
               await connectionManager.multiplayerClient.proposedBattleUpdates(
                 getProposalUpdateHandler(playerId, dispatch, getState),
               );
-          } catch {
-            // Ignored
+          } catch (err) {
+            console.warn("[WAMP] Failed to subscribe to proposed battle updates:", err);
           }
         }
 

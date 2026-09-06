@@ -39,7 +39,10 @@ use battler_wamp_uri::{
     WildcardUri,
 };
 use battler_wamprat_message::WampApplicationMessage;
-use futures_util::lock::Mutex;
+use futures_util::{
+    future::FutureExt,
+    lock::Mutex,
+};
 use log::{
     error,
     warn,
@@ -848,8 +851,22 @@ where
         invocation_done_rx: mpsc::Sender<Id>,
     ) {
         let id = invocation.id();
-        if let Err(err) = procedure.invoke(invocation).await {
-            error!("Procedure invocation {id} of {uri} failed: {err}");
+        let result = std::panic::AssertUnwindSafe(procedure.invoke(invocation))
+            .catch_unwind()
+            .await;
+        match result {
+            Ok(Ok(())) => {}
+            Ok(Err(err)) => {
+                error!("Procedure invocation {id} of {uri} failed: {err}");
+            }
+            Err(panic_payload) => {
+                let msg = panic_payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| panic_payload.downcast_ref::<String>().map(|s| s.as_str()))
+                    .unwrap_or("unknown panic");
+                error!("Procedure invocation {id} of {uri} panicked: {msg}");
+            }
         }
         invocation_done_rx.send(id).await.ok();
     }
@@ -875,7 +892,9 @@ where
                             )));
                         }
                         Ok(ProcedureMessage::Interrupt(interrupt)) => {
-                            if let Some(handle) = invocations.remove(&interrupt.id()) {
+                            let id = interrupt.id();
+                            if let Some(handle) = invocations.remove(&id) {
+                                warn!("Procedure invocation {id} of {uri} was cancelled/interrupted by caller");
                                 handle.abort();
                             }
                         }

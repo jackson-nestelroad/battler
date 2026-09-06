@@ -4,10 +4,18 @@ macro_rules! log_procedure {
         let name = $name;
         let details = $details;
         log::info!("RPC: {} invoked ({})", name, details);
+        let start = std::time::Instant::now();
         let res = $block;
+        let elapsed = start.elapsed();
         match &res {
-            Ok(_) => log::info!("RPC: {} succeeded ({})", name, details),
-            Err(err) => log::error!("RPC: {} failed ({}): {:?}", name, details, err),
+            Ok(_) => log::info!("RPC: {} succeeded ({}) [{:?}]", name, details, elapsed),
+            Err(err) => log::error!(
+                "RPC: {} failed ({}) [{:?}]: {:?}",
+                name,
+                details,
+                elapsed,
+                err
+            ),
         }
         res
     }};

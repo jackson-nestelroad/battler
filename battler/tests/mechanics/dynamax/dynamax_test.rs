@@ -913,3 +913,28 @@ fn dynamax_cannon_deals_double_damage_to_dynamax() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn player_data_for_dynamaxed_mon_calculates_undynamaxed_hp_without_overflow() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].level = 100;
+    let mut team_2 = team().unwrap();
+    team_2.members[0].level = 100;
+
+    let mut battle = make_battle(100, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // PlayerData calculates un-Dynamaxed HP for all mons in summary.
+    // For Level 100 Venusaur, base max HP is 270 and Dynamax HP is 405.
+    // Base max HP (270) * HP (405) = 109,350, which overflows u16 (max 65,535).
+    let player_data = battle.player_data("player-1").unwrap();
+    let mon = &player_data.mons[0];
+    assert!(mon.active, "mon should be active, but was not");
+    assert_eq!(mon.max_hp, 405);
+    assert_eq!(mon.summary.stats.hp, 270);
+    let expected = ((270u64 * mon.hp as u64 + 404) / 405) as u16;
+    assert_eq!(mon.summary.hp, expected);
+}
