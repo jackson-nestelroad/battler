@@ -1880,14 +1880,14 @@ impl<'d> CoreBattle<'d> {
             Player::reset_state_for_next_turn(&mut context)?;
         }
 
+        // Save moves that are still referenced from last turn before resetting state for the next
+        // turn, since resetting state can evaluate effects that borrow these active moves.
         for mon_handle in context
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>()
         {
-            let mut context = context.mon_context(mon_handle)?;
-            Mon::reset_state_for_next_turn(&mut context)?;
-
+            let context = context.mon_context(mon_handle)?;
             if let Some(last_move) = context.mon().volatile_state.last_move {
                 context
                     .battle()
@@ -1914,6 +1914,15 @@ impl<'d> CoreBattle<'d> {
                 .battle()
                 .registry
                 .save_active_move_from_next_turn(last_successful_move)?;
+        }
+
+        for mon_handle in context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>()
+        {
+            let mut context = context.mon_context(mon_handle)?;
+            Mon::reset_state_for_next_turn(&mut context)?;
         }
 
         context.battle_mut().registry.next_turn()?;
