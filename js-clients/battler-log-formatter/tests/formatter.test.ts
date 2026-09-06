@@ -6,6 +6,12 @@ import {
   formatUiLogEntry,
   stringifyLog,
 } from "../src/formatter.js";
+import {
+  mapUiLogEntry,
+  resolveMonContext,
+  resolvePlayerNameContext,
+  resolveSideNameContext,
+} from "../src/mapper.js";
 import i18next from "../src/i18n.js";
 import { LogCategory } from "../src/types.js";
 
@@ -2236,6 +2242,128 @@ describe("LogFormatter", () => {
       expect(result).not.toBeNull();
       expect(result!.messages).toHaveLength(1);
       expect(stringifyLog(result!.messages[0])).toBe("{{PLAYER}} cannot escape!");
+    });
+
+    describe("Internationalization of Possessives, Notices, and Fallbacks", () => {
+      it("should format notices according to locale templates", () => {
+        try {
+          i18next.addResourceBundle(
+            "fr",
+            "translation",
+            {
+              notices: {
+                ability: "[{{name}} de {{mon}}]",
+                ability_no_mon: "[{{name}}]",
+                damage: "({{mon}} a perdu {{damage}} PV)",
+                damage_no_mon: "(a perdu {{damage}} PV)",
+                heal: "({{mon}} a restauré {{heal}} PV)",
+                heal_no_mon: "(a restauré {{heal}} PV)",
+                custom: "[{{type}}: {{name}} de {{mon}}]",
+                custom_no_mon: "[{{type}}: {{name}}]",
+              },
+            },
+            true,
+            true,
+          );
+          i18next.changeLanguage("fr");
+
+          expect(
+            formatNoticeText({ type: "ability", name: "Intimidation", mon: "Léviator" }),
+          ).toBe("[Intimidation de Léviator]");
+          expect(formatNoticeText({ type: "ability", name: "Gaz Inhibiteur" })).toBe(
+            "[Gaz Inhibiteur]",
+          );
+          expect(
+            formatNoticeText({ type: "damage", name: "50%", mon: "Dracaufeu" }),
+          ).toBe("(Dracaufeu a perdu 50% PV)");
+          expect(formatNoticeText({ type: "damage", name: "25%" })).toBe("(a perdu 25% PV)");
+          expect(
+            formatNoticeText({ type: "heal", name: "30%", mon: "Carapuce" }),
+          ).toBe("(Carapuce a restauré 30% PV)");
+          expect(formatNoticeText({ type: "heal", name: "15%" })).toBe("(a restauré 15% PV)");
+          expect(
+            formatNoticeText({ type: "special", name: "Effet", mon: "Mew" }),
+          ).toBe("[special: Effet de Mew]");
+          expect(formatNoticeText({ type: "special", name: "Effet" })).toBe("[special: Effet]");
+        } finally {
+          i18next.changeLanguage("en");
+        }
+      });
+
+      it("should format possessives and timer strings according to locale, omitting unresolvable variables", () => {
+        try {
+          i18next.addResourceBundle(
+            "es",
+            "translation",
+            {
+              player: {
+                name_possessive: "de {{player}}",
+              },
+              side: {
+                name_possessive: "de {{name}}",
+              },
+              mon: {
+                name_possessive: "de {{name}}",
+              },
+              time: {
+                second___one: "{{count}} segundo",
+                second___other: "{{count}} segundos",
+                minute___one: "{{count}} minuto",
+                minute___other: "{{count}} minutos",
+              },
+            },
+            true,
+            true,
+          );
+          i18next.changeLanguage("es");
+
+          const timerEntry1: Partial<UiLogEntry> = {
+            title: "timer",
+            values: { remainingsecs: 1n },
+          };
+          expect(mapUiLogEntry(timerEntry1 as UiLogEntry)?.context.TIME).toBe("1 segundo");
+
+          const timerEntry2: Partial<UiLogEntry> = {
+            title: "timer",
+            values: { remainingsecs: 45n },
+          };
+          expect(mapUiLogEntry(timerEntry2 as UiLogEntry)?.context.TIME).toBe("45 segundos");
+
+          const timerEntry3: Partial<UiLogEntry> = {
+            title: "timer",
+            values: { remainingsecs: 60n },
+          };
+          expect(mapUiLogEntry(timerEntry3 as UiLogEntry)?.context.TIME).toBe("1 minuto");
+
+          const timerEntry4: Partial<UiLogEntry> = {
+            title: "timer",
+            values: { remainingsecs: 120n },
+          };
+          expect(mapUiLogEntry(timerEntry4 as UiLogEntry)?.context.TIME).toBe("2 minutos");
+
+          // When side has no custom name, it uses code-level Side ${index + 1}
+          expect(resolveSideNameContext(0, undefined)?.standard.text).toBe("Side 1");
+          expect(resolveSideNameContext(undefined, undefined)).toBeUndefined();
+
+          // When side has a custom name, it resolves the localized possessive
+          const mockState = {
+            field: { sides: [{ name: "Equipo Rocket" }] },
+          } as unknown as BattleState;
+          expect(resolveSideNameContext(0, mockState)?.standard.text).toBe("Equipo Rocket");
+          expect(resolveSideNameContext(0, mockState)?.possessive.text).toBe("de Equipo Rocket");
+
+          // When player is present
+          expect(resolvePlayerNameContext("Ash", undefined)?.possessive.text).toBe("de Ash");
+
+          // When player is undefined, resolvePlayerNameContext returns undefined (omitted)
+          expect(resolvePlayerNameContext(undefined, undefined)).toBeUndefined();
+
+          // When mon is undefined, mon context returns empty strings rather than fake fallbacks
+          expect(resolveMonContext(undefined, undefined, {}).possessive.text).toBe("");
+        } finally {
+          i18next.changeLanguage("en");
+        }
+      });
     });
   });
 });

@@ -1,5 +1,5 @@
 import type { BattleState, UiLogEntry, UiMon } from "battler-state";
-import i18next from "i18next";
+import i18next from "./i18n.js";
 import categoryRules from "./config/category-rules.json" with { type: "json" };
 import rules from "./config/mapper-rules.json" with { type: "json" };
 import { serializePattern } from "./pattern.js";
@@ -99,8 +99,9 @@ export function getPlayerName(
   playerId: string | undefined,
   state: BattleState | undefined,
 ): string {
-  let name = playerId || "Player";
-  if (playerId && state?.field?.sides) {
+  if (!playerId) return "";
+  let name = playerId;
+  if (state?.field?.sides) {
     for (const side of state.field.sides) {
       if (side?.players?.[playerId]) {
         name = side.players[playerId].name;
@@ -114,11 +115,15 @@ export function getPlayerName(
 export function resolvePlayerNameContext(
   playerId: string | undefined,
   state: BattleState | undefined,
-): { standard: ContextVar; possessive: ContextVar } {
+): { standard: ContextVar; possessive: ContextVar } | undefined {
   const name = getPlayerName(playerId, state);
+  if (!name) return undefined;
   return {
     standard: { text: name, noAutoCapitalize: true },
-    possessive: { text: `${name}'s`, noAutoCapitalize: true },
+    possessive: {
+      text: i18next.t("player.name_possessive", { player: name }),
+      noAutoCapitalize: true,
+    },
   };
 }
 
@@ -126,16 +131,10 @@ export function resolvePlayerContext(
   playerId: string | undefined,
   state: BattleState | undefined,
   options: MapperOptions,
-): { standard: ContextVar; possessive: ContextVar } {
+): { standard: ContextVar; possessive: ContextVar } | undefined {
+  if (!playerId) return undefined;
+
   const name = getPlayerName(playerId, state);
-
-  if (!playerId) {
-    return {
-      standard: { text: name, noAutoCapitalize: true },
-      possessive: { text: `${name}'s`, noAutoCapitalize: true },
-    };
-  }
-
   const spectator = isSpectator(state, options);
   const rel = !spectator ? getRelationship(state, options.localPlayerId, playerId) : "foe";
 
@@ -159,24 +158,28 @@ export function resolvePlayerContext(
   };
 }
 
-export function getSideName(sideIndex: number | undefined, state: BattleState | undefined): string {
+export function getSideName(sideIndex: number | undefined, state: BattleState | undefined): string | undefined {
   if (sideIndex != null && state?.field?.sides?.[sideIndex]?.name) {
     return state.field.sides[sideIndex].name;
   }
   if (sideIndex != null) {
     return `Side ${sideIndex + 1}`;
   }
-  return "Side";
+  return undefined;
 }
 
 export function resolveSideNameContext(
   sideIndex: number | undefined,
   state: BattleState | undefined,
-): { standard: ContextVar; possessive: ContextVar } {
+): { standard: ContextVar; possessive: ContextVar } | undefined {
   const name = getSideName(sideIndex, state);
+  if (!name) return undefined;
   return {
     standard: { text: name, noAutoCapitalize: true },
-    possessive: { text: `${name}'s`, noAutoCapitalize: true },
+    possessive: {
+      text: i18next.t("side.name_possessive", { name }),
+      noAutoCapitalize: true,
+    },
   };
 }
 
@@ -224,8 +227,8 @@ export function resolveSideContext(
   sideIndex: number | undefined,
   state: BattleState | undefined,
   options: MapperOptions,
-): { standard: ContextVar; possessive: ContextVar } {
-  if (sideIndex == null) return { standard: { text: "Side" }, possessive: { text: "Side's" } };
+): { standard: ContextVar; possessive: ContextVar } | undefined {
+  if (sideIndex == null) return undefined;
 
   const rel = getSideRelationship(state, options.localPlayerId, sideIndex);
 
@@ -274,10 +277,10 @@ export function resolveMonContext(
   standard: ContextVar;
   possessive: ContextVar;
   its: ContextVar;
-  player: ContextVar;
-  player_possessive: ContextVar;
-  playerName: ContextVar;
-  playerName_possessive: ContextVar;
+  player?: ContextVar;
+  player_possessive?: ContextVar;
+  playerName?: ContextVar;
+  playerName_possessive?: ContextVar;
   playerId?: string;
   raw: string;
   raw_possessive: string;
@@ -286,30 +289,26 @@ export function resolveMonContext(
 } {
   if (!monRef || typeof monRef !== "object") {
     return {
-      standard: { text: "Mon" },
-      possessive: { text: "Mon's" },
+      standard: { text: "" },
+      possessive: { text: "" },
       its: { text: i18next.t("mon.its") },
-      player: { text: "Player", noAutoCapitalize: true },
-      player_possessive: { text: "Player's", noAutoCapitalize: true },
-      playerName: { text: "Player", noAutoCapitalize: true },
-      playerName_possessive: { text: "Player's", noAutoCapitalize: true },
-      raw: "Mon",
-      raw_possessive: "Mon's",
+      raw: "",
+      raw_possessive: "",
       rel: "foe",
     };
   }
 
-  const name = getMonName(monRef) || "Mon";
+  const name = getMonName(monRef) || "";
   const playerId = getMonPlayerId(monRef) || "";
 
   const spectator = isSpectator(state, options);
   const rel = playerId && !spectator ? getRelationship(state, options.localPlayerId, playerId) : "foe";
   const playerResolved = resolvePlayerContext(playerId, state, options);
   const playerNameResolved = resolvePlayerNameContext(playerId, state);
-  const playerName = playerResolved.standard.text;
+  const playerName = playerResolved?.standard.text || name;
 
   let text = name;
-  let possessiveText = `${name}'s`;
+  let possessiveText = name ? i18next.t("mon.name_possessive", { name }) : "";
   let noAutoCapitalize = false;
   let possessiveNoAutoCapitalize = false;
 
@@ -351,13 +350,13 @@ export function resolveMonContext(
     standard: { text, monRef, noAutoCapitalize },
     possessive: { text: possessiveText, monRef, noAutoCapitalize: possessiveNoAutoCapitalize },
     its: { text: itsText, monRef, noAutoCapitalize: false },
-    player: playerResolved.standard,
-    player_possessive: playerResolved.possessive,
-    playerName: playerNameResolved.standard,
-    playerName_possessive: playerNameResolved.possessive,
+    player: playerResolved?.standard,
+    player_possessive: playerResolved?.possessive,
+    playerName: playerNameResolved?.standard,
+    playerName_possessive: playerNameResolved?.possessive,
     playerId,
     raw: name,
-    raw_possessive: `${name}'s`,
+    raw_possessive: name ? i18next.t("mon.name_possessive", { name }) : "",
     ref: monRef,
     rel,
   };
@@ -410,25 +409,25 @@ export function bindMonParticipant(
   context[`${prefix}_POSSESSIVE`] = resolved.possessive;
   context[`${prefix}_NAME`] = nameVar;
   context[`${prefix}_NAME_POSSESSIVE`] = namePossessiveVar;
-  context[`${prefix}_PLAYER`] = resolved.player;
-  context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
-  context[`${prefix}_PLAYER_NAME`] = resolved.playerName;
-  context[`${prefix}_PLAYER_NAME_POSSESSIVE`] = resolved.playerName_possessive;
+  if (resolved.player) context[`${prefix}_PLAYER`] = resolved.player;
+  if (resolved.player_possessive) context[`${prefix}_PLAYER_POSSESSIVE`] = resolved.player_possessive;
+  if (resolved.playerName) context[`${prefix}_PLAYER_NAME`] = resolved.playerName;
+  if (resolved.playerName_possessive) context[`${prefix}_PLAYER_NAME_POSSESSIVE`] = resolved.playerName_possessive;
 
   if (role === "mon") {
-    if (!context.PLAYER) context.PLAYER = resolved.player;
-    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-    if (!context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
-    if (!context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
+    if (resolved.player && !context.PLAYER) context.PLAYER = resolved.player;
+    if (resolved.player_possessive && !context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (resolved.playerName && !context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
+    if (resolved.playerName_possessive && !context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     if (!context.TARGET) {
       context.TARGET = resolved.standard;
       context.TARGET_POSSESSIVE = resolved.possessive;
       context.TARGET_NAME = nameVar;
       context.TARGET_NAME_POSSESSIVE = namePossessiveVar;
-      context.TARGET_PLAYER = resolved.player;
-      context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
-      context.TARGET_PLAYER_NAME = resolved.playerName;
-      context.TARGET_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
+      if (resolved.player) context.TARGET_PLAYER = resolved.player;
+      if (resolved.player_possessive) context.TARGET_PLAYER_POSSESSIVE = resolved.player_possessive;
+      if (resolved.playerName) context.TARGET_PLAYER_NAME = resolved.playerName;
+      if (resolved.playerName_possessive) context.TARGET_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     }
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
@@ -446,15 +445,15 @@ export function bindMonParticipant(
       context.MON_POSSESSIVE = resolved.possessive;
       context.MON_NAME = nameVar;
       context.MON_NAME_POSSESSIVE = namePossessiveVar;
-      context.MON_PLAYER = resolved.player;
-      context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
-      context.MON_PLAYER_NAME = resolved.playerName;
-      context.MON_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
+      if (resolved.player) context.MON_PLAYER = resolved.player;
+      if (resolved.player_possessive) context.MON_PLAYER_POSSESSIVE = resolved.player_possessive;
+      if (resolved.playerName) context.MON_PLAYER_NAME = resolved.playerName;
+      if (resolved.playerName_possessive) context.MON_PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     }
-    if (!context.PLAYER) context.PLAYER = resolved.player;
-    if (!context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
-    if (!context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
-    if (!context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
+    if (resolved.player && !context.PLAYER) context.PLAYER = resolved.player;
+    if (resolved.player_possessive && !context.PLAYER_POSSESSIVE) context.PLAYER_POSSESSIVE = resolved.player_possessive;
+    if (resolved.playerName && !context.PLAYER_NAME) context.PLAYER_NAME = resolved.playerName;
+    if (resolved.playerName_possessive && !context.PLAYER_NAME_POSSESSIVE) context.PLAYER_NAME_POSSESSIVE = resolved.playerName_possessive;
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
     }
@@ -743,11 +742,15 @@ export function mapUiLogEntry(
   if (playerId) {
     tags.push("player:*");
     const resolved = resolvePlayerContext(playerId, state, options);
-    context.PLAYER = resolved.standard;
-    context.PLAYER_POSSESSIVE = resolved.possessive;
+    if (resolved) {
+      context.PLAYER = resolved.standard;
+      context.PLAYER_POSSESSIVE = resolved.possessive;
+    }
     const nameResolved = resolvePlayerNameContext(playerId, state);
-    context.PLAYER_NAME = nameResolved.standard;
-    context.PLAYER_NAME_POSSESSIVE = nameResolved.possessive;
+    if (nameResolved) {
+      context.PLAYER_NAME = nameResolved.standard;
+      context.PLAYER_NAME_POSSESSIVE = nameResolved.possessive;
+    }
   }
 
   if (title === "timer") {
@@ -762,12 +765,12 @@ export function mapUiLogEntry(
       if (!isNaN(numSecs)) {
         context.REMAININGSECS = numSecs;
         if (numSecs < 60) {
-          context.TIME = `${numSecs} second${numSecs === 1 ? "" : "s"}`;
+          context.TIME = i18next.t("time.second", { count: numSecs });
         } else {
           const minutes = Math.floor(numSecs / 60);
           const seconds = numSecs % 60;
           if (seconds === 0) {
-            context.TIME = `${minutes} minute${minutes === 1 ? "" : "s"}`;
+            context.TIME = i18next.t("time.minute", { count: minutes });
           } else {
             const padded = seconds.toString().padStart(2, "0");
             context.TIME = `${minutes}:${padded}`;
@@ -790,12 +793,16 @@ export function mapUiLogEntry(
   if (side !== undefined && side !== null) {
     tags.push("side:*");
     const resolved = resolveSideContext(side, state, options);
-    context.SIDE = resolved.standard;
-    context.SIDE_POSSESSIVE = resolved.possessive;
+    if (resolved) {
+      context.SIDE = resolved.standard;
+      context.SIDE_POSSESSIVE = resolved.possessive;
+    }
 
     const sideNameResolved = resolveSideNameContext(side, state);
-    context.SIDE_NAME = sideNameResolved.standard;
-    context.SIDE_NAME_POSSESSIVE = sideNameResolved.possessive;
+    if (sideNameResolved) {
+      context.SIDE_NAME = sideNameResolved.standard;
+      context.SIDE_NAME_POSSESSIVE = sideNameResolved.possessive;
+    }
   }
 
   const foeSideIdx = getFoeSideIndex(state, options.localPlayerId, side);
@@ -803,16 +810,20 @@ export function mapUiLogEntry(
     foeSideIdx !== undefined ? foeSideIdx : 1,
     state,
   );
-  context.FOE_SIDE_NAME = foeSideNameResolved.standard;
-  context.FOE_SIDE_NAME_POSSESSIVE = foeSideNameResolved.possessive;
+  if (foeSideNameResolved) {
+    context.FOE_SIDE_NAME = foeSideNameResolved.standard;
+    context.FOE_SIDE_NAME_POSSESSIVE = foeSideNameResolved.possessive;
+  }
 
   const localSideIdx = getLocalSideIndex(state, options.localPlayerId);
   if (localSideIdx !== undefined) {
     const localSideNameResolved = resolveSideNameContext(localSideIdx, state);
-    context.SELF_SIDE_NAME = localSideNameResolved.standard;
-    context.SELF_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
-    context.PLAYER_SIDE_NAME = localSideNameResolved.standard;
-    context.PLAYER_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
+    if (localSideNameResolved) {
+      context.SELF_SIDE_NAME = localSideNameResolved.standard;
+      context.SELF_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
+      context.PLAYER_SIDE_NAME = localSideNameResolved.standard;
+      context.PLAYER_SIDE_NAME_POSSESSIVE = localSideNameResolved.possessive;
+    }
   }
 
   if (entry.target) {
@@ -860,7 +871,8 @@ export function mapUiLogEntry(
   if (entry.values) {
     // If values specifies mon/name/position/player for switch/appearance, bind mon
     if (!context.MON && (entry.values.mon || entry.values.name)) {
-      const monName = typeof entry.values.name === "string" ? entry.values.name : "Mon";
+      const monName =
+        typeof entry.values.name === "string" ? entry.values.name : "";
       const playerId =
         entry.player || (typeof entry.values.player === "string" ? entry.values.player : "");
       const position = typeof entry.values.position === "number" ? entry.values.position : 0;

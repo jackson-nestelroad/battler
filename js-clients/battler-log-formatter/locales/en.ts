@@ -9,6 +9,12 @@ export const en = {
     eva: "evasiveness",
     acc: "accuracy",
   },
+  time: {
+    second___one: "{{count}} second",
+    second___other: "{{count}} seconds",
+    minute___one: "{{count}} minute",
+    minute___other: "{{count}} minutes",
+  },
   mon: {
     self: "{{name}}",
     self_possessive: "{{name}}'s",
@@ -23,6 +29,7 @@ export const en = {
     spectator: "{{player}}'s {{name}}",
     spectator_possessive: "{{player}}'s {{name}}'s",
     its: "its",
+    name_possessive: "{{name}}'s",
   },
   player: {
     self: "you",
@@ -31,6 +38,7 @@ export const en = {
     ally_possessive: "{{player}}'s",
     foe: "{{player}}",
     foe_possessive: "{{player}}'s",
+    name_possessive: "{{player}}'s",
   },
   vocabulary: {
     Mon: "Mon",
@@ -42,6 +50,19 @@ export const en = {
     self_possessive: "your team's",
     foe: "the opposing team",
     foe_possessive: "the opposing team's",
+    name_possessive: "{{name}}'s",
+  },
+  notices: {
+    ability: "[{{mon}} {{name}}]",
+    ability_no_mon: "[{{name}}]",
+    item: "[{{mon}} {{name}}]",
+    item_no_mon: "[{{name}}]",
+    damage: "({{mon}} lost {{damage}} HP)",
+    damage_no_mon: "(lost {{damage}} HP)",
+    heal: "({{mon}} restored {{heal}} HP)",
+    heal_no_mon: "(restored {{heal}} HP)",
+    custom: "[{{type}}: {{mon}} {{name}}]",
+    custom_no_mon: "[{{type}}: {{name}}]",
   },
   logs: {
     ability__ability_airlock: "$t(logs.ability__ability_cloudnine)",

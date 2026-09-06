@@ -446,8 +446,32 @@ export class LogFormatter {
 }
 
 export function formatNoticeText(notice: UiNotice): string {
+  const typeLower = notice.type.toLowerCase();
+  const hasMon = Boolean(notice.mon && notice.mon.trim().length > 0);
+
+  const specificKey = hasMon ? `notices.${typeLower}` : `notices.${typeLower}_no_mon`;
+  const fallbackKey = hasMon ? "notices.custom" : "notices.custom_no_mon";
+
+  const templateKey = i18next.exists(specificKey)
+    ? specificKey
+    : i18next.exists(fallbackKey)
+      ? fallbackKey
+      : undefined;
+
+  const args: Record<string, unknown> = {
+    type: notice.type,
+    name: notice.name,
+    mon: notice.mon || "",
+    damage: notice.name,
+    heal: notice.name,
+  };
+
+  if (templateKey) {
+    return i18next.t(templateKey, args);
+  }
+
   const subject = notice.mon ? `${notice.mon} ` : "";
-  switch (notice.type.toLowerCase()) {
+  switch (typeLower) {
     case "ability":
     case "item":
       return `[${subject}${notice.name}]`;
