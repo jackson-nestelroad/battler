@@ -420,6 +420,7 @@ pub fn generate_full_random_team(
                 Type::Dragon,
                 Type::Dark,
                 Type::Fairy,
+                Type::Stellar,
             ];
             Some(*all_types.choose(rng).unwrap())
         } else {
