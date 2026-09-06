@@ -1820,19 +1820,19 @@ describe("LogFormatter", () => {
 
     it("should format notice text correctly", () => {
       expect(formatNoticeText({ type: "ability", name: "Intimidate", mon: "Gyarados" })).toBe(
-        "[Gyarados Intimidate]",
+        "Gyarados Intimidate",
       );
       expect(formatNoticeText({ type: "item", name: "Leftovers", mon: "Snorlax" })).toBe(
-        "[Snorlax Leftovers]",
+        "Snorlax Leftovers",
       );
       expect(formatNoticeText({ type: "damage", name: "12%", mon: "Pikachu" })).toBe(
-        "(Pikachu lost 12% HP)",
+        "Pikachu lost 12% HP",
       );
       expect(formatNoticeText({ type: "heal", name: "6%", mon: "Pikachu" })).toBe(
-        "(Pikachu restored 6% HP)",
+        "Pikachu restored 6% HP",
       );
       expect(formatNoticeText({ type: "custom", name: "Special", mon: "Mew" })).toBe(
-        "[custom: Mew Special]",
+        "custom: Mew Special",
       );
     });
   });
@@ -1919,14 +1919,14 @@ describe("LogFormatter", () => {
       expect(abilityResult.length).toBe(1);
       expect(abilityResult[0].kind).toBe("notice");
       if (abilityResult[0].kind === "notice") {
-        expect(formatNoticeText(abilityResult[0].notice)).toBe("[Player 1's Pikachu's Static]");
+        expect(formatNoticeText(abilityResult[0].notice)).toBe("Player 1's Pikachu's Static");
       }
 
       const damageResult = spectatorFormatter.formatEntry(damageEntry as UiLogEntry, singlesState);
       expect(damageResult.length).toBe(1);
       expect(damageResult[0].kind).toBe("notice");
       if (damageResult[0].kind === "notice") {
-        expect(formatNoticeText(damageResult[0].notice)).toBe("(Player 2's Charizard lost 50% HP)");
+        expect(formatNoticeText(damageResult[0].notice)).toBe("Player 2's Charizard lost 50% HP");
       }
     });
 
@@ -2252,14 +2252,14 @@ describe("LogFormatter", () => {
             "translation",
             {
               notices: {
-                ability: "[{{name}} de {{mon}}]",
-                ability_no_mon: "[{{name}}]",
-                damage: "({{mon}} a perdu {{damage}} PV)",
-                damage_no_mon: "(a perdu {{damage}} PV)",
-                heal: "({{mon}} a restauré {{heal}} PV)",
-                heal_no_mon: "(a restauré {{heal}} PV)",
-                custom: "[{{type}}: {{name}} de {{mon}}]",
-                custom_no_mon: "[{{type}}: {{name}}]",
+                ability: "{{name}} de {{mon}}",
+                ability_no_mon: "{{name}}",
+                damage: "{{mon}} a perdu {{damage}} PV",
+                damage_no_mon: "a perdu {{damage}} PV",
+                heal: "{{mon}} a restauré {{heal}} PV",
+                heal_no_mon: "a restauré {{heal}} PV",
+                custom: "{{type}}: {{name}} de {{mon}}",
+                custom_no_mon: "{{type}}: {{name}}",
               },
             },
             true,
@@ -2269,22 +2269,22 @@ describe("LogFormatter", () => {
 
           expect(
             formatNoticeText({ type: "ability", name: "Intimidation", mon: "Léviator" }),
-          ).toBe("[Intimidation de Léviator]");
+          ).toBe("Intimidation de Léviator");
           expect(formatNoticeText({ type: "ability", name: "Gaz Inhibiteur" })).toBe(
-            "[Gaz Inhibiteur]",
+            "Gaz Inhibiteur",
           );
           expect(
             formatNoticeText({ type: "damage", name: "50%", mon: "Dracaufeu" }),
-          ).toBe("(Dracaufeu a perdu 50% PV)");
-          expect(formatNoticeText({ type: "damage", name: "25%" })).toBe("(a perdu 25% PV)");
+          ).toBe("Dracaufeu a perdu 50% PV");
+          expect(formatNoticeText({ type: "damage", name: "25%" })).toBe("a perdu 25% PV");
           expect(
             formatNoticeText({ type: "heal", name: "30%", mon: "Carapuce" }),
-          ).toBe("(Carapuce a restauré 30% PV)");
-          expect(formatNoticeText({ type: "heal", name: "15%" })).toBe("(a restauré 15% PV)");
+          ).toBe("Carapuce a restauré 30% PV");
+          expect(formatNoticeText({ type: "heal", name: "15%" })).toBe("a restauré 15% PV");
           expect(
             formatNoticeText({ type: "special", name: "Effet", mon: "Mew" }),
-          ).toBe("[special: Effet de Mew]");
-          expect(formatNoticeText({ type: "special", name: "Effet" })).toBe("[special: Effet]");
+          ).toBe("special: Effet de Mew");
+          expect(formatNoticeText({ type: "special", name: "Effet" })).toBe("special: Effet");
         } finally {
           i18next.changeLanguage("en");
         }

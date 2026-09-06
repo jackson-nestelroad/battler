@@ -474,13 +474,13 @@ export function formatNoticeText(notice: UiNotice): string {
   switch (typeLower) {
     case "ability":
     case "item":
-      return `[${subject}${notice.name}]`;
+      return `${subject}${notice.name}`;
     case "damage":
-      return `(${subject}lost ${notice.name} HP)`;
+      return `${subject}lost ${notice.name} HP`;
     case "heal":
-      return `(${subject}restored ${notice.name} HP)`;
+      return `${subject}restored ${notice.name} HP`;
     default:
-      return `[${notice.type}: ${subject}${notice.name}]`;
+      return `${notice.type}: ${subject}${notice.name}`;
   }
 }
 

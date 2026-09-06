@@ -126,7 +126,7 @@ for (const item of items) {
       console.log(`--- Divider (${item.subtype}) ---`); // "continue" or "residual"
       break;
     case "notice":
-      console.log(formatNoticeText(item.notice)); // e.g. "[The opposing Gyarados's Intimidate]" or "(Pikachu lost 12% HP)"
+      console.log(formatNoticeText(item.notice)); // e.g. "The opposing Gyarados's Intimidate" or "Pikachu lost 12% HP"
       break;
     case "message":
       console.log(`[${item.category}] ${stringifyLog(item.message)}`);
