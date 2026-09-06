@@ -14,6 +14,7 @@ pub use log::{
 pub use service::{
     BattleServiceOptions,
     BattlerService,
+    WatchdogOptions,
 };
 pub use timer::{
     Timer,
@@ -32,6 +33,7 @@ mod typescript_tests {
         Player::export().unwrap();
         Side::export().unwrap();
         BattleState::export().unwrap();
+        DropReason::export().unwrap();
         BattleStatus::export().unwrap();
         BattleMetadata::export().unwrap();
         Battle::export().unwrap();

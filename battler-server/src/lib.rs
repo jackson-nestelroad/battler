@@ -436,11 +436,20 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     let global_log_rx = battler_service_local.take_global_log_rx().unwrap();
     let battler_service = Arc::new(battler_service_local);
 
-    // Spawn housekeeping task for finished battles
+    // Spawn housekeeping task for finished and stuck battles
     let battler_service_cleanup = battler_service.clone();
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(30)).await;
+            let dropped = battler_service_cleanup
+                .drop_stuck_battles(&battler_service::WatchdogOptions::default())
+                .await;
+            if !dropped.is_empty() {
+                log::warn!(
+                    "Watchdog dropped {} stuck battles: {dropped:?}",
+                    dropped.len()
+                );
+            }
             if let Err(err) = battler_service_cleanup
                 .clean_up_finished_battles(Duration::from_secs(60))
                 .await

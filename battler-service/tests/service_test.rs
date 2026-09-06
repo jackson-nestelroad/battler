@@ -34,6 +34,7 @@ use battler_service::{
     BattleServiceOptions,
     BattleState,
     BattlerService,
+    DropReason,
     LogEntry,
     Player,
     PlayerPreview,
@@ -42,6 +43,7 @@ use battler_service::{
     SidePreview,
     Timer,
     Timers,
+    WatchdogOptions,
 };
 use battler_test_utils::static_local_data_store;
 use itertools::Itertools;
@@ -588,6 +590,7 @@ async fn lists_battles_in_uuid_order() {
                 battle_type: battler::battle::BattleType::Singles,
                 state: BattleState::Preparing,
                 turn: 0,
+                drop_reason: None,
                 special: None,
             },
             BattlePreview {
@@ -609,6 +612,7 @@ async fn lists_battles_in_uuid_order() {
                 battle_type: battler::battle::BattleType::Singles,
                 state: BattleState::Preparing,
                 turn: 0,
+                drop_reason: None,
                 special: None,
             }
         ])
@@ -635,6 +639,7 @@ async fn lists_battles_in_uuid_order() {
             battle_type: battler::battle::BattleType::Singles,
             state: BattleState::Preparing,
             turn: 0,
+            drop_reason: None,
             special: None,
         }])
     );
@@ -704,6 +709,7 @@ async fn lists_battles_for_player_in_uuid_order() {
                 battle_type: battler::battle::BattleType::Singles,
                 state: BattleState::Preparing,
                 turn: 0,
+                drop_reason: None,
                 special: None,
             },
             BattlePreview {
@@ -725,6 +731,7 @@ async fn lists_battles_for_player_in_uuid_order() {
                 battle_type: battler::battle::BattleType::Singles,
                 state: BattleState::Preparing,
                 turn: 0,
+                drop_reason: None,
                 special: None,
             }
         ])
@@ -751,6 +758,7 @@ async fn lists_battles_for_player_in_uuid_order() {
             battle_type: battler::battle::BattleType::Singles,
             state: BattleState::Preparing,
             turn: 0,
+            drop_reason: None,
             special: None,
         }])
     );
@@ -1734,4 +1742,237 @@ async fn player_with_forced_switch_forfeits_in_multi_battle_serves_requests_to_r
         battler_service.request(battle.uuid, "player-4").await,
         Ok(Some(_))
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn manual_drop_battle_sets_state_and_allows_delete() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+
+    // Active battle cannot be deleted normally
+    assert!(battler_service.delete(battle.uuid).await.is_err());
+
+    // Manually drop the battle
+    battler_service
+        .drop_battle(
+            battle.uuid,
+            DropReason::Administrative("admin dropped".to_string()),
+        )
+        .await
+        .unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
+    assert_eq!(
+        battle_status.drop_reason,
+        Some(DropReason::Administrative("admin dropped".to_string()))
+    );
+
+    // Verify log contains drop signal and does not contain done signal
+    let full_log = battler_service.full_log(battle.uuid, None).await.unwrap();
+    assert!(
+        full_log
+            .iter()
+            .any(|entry| entry == "-battlerservice:dropped|reason:administrative: admin dropped")
+    );
+    assert!(!full_log.iter().any(|entry| entry == "-battlerservice:done"));
+
+    // Making a choice on dropped battle fails
+    let choice_err = battler_service
+        .make_choice(battle.uuid, "player-1", "move 0")
+        .await;
+    assert!(choice_err.is_err());
+    assert!(
+        choice_err
+            .unwrap_err()
+            .to_string()
+            .contains("the battle is over")
+    );
+
+    // Starting a dropped battle fails
+    let start_err = battler_service.start(battle.uuid).await;
+    assert!(start_err.is_err());
+
+    // Dropped battle can now be deleted
+    assert!(battler_service.delete(battle.uuid).await.is_ok());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn watchdog_drops_stuck_battle_on_inactivity() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    tokio::time::sleep(Duration::from_millis(15)).await;
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_millis(5),
+        max_battle_duration: Duration::from_secs(3600),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert_eq!(dropped.len(), 1);
+    assert_eq!(dropped[0].0, battle.uuid);
+    assert_matches::assert_matches!(dropped[0].1, DropReason::InactivityTimeout);
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
+    assert_matches::assert_matches!(
+        battle_status.drop_reason,
+        Some(DropReason::InactivityTimeout)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn watchdog_drops_stuck_battle_on_max_battle_duration() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    tokio::time::sleep(Duration::from_millis(15)).await;
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_secs(3600),
+        max_battle_duration: Duration::from_millis(5),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert_eq!(dropped.len(), 1);
+    assert_eq!(dropped[0].0, battle.uuid);
+    assert_matches::assert_matches!(dropped[0].1, DropReason::ExceededMaxDuration);
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
+    assert_matches::assert_matches!(
+        battle_status.drop_reason,
+        Some(DropReason::ExceededMaxDuration)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn healthy_active_battle_is_not_dropped_by_watchdog() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_secs(600),
+        max_battle_duration: Duration::from_secs(3600),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert!(
+        dropped.is_empty(),
+        "Healthy ongoing battle should not be dropped"
+    );
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn dropping_already_finished_battle_is_noop_and_not_reported_by_watchdog() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    battler_service
+        .drop_battle(
+            battle.uuid,
+            DropReason::Administrative("admin dropped".to_string()),
+        )
+        .await
+        .unwrap();
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_millis(0),
+        max_battle_duration: Duration::from_millis(0),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert!(
+        dropped.is_empty(),
+        "Already dropped battle must not be reported by watchdog again"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn delete_force_terminates_active_battle_without_hanging() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+
+    // Regular delete should fail for active battle
+    assert!(battler_service.delete(battle.uuid).await.is_err());
+
+    // delete_force should succeed cleanly without hanging
+    let delete_result = tokio::time::timeout(
+        Duration::from_secs(3),
+        battler_service.delete_force(battle.uuid),
+    )
+    .await;
+    assert!(delete_result.is_ok(), "delete_force timed out!");
+    assert!(delete_result.unwrap().is_ok());
+
+    // Battle should no longer exist
+    assert!(battler_service.battle(battle.uuid).await.is_err());
 }

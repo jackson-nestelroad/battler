@@ -499,6 +499,8 @@ impl<'d> AiPlayer<'d> {
         #[allow(unused)] task_tx: mpsc::Sender<()>,
     ) {
         log::info!("AI {id} is watching battle {battle} for {player}");
+        let mut retries = 0;
+        const MAX_RETRIES: usize = 3;
         while let Err(err) = Self::watch_battle_internal(
             battle,
             player.clone(),
@@ -519,7 +521,24 @@ impl<'d> AiPlayer<'d> {
             if Self::is_battle_not_found(&err) {
                 break;
             }
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            if let Ok(b) = service.battle(battle).await {
+                if b.state == battler_service::BattleState::Finished {
+                    log::warn!(
+                        "AI {id} stopping watch on battle {battle} for {player} due to battle state: {:?}, drop_reason: {:?}",
+                        b.state,
+                        b.drop_reason
+                    );
+                    break;
+                }
+            }
+            retries += 1;
+            if retries >= MAX_RETRIES {
+                log::error!(
+                    "AI {id} reached max retries ({MAX_RETRIES}) watching battle {battle} for {player}; aborting"
+                );
+                break;
+            }
+            tokio::time::sleep(Duration::from_secs(1 << (retries - 1))).await;
         }
         log::info!("AI {id} finished watching battle {battle} for {player}");
         if let Some(state) = state.upgrade() {

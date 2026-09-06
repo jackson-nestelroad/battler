@@ -59,6 +59,10 @@ function updateBattleState(state: BattleState, logLines: string[]): BattleState 
   return alterBattleState(newBattleState(), lines);
 }
 
+function signalsBattleEnded(entry: string): boolean {
+  return entry === "-battlerservice:done" || entry.startsWith("-battlerservice:dropped");
+}
+
 export class BattlerClient extends EventEmitter {
   private subscription?: autobahn.Subscription;
   private logLines: string[] = [];
@@ -120,7 +124,7 @@ export class BattlerClient extends EventEmitter {
       this.hasPendingRequestSignal = true;
     }
 
-    if (entry.content === "-battlerservice:done") {
+    if (entry?.content && signalsBattleEnded(entry.content)) {
       this.hasDoneSignal = true;
     }
 
@@ -150,6 +154,9 @@ export class BattlerClient extends EventEmitter {
       }
       if (this.logLines.some((l) => l === "-battlerservice:request")) {
         this.hasPendingRequestSignal = true;
+      }
+      if (this.logLines.some((l) => l && signalsBattleEnded(l))) {
+        this.hasDoneSignal = true;
       }
       if (this.logLines.some((l) => l === "-battlerservice:deleted")) {
         this.hasDeletedSignal = true;

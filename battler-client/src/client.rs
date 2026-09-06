@@ -62,6 +62,18 @@ impl BattleClientEvent {
     }
 }
 
+/// Checks if a log entry signals that the battle has ended for the client.
+///
+/// Note that while `-battlerservice:done` and `-battlerservice:dropped` signal that battle gameplay
+/// has concluded (normally or abnormally), only `-battlerservice:deleted` represents the truly
+/// terminal destruction of the battle resource on the server. All three indicate to the client that
+/// no further requests or actions will occur.
+fn signals_battle_ended(entry: &str) -> bool {
+    entry == "-battlerservice:done"
+        || entry == "-battlerservice:deleted"
+        || entry.starts_with("-battlerservice:dropped")
+}
+
 fn role_for_player(battle: &Battle, player: &str) -> Role {
     battle
         .sides
@@ -89,7 +101,7 @@ struct BattlerClientInternal<'b> {
 
     log: Mutex<Log>,
     state: Mutex<BattleState>,
-    has_done_signal: Mutex<bool>,
+    has_end_signal: Mutex<bool>,
 
     service: Arc<Box<dyn BattlerServiceClient + 'b>>,
 
@@ -113,7 +125,7 @@ impl<'b> BattlerClientInternal<'b> {
         let (cancel_tx, _) = broadcast::channel(1);
 
         let log = service.full_log(battle.uuid, role.side()).await?;
-        let has_done_signal = log.iter().any(|entry| entry == "-battlerservice:done");
+        let has_end_signal = log.iter().any(|entry| signals_battle_ended(entry));
         let log = Log::new(log)?;
 
         // Start with an empty battle state and request.
@@ -129,7 +141,7 @@ impl<'b> BattlerClientInternal<'b> {
             role,
             log: Mutex::new(log),
             state: Mutex::new(state),
-            has_done_signal: Mutex::new(has_done_signal),
+            has_end_signal: Mutex::new(has_end_signal),
             service,
             cancel_tx,
             battle_event_tx,
@@ -176,7 +188,7 @@ impl<'b> BattlerClientInternal<'b> {
             if *self.battle_event_rx.borrow() == BattleClientEvent::End {
                 break;
             }
-            if *self.has_done_signal.lock().await {
+            if *self.has_end_signal.lock().await {
                 self.battle_event_tx.send(BattleClientEvent::End)?;
                 break;
             }
@@ -219,7 +231,7 @@ impl<'b> BattlerClientInternal<'b> {
                     while let Ok(next_entry) = log_entry_rx.try_recv() {
                         self.process_log_entry(next_entry).await?;
                     }
-                    if *self.has_done_signal.lock().await {
+                    if *self.has_end_signal.lock().await {
                         self.battle_event_tx.send(BattleClientEvent::End)?;
                         break;
                     }
@@ -261,8 +273,8 @@ impl<'b> BattlerClientInternal<'b> {
             self.player,
             self.battle
         );
-        if log_entry.content == "-battlerservice:done" {
-            *self.has_done_signal.lock().await = true;
+        if signals_battle_ended(&log_entry.content) {
+            *self.has_end_signal.lock().await = true;
         }
         self.update_battle_state_for_log_entry(log_entry).await?;
 
@@ -272,8 +284,8 @@ impl<'b> BattlerClientInternal<'b> {
     async fn backfill_log(&self, log: &mut Log) -> Result<()> {
         let full_log = self.service.full_log(self.battle, self.role.side()).await?;
         for (i, entry) in full_log.into_iter().enumerate() {
-            if entry == "-battlerservice:done" {
-                *self.has_done_signal.lock().await = true;
+            if signals_battle_ended(&entry) {
+                *self.has_end_signal.lock().await = true;
             }
             log.add(i, entry)?;
         }

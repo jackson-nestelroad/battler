@@ -80,10 +80,10 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
                     requests -= 1;
                 }
                 Err(err) => {
-                    return err
-                        .downcast::<BattleEndedError>()
-                        .map(|_| ())
-                        .map_err(|err| err.context("battle client failed"));
+                    if err.is::<BattleEndedError>() {
+                        return Ok(());
+                    }
+                    return Err(err.context("battle client failed"));
                 }
             }
         }

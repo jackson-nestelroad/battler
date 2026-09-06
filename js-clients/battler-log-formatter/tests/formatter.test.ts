@@ -1459,6 +1459,19 @@ describe("LogFormatter", () => {
       expect(doneResult).not.toBeNull();
       expect(doneResult!.messages[0].category).toBe(LogCategory.Hint);
       expect(stringifyLog(doneResult!.messages[0])).toBe("The battle is over!");
+
+      const droppedEntry: Partial<UiLogEntry> = {
+        title: "-battlerservice:dropped",
+        values: {
+          reason: "inactivity timeout",
+        },
+      };
+      const droppedResult = formatter.format(droppedEntry as UiLogEntry);
+      expect(droppedResult).not.toBeNull();
+      expect(droppedResult!.messages[0].category).toBe(LogCategory.Hint);
+      expect(stringifyLog(droppedResult!.messages[0])).toBe(
+        "The battle was dropped: inactivity timeout.",
+      );
     });
 
     it("should resolve standard log hints from hints.logs as Hint category when logs template is null", () => {

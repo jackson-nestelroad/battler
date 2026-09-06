@@ -1250,6 +1250,7 @@ export const en = {
         timer__battle__done: "The battle ran out of time!",
         started: "The battle has started!",
         done: "The battle is over!",
+        dropped: "The battle was dropped: {{REASON}}.",
       },
     },
   },

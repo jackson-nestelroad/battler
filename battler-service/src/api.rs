@@ -61,6 +61,38 @@ pub enum BattleState {
     Finished,
 }
 
+/// The reason a battle was dropped.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub enum DropReason {
+    #[serde(rename = "engine_error")]
+    EngineError(String),
+    #[serde(rename = "execution_timeout")]
+    ExecutionTimeout,
+    #[serde(rename = "zombie_deadlock")]
+    ZombieDeadlock,
+    #[serde(rename = "inactivity_timeout")]
+    InactivityTimeout,
+    #[serde(rename = "exceeded_max_duration")]
+    ExceededMaxDuration,
+    #[serde(rename = "administrative")]
+    Administrative(String),
+}
+
+impl std::fmt::Display for DropReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::EngineError(err) => write!(f, "engine error: {err}"),
+            Self::ExecutionTimeout => write!(f, "execution timeout"),
+            Self::ZombieDeadlock => write!(f, "zombie deadlock"),
+            Self::InactivityTimeout => write!(f, "inactivity timeout"),
+            Self::ExceededMaxDuration => write!(f, "exceeded maximum duration"),
+            Self::Administrative(reason) => write!(f, "administrative: {reason}"),
+        }
+    }
+}
+
 /// The status of a [`Battle`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -105,8 +137,11 @@ pub struct Battle {
     pub status: BattleStatus,
     /// The sides participating in the battle.
     pub sides: Vec<Side>,
-    /// The error that occurred when continuing the battle.
-    pub error: Option<String>,
+    /// The reason the battle was dropped, if applicable.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub drop_reason: Option<DropReason>,
     /// Metadata about the battle.
     pub metadata: BattleMetadata,
 }
@@ -153,4 +188,9 @@ pub struct BattlePreview {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "typescript", ts(optional))]
     pub special: Option<String>,
+    /// The reason the battle was dropped, if applicable.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub drop_reason: Option<DropReason>,
 }
