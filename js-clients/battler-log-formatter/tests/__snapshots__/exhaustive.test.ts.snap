@@ -23442,13 +23442,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
                 "name": "Bibarel",
-                "player": "player-1",
+                "player": "player-2",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "The opposing Bibarel",
@@ -23487,13 +23487,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
                 "name": "Bibarel",
-                "player": "player-1",
+                "player": "player-2",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "The opposing Bibarel",
@@ -23532,13 +23532,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
                 "name": "Bibarel",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "The opposing Bibarel",

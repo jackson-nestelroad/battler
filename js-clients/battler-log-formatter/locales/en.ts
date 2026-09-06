@@ -728,7 +728,7 @@ export const en = {
     heal__from_ability_raindish: null,
     heal__from_ability_regenerator: null,
     heal__from_ability_voltabsorb: null,
-    heal__from_drain: "{{MON}} had its energy drained!",
+    heal__from_drain: "{{OF}} had its energy drained!",
     heal__from_heal: null,
     heal__from_item_aguavberry: null,
     heal__from_item_any: null,
