@@ -4,6 +4,7 @@ import {
   computeExpMetrics,
   formatActiveBoosts,
   formatWeightKg,
+  isTerastallizationRuleEnabled,
   monBattleDataToTooltip,
   NATURE_MODIFIERS,
   publicMonStateToTooltip,
@@ -526,6 +527,39 @@ describe("monTooltipModel", () => {
       const vm = monBattleDataToTooltip(mockMonBattleData, dynamaxState);
       expect(vm.isDynamaxed).toBe(true);
       expect(vm.baseSummary?.isDynamaxed).toBe(false);
+    });
+
+    it("filters out teraType when Terastallization is not in battle rules", () => {
+      const vmNoTera = monBattleDataToTooltip(mockMonBattleData, null, ["Standard", "Flat Rules"]);
+      expect(vmNoTera.teraType).toBeNull();
+      expect(vmNoTera.baseSummary?.teraType).toBeNull();
+
+      const vmWithTera = monBattleDataToTooltip(mockMonBattleData, null, [
+        "Standard",
+        "Terastallization",
+      ]);
+      expect(vmWithTera.teraType).toBe("Electric");
+      expect(vmWithTera.baseSummary?.teraType).toBe("Electric");
+
+      const vmWithMultiRules = monBattleDataToTooltip(mockMonBattleData, null, [
+        "Z-Moves",
+        "Dynamax",
+        "Terastallization",
+      ]);
+      expect(vmWithMultiRules.teraType).toBe("Electric");
+      expect(vmWithMultiRules.baseSummary?.teraType).toBe("Electric");
+    });
+
+    it("evaluates isTerastallizationRuleEnabled properly across formats", () => {
+      expect(isTerastallizationRuleEnabled(["Z-Moves", "Dynamax", "Terastallization"])).toBe(true);
+      expect(isTerastallizationRuleEnabled(["terastallization"])).toBe(true);
+      expect(isTerastallizationRuleEnabled(["+ Terastallization"])).toBe(true);
+      expect(isTerastallizationRuleEnabled(["Terastallization Clause"])).toBe(true);
+      expect(isTerastallizationRuleEnabled(["Standard", "Flat Rules"])).toBe(false);
+      expect(isTerastallizationRuleEnabled([])).toBe(true);
+      expect(isTerastallizationRuleEnabled(undefined)).toBe(true);
+      expect(isTerastallizationRuleEnabled(null)).toBe(true);
+      expect(isTerastallizationRuleEnabled(["Flat Rules"], null, "Water")).toBe(true);
     });
   });
 

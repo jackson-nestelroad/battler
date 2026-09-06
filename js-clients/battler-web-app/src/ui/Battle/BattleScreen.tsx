@@ -438,6 +438,7 @@ export default function BattleScreen() {
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
+              rules={metadata?.rules}
             />
           </section>
         </div>
@@ -468,6 +469,7 @@ export default function BattleScreen() {
                 playbackPending={false}
                 isLoading={battleSession.isLoading}
                 errorMessage={battleSession.choiceError}
+                rules={metadata?.rules}
               />
             )}
           </section>
@@ -479,6 +481,7 @@ export default function BattleScreen() {
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
+              rules={metadata?.rules}
             />
           </section>
         </div>

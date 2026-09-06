@@ -374,12 +374,39 @@ export function resolveMonRefForBattleData(
 }
 
 /**
+ * Checks whether Terastallization is enabled in the battle rules or already active.
+ */
+export function isTerastallizationRuleEnabled(
+  rules?: string[] | null,
+  state?: BattleState | null,
+  activeTera?: string | null,
+): boolean {
+  if (activeTera) return true;
+  const isTeraMatch = (r: string) => {
+    const clean = r.trim().toLowerCase().replace(/^[+*!-]\s*/, "");
+    return (
+      clean === "terastallization" ||
+      clean === "terastallize" ||
+      clean.startsWith("terastal")
+    );
+  };
+  if (rules && rules.length > 0) {
+    return rules.some(isTeraMatch);
+  }
+  if (state?.field?.rules && state.field.rules.length > 0) {
+    return state.field.rules.some(isTeraMatch);
+  }
+  return true;
+}
+
+/**
  * Converts a player's private MonBattleData into a standardized MonTooltipViewModel.
  * Accepts optional BattleState to resolve live battle-log-tracked conditions, transforms, and terastallization.
  */
 export function monBattleDataToTooltip(
   mon: MonBattleData,
   state?: BattleState | null,
+  rules?: string[] | null,
 ): MonTooltipViewModel {
   const summary = mon.summary;
   const species = mon.species || summary?.species || "Unknown";
@@ -511,6 +538,8 @@ export function monBattleDataToTooltip(
     const summaryStatus = normalizeStatusCode(summary.status);
     const summaryIsFainted = summaryHp <= 0 || summaryStatus === "fnt";
 
+    const isTeraEnabled = isTerastallizationRuleEnabled(rules, state, activeTera);
+
     baseSummary = {
       species: summary.species,
       name: summary.name || summary.species,
@@ -518,7 +547,7 @@ export function monBattleDataToTooltip(
       gender: summary.gender,
       shiny: summary.shiny,
       types,
-      teraType: summary.tera_type ? String(summary.tera_type) : null,
+      teraType: isTeraEnabled && summary.tera_type ? String(summary.tera_type) : null,
       isTerastallized: false,
       ball: summary.ball,
       ownerLabel: "Your Mon",
@@ -546,9 +575,11 @@ export function monBattleDataToTooltip(
     };
   }
 
+  const isTeraEnabled = isTerastallizationRuleEnabled(rules, state, activeTera);
   const isTerastallized = Boolean(activeTera);
-  const resolvedTeraType =
-    activeTera || (summary?.tera_type ? String(summary.tera_type) : null);
+  const resolvedTeraType = isTeraEnabled
+    ? (activeTera || (summary?.tera_type ? String(summary.tera_type) : null))
+    : null;
   const ball = summary?.ball || null;
 
   return {
@@ -679,6 +710,7 @@ function makeEmptyPublicTooltip(species: string, player?: string): MonTooltipVie
 export function publicMonStateToTooltip(
   state: BattleState | null | undefined,
   uiMon: UiMon,
+  rules?: string[] | null,
 ): MonTooltipViewModel | null {
   if (!state) return null;
 
@@ -728,6 +760,12 @@ export function publicMonStateToTooltip(
     if (app && "known" in app.terastallization && app.terastallization.known) {
       teraType = String(app.terastallization.known);
       isTerastallized = true;
+    }
+
+    const isTeraEnabled = isTerastallizationRuleEnabled(rules, state, teraType);
+    if (!isTeraEnabled) {
+      teraType = null;
+      isTerastallized = false;
     }
 
     // Health calculations

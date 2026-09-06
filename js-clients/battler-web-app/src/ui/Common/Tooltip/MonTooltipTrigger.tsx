@@ -59,6 +59,7 @@ export interface MonTooltipTriggerProps {
   mon?: MonBattleData | null;
   monRef?: UiMon;
   battleState?: BattleState | null;
+  rules?: string[] | null;
   children: ReactNode;
   className?: string;
   as?: "span" | "div";
@@ -68,19 +69,20 @@ export default function MonTooltipTrigger({
   mon,
   monRef,
   battleState,
+  rules,
   children,
   className,
   as = "span",
 }: MonTooltipTriggerProps) {
   const viewModel = useMemo(() => {
     if (mon) {
-      return monBattleDataToTooltip(mon, battleState);
+      return monBattleDataToTooltip(mon, battleState, rules);
     }
     if (battleState && monRef) {
-      return publicMonStateToTooltip(battleState, monRef);
+      return publicMonStateToTooltip(battleState, monRef, rules);
     }
     return null;
-  }, [mon, battleState, monRef]);
+  }, [mon, battleState, monRef, rules]);
 
   const {
     isOpen,

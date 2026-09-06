@@ -20,6 +20,7 @@ interface MonCardProps {
   actingBadgeText?: string;
   monBattleData?: MonBattleData;
   battleState?: BattleState | null;
+  rules?: string[] | null;
 }
 
 export default function MonCard({
@@ -36,6 +37,7 @@ export default function MonCard({
   actingBadgeText = "Acting",
   monBattleData,
   battleState,
+  rules,
 }: MonCardProps) {
   const isFainted = hp <= 0 || normalizeStatusCode(status) === "fnt";
 
@@ -73,6 +75,7 @@ export default function MonCard({
       <MonTooltipTrigger
         mon={monBattleData}
         battleState={battleState}
+        rules={rules}
         as="div"
         className="flex-col w-full h-full"
       >

@@ -13,6 +13,7 @@ interface LogPanelProps {
   uiLogs: UiLogEntry[];
   engineLogs?: string[];
   battleState?: BattleState | null;
+  rules?: string[] | null;
 }
 
 function renderLogDivider(
@@ -53,6 +54,7 @@ function renderTokenValue(
   ctxVal: ContextValue | undefined,
   battleState: BattleState | null | undefined,
   key: string | number,
+  rules?: string[] | null,
 ) {
   if (ctxVal == null) return null;
 
@@ -64,7 +66,12 @@ function renderTokenValue(
   ) {
     const text = formatContextValue(ctxVal);
     return (
-      <MonTooltipTrigger key={key} monRef={ctxVal.monRef} battleState={battleState}>
+      <MonTooltipTrigger
+        key={key}
+        monRef={ctxVal.monRef}
+        battleState={battleState}
+        rules={rules}
+      >
         <span className={styles.monHoverTrigger}>{text}</span>
       </MonTooltipTrigger>
     );
@@ -75,7 +82,7 @@ function renderTokenValue(
       <Fragment key={key}>
         {ctxVal.map((item, idx) => (
           <Fragment key={idx}>
-            {renderTokenValue(item, battleState, `${key}-${idx}`)}
+            {renderTokenValue(item, battleState, `${key}-${idx}`, rules)}
             {idx < ctxVal.length - 1 ? ", " : ""}
           </Fragment>
         ))}
@@ -91,6 +98,7 @@ export default function LogPanel({
   uiLogs,
   engineLogs = [],
   battleState,
+  rules,
 }: LogPanelProps) {
   const [mode, setMode] = useState<"text" | "json" | "engine">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -172,6 +180,7 @@ export default function LogPanel({
                         <MonTooltipTrigger
                           monRef={item.notice.monRef}
                           battleState={battleState}
+                          rules={rules}
                         >
                           <span className={styles.monHoverTrigger}>{noticeText}</span>
                         </MonTooltipTrigger>
@@ -194,7 +203,7 @@ export default function LogPanel({
                       }
                       const ctxVal = message.context[token.value];
                       if (ctxVal === undefined) return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
-                      return renderTokenValue(ctxVal, battleState, i);
+                      return renderTokenValue(ctxVal, battleState, i, rules);
                     })}
                   </span>
                 </div>

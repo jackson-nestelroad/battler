@@ -24,6 +24,7 @@ interface TeamSummaryProps {
   activeMonTeamPosition?: number | null;
   actingBadgeText?: string;
   battleState?: BattleState | null;
+  rules?: string[] | null;
 }
 
 export default function TeamSummary({
@@ -40,6 +41,7 @@ export default function TeamSummary({
   activeMonTeamPosition,
   actingBadgeText,
   battleState,
+  rules,
 }: TeamSummaryProps) {
   if (!playerData || !playerData.mons) return null;
 
@@ -98,6 +100,7 @@ export default function TeamSummary({
               actingBadgeText={actingBadgeText}
               monBattleData={mon}
               battleState={battleState}
+              rules={rules}
             />
           );
         })}

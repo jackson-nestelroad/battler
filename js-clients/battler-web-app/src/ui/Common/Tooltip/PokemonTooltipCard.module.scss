@@ -121,7 +121,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Base special battle mechanic badge (Tera, Dynamax, Transformed) */
+/* Special battle mechanic badge (Active Terastallization) */
 .specialBadge {
   font-size: var(--font-size-xxs);
   font-weight: 600;
@@ -139,16 +139,55 @@
   color: var(--color-badge-tera-text);
 }
 
-.dynamaxBadge {
-  background-color: var(--color-badge-dynamax-bg);
-  border-color: var(--color-badge-dynamax-border);
-  color: var(--color-badge-dynamax-text);
+.baseTypesPill,
+.teraPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+  width: fit-content;
 }
 
-.transformedBadge {
-  background-color: var(--color-badge-transformed-bg);
-  border-color: var(--color-badge-transformed-border);
-  color: var(--color-badge-transformed-text);
+.baseTypesPill {
+  background-color: var(--color-secondary-bg);
+  border-color: var(--color-secondary-border);
+}
+
+.teraPill {
+  background-color: var(--color-badge-tera-bg);
+  border-color: var(--color-badge-tera-border);
+}
+
+.baseTypesLabel,
+.teraPillLabel {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.baseTypesLabel {
+  color: var(--text-secondary);
+}
+
+.teraPillLabel {
+  color: var(--color-badge-tera-text);
+}
+
+.pillTypeBadge {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  color: var(--color-white);
+  padding: 0 var(--spacing-xxs);
+  border-radius: var(--border-radius-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .healthSection {
@@ -203,7 +242,7 @@
   color: var(--text-muted);
 }
 
-/* Base modifier badge (Boosts and conditions) */
+/* Base modifier badge (Boosts, volatiles, and conditions) */
 .modifierBadge {
   font-size: var(--font-size-xxs);
   padding: var(--spacing-xxs) var(--spacing-xs);
@@ -230,6 +269,22 @@
   background-color: var(--color-info-bg);
   border-color: var(--color-info-border);
   color: var(--color-info-text);
+}
+
+.dynamaxBadge {
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--color-badge-dynamax-bg);
+  border-color: var(--color-badge-dynamax-border);
+  color: var(--color-badge-dynamax-text);
+}
+
+.transformedBadge {
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--color-badge-transformed-bg);
+  border-color: var(--color-badge-transformed-border);
+  color: var(--color-badge-transformed-text);
 }
 
 .traitsGrid {

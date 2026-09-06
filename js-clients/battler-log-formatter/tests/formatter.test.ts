@@ -637,6 +637,56 @@ describe("LogFormatter", () => {
       "The wild Greninja became fully charged due to its Battle Bond!",
     );
   });
+
+  it("should format Hadron Engine activation and ability notice", () => {
+    const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+    // Trainer self Miraidon
+    const selfEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { position: 0, name: "Miraidon", player: "p1", side: 0 } },
+        ability: "Hadron Engine",
+      },
+    };
+    const selfResult = formatter.format(selfEntry as UiLogEntry);
+    expect(selfResult).not.toBeNull();
+    expect(selfResult!.notices).toHaveLength(1);
+    expect(selfResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Hadron Engine",
+      mon: "Miraidon's",
+      monRef: { Active: { position: 0, name: "Miraidon", player: "p1", side: 0 } },
+    });
+    expect(selfResult!.messages).toHaveLength(1);
+    expect(selfResult!.messages[0].key).toBe("activate__ability_hadronengine");
+    expect(stringifyLog(selfResult!.messages[0])).toBe(
+      "Miraidon turned the ground into Electric Terrain, energizing its futuristic engine!",
+    );
+
+    // Opposing Miraidon
+    const oppEntry: Partial<UiLogEntry> = {
+      title: "activate",
+      values: {
+        mon: { Active: { position: 0, name: "Miraidon", player: "p2", side: 1 } },
+        ability: "Hadron Engine",
+      },
+    };
+    const oppResult = formatter.format(oppEntry as UiLogEntry);
+    expect(oppResult).not.toBeNull();
+    expect(oppResult!.notices).toHaveLength(1);
+    expect(oppResult!.notices[0]).toEqual({
+      type: "Ability",
+      name: "Hadron Engine",
+      mon: "The opposing Miraidon's",
+      monRef: { Active: { position: 0, name: "Miraidon", player: "p2", side: 1 } },
+    });
+    expect(oppResult!.messages).toHaveLength(1);
+    expect(oppResult!.messages[0].key).toBe("activate__ability_hadronengine");
+    expect(stringifyLog(oppResult!.messages[0])).toBe(
+      "The opposing Miraidon turned the ground into Electric Terrain, energizing its futuristic engine!",
+    );
+  });
   it("should format move with zpower flag", () => {
     const formatter = new LogFormatter({ localPlayerId: "p1" });
     const entry: Partial<UiLogEntry> = {

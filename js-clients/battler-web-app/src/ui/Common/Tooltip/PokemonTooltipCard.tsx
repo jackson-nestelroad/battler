@@ -18,8 +18,6 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
     gender,
     shiny,
     ownerLabel,
-    isTransformed,
-    isDynamaxed,
     types,
     teraType,
     isTerastallized,
@@ -28,6 +26,8 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
   const isMale = genderLower === "m" || genderLower === "male";
   const isFemale = genderLower === "f" || genderLower === "female";
   const displayName = name || species;
+
+  const isTerastallizedActive = Boolean(isTerastallized && teraType);
 
   return (
     <header className={styles.header}>
@@ -50,43 +50,81 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
 
       <span className={styles.speciesSubtitle}>{species}</span>
 
-      {/* Types (on their own line) */}
-      {types && types.length > 0 && (
-        <div className="flex-row align-center gap-xs flex-wrap">
-          {types.map((type) => (
-            <span
-              key={type}
-              className={styles.typeBadge}
-              style={{
-                backgroundColor: `var(--color-type-${type.toLowerCase()}, var(--border-color))`,
-              }}
-            >
-              {type}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Types and Tera state */}
+      <div className="flex-col gap-xxs">
+        {isTerastallizedActive ? (
+          <>
+            {/* Active Tera Type */}
+            <div className="flex-row align-center gap-xs flex-wrap">
+              <span
+                className={styles.typeBadge}
+                style={{
+                  backgroundColor: `var(--color-type-${teraType!.toLowerCase()}, var(--border-color))`,
+                }}
+              >
+                {teraType}
+              </span>
+              <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
+                Terastallized
+              </span>
+            </div>
 
-      {/* Active Battle Modifiers (Tera, Dynamax, Transformed) */}
-      {(teraType || isDynamaxed || isTransformed) && (
-        <div className="flex-row align-center gap-xs flex-wrap">
-          {teraType && (
-            <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
-              {isTerastallized ? `Terastallized: ${teraType}` : `Tera Type: ${teraType}`}
-            </span>
-          )}
-          {isDynamaxed && (
-            <span className={`${styles.specialBadge} ${styles.dynamaxBadge}`}>
-              Dynamax
-            </span>
-          )}
-          {isTransformed && (
-            <span className={`${styles.specialBadge} ${styles.transformedBadge}`}>
-              Transformed
-            </span>
-          )}
-        </div>
-      )}
+            {/* Base Types composite pill matching Tera pill */}
+            {types && types.length > 0 && (
+              <div className={styles.baseTypesPill}>
+                <span className={styles.baseTypesLabel}>Base:</span>
+                <div className="flex-row align-center gap-xxs flex-wrap">
+                  {types.map((type) => (
+                    <span
+                      key={type}
+                      className={styles.pillTypeBadge}
+                      style={{
+                        backgroundColor: `var(--color-type-${type.toLowerCase()}, var(--border-color))`,
+                      }}
+                    >
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Real types on their own line */}
+            {types && types.length > 0 && (
+              <div className="flex-row align-center gap-xs flex-wrap">
+                {types.map((type) => (
+                  <span
+                    key={type}
+                    className={styles.typeBadge}
+                    style={{
+                      backgroundColor: `var(--color-type-${type.toLowerCase()}, var(--border-color))`,
+                    }}
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Tera Type on its own line below real types, with tera purple pill + type badge */}
+            {teraType && (
+              <div className={styles.teraPill}>
+                <span className={styles.teraPillLabel}>Tera Type:</span>
+                <span
+                  className={styles.pillTypeBadge}
+                  style={{
+                    backgroundColor: `var(--color-type-${teraType.toLowerCase()}, var(--border-color))`,
+                  }}
+                >
+                  {teraType}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </header>
   );
 }
@@ -103,6 +141,21 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
   const hpPct = current.hpPercentage ?? computeHpPercentage(hp, maxHp);
 
   const isFainted = Boolean(current.isFainted || hp <= 0 || current.status === "fnt");
+
+  const conditions = (current.conditions || []).filter(
+    (c) => c.toLowerCase() !== "transformed",
+  );
+  if (
+    current.isDynamaxed &&
+    !conditions.some((c) => c.toLowerCase() === "dynamax")
+  ) {
+    conditions.push("Dynamax");
+  }
+
+  const hasModifiers =
+    current.boosts.length > 0 ||
+    conditions.length > 0 ||
+    Boolean(current.isTransformed);
 
   return (
     <div className={styles.card}>
@@ -164,8 +217,8 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
         )}
       </section>
 
-      {/* Modifiers (Stat stages and conditions) */}
-      {(current.boosts.length > 0 || current.conditions.length > 0) && (
+      {/* Modifiers (Stat stages, transformed, and conditions) */}
+      {hasModifiers && (
         <section className="flex-row align-center gap-xs flex-wrap">
           {current.boosts.map((boost) => (
             <span
@@ -177,11 +230,28 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
               {boost.label}
             </span>
           ))}
-          {current.conditions.map((condition) => (
-            <span key={condition} className={`${styles.modifierBadge} ${styles.conditionBadge}`}>
-              {condition}
+          {current.isTransformed && (
+            <span
+              className={`${styles.modifierBadge} ${styles.transformedBadge}`}
+            >
+              {current.originalSpecies
+                ? `Transformed (${current.originalSpecies})`
+                : "Transformed"}
             </span>
-          ))}
+          )}
+          {conditions.map((condition) => {
+            const isDynamax = condition.toLowerCase() === "dynamax";
+            return (
+              <span
+                key={condition}
+                className={`${styles.modifierBadge} ${
+                  isDynamax ? styles.dynamaxBadge : styles.conditionBadge
+                }`}
+              >
+                {condition}
+              </span>
+            );
+          })}
         </section>
       )}
 

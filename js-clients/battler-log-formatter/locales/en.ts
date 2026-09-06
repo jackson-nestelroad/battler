@@ -132,7 +132,8 @@ export const en = {
     activate__ability_forewarn__move_any:
       "{{MOVE}} was revealed to be one of the moves that {{OF}} knows!",
     activate__ability_guarddog: null,
-    activate__ability_hadronengine: null,
+    activate__ability_hadronengine:
+      "{{MON}} turned the ground into Electric Terrain, energizing its futuristic engine!",
     activate__ability_healer: null,
     activate__ability_hydration: null,
     activate__ability_intimidate: null,

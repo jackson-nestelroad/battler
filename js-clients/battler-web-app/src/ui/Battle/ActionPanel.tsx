@@ -53,6 +53,7 @@ interface ActionPanelProps {
   playbackPending: boolean;
   isLoading: boolean;
   errorMessage: string | null;
+  rules?: string[] | null;
 }
 
 export default function ActionPanel({
@@ -62,6 +63,7 @@ export default function ActionPanel({
   playbackPending,
   isLoading,
   errorMessage,
+  rules,
 }: ActionPanelProps) {
   const dispatch = useAppDispatch();
   const battleSession = useAppSelector((state) => state.battles.battles[battleId]);
@@ -110,10 +112,10 @@ export default function ActionPanel({
   // Check if player has already submitted their choice for the current turn
   const isMeReady = !!battleSession?.choiceSubmitted;
 
-  const battleType =
-    battleSession?.serviceBattle?.metadata?.battle_type ||
-    battleSession?.metadata?.battle_type ||
-    "Singles";
+  const metadata =
+    battleSession?.serviceBattle?.metadata || battleSession?.metadata;
+  const battleType = metadata?.battle_type || "Singles";
+  const effectiveRules = rules ?? metadata?.rules;
 
   const activeMon = getMonForSlot(playerData, request, currentSlotIndex);
   const activeMonTeamPosition = activeMon ? getMonTeamPosition(activeMon, 0) : null;
@@ -182,6 +184,7 @@ export default function ActionPanel({
         activeMonTeamPosition={activeMonTeamPosition}
         actingBadgeText={request?.type === "switch" ? "Switching" : "Acting"}
         battleState={battleSession?.battleState}
+        rules={effectiveRules}
       />
     );
   };
