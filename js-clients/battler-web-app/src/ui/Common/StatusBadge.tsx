@@ -6,7 +6,11 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-export default function StatusBadge({ status, isFainted, className }: StatusBadgeProps) {
+export default function StatusBadge({
+  status,
+  isFainted,
+  className,
+}: StatusBadgeProps) {
   const badge = formatStatusBadge(status);
   const badgeClass = className ? ` ${className}` : "";
 

@@ -133,7 +133,7 @@ impl MonPhysicalAppearance {
 #[derive(Debug, Default, Clone)]
 pub struct MonBattleAppearanceFromSwitchIn {
     pub level: u64,
-    pub health: (u64, u64),
+    pub health: Option<(u64, u64)>,
     pub status: String,
     pub terastallization: String,
 }
@@ -323,7 +323,9 @@ impl From<&MonBattleAppearanceFromSwitchIn> for MonBattleAppearance {
     fn from(value: &MonBattleAppearanceFromSwitchIn) -> Self {
         let mut data = MonBattleAppearance::default();
         data.record_level(value.level.into(), Ambiguity::Precise);
-        data.record_health(value.health.into(), Ambiguity::Precise);
+        if let Some(health) = value.health {
+            data.record_health(health.into(), Ambiguity::Precise);
+        }
         data.record_status(value.status.clone().into(), Ambiguity::Precise);
         data.record_terastallization(value.terastallization.clone().into(), Ambiguity::Precise);
         data

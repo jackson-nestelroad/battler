@@ -23,6 +23,7 @@ export interface BaseBattleSession {
   battleState: BattleState | null;
   activeRequest: Request | null;
   playerData: PlayerBattleData | null;
+  allyPlayerData?: Record<string, PlayerBattleData>;
   uiLogs: UiLogEntry[];
   engineLogs: string[];
   choiceSubmitted?: boolean;
@@ -198,13 +199,17 @@ const battlesSlice = createSlice({
       action: PayloadAction<{
         battleId: string;
         playerData: PlayerBattleData | null;
+        allyPlayerData?: Record<string, PlayerBattleData> | null;
       }>,
     ) {
-      const { battleId: rawId, playerData } = action.payload;
+      const { battleId: rawId, playerData, allyPlayerData } = action.payload;
       const battleId = normalizeId(rawId);
       const battle = state.battles[battleId];
       if (battle) {
         battle.playerData = playerData;
+        if (allyPlayerData !== undefined) {
+          battle.allyPlayerData = allyPlayerData || {};
+        }
         rebuildActiveTimers(battle);
       }
     },

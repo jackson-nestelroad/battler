@@ -25,6 +25,26 @@
   pointer-events: auto;
 }
 
+.bridgeLeft::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--spacing-s));
+  width: calc(var(--spacing-s) + var(--spacing-xs));
+  pointer-events: auto;
+}
+
+.bridgeRight::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--spacing-s));
+  width: calc(var(--spacing-s) + var(--spacing-xs));
+  pointer-events: auto;
+}
+
 .visible {
   opacity: 1;
   transform: translateY(0) scale(1);

@@ -44,15 +44,18 @@
     }
   }
 
+  &.summaryUnbrought {
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
+  }
+
   &.clickableSummaryCard {
     cursor: pointer;
-    border: 1px dashed var(--color-primary-border);
-    background-color: var(--bg-input);
 
     &:hover {
       background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
       border-color: var(--color-primary);
-      border-style: solid;
       transform: translateY(calc(-1 * var(--spacing-xxs)));
       box-shadow: 0 var(--spacing-xs) var(--spacing-s) var(--color-primary-border);
     }
@@ -61,7 +64,6 @@
   &.selectedCard {
     border-color: var(--color-primary);
     background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
-    border-style: solid;
   }
 }
 
@@ -92,6 +94,13 @@
   width: 100%;
   margin-top: var(--spacing-xs);
   gap: var(--spacing-xs);
+
+  :global(.status-badge) {
+    min-width: 2.25rem;
+    text-align: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
 }
 
 .summaryHpText {
@@ -138,4 +147,153 @@
   text-transform: uppercase;
   z-index: 3;
   pointer-events: none;
+}
+
+/* Row Variant (Collapsed view in narrow lists / Log Panel) */
+.teamSummaryRow {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-s);
+  padding: var(--spacing-xs) var(--spacing-s);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  position: relative;
+  transition: var(--transition-fast);
+  min-height: 2.25rem;
+  width: 100%;
+
+  &.summaryActive {
+    border-color: var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary) 8%, var(--bg-input));
+  }
+
+  &.summaryActing {
+    border: 1px solid var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary) 14%, var(--bg-input));
+    box-shadow: 0 0 0 1px var(--color-primary-border);
+  }
+
+  &.summaryFainted {
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
+  }
+
+  &.summaryUnbrought {
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
+  }
+
+  &.unrevealed {
+    border-style: dashed;
+    border-color: var(--border-disabled);
+    opacity: 0.75;
+  }
+
+  &.clickableSummaryCard {
+    cursor: pointer;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
+      border-color: var(--color-primary);
+    }
+  }
+}
+
+.rowIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+
+  .summaryMonName {
+    color: var(--text-primary);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+}
+
+.rowPip {
+  font-size: var(--font-size-xxs);
+  color: var(--color-success);
+  flex-shrink: 0;
+  line-height: 1;
+
+  &.activePip {
+    color: var(--color-primary);
+  }
+
+  &.faintedPip {
+    color: var(--color-danger);
+  }
+
+  &.unbroughtPip {
+    color: var(--text-muted);
+  }
+}
+
+.unrevealedPip {
+  font-size: var(--font-size-xxs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rowActingBadge {
+  font-size: var(--font-size-xxs);
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  padding: 0 var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+
+  :global(.status-badge) {
+    min-width: 2.25rem;
+    text-align: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+}
+
+.rowHpGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xxs);
+  width: 3.75rem;
+  flex-shrink: 0;
+
+  .summaryHpText {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    text-align: right;
+    line-height: 1;
+  }
+}
+
+.rowHpBar {
+  width: 100%;
+  flex-shrink: 0;
 }

@@ -106,7 +106,6 @@ describe("choiceFormatter utility", () => {
             locked_into_move: false,
           },
         ],
-        allies: [],
       });
 
       expect(formatted.actionName).toBe("Flamethrower");

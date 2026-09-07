@@ -49,6 +49,28 @@ export function isMonDynamaxedInState(
   }
 }
 
+export function isMonActiveOnField(
+  battleState: BattleState | null | undefined,
+  sideIndex: number,
+  playerId: string,
+  monIndex: number,
+  fallbackActive?: boolean,
+): boolean {
+  if (!battleState) return !!fallbackActive;
+  const side = stateSelectors.side(battleState, sideIndex);
+  const player = side?.players?.[playerId];
+  if (player?.left_battle) return false;
+
+  return (
+    side?.active?.some(
+      (active) =>
+        active != null &&
+        active.player === playerId &&
+        active.mon_index === monIndex,
+    ) ?? !!fallbackActive
+  );
+}
+
 export interface BattleStateInput {
   state?: string | null;
   phase?: unknown;
@@ -122,4 +144,17 @@ export function getPlayerNameFromState(
     if (playerName) return playerName;
   }
   return side.name || null;
+}
+
+export function getAllyPlayerIds(
+  battleState: BattleState | null | undefined,
+  playerId: string | null | undefined,
+): string[] {
+  if (!battleState?.field?.sides || !playerId) return [];
+  for (const side of battleState.field.sides) {
+    if (side.players && playerId in side.players) {
+      return Object.keys(side.players).filter((id) => id !== playerId);
+    }
+  }
+  return [];
 }

@@ -222,11 +222,14 @@ interface StateMonData {
     shiny?: boolean;
   };
   volatile_data?: {
-    forme_change?: string;
-    transformed?: Array<{
-      name?: string;
-      species?: string;
-    }>;
+    forme_change?: string | null;
+    transformed?: [
+      {
+        name?: string;
+        species?: string;
+      }?,
+      unknown?,
+    ] | null;
   };
   battle_appearances?: unknown[];
 }
@@ -236,7 +239,7 @@ interface StatePlayerData {
   mons?: StateMonData[];
 }
 
-function resolveAppearanceRef(
+export function resolveAppearanceRef(
   state: BattleState,
   playerId: string,
   monIndex: number,
@@ -712,24 +715,17 @@ function makeEmptyPublicTooltip(species: string, player?: string): MonTooltipVie
 }
 
 /**
- * Converts a BattleState and UiMon reference into a public MonTooltipViewModel.
+ * Converts a BattleState and MonBattleAppearanceReference into a public MonTooltipViewModel.
  * Strictly avoids leaking unrevealed private data (EVs/IVs, unrevealed moves, hidden ability/item).
  */
-export function publicMonStateToTooltip(
+export function appearanceRefToTooltip(
   state: BattleState | null | undefined,
-  uiMon: UiMon,
+  monRef: MonBattleAppearanceReference,
   rules?: string[] | null,
+  fallbackName = "Mon",
+  fallbackPlayer = "",
 ): MonTooltipViewModel | null {
   if (!state) return null;
-
-  const monRef = resolveBattleMonRef(state, uiMon);
-  const { name: targetName, player: targetPlayer } = getUiMonInfo(uiMon);
-  const fallbackPlayer = targetPlayer;
-  const fallbackName = targetName || "Mon";
-
-  if (!monRef) {
-    return makeEmptyPublicTooltip(fallbackName, fallbackPlayer);
-  }
 
   try {
     const m = stateSelectors.mon(state, monRef);
@@ -746,14 +742,26 @@ export function publicMonStateToTooltip(
     const health = hasBattleAppearance ? stateSelectors.monHealth(state, monRef) : null;
     const rawStatus = hasBattleAppearance ? stateSelectors.monStatus(state, monRef) : null;
     const status = normalizeStatusCode(rawStatus);
-    const ability = hasBattleAppearance ? stateSelectors.monAbility(state, monRef) : null;
+    let ability: string | null = null;
+    if (hasBattleAppearance) {
+      try {
+        ability = stateSelectors.monAbility(state, monRef);
+      } catch {
+        ability = null;
+      }
+    }
     const rawBoosts = hasBattleAppearance ? stateSelectors.monBoosts(state, monRef) : {};
     const conditions = hasBattleAppearance
       ? stateSelectors.monConditions(state, monRef) || []
       : [];
-    const types = hasBattleAppearance
-      ? stateSelectors.monTypes(state, monRef, () => []) || []
-      : [];
+    let types: string[] = [];
+    if (hasBattleAppearance) {
+      try {
+        types = stateSelectors.monTypes(state, monRef, () => []) || [];
+      } catch {
+        types = [];
+      }
+    }
 
     const app = hasBattleAppearance ? stateSelectors.monBattleAppearance(state, monRef) : null;
 
@@ -793,9 +801,14 @@ export function publicMonStateToTooltip(
     const hpPercentage = health ? computeHpPercentage(hp!, maxHp!) : null;
 
     // Known / revealed moves (only include moves that have actually been seen in battle)
-    const knownMoves = hasBattleAppearance
-      ? stateSelectors.monMoves(state, monRef, false) || []
-      : [];
+    let knownMoves: string[] = [];
+    if (hasBattleAppearance) {
+      try {
+        knownMoves = stateSelectors.monMoves(state, monRef, false) || [];
+      } catch {
+        knownMoves = [];
+      }
+    }
     const moveSlots: TooltipMoveSlot[] = knownMoves.map((name) => ({
       name,
       revealed: true,
@@ -847,4 +860,27 @@ export function publicMonStateToTooltip(
     console.error("Failed to resolve public mon tooltip from state:", err);
     return makeEmptyPublicTooltip(fallbackName, fallbackPlayer);
   }
+}
+
+/**
+ * Converts a BattleState and UiMon reference into a public MonTooltipViewModel.
+ * Strictly avoids leaking unrevealed private data (EVs/IVs, unrevealed moves, hidden ability/item).
+ */
+export function publicMonStateToTooltip(
+  state: BattleState | null | undefined,
+  uiMon: UiMon,
+  rules?: string[] | null,
+): MonTooltipViewModel | null {
+  if (!state) return null;
+
+  const monRef = resolveBattleMonRef(state, uiMon);
+  const { name: targetName, player: targetPlayer } = getUiMonInfo(uiMon);
+  const fallbackPlayer = targetPlayer;
+  const fallbackName = targetName || "Mon";
+
+  if (!monRef) {
+    return makeEmptyPublicTooltip(fallbackName, fallbackPlayer);
+  }
+
+  return appearanceRefToTooltip(state, monRef, rules, fallbackName, fallbackPlayer);
 }

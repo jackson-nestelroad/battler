@@ -13,8 +13,10 @@ import type {
 } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
 import { BattlerServiceClient, ValidationError, type BattlePreview } from "battler-service-client";
-import type { MonData } from "battler-types";
+import type { BattleState } from "battler-state";
+import type { MonData, PlayerBattleData } from "battler-types";
 import { WampSessionProvider } from "battler-wamp-client";
+import { getAllyPlayerIds } from "../utils/battleState";
 import {
   addSpectatingBattle,
   battleSessionCreated,
@@ -168,6 +170,27 @@ class WampConnectionManager {
 
 export const connectionManager = new WampConnectionManager();
 
+async function fetchTeamPlayerData(
+  battleId: string,
+  playerId: string,
+  state: BattleState | null | undefined,
+  dispatch: Dispatch,
+) {
+  if (!connectionManager.serviceClient) return;
+  const allyIds = getAllyPlayerIds(state, playerId);
+  const [playerData, ...allyDataList] = await Promise.all([
+    connectionManager.serviceClient.playerData(battleId, playerId),
+    ...allyIds.map((id) => connectionManager.serviceClient!.playerData(battleId, id)),
+  ]);
+  const allyPlayerData: Record<string, PlayerBattleData> = {};
+  for (const ally of allyDataList) {
+    if (ally?.id) {
+      allyPlayerData[ally.id] = ally;
+    }
+  }
+  dispatch(setBattlePlayerData({ battleId, playerData, allyPlayerData }));
+}
+
 function bindClientEvents(
   client: BattlerClient,
   battleId: string,
@@ -199,8 +222,7 @@ function bindClientEvents(
     dispatch(setBattleRequest({ battleId, request: req }));
     if (connectionManager.serviceClient && client.role().type === "player") {
       try {
-        const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
-        dispatch(setBattlePlayerData({ battleId, playerData }));
+        await fetchTeamPlayerData(battleId, playerId, client.state(), dispatch);
       } catch (err) {
         console.warn(`[WAMP] Failed to fetch player data for battle ${battleId}:`, err);
       }
@@ -278,8 +300,7 @@ export async function initializeBattleClient(
         }
         if (client.role().type === "player") {
           try {
-            const playerData = await connectionManager.serviceClient.playerData(battleId, playerId);
-            dispatch(setBattlePlayerData({ battleId, playerData }));
+            await fetchTeamPlayerData(battleId, playerId, client.state(), dispatch);
           } catch (e) {
             handleBattleError(dispatch, battleId, "Failed to fetch initial player data", e);
           }

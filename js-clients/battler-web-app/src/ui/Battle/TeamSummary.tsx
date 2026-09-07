@@ -1,4 +1,5 @@
 import type { BattleState } from "battler-state";
+import { stateSelectors } from "battler-state";
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { 
   canSlotSelect,
@@ -51,6 +52,10 @@ export default function TeamSummary({
 
   const targetSize = request?.type === "team" ? getTeamPreviewTargetSize(request, playerData) : 0;
   const totalSlots = getRequestSlotCount(request);
+  const isPlayerLeft = Boolean(
+    battleState &&
+      stateSelectors.side(battleState, playerData.side)?.players?.[playerData.id]?.left_battle,
+  );
 
   return (
     <div className={styles.teamSummarySection}>
@@ -104,7 +109,7 @@ export default function TeamSummary({
               hp={mon.hp}
               maxHp={mon.max_hp}
               status={mon.status}
-              active={!!mon.active}
+              active={!isPlayerLeft && Boolean(mon.active)}
               isClickable={isClickable}
               onClick={handleClick}
               selectionOrder={selectionOrder}

@@ -3,6 +3,7 @@ import type { BattleState } from "battler-state";
 import { getMonNameFromState } from "./battleState";
 
 export interface MonLike {
+  name?: string | null;
   species?: string | null;
   summary?: { name?: string; level?: number } | null;
   player_team_position?: number | null;
@@ -16,7 +17,7 @@ export interface MonLike {
  */
 export function getMonDisplayName(mon?: MonLike | null): string {
   if (!mon) return "";
-  return mon.summary?.name || mon.species || "";
+  return mon.summary?.name || mon.name || mon.species || "";
 }
 
 /**

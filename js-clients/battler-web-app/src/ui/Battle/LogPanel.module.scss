@@ -6,6 +6,8 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0; // Ensure parent flex container doesn't overflow
+  padding: 0;
+  gap: 0;
   transition:
     height var(--transition-duration) var(--transition-timing),
     flex var(--transition-duration) var(--transition-timing);
@@ -32,7 +34,7 @@
   flex-shrink: 0;
   padding: var(--spacing-s) var(--spacing-m); // override default card-header padding
   margin-bottom: 0; // scrollArea handles padding natively
-  border-bottom-color: var(--border-color); // just in case
+  border-bottom: 1px solid var(--border-color);
 }
 
 
@@ -63,18 +65,8 @@
 .scrollArea {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-m);
+  padding: var(--spacing-s);
 }
-
-.jsonLogs {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  color: var(--color-info);
-  white-space: pre-wrap;
-  word-break: break-all;
-  line-height: 1.4;
-}
-
 
 .turnHeader {
   display: flex;

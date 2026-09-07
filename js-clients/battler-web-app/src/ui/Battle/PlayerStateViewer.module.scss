@@ -1,0 +1,58 @@
+.sideHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-height: 1.5rem;
+  padding: 0 var(--spacing-xxs);
+}
+
+.sideDivider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: var(--spacing-xs) 0;
+  width: 100%;
+}
+
+.playerName {
+  font-weight: 700;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.withdrewText {
+  font-size: var(--font-size-xs);
+  font-style: italic;
+  color: var(--text-muted);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.sideTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.emptyState {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin: 0;
+}
+
+.aliveCount {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

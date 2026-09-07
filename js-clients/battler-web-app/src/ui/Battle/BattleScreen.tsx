@@ -438,6 +438,9 @@ export default function BattleScreen() {
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
               rules={metadata?.rules}
+              playerData={battleSession.playerData}
+              allyPlayerData={battleSession.allyPlayerData}
+              localPlayerId={connection.playerId}
             />
           </section>
         </div>
@@ -481,6 +484,9 @@ export default function BattleScreen() {
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
               rules={metadata?.rules}
+              playerData={battleSession.playerData}
+              allyPlayerData={battleSession.allyPlayerData}
+              localPlayerId={connection.playerId}
             />
           </section>
         </div>

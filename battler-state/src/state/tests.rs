@@ -2934,9 +2934,16 @@ mod state_test {
         let p1 = &state.field.sides[0].players["player-1"];
         assert_eq!(p1.team_size, 3);
         assert_eq!(p1.mons.len(), 6);
-        for mon in &p1.mons {
+        for (i, mon) in p1.mons.iter().enumerate() {
             assert!(mon.team_preview);
             assert!(!mon.brought);
+            let mon_ref = MonBattleAppearanceReference {
+                player: "player-1".to_owned(),
+                mon_index: i,
+                battle_appearance_index: 0,
+            };
+            assert_eq!(state_selectors::mon_health(&state, &mon_ref).unwrap(), None);
+            assert!(!state_selectors::mon_is_fainted(&state, &mon_ref).unwrap());
         }
         assert_eq!(
             state_selectors::player_brought_mons(&state, "player-1")
@@ -2946,6 +2953,8 @@ mod state_test {
         );
 
         log.extend([
+            "teamsize|player:player-1|size:3",
+            "teamsize|player:player-2|size:1",
             "battlestart",
             "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
             "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
@@ -2954,6 +2963,7 @@ mod state_test {
         let state = alter_battle_state(state, &log).unwrap();
 
         let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons.len(), 6);
         assert!(p1.mons[0].brought); // Bulbasaur
         assert!(!p1.mons[1].brought); // Charmander
         assert_eq!(

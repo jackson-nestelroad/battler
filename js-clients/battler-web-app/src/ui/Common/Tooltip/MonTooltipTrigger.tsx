@@ -1,7 +1,8 @@
-import type { BattleState, UiMon } from "battler-state";
+import type { BattleState, MonBattleAppearanceReference, UiMon } from "battler-state";
 import type { MonBattleData } from "battler-types";
 import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
+  appearanceRefToTooltip,
   monBattleDataToTooltip,
   publicMonStateToTooltip,
 } from "../../../utils/monTooltipModel";
@@ -58,31 +59,38 @@ function useInteractiveTooltip(viewModel: unknown) {
 export interface MonTooltipTriggerProps {
   mon?: MonBattleData | null;
   monRef?: UiMon;
+  appearanceRef?: MonBattleAppearanceReference;
   battleState?: BattleState | null;
   rules?: string[] | null;
   children: ReactNode;
   className?: string;
   as?: "span" | "div";
+  preferredPlacement?: "top" | "bottom" | "left" | "right";
 }
 
 export default function MonTooltipTrigger({
   mon,
   monRef,
+  appearanceRef,
   battleState,
   rules,
   children,
   className,
   as = "span",
+  preferredPlacement = "top",
 }: MonTooltipTriggerProps) {
   const viewModel = useMemo(() => {
     if (mon) {
       return monBattleDataToTooltip(mon, battleState, rules);
     }
+    if (battleState && appearanceRef) {
+      return appearanceRefToTooltip(battleState, appearanceRef, rules);
+    }
     if (battleState && monRef) {
       return publicMonStateToTooltip(battleState, monRef, rules);
     }
     return null;
-  }, [mon, battleState, monRef, rules]);
+  }, [mon, appearanceRef, battleState, monRef, rules]);
 
   const {
     isOpen,
@@ -113,6 +121,7 @@ export default function MonTooltipTrigger({
         targetRect={targetRect}
         onMouseEnter={handleTooltipMouseEnter}
         onMouseLeave={handleTooltipMouseLeave}
+        preferredPlacement={preferredPlacement}
       >
         <PokemonTooltipCard data={viewModel} />
       </FloatingTooltip>

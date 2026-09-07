@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getBattleStateLabel, isMonDynamaxedInState, isMonFaintedInState } from "./battleState";
+import {
+  getBattleStateLabel,
+  isMonActiveOnField,
+  isMonDynamaxedInState,
+  isMonFaintedInState,
+} from "./battleState";
 import type { BattleState } from "battler-state";
 import type { PlayerBattleData } from "battler-types";
 
@@ -169,5 +174,60 @@ describe("isMonFaintedInState", () => {
     expect(isMonFaintedInState(mockState, 0, 0)).toBe(false);
     // Ally slot 1 (Charizard): fainted
     expect(isMonFaintedInState(mockState, 0, 1)).toBe(true);
+  });
+});
+
+describe("isMonActiveOnField", () => {
+  it("returns fallbackActive when battleState is null or undefined", () => {
+    expect(isMonActiveOnField(null, 0, "player-1", 0, true)).toBe(true);
+    expect(isMonActiveOnField(null, 0, "player-1", 0, false)).toBe(false);
+    expect(isMonActiveOnField(undefined, 0, "player-1", 0, undefined)).toBe(false);
+  });
+
+  it("returns false if player has left the battle", () => {
+    const mockState = {
+      field: {
+        sides: [
+          {
+            id: 0,
+            players: {
+              "player-1": {
+                id: "player-1",
+                left_battle: true,
+              },
+            },
+            active: [{ player: "player-1", mon_index: 0 }],
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    expect(isMonActiveOnField(mockState, 0, "player-1", 0)).toBe(false);
+  });
+
+  it("returns true if mon is in side.active, even when battle phase is finished", () => {
+    const mockState = {
+      phase: "finished",
+      field: {
+        sides: [
+          {
+            id: 0,
+            players: {
+              "player-1": {
+                id: "player-1",
+                left_battle: false,
+              },
+            },
+            active: [
+              { player: "player-1", mon_index: 0 },
+              null,
+            ],
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    expect(isMonActiveOnField(mockState, 0, "player-1", 0)).toBe(true);
+    expect(isMonActiveOnField(mockState, 0, "player-1", 1)).toBe(false);
   });
 });

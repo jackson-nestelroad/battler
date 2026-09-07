@@ -89,13 +89,13 @@ fn mon_name_from_log_entry(entry: &LogEntry) -> Result<MonName> {
     })
 }
 
-fn health_from_log_entry(entry: &LogEntry) -> Result<(u64, u64)> {
+fn health_from_log_entry(entry: &LogEntry) -> Result<Option<(u64, u64)>> {
     let Some(health) = entry.value_ref("health") else {
-        return Ok((0, 1));
+        return Ok(None);
     };
     match health.split_once('/') {
-        Some((a, b)) => Ok((a.parse()?, b.parse()?)),
-        None => Ok((health.parse()?, 1)),
+        Some((a, b)) => Ok(Some((a.parse()?, b.parse()?))),
+        None => Ok(Some((health.parse()?, 1))),
     }
 }
 
@@ -646,21 +646,23 @@ fn modify_state_from_effect(state: &mut BattleState, entry: &LogEntry) -> Result
             })?;
         }
         "damage" | "heal" | "sethp" => {
-            let health = health_from_log_entry(&entry)?;
-            let mon = entry.value_or_else("mon")?;
-            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                mon.record_health(health.into(), ambiguity);
-            })?;
+            if let Some(health) = health_from_log_entry(&entry)? {
+                let mon = entry.value_or_else("mon")?;
+                apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                    mon.record_health(health.into(), ambiguity);
+                })?;
+            }
         }
         "revive" => {
-            let health = health_from_log_entry(&entry)?;
             let mon = entry.value_or_else("mon")?;
             apply_for_each_mon(state, &mon, |mon, _| {
                 mon.revive();
             })?;
-            apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
-                mon.record_health(health.into(), ambiguity);
-            })?;
+            if let Some(health) = health_from_log_entry(&entry)? {
+                apply_for_each_mon_battle_appearance(state, &mon, |mon, ambiguity| {
+                    mon.record_health(health.into(), ambiguity);
+                })?;
+            }
         }
         "dynamax" => {
             let mon = entry.value_or_else("mon")?;
@@ -1082,7 +1084,7 @@ fn alter_battle_state_for_entry(
             match title {
                 "damage" | "heal" => {
                     if let Some((old_hp, old_max)) = old_health {
-                        if let Ok((new_hp, new_max)) = health_from_log_entry(entry) {
+                        if let Ok(Some((new_hp, new_max))) = health_from_log_entry(entry) {
                             let effective_max = if new_max == 1 && old_max > 1 {
                                 old_max
                             } else {
@@ -1440,7 +1442,6 @@ fn alter_battle_state_for_entry(
             let size = entry.value_or_else("size")?;
             let player = state.field.player_mut_or_else(&player)?;
             player.team_size = size;
-            player.mons.clear();
         }
         "tie" => {
             state.phase = BattlePhase::Finished;

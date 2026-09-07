@@ -1,4 +1,5 @@
 import type { BattleState, UiLogEntry } from "battler-state";
+import type { PlayerBattleData } from "battler-types";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
 import type { ContextValue } from "battler-log-formatter";
@@ -6,6 +7,7 @@ import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFor
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
 import EngineLogViewer from "./EngineLogViewer";
+import PlayerStateViewer from "./PlayerStateViewer";
 
 import styles from "./LogPanel.module.scss";
 
@@ -15,6 +17,9 @@ interface LogPanelProps {
   engineLogs?: string[];
   battleState?: BattleState | null;
   rules?: string[] | null;
+  playerData?: PlayerBattleData | null;
+  allyPlayerData?: Record<string, PlayerBattleData> | null;
+  localPlayerId?: string | null;
 }
 
 function renderLogDivider(
@@ -72,6 +77,7 @@ function renderTokenValue(
         monRef={ctxVal.monRef}
         battleState={battleState}
         rules={rules}
+        preferredPlacement="left"
       >
         <span className={styles.monHoverTrigger}>{text}</span>
       </MonTooltipTrigger>
@@ -100,14 +106,17 @@ export default function LogPanel({
   engineLogs = [],
   battleState,
   rules,
+  playerData,
+  allyPlayerData,
+  localPlayerId,
 }: LogPanelProps) {
-  const [mode, setMode] = useState<"text" | "json" | "engine">("text");
+  const [mode, setMode] = useState<"text" | "players" | "engine">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Automatically scroll to bottom on new logs
+  // Automatically scroll to bottom on new logs when in text mode
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && mode === "text") {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [visibleLogs, uiLogs, engineLogs, mode]);
@@ -124,22 +133,28 @@ export default function LogPanel({
           >
             {isCollapsed ? "▲" : "▼"}
           </button>
-          <h3>Logs</h3>
+          <h3>{mode === "players" ? "Players" : mode === "engine" ? "Engine" : "Logs"}</h3>
         </div>
         <Tabs
           active={mode}
           onChange={setMode}
           options={[
             { value: "text", label: "Text" },
-            { value: "json", label: "JSON" },
+            { value: "players", label: "Players" },
             { value: "engine", label: "Engine" },
           ]}
         />
       </header>
 
       <div className={styles.scrollArea} ref={scrollRef}>
-        {mode === "json" && (
-          <pre className={styles.jsonLogs}>{JSON.stringify(uiLogs, null, 2)}</pre>
+        {mode === "players" && (
+          <PlayerStateViewer
+            battleState={battleState}
+            playerData={playerData}
+            allyPlayerData={allyPlayerData}
+            localPlayerId={localPlayerId}
+            rules={rules}
+          />
         )}
 
         {mode === "engine" && <EngineLogViewer engineLogs={engineLogs} />}
@@ -172,6 +187,7 @@ export default function LogPanel({
                           monRef={item.notice.monRef}
                           battleState={battleState}
                           rules={rules}
+                          preferredPlacement="left"
                         >
                           <span className={styles.monHoverTrigger}>{noticeText}</span>
                         </MonTooltipTrigger>
