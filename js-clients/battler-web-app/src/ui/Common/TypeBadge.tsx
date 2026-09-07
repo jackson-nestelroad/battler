@@ -15,7 +15,7 @@ export default function TypeBadge({
   size = "md",
   variant = "standard",
   showIcon = true,
-  fixedWidth = false,
+  fixedWidth = true,
   className,
 }: TypeBadgeProps) {
   const normalizedType = type.trim().toLowerCase();

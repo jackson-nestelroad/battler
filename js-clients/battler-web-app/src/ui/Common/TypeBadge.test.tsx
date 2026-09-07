@@ -53,9 +53,14 @@ describe("TypeBadge", () => {
     expect(html).toContain('src="/assets/types/psychic.png"');
   });
 
-  it("applies fixedWidth class when fixedWidth is true", () => {
-    const html = renderToStaticMarkup(<TypeBadge type="Bug" fixedWidth />);
+  it("applies fixedWidth class by default", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Bug" />);
     expect(html).toContain("fixedWidth");
+  });
+
+  it("omits fixedWidth class when fixedWidth is false", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Bug" fixedWidth={false} />);
+    expect(html).not.toContain("fixedWidth");
   });
 
   it("renders standard variant by default without tera crystal caps", () => {

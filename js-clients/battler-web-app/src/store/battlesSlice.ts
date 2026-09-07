@@ -110,7 +110,7 @@ function rebuildActiveTimers(battle: SerializedBattleSession) {
   battle.activeTimers = activeTimers;
 }
 
-export type ActiveView = "lobby" | "teams" | "battle" | "replays" | "proposal" | "debug-types";
+export type ActiveView = "lobby" | "teams" | "battle" | "replays" | "proposal";
 
 export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
