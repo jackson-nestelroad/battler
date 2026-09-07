@@ -20,11 +20,15 @@ export default function TypeBadge({
 }: TypeBadgeProps) {
   const normalizedType = type.trim().toLowerCase();
   const typeKey = normalizedType === "???" ? "unknown" : normalizedType;
-  const iconName = typeKey;
-  const sizeClass = size === "sm" ? styles.typeBadgeSm : styles.typeBadgeMd;
-  const variantClass = variant === "tera" ? styles.typeBadgeTera : "";
-  const fixedWidthClass = fixedWidth ? styles.fixedWidth : "";
-  const badgeClasses = `${styles.typeBadge} ${sizeClass}${variantClass ? ` ${variantClass}` : ""}${fixedWidthClass ? ` ${fixedWidthClass}` : ""}${className ? ` ${className}` : ""}`;
+  const badgeClasses = [
+    styles.typeBadge,
+    size === "sm" ? styles.typeBadgeSm : styles.typeBadgeMd,
+    variant === "tera" && styles.typeBadgeTera,
+    fixedWidth && styles.fixedWidth,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
   const baseUrl = import.meta.env?.BASE_URL ?? "/";
 
   return (
@@ -70,7 +74,7 @@ export default function TypeBadge({
       )}
       {showIcon && (
         <img
-          src={`${baseUrl}assets/types/${iconName}.png`}
+          src={`${baseUrl}assets/types/${typeKey}.png`}
           alt=""
           className={styles.typeIcon}
           aria-hidden="true"
