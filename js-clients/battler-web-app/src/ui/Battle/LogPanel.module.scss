@@ -216,26 +216,6 @@
   padding: var(--spacing-xl) 0;
 }
 
-.engineLogLine {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-s);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  line-height: 1.4;
-
-  .indicator {
-    color: var(--text-muted);
-    font-weight: normal;
-  }
-
-  .text {
-    color: var(--text-secondary);
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
-}
-
 .monHoverTrigger {
   cursor: help;
   text-decoration: underline dotted var(--text-muted);

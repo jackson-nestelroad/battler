@@ -1,0 +1,83 @@
+.filterToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-fast);
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--color-primary);
+    margin: 0;
+  }
+
+  &:hover {
+    color: var(--text-secondary);
+  }
+}
+
+.logLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+
+  .indicator {
+    color: var(--text-muted);
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .text {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  &.landmark {
+    font-weight: 700;
+    color: var(--color-primary);
+
+    .indicator {
+      color: var(--color-primary);
+    }
+  }
+
+  &.faint {
+    font-weight: 700;
+    color: var(--color-danger);
+
+    .indicator {
+      color: var(--color-danger);
+    }
+  }
+
+  &.action {
+    font-weight: 600;
+    color: var(--text-primary);
+
+    .indicator {
+      color: var(--color-primary);
+    }
+  }
+
+  &.event {
+    color: var(--text-primary);
+  }
+
+  &.noise {
+    color: var(--text-muted);
+  }
+}
+
+.emptyLogs {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+}

@@ -17,6 +17,7 @@ import styles from "./BattleScreen.module.scss";
 import BattleTimers from "./BattleTimers";
 import Field from "./Field";
 import LogPanel from "./LogPanel";
+import EngineLogViewer from "./EngineLogViewer";
 import ReplayPanel from "./ReplayPanel";
 import { downloadDebugInfoFile, downloadReplayFile } from "../../utils/replay";
 
@@ -382,15 +383,13 @@ export default function BattleScreen() {
             {debugTab === "engine_log" && (
               <>
                 <h4>Engine Log</h4>
-                <pre className={styles.debugJson}>
-                  {JSON.stringify(
+                <EngineLogViewer
+                  engineLogs={
                     battleSession.isReplay
                       ? battleSession.replayEngineLogs
-                      : battleSession.engineLogs,
-                    null,
-                    2
-                  )}
-                </pre>
+                      : battleSession.engineLogs
+                  }
+                />
               </>
             )}
             {debugTab === "request" && (

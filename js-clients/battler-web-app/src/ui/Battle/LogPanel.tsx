@@ -5,6 +5,7 @@ import type { ContextValue } from "battler-log-formatter";
 import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFormatter";
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
+import EngineLogViewer from "./EngineLogViewer";
 
 import styles from "./LogPanel.module.scss";
 
@@ -141,17 +142,7 @@ export default function LogPanel({
           <pre className={styles.jsonLogs}>{JSON.stringify(uiLogs, null, 2)}</pre>
         )}
 
-        {mode === "engine" && (
-          <div className="flex-col gap-xs">
-            {engineLogs.map((log, index) => (
-              <div key={index} className={styles.engineLogLine}>
-                <span className={styles.indicator}>#</span>
-                <span className={styles.text}>{log}</span>
-              </div>
-            ))}
-            {engineLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
-          </div>
-        )}
+        {mode === "engine" && <EngineLogViewer engineLogs={engineLogs} />}
 
         {mode === "text" && (
           <div className="flex-col gap-xs">

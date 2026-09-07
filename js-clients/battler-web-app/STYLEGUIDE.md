@@ -41,7 +41,7 @@ For standalone UI widgets (like `MonCard`, `HpBar`, or `JsonEditor`), all interi
 
 For simple flex alignment, columns, rows, button lines, lists, or form layout fields, avoid writing empty wrappers in SCSS modules. Use the global utility helper classes in your JSX:
 
-- Classes: `flex-col`, `flex-row`, `gap-xs`, `gap-s`, `gap-m`, `gap-l`, `gap-xl`, `align-center`, `justify-between`, `w-full`, `flex-1`.
+- Classes: `flex-col`, `flex-row`, `gap-xxs`, `gap-xs`, `gap-s`, `gap-m`, `gap-l`, `gap-xl`, `align-center`, `align-start`, `justify-start`, `justify-end`, `justify-between`, `justify-center`, `w-full`, `flex-1`.
 - Example:
   ```tsx
   <div className="flex-row gap-m align-center">
