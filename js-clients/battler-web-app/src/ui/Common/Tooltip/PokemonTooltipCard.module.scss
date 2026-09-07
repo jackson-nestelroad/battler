@@ -111,15 +111,6 @@
   white-space: nowrap;
 }
 
-.typeBadge {
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  color: var(--color-white);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  border-radius: var(--border-radius-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
 
 /* Special battle mechanic badge (Active Terastallization) */
 .specialBadge {
@@ -178,17 +169,6 @@
   color: var(--color-badge-tera-text);
 }
 
-.pillTypeBadge {
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  color: var(--color-white);
-  padding: 0 var(--spacing-xxs);
-  border-radius: var(--border-radius-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1.4;
-  white-space: nowrap;
-}
 
 .healthSection {
   display: flex;

@@ -1,0 +1,22 @@
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  color: var(--color-white);
+  border-radius: var(--border-radius-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.typeBadgeMd {
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  line-height: 1.2;
+}
+
+.typeBadgeSm {
+  padding: 0 var(--spacing-xxs);
+  line-height: 1.4;
+}

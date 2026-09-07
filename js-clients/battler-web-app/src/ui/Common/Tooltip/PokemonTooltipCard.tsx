@@ -4,6 +4,7 @@ import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
 import StatusBadge from "../StatusBadge";
+import TypeBadge from "../TypeBadge";
 import styles from "./PokemonTooltipCard.module.scss";
 
 interface PokemonTooltipCardProps {
@@ -56,14 +57,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
           <>
             {/* Active Tera Type */}
             <div className="flex-row align-center gap-xs flex-wrap">
-              <span
-                className={styles.typeBadge}
-                style={{
-                  backgroundColor: `var(--color-type-${teraType!.toLowerCase()}, var(--border-color))`,
-                }}
-              >
-                {teraType}
-              </span>
+              <TypeBadge type={teraType!} size="md" />
               <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
                 Terastallized
               </span>
@@ -75,15 +69,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
                 <span className={styles.baseTypesLabel}>Base:</span>
                 <div className="flex-row align-center gap-xxs flex-wrap">
                   {types.map((type) => (
-                    <span
-                      key={type}
-                      className={styles.pillTypeBadge}
-                      style={{
-                        backgroundColor: `var(--color-type-${type.toLowerCase()}, var(--border-color))`,
-                      }}
-                    >
-                      {type}
-                    </span>
+                    <TypeBadge key={type} type={type} size="sm" />
                   ))}
                 </div>
               </div>
@@ -95,15 +81,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
             {types && types.length > 0 && (
               <div className="flex-row align-center gap-xs flex-wrap">
                 {types.map((type) => (
-                  <span
-                    key={type}
-                    className={styles.typeBadge}
-                    style={{
-                      backgroundColor: `var(--color-type-${type.toLowerCase()}, var(--border-color))`,
-                    }}
-                  >
-                    {type}
-                  </span>
+                  <TypeBadge key={type} type={type} size="md" />
                 ))}
               </div>
             )}
@@ -112,14 +90,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
             {teraType && (
               <div className={styles.teraPill}>
                 <span className={styles.teraPillLabel}>Tera Type:</span>
-                <span
-                  className={styles.pillTypeBadge}
-                  style={{
-                    backgroundColor: `var(--color-type-${teraType.toLowerCase()}, var(--border-color))`,
-                  }}
-                >
-                  {teraType}
-                </span>
+                <TypeBadge type={teraType} size="sm" />
               </div>
             )}
           </>

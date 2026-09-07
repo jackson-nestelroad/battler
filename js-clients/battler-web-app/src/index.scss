@@ -62,26 +62,85 @@
   --bg-arena-gradient-end: #101524;
 
   /* Pokémon Type Colors */
-  --color-type-normal: #a8a878;
-  --color-type-fire: #f08030;
-  --color-type-water: #6890f0;
-  --color-type-grass: #78c850;
-  --color-type-electric: #f8d030;
-  --color-type-ice: #98d8d8;
-  --color-type-fighting: #c03028;
-  --color-type-poison: #a040a0;
-  --color-type-ground: #e0c068;
-  --color-type-flying: #a890f0;
-  --color-type-psychic: #f85888;
-  --color-type-bug: #a8b820;
-  --color-type-rock: #b8a038;
-  --color-type-ghost: #705898;
-  --color-type-dragon: #7038f8;
-  --color-type-dark: #705848;
-  --color-type-steel: #b8b8d0;
-  --color-type-fairy: #ee99ac;
-  --color-type-stellar: #43b5a0;
+  --color-type-bug: #91a119;
+  --color-type-bug-light: #b8c26a;
+  --color-type-bug-dark: #5e6910;
+
+  --color-type-dark: #624d4e;
+  --color-type-dark-light: #998b8c;
+  --color-type-dark-dark: #403233;
+
+  --color-type-dragon: #5060e1;
+  --color-type-dragon-light: #8d98ec;
+  --color-type-dragon-dark: #343e92;
+
+  --color-type-electric: #fac000;
+  --color-type-electric-light: #fcd659;
+  --color-type-electric-dark: #a37d00;
+
+  --color-type-fairy: #ef70ef;
+  --color-type-fairy-light: #f5a2f5;
+  --color-type-fairy-dark: #9b499b;
+
+  --color-type-fighting: #ff8000;
+  --color-type-fighting-light: #ffac59;
+  --color-type-fighting-dark: #a65300;
+
+  --color-type-fire: #e62829;
+  --color-type-fire-light: #ef7374;
+  --color-type-fire-dark: #961a1b;
+
+  --color-type-flying: #81b9ef;
+  --color-type-flying-light: #add2f5;
+  --color-type-flying-dark: #54789b;
+
+  --color-type-ghost: #704170;
+  --color-type-ghost-light: #a284a2;
+  --color-type-ghost-dark: #492a49;
+
+  --color-type-grass: #3fa129;
+  --color-type-grass-light: #82c274;
+  --color-type-grass-dark: #29691b;
+
+  --color-type-ground: #915121;
+  --color-type-ground-light: #b88e6f;
+  --color-type-ground-dark: #5e3515;
+
+  --color-type-ice: #3dcef3;
+  --color-type-ice-light: #81dff7;
+  --color-type-ice-dark: #28869e;
+
+  --color-type-normal: #9fa19f;
+  --color-type-normal-light: #c1c2c1;
+  --color-type-normal-dark: #676967;
+
+  --color-type-poison: #9141cb;
+  --color-type-poison-light: #b884dd;
+  --color-type-poison-dark: #5e2a84;
+
+  --color-type-psychic: #ef4179;
+  --color-type-psychic-light: #f584a8;
+  --color-type-psychic-dark: #9b2a4f;
+
+  --color-type-rock: #afa981;
+  --color-type-rock-light: #cbc7ad;
+  --color-type-rock-dark: #726e54;
+
+  --color-type-steel: #60a1b8;
+  --color-type-steel-light: #98c2d1;
+  --color-type-steel-dark: #3e6978;
+
+  --color-type-stellar: #40b5a5;
+  --color-type-stellar-light: #83cfc5;
+  --color-type-stellar-dark: #2a766b;
+
+  --color-type-water: #2980ef;
+  --color-type-water-light: #74acf5;
+  --color-type-water-dark: #1b539b;
+
   --color-type-unknown: #68a090;
+  --color-type-unknown-light: #9dc1b7;
+  --color-type-unknown-dark: #44685e;
 
   /* Battle Mechanic Badge Tokens */
   --color-badge-tera-bg: rgba(168, 85, 247, 0.2);
