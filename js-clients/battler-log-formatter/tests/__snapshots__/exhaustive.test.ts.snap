@@ -3235,13 +3235,13 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
                 "name": "Budew",
-                "player": "player-2",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
             "text": "The opposing Budew",
@@ -5178,21 +5178,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
-                "name": "Linoone",
-                "player": "player-2",
+                "name": "Magcargo",
+                "player": "player-1",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
-            "text": "The opposing Linoone",
+            "text": "The opposing Magcargo",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Linoone swapped Abilities with its target!",
+          "text": "The opposing Magcargo swapped Abilities with its target!",
         },
         "key": "activate__move_skillswap",
       },
@@ -7704,21 +7704,21 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON": {
+          "__CAPITALIZED_OF": {
             "monRef": {
               "Active": {
-                "name": "Venusaur",
-                "player": "player-1",
+                "name": "Charizard",
+                "player": "player-2",
                 "position": 0,
-                "side": 0,
+                "side": 1,
               },
             },
-            "text": "The opposing Venusaur",
+            "text": "The opposing Charizard",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Venusaur swapped Abilities with its target!",
+          "text": "The opposing Charizard swapped Abilities with its target!",
         },
         "key": "activate__move_skillswap",
       },
