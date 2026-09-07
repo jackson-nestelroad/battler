@@ -220,6 +220,16 @@
   --color-badge-tera-border: #c084fc;
   --color-badge-tera-text: #e9d5ff;
 
+  /* Generic Tera Badge Shading Tokens */
+  --color-tera-highlight-rim: rgba(255, 255, 255, 0.5);
+  --color-tera-highlight-facet: rgba(255, 255, 255, 0.35);
+  --color-tera-highlight-body: rgba(255, 255, 255, 0.22);
+  --color-tera-highlight-specular: rgba(255, 255, 255, 0.65);
+  --color-tera-shadow-rim: rgba(0, 0, 0, 0.5);
+  --color-tera-shadow-facet: rgba(0, 0, 0, 0.42);
+  --color-tera-shadow-body: rgba(0, 0, 0, 0.22);
+  --color-tera-shadow-line: rgba(0, 0, 0, 0.55);
+
   --color-badge-dynamax-bg: rgba(239, 68, 68, 0.2);
   --color-badge-dynamax-border: #f87171;
   --color-badge-dynamax-text: #fca5a5;
@@ -290,9 +300,22 @@
   --sidebar-collapsed-width: 4.5rem;
   --mobile-header-height: 3.25rem;
   --type-badge-width-md: 5.75rem;
-  --type-badge-width-sm: 4.75rem;
+  --type-badge-width-sm: 5.125rem;
+  --type-badge-tera-width-md: 5.75rem;
+  --type-badge-tera-width-sm: 5.125rem;
+  --type-badge-tera-height-md: 1.25rem; /* 20px */
+  --type-badge-tera-height-sm: 1.0rem; /* 16px */
+  --type-badge-tera-cap-width-md: 0.625rem; /* 10px */
+  --type-badge-tera-cap-width-sm: 0.5rem; /* 8px */
   --type-icon-size-md: 1.0625rem;
   --type-icon-size-sm: 0.875rem;
+  --type-icon-size-tera-md: 0.9375rem; /* 15px */
+  --type-icon-size-tera-sm: 0.75rem; /* 12px */
+
+  /* Tera Silhouette Clip Offsets */
+  --tera-clip-horn-offset: 0.1875rem; /* 3px */
+  --tera-clip-bar-offset: 0.375rem; /* 6px */
+  --tera-clip-notch-offset: 0.28125rem; /* 4.5px */
 
   /* Transitions */
   --transition-duration: 0.2s;
@@ -311,6 +334,10 @@
     --font-size-xxl: 1.5rem; /* 24px */
     --type-icon-size-md: 0.95rem;
     --type-icon-size-sm: 0.8rem;
+    --type-icon-size-tera-md: 0.85rem;
+    --type-icon-size-tera-sm: 0.7rem;
+    --type-badge-tera-width-md: 5.25rem;
+    --type-badge-tera-width-sm: 4.5rem;
   }
 }
 

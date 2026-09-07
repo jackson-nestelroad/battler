@@ -57,4 +57,31 @@ describe("TypeBadge", () => {
     const html = renderToStaticMarkup(<TypeBadge type="Bug" fixedWidth />);
     expect(html).toContain("fixedWidth");
   });
+
+  it("renders standard variant by default without tera crystal caps", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Ghost" />);
+    expect(html).toContain('data-variant="standard"');
+    expect(html).not.toContain("typeBadgeTera");
+    expect(html).not.toContain("teraCapLeft");
+    expect(html).not.toContain("teraCapRight");
+  });
+
+  it("renders crystalline caps and tera class when variant is tera", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Ghost" variant="tera" />);
+    expect(html).toContain('data-variant="tera"');
+    expect(html).toContain("typeBadgeTera");
+    expect(html).toContain("teraCapLeft");
+    expect(html).toContain("teraCapRight");
+    expect(html).toContain("facetHighlight");
+    expect(html).toContain("facetShadow");
+    expect(html).toContain("Ghost");
+    expect(html).toContain('src="/assets/types/ghost.png"');
+  });
+
+  it("supports small size with tera variant", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Water" size="sm" variant="tera" />);
+    expect(html).toContain("typeBadgeTera");
+    expect(html).toContain("typeBadgeSm");
+    expect(html).toContain('data-variant="tera"');
+  });
 });

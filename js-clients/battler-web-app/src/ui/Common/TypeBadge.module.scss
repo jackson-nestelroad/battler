@@ -11,6 +11,7 @@
   white-space: nowrap;
   text-shadow: var(--shadow-text-contrast);
   user-select: none;
+  flex-shrink: 0;
 }
 
 .typeBadgeMd {
@@ -25,6 +26,8 @@
 
   &.fixedWidth {
     width: var(--type-badge-width-md);
+    min-width: var(--type-badge-width-md);
+    flex-shrink: 0;
     padding: 0 var(--spacing-xs);
 
     .typeIcon {
@@ -51,6 +54,8 @@
 
   &.fixedWidth {
     width: var(--type-badge-width-sm);
+    min-width: var(--type-badge-width-sm);
+    flex-shrink: 0;
     padding: 0 var(--spacing-xxs);
 
     .typeIcon {
@@ -63,6 +68,181 @@
       margin-right: var(--spacing-xxs);
     }
   }
+}
+
+/* Tera Variant (Crystalline Gem Banner) */
+.typeBadgeTera {
+  position: relative;
+  border-radius: 0;
+  box-sizing: border-box;
+
+  /* Crystalline cut silhouette */
+  clip-path: polygon(
+    var(--tera-clip-horn-offset) 0%,
+    var(--tera-clip-bar-offset) 8%,
+    calc(100% - var(--tera-clip-bar-offset)) 8%,
+    calc(100% - var(--tera-clip-horn-offset)) 0%,
+    calc(100% - var(--tera-clip-notch-offset)) 22%,
+    100% 50%,
+    calc(100% - var(--tera-clip-notch-offset)) 78%,
+    calc(100% - var(--tera-clip-horn-offset)) 100%,
+    calc(100% - var(--tera-clip-bar-offset)) 92%,
+    var(--tera-clip-bar-offset) 92%,
+    var(--tera-clip-horn-offset) 100%,
+    var(--tera-clip-notch-offset) 78%,
+    0% 50%,
+    var(--tera-clip-notch-offset) 22%
+  );
+
+  /* Horizontal center seam & top/bottom bevels */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      var(--color-tera-highlight-rim) 0%,
+      var(--color-tera-highlight-rim) 1px,
+      var(--color-tera-highlight-body) 1px,
+      rgba(255, 255, 255, 0.14) calc(50% - 0.5px),
+      var(--color-tera-highlight-facet) calc(50% - 0.5px),
+      var(--color-tera-highlight-facet) 50%,
+      var(--color-tera-shadow-facet) 50%,
+      var(--color-tera-shadow-facet) calc(50% + 0.5px),
+      var(--color-tera-shadow-body) calc(50% + 0.5px),
+      var(--color-tera-shadow-body) calc(100% - 1px),
+      var(--color-tera-shadow-rim) calc(100% - 1px),
+      var(--color-tera-shadow-rim) 100%
+    );
+    pointer-events: none;
+  }
+
+  &.typeBadgeMd {
+    height: var(--type-badge-tera-height-md);
+    padding: 0 var(--spacing-m);
+    gap: var(--spacing-xxs);
+    font-size: var(--font-size-xxs);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+
+    .teraCapLeft,
+    .teraCapRight {
+      width: var(--type-badge-tera-cap-width-md);
+    }
+
+    .typeIcon {
+      width: var(--type-icon-size-tera-md);
+      height: var(--type-icon-size-tera-md);
+      z-index: 2;
+    }
+
+    .typeText {
+      z-index: 2;
+    }
+
+    &.fixedWidth {
+      width: var(--type-badge-tera-width-md);
+      min-width: var(--type-badge-tera-width-md);
+      flex-shrink: 0;
+      padding: 0 var(--spacing-s);
+
+      .typeIcon {
+        margin-left: var(--spacing-xxs);
+      }
+
+      .typeText {
+        flex: 1;
+        text-align: center;
+        margin-right: var(--spacing-xxs);
+      }
+    }
+  }
+
+  &.typeBadgeSm {
+    height: var(--type-badge-tera-height-sm);
+    padding: 0 var(--spacing-s);
+    gap: var(--spacing-xxs);
+    font-size: var(--font-size-xxs);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+
+    .teraCapLeft,
+    .teraCapRight {
+      width: var(--type-badge-tera-cap-width-sm);
+    }
+
+    .typeIcon {
+      width: var(--type-icon-size-tera-sm);
+      height: var(--type-icon-size-tera-sm);
+      z-index: 2;
+    }
+
+    .typeText {
+      z-index: 2;
+    }
+
+    &.fixedWidth {
+      width: var(--type-badge-tera-width-sm);
+      min-width: var(--type-badge-tera-width-sm);
+      flex-shrink: 0;
+      padding: 0 var(--spacing-xs);
+
+      .typeIcon {
+        margin-left: var(--spacing-xxs);
+      }
+
+      .typeText {
+        flex: 1;
+        text-align: center;
+        margin-right: var(--spacing-xxs);
+      }
+    }
+  }
+}
+
+.teraCapLeft,
+.teraCapRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.teraCapLeft {
+  left: 0;
+}
+
+.teraCapRight {
+  right: 0;
+}
+
+.facetHighlight {
+  fill: var(--color-tera-highlight-facet);
+}
+
+.facetHighlightSpecular {
+  fill: var(--color-tera-highlight-rim);
+}
+
+.facetShadow {
+  fill: var(--color-tera-shadow-facet);
+}
+
+.lineHighlightSpecular {
+  stroke: var(--color-tera-highlight-specular);
+  stroke-width: 0.75;
+}
+
+.lineHighlight {
+  stroke: var(--color-tera-highlight-facet);
+  stroke-width: 0.75;
+}
+
+.lineShadow {
+  stroke: var(--color-tera-shadow-line);
+  stroke-width: 0.75;
 }
 
 .typeIcon {

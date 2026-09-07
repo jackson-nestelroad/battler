@@ -50,7 +50,7 @@
 
 .typesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
   gap: var(--spacing-s);
 }
 

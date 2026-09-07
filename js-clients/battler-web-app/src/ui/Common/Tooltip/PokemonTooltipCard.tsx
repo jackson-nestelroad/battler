@@ -57,7 +57,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
           <>
             {/* Active Tera Type */}
             <div className="flex-row align-center gap-xs flex-wrap">
-              <TypeBadge type={teraType!} size="md" />
+              <TypeBadge type={teraType!} size="md" variant="tera" />
               <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
                 Terastallized
               </span>
@@ -90,7 +90,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
             {teraType && (
               <div className={styles.teraPill}>
                 <span className={styles.teraPillLabel}>Tera Type:</span>
-                <TypeBadge type={teraType} size="sm" />
+                <TypeBadge type={teraType} size="sm" variant="tera" />
               </div>
             )}
           </>

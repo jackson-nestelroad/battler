@@ -29,9 +29,10 @@ const ALL_TYPES = [
 
 export default function TypesDebug() {
   const dispatch = useAppDispatch();
-  const [size, setSize] = useState<"sm" | "md">("md");
+  const [size, setSize] = useState<"sm" | "md">("sm");
+  const [variant, setVariant] = useState<"standard" | "tera">("tera");
   const [showIcon, setShowIcon] = useState(true);
-  const [fixedWidth, setFixedWidth] = useState(false);
+  const [fixedWidth, setFixedWidth] = useState(true);
 
   return (
     <div className={styles.container}>
@@ -51,6 +52,24 @@ export default function TypesDebug() {
       {/* Interactive Controls */}
       <section className={`card ${styles.controlsCard}`}>
         <div className={styles.controlsRow}>
+          <div className={styles.controlGroup}>
+            <span className={styles.controlLabel}>Variant:</span>
+            <button
+              type="button"
+              className={`btn btn-sm ${variant === "standard" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setVariant("standard")}
+            >
+              Standard
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${variant === "tera" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setVariant("tera")}
+            >
+              Tera
+            </button>
+          </div>
+
           <div className={styles.controlGroup}>
             <span className={styles.controlLabel}>Size:</span>
             <button
@@ -95,7 +114,9 @@ export default function TypesDebug() {
 
       {/* All Types Grid */}
       <section className="flex-col gap-m">
-        <h2 className={styles.comparisonCardTitle}>All Types ({ALL_TYPES.length})</h2>
+        <h2 className={styles.comparisonCardTitle}>
+          All Types ({ALL_TYPES.length}) — {variant === "tera" ? "Tera Crystal Badges" : "Standard Pill Badges"}
+        </h2>
         <div className={styles.typesGrid}>
           {ALL_TYPES.map((type) => {
             const normalized = type.toLowerCase() === "???" ? "unknown" : type.toLowerCase();
@@ -104,6 +125,7 @@ export default function TypesDebug() {
                 <TypeBadge
                   type={type}
                   size={size}
+                  variant={variant}
                   showIcon={showIcon}
                   fixedWidth={fixedWidth}
                 />
@@ -146,6 +168,42 @@ export default function TypesDebug() {
                 <div key={t} className={styles.badgeRow}>
                   <TypeBadge type={t} size="md" fixedWidth={true} />
                   <span className={styles.badgeLabel}>{t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Standard vs Tera Variant Comparison */}
+      <section className={styles.comparisonSection}>
+        <h2 className={styles.comparisonCardTitle}>Variant Comparison: Standard Pill vs Tera Crystal Banner</h2>
+        <div className={styles.comparisonGrid}>
+          <div className={styles.comparisonCard}>
+            <h3 className={styles.comparisonCardTitle}>Standard Pill (var(--border-radius-pill))</h3>
+            <p className={styles.comparisonCardDesc}>
+              Standard compact capsule pill with solid or gradient background and white icon.
+            </p>
+            <div className={styles.badgeList}>
+              {["Ghost", "Electric", "Fire", "Stellar", "Water"].map((t) => (
+                <div key={t} className={styles.badgeRow}>
+                  <TypeBadge type={t} size="md" variant="standard" />
+                  <span className={styles.badgeLabel}>{t} (Standard)</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.comparisonCard}>
+            <h3 className={styles.comparisonCardTitle}>Tera Variant (Procedural Crystalline Facets)</h3>
+            <p className={styles.comparisonCardDesc}>
+              Faceted crystal banner silhouette with 3D gem cuts, specular bevels, and generic shading.
+            </p>
+            <div className={styles.badgeList}>
+              {["Ghost", "Electric", "Fire", "Stellar", "Water"].map((t) => (
+                <div key={t} className={styles.badgeRow}>
+                  <TypeBadge type={t} size="md" variant="tera" />
+                  <span className={styles.badgeLabel}>{t} (Tera)</span>
                 </div>
               ))}
             </div>
