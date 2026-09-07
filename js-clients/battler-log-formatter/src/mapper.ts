@@ -432,6 +432,9 @@ export function bindMonParticipant(
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
     }
+    if (!context.OF_OR_MON_NAME_POSSESSIVE) {
+      context.OF_OR_MON_NAME_POSSESSIVE = resolved.possessive;
+    }
     metadata.mon = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
@@ -457,6 +460,9 @@ export function bindMonParticipant(
     if (!context.OF_OR_MON_POSSESSIVE) {
       context.OF_OR_MON_POSSESSIVE = resolved.its;
     }
+    if (!context.OF_OR_MON_NAME_POSSESSIVE) {
+      context.OF_OR_MON_NAME_POSSESSIVE = resolved.possessive;
+    }
     metadata.target = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,
@@ -466,6 +472,7 @@ export function bindMonParticipant(
     if (!metadata.mon) metadata.mon = metadata.target;
   } else if (role === "of") {
     context.OF_OR_MON_POSSESSIVE = resolved.possessive;
+    context.OF_OR_MON_NAME_POSSESSIVE = resolved.possessive;
     metadata.of = {
       raw: resolved.raw,
       raw_possessive: resolved.raw_possessive,

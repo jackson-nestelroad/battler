@@ -330,7 +330,7 @@ export const en = {
     activate__move_thundercage: "{{OF}} trapped {{MON}}!",
     activate__move_whirlpool: "{{MON}} became trapped in the vortex!",
     activate__move_wideguard: "Wide Guard protected {{MON}}!",
-    activate__move_wish: "{{OF_POSSESSIVE}} wish came true!",
+    activate__move_wish: "{{OF_OR_MON_NAME_POSSESSIVE}} wish came true!",
     activate__move_wrap: "{{MON}} was wrapped by {{OF}}!",
     activate__shield: null,
     activate__started: null,

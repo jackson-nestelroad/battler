@@ -3088,7 +3088,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_OF_POSSESSIVE": {
+          "__CAPITALIZED_OF_OR_MON_NAME_POSSESSIVE": {
             "monRef": {
               "Inactive": {
                 "name": "Gardevoir",

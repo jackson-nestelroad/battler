@@ -2365,5 +2365,59 @@ describe("LogFormatter", () => {
         }
       });
     });
+
+    it("should format Wish using OF_OR_MON_NAME_POSSESSIVE with Mon name and title", () => {
+      const formatter = new LogFormatter({ localPlayerId: "p1" });
+
+      // Case 1: with 'of' present on player's side
+      const selfWithOf: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Blaziken", player: "p1" } },
+          move: "Wish",
+          of: { Inactive: { name: "Gardevoir", player: "p1" } },
+        },
+      };
+      const resSelfWithOf = formatter.format(selfWithOf as UiLogEntry);
+      expect(resSelfWithOf).not.toBeNull();
+      expect(stringifyLog(resSelfWithOf!.messages[0])).toBe("Gardevoir's wish came true!");
+
+      // Case 2: with 'of' present on opponent's side
+      const foeWithOf: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Blaziken", player: "p2" } },
+          move: "Wish",
+          of: { Inactive: { name: "Gardevoir", player: "p2" } },
+        },
+      };
+      const resFoeWithOf = formatter.format(foeWithOf as UiLogEntry);
+      expect(resFoeWithOf).not.toBeNull();
+      expect(stringifyLog(resFoeWithOf!.messages[0])).toBe("The opposing Gardevoir's wish came true!");
+
+      // Case 3: without 'of' on player's side (mon created the wish itself)
+      const selfWithoutOf: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 0, position: 0, name: "Gardevoir", player: "p1" } },
+          move: "Wish",
+        },
+      };
+      const resSelfWithoutOf = formatter.format(selfWithoutOf as UiLogEntry);
+      expect(resSelfWithoutOf).not.toBeNull();
+      expect(stringifyLog(resSelfWithoutOf!.messages[0])).toBe("Gardevoir's wish came true!");
+
+      // Case 4: without 'of' on opponent's side (foe mon created the wish itself)
+      const foeWithoutOf: Partial<UiLogEntry> = {
+        title: "activate",
+        values: {
+          mon: { Active: { side: 1, position: 0, name: "Gardevoir", player: "p2" } },
+          move: "Wish",
+        },
+      };
+      const resFoeWithoutOf = formatter.format(foeWithoutOf as UiLogEntry);
+      expect(resFoeWithoutOf).not.toBeNull();
+      expect(stringifyLog(resFoeWithoutOf!.messages[0])).toBe("The opposing Gardevoir's wish came true!");
+    });
   });
 });
