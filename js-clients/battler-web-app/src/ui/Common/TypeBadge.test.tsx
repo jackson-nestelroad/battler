@@ -26,6 +26,14 @@ describe("TypeBadge", () => {
     expect(html).toContain("var(--color-type-unknown");
   });
 
+  it("renders 'None' type badge with none.png asset and none color", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="None" />);
+    expect(html).toContain("None");
+    expect(html).toContain('data-type="none"');
+    expect(html).toContain('src="/assets/types/none.png"');
+    expect(html).toContain("var(--color-type-none");
+  });
+
   it("applies stellar background variable for Stellar type", () => {
     const html = renderToStaticMarkup(<TypeBadge type="Stellar" />);
     expect(html).toContain("var(--background-type-stellar");
