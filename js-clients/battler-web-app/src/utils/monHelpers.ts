@@ -1,4 +1,4 @@
-import type { Request, PlayerBattleData, MonMoveSlotData, MonMoveRequest } from "battler-types";
+import type { Request, PlayerBattleData, MonMoveSlotData, MonMoveRequest, SelectReason } from "battler-types";
 import type { BattleState } from "battler-state";
 import { getMonNameFromState } from "./battleState";
 
@@ -73,12 +73,15 @@ export function getRequestSlotCount(request: Request | null): number {
   if (request.type === "switch") {
     return request.needs_switch?.length || 0;
   }
+  if (request.type === "select") {
+    return request.positions?.length || 0;
+  }
   return 0;
 }
 
 /**
  * Resolves the actual active slot position for a given request and index.
- * Useful for resolving switch target slots which may differ from the index.
+ * Useful for resolving switch or select target slots which may differ from the index.
  */
 export function getActiveSlotPosition(
   request: Request | null | undefined,
@@ -87,12 +90,15 @@ export function getActiveSlotPosition(
   if (request?.type === "switch" && request.needs_switch) {
     return request.needs_switch[slotIndex] ?? slotIndex;
   }
+  if (request?.type === "select" && request.positions) {
+    return request.positions[slotIndex]?.position ?? slotIndex;
+  }
   return slotIndex;
 }
 
 /**
- * Resolves the target Pokémon for a specific slot index in a turn or switch request.
- * Returns the active Mon for turn requests and mid-turn switches (e.g. U-turn),
+ * Resolves the target Pokémon for a specific slot index in a turn, switch, or select request.
+ * Returns the active Mon for turn requests, mid-turn switches (e.g. U-turn), and select requests (e.g. Revival Blessing),
  * or null for faint switches where the field slot is empty.
  */
 export function getMonForSlot(
@@ -117,6 +123,37 @@ export function getMonForSlot(
     return getMonByActivePosition(playerData, activePos);
   }
 
+  if (request.type === "select") {
+    const activePos = getActiveSlotPosition(request, slotIndex);
+    if (activePos === undefined) return null;
+
+    return getMonByActivePosition(playerData, activePos);
+  }
+
+  return null;
+}
+
+/**
+ * Determines whether a select action is allowed for the given request and slot.
+ */
+export function canSlotSelect(
+  request: Request | null,
+  slotIndex: number,
+): boolean {
+  if (!request) return false;
+  return request.type === "select" && request.positions?.[slotIndex] !== undefined;
+}
+
+/**
+ * Returns the SelectReason for a given request and slot, if applicable.
+ */
+export function getSelectReason(
+  request: Request | null,
+  slotIndex: number,
+): SelectReason | null {
+  if (request?.type === "select") {
+    return request.positions?.[slotIndex]?.reason ?? null;
+  }
   return null;
 }
 

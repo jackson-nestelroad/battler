@@ -124,6 +124,8 @@ export default function ActionPanel({
 
   const isSwitch = request?.type === "switch";
   const isTurn = request?.type === "turn";
+  const isSelect = request?.type === "select";
+  const activeSelectSlot = isSelect ? getActiveSlotPosition(request, currentSlotIndex) : undefined;
 
   const handleSwitch = (playerTeamPosition: number, totalSlots: number) => {
     if (submittingRef.current) return;
@@ -148,6 +150,12 @@ export default function ActionPanel({
       }
     }
     const newChoices = [...choices, ChoiceBuilder.switch(playerTeamPosition)];
+    advanceSlotOrSubmit(newChoices, totalSlots);
+  };
+
+  const handleSelect = (playerTeamPosition: number, totalSlots: number) => {
+    if (submittingRef.current) return;
+    const newChoices = [...choices, ChoiceBuilder.select(playerTeamPosition)];
     advanceSlotOrSubmit(newChoices, totalSlots);
   };
 
@@ -179,10 +187,17 @@ export default function ActionPanel({
         playbackPending={playbackPending}
         isLoading={isLoading}
         onSwitch={handleSwitch}
+        onSelect={handleSelect}
         selectedTeamIndices={selectedTeamIndices}
         onSelectMon={handleSelectMon}
         activeMonTeamPosition={activeMonTeamPosition}
-        actingBadgeText={request?.type === "switch" ? "Switching" : "Acting"}
+        actingBadgeText={
+          request?.type === "switch"
+            ? "Switching"
+            : request?.type === "select"
+              ? "Reviving"
+              : "Acting"
+        }
         battleState={battleSession?.battleState}
         rules={effectiveRules}
       />
@@ -210,6 +225,14 @@ export default function ActionPanel({
       return activeRequests.length > 1
         ? getSlotLabel(currentSlotIndex + 1, activeMonName)
         : activeMonName;
+    }
+    if (request?.type === "select") {
+      const reason = request.positions?.[currentSlotIndex]?.reason;
+      const activeMonName = getMonDisplayName(activeMon);
+      if (reason === "Revive") {
+        return activeMonName ? `Revive: ${activeMonName}` : "Revive";
+      }
+      return "Select";
     }
     return "Battle";
   };
@@ -330,6 +353,32 @@ export default function ActionPanel({
       );
     }
 
+    if (request.type === "select") {
+      if (activeSelectSlot === undefined) return renderPlaceholder("Submitting...");
+
+      const reason = request.positions?.[currentSlotIndex]?.reason;
+      const placeholderText = reason === "Revive" ? "Reviving..." : "Selecting...";
+
+      return (
+        <div className="flex-col gap-m">
+          {showBackButton && (
+            <div className="flex-row">
+              <button
+                type="button"
+                onClick={goBackStep}
+                className="btn btn-sm btn-secondary"
+                disabled={isLoading}
+                title="Go back to previous choice"
+              >
+                ← Back
+              </button>
+            </div>
+          )}
+          {renderPlaceholder(placeholderText, true)}
+        </div>
+      );
+    }
+
     if (request.type === "turn") {
       const activeRequests = request.active || [];
       const activeReq = activeRequests[currentSlotIndex];
@@ -436,13 +485,16 @@ export default function ActionPanel({
     } else if (isSwitch) {
       showHeader = activeSwitchSlot !== undefined;
       showStepper = activeSwitchSlot !== undefined;
+    } else if (isSelect) {
+      showHeader = activeSelectSlot !== undefined;
+      showStepper = activeSelectSlot !== undefined;
     } else if (isTurn && request.type === "turn") {
       showHeader = !!request.active?.[currentSlotIndex];
       showStepper = !!request.active?.[currentSlotIndex];
     }
   }
 
-  const showBackButton = isSwitch
+  const showBackButton = isSwitch || isSelect
     ? currentSlotIndex > 0
     : isTurn
       ? currentSlotIndex > 0 || selectedMove !== null

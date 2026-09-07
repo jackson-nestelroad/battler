@@ -6,11 +6,12 @@ export interface ParsedChoiceError {
 }
 
 export interface ParsedChoiceAction {
-  type: "move" | "switch" | "pass" | "shift" | "unknown";
+  type: "move" | "switch" | "select" | "pass" | "shift" | "unknown";
   moveIndex?: number;
   targetVal?: number | null;
   modifiers?: ChoiceModifiers;
   switchPosition?: number;
+  selectPosition?: number;
 }
 
 function parseCommandIndex(head: string): number {
@@ -56,6 +57,14 @@ export function parseChoiceString(choiceStr: string): ParsedChoiceAction {
     return {
       type: "switch",
       switchPosition: isNaN(switchPosition) ? 0 : switchPosition,
+    };
+  }
+
+  if (head.startsWith("select")) {
+    const selectPosition = parseCommandIndex(head);
+    return {
+      type: "select",
+      selectPosition: isNaN(selectPosition) ? 0 : selectPosition,
     };
   }
 

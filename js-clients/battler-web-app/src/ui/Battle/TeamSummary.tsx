@@ -19,6 +19,7 @@ interface TeamSummaryProps {
   playbackPending: boolean;
   isLoading: boolean;
   onSwitch: (playerTeamPosition: number, totalSlots: number) => void;
+  onSelect?: (playerTeamPosition: number, totalSlots: number) => void;
   selectedTeamIndices?: number[];
   onSelectMon?: (idx: number) => void;
   activeMonTeamPosition?: number | null;
@@ -36,6 +37,7 @@ export default function TeamSummary({
   playbackPending,
   isLoading,
   onSwitch,
+  onSelect,
   selectedTeamIndices = [],
   onSelectMon,
   activeMonTeamPosition,
@@ -59,7 +61,7 @@ export default function TeamSummary({
           const isActing =
             activeMonTeamPosition != null && monPos === activeMonTeamPosition;
 
-          // Check if card is clickable for switching or team preview
+          // Check if card is clickable for switching, team preview, or selection
           let isClickable = false;
           let handleClick: (() => void) | undefined = undefined;
 
@@ -71,6 +73,15 @@ export default function TeamSummary({
               isClickable = isSelected || !hasReachedMax;
               if (isClickable && onSelectMon) {
                 handleClick = () => onSelectMon(idx);
+              }
+            } else if (request.type === "select") {
+              const reason = request.positions?.[currentSlotIndex]?.reason;
+              if (reason === "Revive") {
+                isClickable = !mon.active && mon.hp === 0;
+                if (isClickable && onSelect) {
+                  const totalSlots = getRequestSlotCount(request);
+                  handleClick = () => onSelect(monPos, totalSlots);
+                }
               }
             } else if (canSlotSwitch(request, currentSlotIndex, selectedMove)) {
               isClickable = !mon.active && mon.hp > 0;

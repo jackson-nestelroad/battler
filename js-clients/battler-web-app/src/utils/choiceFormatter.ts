@@ -8,7 +8,7 @@ import { CHOICE_MODIFIER_KEYS, CHOICE_MODIFIER_CONFIGS } from "./choiceBuilder";
 export interface FormattedChoice {
   slotIndex: number;
   monName: string;
-  actionType: "move" | "switch" | "pass" | "shift" | "unknown";
+  actionType: "move" | "switch" | "select" | "pass" | "shift" | "unknown";
   actionName: string;
   targetName?: string | null;
   modifiers: string[];
@@ -54,6 +54,19 @@ export function formatTurnChoice(
       actionType: "switch",
       actionName: "Switch",
       targetName: switchMonName,
+      modifiers: [],
+    };
+  }
+
+  if (parsed.type === "select") {
+    const targetMon = getMonByTeamPosition(playerData, parsed.selectPosition || 0);
+    const selectMonName = getSlotMonName(targetMon, parsed.selectPosition || 0);
+    return {
+      slotIndex,
+      monName,
+      actionType: "select",
+      actionName: "Select",
+      targetName: selectMonName,
       modifiers: [],
     };
   }

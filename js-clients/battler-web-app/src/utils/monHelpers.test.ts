@@ -1,15 +1,18 @@
 import type { MonMoveSlotData, Request } from "battler-types";
 import { describe, expect, it } from "vitest";
 import {
+  canSlotSelect,
   canSlotShift,
   canSlotSwitch,
   computeHpPercentage,
   formatBallName,
   formatStatusBadge,
+  getActiveSlotPosition,
   getMonDisplayName,
   getMonForSlot,
   getMonTeamPosition,
   getRequestSlotCount,
+  getSelectReason,
   getSlotLabel,
   normalizeStatusCode,
 } from "./monHelpers";
@@ -46,6 +49,12 @@ describe("monHelpers", () => {
       needs_switch: [0, 1, 2],
     } as unknown as Request;
     expect(getRequestSlotCount(switchReq)).toBe(3);
+
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 0, reason: "Revive" }],
+    } as unknown as Request;
+    expect(getRequestSlotCount(selectReq)).toBe(1);
   });
 
   it("resolves mon for slot index correctly", () => {
@@ -77,6 +86,26 @@ describe("monHelpers", () => {
     } as unknown as Request;
 
     expect(getMonForSlot(playerData, faintSwitchReq, 0)).toBeNull();
+
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 0, reason: "Revive" }],
+    } as unknown as Request;
+
+    expect(getMonForSlot(playerData, selectReq, 0)?.species).toBe("Pikachu");
+  });
+
+  it("resolves active slot position and selection reason correctly", () => {
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 1, reason: "Revive" }],
+    } as unknown as Request;
+
+    expect(getActiveSlotPosition(selectReq, 0)).toBe(1);
+    expect(canSlotSelect(selectReq, 0)).toBe(true);
+    expect(canSlotSelect(selectReq, 1)).toBe(false);
+    expect(getSelectReason(selectReq, 0)).toBe("Revive");
+    expect(getSelectReason(selectReq, 1)).toBeNull();
   });
 
   it("determines canSlotShift dynamically for any active slot count", () => {

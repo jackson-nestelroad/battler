@@ -15,6 +15,10 @@ describe("ChoiceBuilder utility", () => {
     expect(ChoiceBuilder.switch(3)).toBe("switch 3");
   });
 
+  it("builds select choice", () => {
+    expect(ChoiceBuilder.select(1)).toBe("select 1");
+  });
+
   it("builds shift choice", () => {
     expect(ChoiceBuilder.shift()).toBe("shift");
   });

@@ -50,6 +50,14 @@
     }
   }
 
+  &.summaryFainted.clickableSummaryCard {
+    opacity: 0.9;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
   &.selectedCard {
     border-color: var(--color-primary);
     background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));

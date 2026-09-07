@@ -59,6 +59,13 @@ export const ChoiceBuilder = {
   },
 
   /**
+   * Constructs a select choice string e.g. "select 1".
+   */
+  select(playerTeamPosition: number): string {
+    return `select ${playerTeamPosition}`;
+  },
+
+  /**
    * Constructs a shift choice string e.g. "shift".
    */
   shift(): string {

@@ -20,6 +20,12 @@ describe("choiceErrorParser utility", () => {
     expect(res.errorMessage).toBe("cannot switch: the mon in slot 3 can only switch in once");
   });
 
+  it("parses invalid choice for select error string", () => {
+    const res = parseChoiceError("invalid choice 0: cannot select: Pawmot is not fainted");
+    expect(res.failedSlotIndex).toBe(0);
+    expect(res.errorMessage).toBe("cannot select: Pawmot is not fainted");
+  });
+
   it("handles generic non-matching error strings", () => {
     const res = parseChoiceError("Server connection timeout");
     expect(res.failedSlotIndex).toBeNull();

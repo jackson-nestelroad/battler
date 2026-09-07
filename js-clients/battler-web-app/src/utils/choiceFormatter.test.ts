@@ -48,6 +48,14 @@ describe("choiceFormatter utility", () => {
       });
     });
 
+    it("parses select action", () => {
+      const parsed = parseChoiceString("select 1");
+      expect(parsed).toEqual({
+        type: "select",
+        selectPosition: 1,
+      });
+    });
+
     it("parses pass action", () => {
       const parsed = parseChoiceString("pass");
       expect(parsed).toEqual({
@@ -112,6 +120,43 @@ describe("choiceFormatter utility", () => {
       });
 
       expect(formatted.actionType).toBe("pass");
+    });
+
+    it("formats select choice summary cleanly", () => {
+      const formatted = formatTurnChoice(
+        "select 1",
+        0,
+        {
+          type: "select",
+          positions: [{ position: 0, reason: "Revive" }],
+        },
+        {
+          side: 0,
+          player_index: 0,
+          position: 0,
+          mons: [
+            {
+              species: "Pawmot",
+              player_active_position: 0,
+              player_team_position: 0,
+              hp: 250,
+              max_hp: 250,
+              active: true,
+            },
+            {
+              species: "Quaxly",
+              player_team_position: 1,
+              hp: 0,
+              max_hp: 115,
+              active: false,
+            },
+          ],
+        } as any,
+      );
+
+      expect(formatted.actionType).toBe("select");
+      expect(formatted.actionName).toBe("Select");
+      expect(formatted.targetName).toBe("Quaxly");
     });
   });
 });

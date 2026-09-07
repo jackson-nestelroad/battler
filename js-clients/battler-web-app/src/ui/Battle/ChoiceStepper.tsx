@@ -98,8 +98,18 @@ export default function ChoiceStepper({
     return { slotMonName };
   });
 
-  const titlePrefix = request.type === "turn" ? "Turn progress" : "Switch progress";
-  const selectingText = request.type === "turn" ? "Selecting move..." : "Selecting switch...";
+  const titlePrefix =
+    request.type === "turn"
+      ? "Turn progress"
+      : request.type === "select"
+        ? "Select progress"
+        : "Switch progress";
+  const selectingText =
+    request.type === "turn"
+      ? "Selecting move..."
+      : request.type === "select"
+        ? "Selecting..."
+        : "Selecting switch...";
 
   return (
     <div className={styles.choiceStepper}>
