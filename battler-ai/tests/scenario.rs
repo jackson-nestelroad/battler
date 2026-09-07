@@ -171,11 +171,24 @@ impl<'d> Scenario<'d> {
             .player_data(self.battle.uuid, player.as_ref())
             .await?;
         let state = client.state().await;
+        let mut allies = Vec::new();
+        if let Some(side) = state.field.sides.get(player_data.side) {
+            for (player_id, _) in &side.players {
+                if player_id != player.as_ref() {
+                    allies.push(
+                        self.service
+                            .player_data(self.battle.uuid, player_id)
+                            .await?,
+                    );
+                }
+            }
+        }
         Ok(AiContext {
             data: self.data_store,
             battle: client.battle(),
             state,
             player_data,
+            allies,
             choice_failures: HashSet::default(),
             make_choice_failures: Vec::default(),
         })

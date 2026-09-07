@@ -6,7 +6,6 @@ use uuid::Uuid;
 
 use crate::{
     BattleAuthorizer,
-    PlayerOperation,
     common::error::map_battle_error,
 };
 
@@ -33,16 +32,14 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
             "PlayerData",
             format!("battle={}, player={}", procedure.0, input.0.player),
             async {
+                let uuid = Uuid::try_parse(&procedure.0)?;
+                let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
                 self.authorizer
-                    .authorize_player_operation(
-                        &invocation.peer_info,
-                        &input.0.player,
-                        PlayerOperation::PlayerData,
-                    )
+                    .authorize_player_data_access(&invocation.peer_info, &battle, &input.0.player)
                     .await?;
                 let player_data = self
                     .service
-                    .player_data(Uuid::try_parse(&procedure.0)?, &input.0.player)
+                    .player_data(uuid, &input.0.player)
                     .await
                     .map_err(map_battle_error)?;
                 Ok(battler_service_schema::PlayerDataOutput(

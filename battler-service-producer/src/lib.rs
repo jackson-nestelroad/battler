@@ -31,6 +31,7 @@ pub use common::auth::{
     PlayerOperation,
     authorize_battle_owner,
     authorize_player,
+    authorize_player_or_side,
     authorize_side,
 };
 pub use producer::{

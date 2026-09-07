@@ -24,6 +24,7 @@ pub struct AiContext<'d> {
     pub battle: Uuid,
     pub state: BattleState,
     pub player_data: PlayerBattleData,
+    pub allies: Vec<PlayerBattleData>,
     pub choice_failures: HashSet<ChoiceFailure>,
     pub make_choice_failures: Vec<MakeChoiceFailure>,
 }

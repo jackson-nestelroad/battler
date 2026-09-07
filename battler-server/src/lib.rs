@@ -35,6 +35,7 @@ use battler_service_producer::{
     PlayerOperation,
     authorize_battle_owner,
     authorize_player,
+    authorize_player_or_side,
     authorize_side,
 };
 use battler_wamp::{
@@ -264,6 +265,34 @@ impl BattleAuthorizer for ServerAuthorizer {
                 "Authorization failed: peer {:?} not authorized for operation {:?} on player {}: {:?}",
                 peer_info.identity.id,
                 operation,
+                player,
+                err
+            );
+        }
+        res
+    }
+
+    async fn authorize_player_data_access(
+        &self,
+        peer_info: &PeerInfo,
+        battle: &Battle,
+        player: &str,
+    ) -> Result<()> {
+        log::debug!(
+            "Authorizing player data access for battle {}, player {} by peer {:?}",
+            battle.uuid,
+            player,
+            peer_info.identity.id
+        );
+        if let ConnectionType::Direct = peer_info.connection_type {
+            return Ok(());
+        }
+        let res = authorize_player_or_side(peer_info, battle, player);
+        if let Err(ref err) = res {
+            log::warn!(
+                "Authorization failed: peer {:?} not authorized for player data on battle {}, player {}: {:?}",
+                peer_info.identity.id,
+                battle.uuid,
                 player,
                 err
             );

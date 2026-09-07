@@ -143,11 +143,20 @@ impl<'data, 'battle> BattlerAiClient<'data, 'battle> {
     async fn ai_context(&self) -> Result<AiContext<'data>> {
         let player_data = self.client.player_data().await?;
         let state = self.client.state().await;
+        let mut allies = Vec::new();
+        if let Some(side) = state.field.sides.get(player_data.side) {
+            for (player_id, _) in &side.players {
+                if player_id != &player_data.id {
+                    allies.push(self.client.player_data_for(player_id).await?);
+                }
+            }
+        }
         Ok(AiContext {
             data: self.data,
             battle: self.client.battle(),
             state,
             player_data,
+            allies,
             choice_failures: HashSet::default(),
             make_choice_failures: Vec::default(),
         })

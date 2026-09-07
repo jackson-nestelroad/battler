@@ -147,12 +147,12 @@ impl Trainer {
         context: &AiContext<'_>,
         request: &TurnRequest,
     ) -> Result<Vec<Choice>> {
-        let TurnRequest { active, allies } = request;
+        let TurnRequest { active } = request;
         let mut state = ChoiceState::default();
         let mut choices = Vec::default();
         for (i, active) in active.into_iter().enumerate() {
             let choice = self
-                .turn_for_mon(&context, i, &allies, active, &state)
+                .turn_for_mon(&context, i, &context.allies, active, &state)
                 .await?;
             state.update(&choice);
             choices.push(choice);
@@ -697,11 +697,31 @@ mod trainer_test {
         let player_data = service.player_data(battle, player).await?;
         let log = service.full_log(battle, Some(player_data.side)).await?;
         let state = alter_battle_state(BattleState::default(), &Log::new(log.into_iter())?)?;
+        let allies = {
+            let battle = service.battle(battle).await?;
+            let ally_ids = battle
+                .sides
+                .get(player_data.side)
+                .map(|side| {
+                    side.players
+                        .iter()
+                        .filter(|p| p.id != player)
+                        .map(|p| p.id.clone())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_default();
+            let mut allies = Vec::with_capacity(ally_ids.len());
+            for ally_id in ally_ids {
+                allies.push(service.player_data(battle.uuid, &ally_id).await?);
+            }
+            allies
+        };
         Ok(AiContext {
             data,
             battle,
             state,
             player_data,
+            allies,
             choice_failures: HashSet::default(),
             make_choice_failures: Vec::default(),
         })
@@ -717,7 +737,7 @@ mod trainer_test {
             .move_scores(
                 &context,
                 0,
-                &request.allies,
+                &context.allies,
                 request.active.get(index).unwrap().clone(),
                 &ChoiceState::default(),
             )

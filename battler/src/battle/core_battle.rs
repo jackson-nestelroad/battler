@@ -1194,17 +1194,7 @@ impl<'d> CoreBattle<'d> {
                 if active.is_empty() {
                     return Ok(None);
                 }
-                let ally_indices = context
-                    .battle()
-                    .player_indices_on_side(context.side().index)
-                    .filter(|player| *player != context.player().index)
-                    .collect::<Vec<_>>();
-                let mut allies = Vec::with_capacity(ally_indices.len());
-                for player in ally_indices {
-                    let mut context = context.as_battle_context_mut().player_context(player)?;
-                    allies.push(Player::request_data(&mut context)?);
-                }
-                Ok(Some(Request::Turn(TurnRequest { active, allies })))
+                Ok(Some(Request::Turn(TurnRequest { active })))
             }
             RequestType::Switch => {
                 // We only make a request if there are Mons that need to switch out.

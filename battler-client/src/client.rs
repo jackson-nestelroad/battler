@@ -342,6 +342,10 @@ impl<'b> BattlerClientInternal<'b> {
         self.service.player_data(self.battle, &self.player).await
     }
 
+    async fn player_data_for(&self, player: &str) -> Result<battler::PlayerBattleData> {
+        self.service.player_data(self.battle, player).await
+    }
+
     fn battle_event_rx(&self) -> watch::Receiver<BattleClientEvent> {
         self.battle_event_rx.clone()
     }
@@ -447,6 +451,11 @@ impl<'b> BattlerClient<'b> {
     /// Reads the player's current battle data.
     pub async fn player_data(&self) -> Result<battler::PlayerBattleData> {
         self.client.player_data().await
+    }
+
+    /// Reads battle data for a player on the same side.
+    pub async fn player_data_for(&self, player: &str) -> Result<battler::PlayerBattleData> {
+        self.client.player_data_for(player).await
     }
 
     /// Receiver for battle events for the player.

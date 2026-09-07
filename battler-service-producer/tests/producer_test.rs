@@ -1033,3 +1033,80 @@ async fn player_reads_full_log() {
     );
     context.teardown().await;
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_can_fetch_ally_player_data_in_multi_battle() {
+    battler_test_utils::collect_logs();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
+    let player_1 = new_client(
+        start_consumer(
+            "player-1",
+            PeerConnectionType::Direct(context.router_handle.clone()),
+            create_peer("player-1").unwrap(),
+        )
+        .await
+        .unwrap(),
+    );
+
+    let mut options = battle_options();
+    options.format.battle_type = BattleType::Multi;
+    options.side_1.players.push(PlayerData {
+        id: "player-3".to_owned(),
+        name: "Player 3".to_owned(),
+        team: TeamData {
+            members: Vec::from_iter([MonData {
+                name: "Bulbasaur".to_owned(),
+                species: "Bulbasaur".to_owned(),
+                ability: "Overgrow".to_owned(),
+                moves: Vec::from_iter(["Tackle".to_owned()]),
+                level: 5,
+                ..Default::default()
+            }]),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    options.side_2.players.push(PlayerData {
+        id: "player-4".to_owned(),
+        name: "Player 4".to_owned(),
+        team: TeamData {
+            members: Vec::from_iter([MonData {
+                name: "Squirtle".to_owned(),
+                species: "Squirtle".to_owned(),
+                ability: "Torrent".to_owned(),
+                moves: Vec::from_iter(["Tackle".to_owned()]),
+                level: 5,
+                ..Default::default()
+            }]),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+
+    let battle = player_1
+        .create(options, battle_service_options())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(player_1.start(battle.uuid).await, Ok(()));
+
+    wait_until_battle_state(player_1.as_ref(), battle.uuid, BattleState::Active)
+        .await
+        .unwrap();
+
+    // Player 1 can view its own data
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-1").await, Ok(data) => {
+        assert_eq!(data.name, "Player 1");
+    });
+    // Player 1 can view its ally Player 3's data (same side)
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-3").await, Ok(data) => {
+        assert_eq!(data.name, "Player 3");
+    });
+    // Player 1 CANNOT view opposing Player 2's data
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-2").await, Err(err) => {
+        assert_eq!(err.to_string(), "player-1 cannot act as player-2");
+    });
+
+    context.teardown().await;
+}

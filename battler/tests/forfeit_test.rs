@@ -151,6 +151,10 @@ fn forfeit_ends_singles_battle() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    let player_data = battle.player_data("player-1").unwrap();
+    assert_eq!(player_data.mons[0].active, false);
+    assert_eq!(player_data.mons[0].player_active_position, None);
 }
 
 #[test]

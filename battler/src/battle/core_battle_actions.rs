@@ -4512,6 +4512,7 @@ fn leave_battle(context: &mut PlayerContext) -> Result<()> {
             switch_out_internal(&mut context, false, false, None)?;
         }
     }
+    context.player_mut().clear_active_positions();
     Ok(())
 }
 

@@ -634,6 +634,16 @@ impl Player {
         Ok(())
     }
 
+    /// Clears all active and exited positions for the player.
+    pub fn clear_active_positions(&mut self) {
+        for slot in &mut self.active {
+            *slot = None;
+        }
+        for slot in &mut self.active_or_exited {
+            *slot = None;
+        }
+    }
+
     /// The active [`MonHandle`] for the player's position.
     pub fn active_mon_handle(&self, position: usize) -> Option<MonHandle> {
         self.active.get(position).cloned().flatten()
