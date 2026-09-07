@@ -45,28 +45,17 @@ export function formatTurnChoice(
 
   const parsed = parseChoiceString(choiceStr);
 
-  if (parsed.type === "switch") {
-    const targetMon = getMonByTeamPosition(playerData, parsed.switchPosition || 0);
-    const switchMonName = getSlotMonName(targetMon, parsed.switchPosition || 0);
+  if (parsed.type === "switch" || parsed.type === "select") {
+    const isSwitch = parsed.type === "switch";
+    const pos = (isSwitch ? parsed.switchPosition : parsed.selectPosition) || 0;
+    const targetMon = getMonByTeamPosition(playerData, pos);
+    const targetMonName = getSlotMonName(targetMon, pos);
     return {
       slotIndex,
       monName,
-      actionType: "switch",
-      actionName: "Switch",
-      targetName: switchMonName,
-      modifiers: [],
-    };
-  }
-
-  if (parsed.type === "select") {
-    const targetMon = getMonByTeamPosition(playerData, parsed.selectPosition || 0);
-    const selectMonName = getSlotMonName(targetMon, parsed.selectPosition || 0);
-    return {
-      slotIndex,
-      monName,
-      actionType: "select",
-      actionName: "Select",
-      targetName: selectMonName,
+      actionType: parsed.type,
+      actionName: isSwitch ? "Switch" : "Select",
+      targetName: targetMonName,
       modifiers: [],
     };
   }

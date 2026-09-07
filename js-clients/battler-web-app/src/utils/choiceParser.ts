@@ -16,7 +16,9 @@ export interface ParsedChoiceAction {
 
 function parseCommandIndex(head: string): number {
   const spaceIndex = head.indexOf(" ");
-  return spaceIndex !== -1 ? parseInt(head.substring(spaceIndex + 1), 10) : 0;
+  if (spaceIndex === -1) return 0;
+  const val = parseInt(head.substring(spaceIndex + 1), 10);
+  return isNaN(val) ? 0 : val;
 }
 
 export function parseChoiceString(choiceStr: string): ParsedChoiceAction {
@@ -46,25 +48,23 @@ export function parseChoiceString(choiceStr: string): ParsedChoiceAction {
 
     return {
       type: "move",
-      moveIndex: isNaN(moveIndex) ? 0 : moveIndex,
+      moveIndex,
       targetVal,
       modifiers,
     };
   }
 
   if (head.startsWith("switch")) {
-    const switchPosition = parseCommandIndex(head);
     return {
       type: "switch",
-      switchPosition: isNaN(switchPosition) ? 0 : switchPosition,
+      switchPosition: parseCommandIndex(head),
     };
   }
 
   if (head.startsWith("select")) {
-    const selectPosition = parseCommandIndex(head);
     return {
       type: "select",
-      selectPosition: isNaN(selectPosition) ? 0 : selectPosition,
+      selectPosition: parseCommandIndex(head),
     };
   }
 

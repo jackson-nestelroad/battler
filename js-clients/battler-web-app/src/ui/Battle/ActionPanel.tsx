@@ -6,7 +6,9 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { ChoiceBuilder } from "../../utils/choiceBuilder";
 import { parseChoiceError, getChosenSwitchPositions } from "../../utils/choiceParser";
 import {
+  canSlotSelect,
   canSlotShift,
+  canSlotSwitch,
   getMonTeamPosition,
   getMonDisplayName,
   getSlotLabel,
@@ -17,6 +19,7 @@ import {
   getRequestSlotCount,
   getActiveSlotPosition,
   resolveActiveMonName,
+  getSelectReason,
 } from "../../utils/monHelpers";
 import { getMoveTargetInfo, getValidTargets, type TargetOption } from "../../utils/targeting";
 import ErrorBanner from "../Common/ErrorBanner";
@@ -119,13 +122,16 @@ export default function ActionPanel({
 
   const activeMon = getMonForSlot(playerData, request, currentSlotIndex);
   const activeMonTeamPosition = activeMon ? getMonTeamPosition(activeMon, 0) : null;
-  const monToReplace = request?.type === "switch" ? activeMon : undefined;
-  const activeSwitchSlot = request?.type === "switch" ? getActiveSlotPosition(request, currentSlotIndex) : undefined;
+  const activeSlotPos = getActiveSlotPosition(request, currentSlotIndex);
 
-  const isSwitch = request?.type === "switch";
-  const isTurn = request?.type === "turn";
-  const isSelect = request?.type === "select";
-  const activeSelectSlot = isSelect ? getActiveSlotPosition(request, currentSlotIndex) : undefined;
+  const actingBadgeText =
+    request?.type === "switch"
+      ? "Switching"
+      : request?.type === "select"
+        ? getSelectReason(request, currentSlotIndex) === "Revive"
+          ? "Reviving"
+          : "Selecting"
+        : "Acting";
 
   const handleSwitch = (playerTeamPosition: number, totalSlots: number) => {
     if (submittingRef.current) return;
@@ -191,13 +197,7 @@ export default function ActionPanel({
         selectedTeamIndices={selectedTeamIndices}
         onSelectMon={handleSelectMon}
         activeMonTeamPosition={activeMonTeamPosition}
-        actingBadgeText={
-          request?.type === "switch"
-            ? "Switching"
-            : request?.type === "select"
-              ? "Reviving"
-              : "Acting"
-        }
+        actingBadgeText={actingBadgeText}
         battleState={battleSession?.battleState}
         rules={effectiveRules}
       />
@@ -208,16 +208,21 @@ export default function ActionPanel({
     if (isMeReady) return "Waiting";
     if (playbackPending) return "Turn Resolution";
     if (request?.type === "team") return "Team Preview";
-    if (request?.type === "switch") {
-      if (activeSwitchSlot === undefined) return "Switch";
-      const replaceMonName = getMonDisplayName(monToReplace);
+    if (request?.type === "switch" || request?.type === "select") {
+      const actionTitle =
+        request.type === "switch"
+          ? "Switch"
+          : getSelectReason(request, currentSlotIndex) === "Revive"
+            ? "Revive"
+            : "Select";
+      const monName = getMonDisplayName(activeMon);
       const totalSlots = getRequestSlotCount(request);
       const isMultiSlotBattle = totalSlots > 1 || battleType !== "Singles";
       return isMultiSlotBattle
-        ? `Switch ${getSlotLabel(activeSwitchSlot + 1, replaceMonName)}`
-        : replaceMonName
-          ? `Switch: ${replaceMonName}`
-          : "Switch";
+        ? `${actionTitle} ${getSlotLabel(activeSlotPos + 1, monName)}`
+        : monName
+          ? `${actionTitle}: ${monName}`
+          : actionTitle;
     }
     if (request?.type === "turn") {
       const activeRequests = request.active || [];
@@ -225,14 +230,6 @@ export default function ActionPanel({
       return activeRequests.length > 1
         ? getSlotLabel(currentSlotIndex + 1, activeMonName)
         : activeMonName;
-    }
-    if (request?.type === "select") {
-      const reason = request.positions?.[currentSlotIndex]?.reason;
-      const activeMonName = getMonDisplayName(activeMon);
-      if (reason === "Revive") {
-        return activeMonName ? `Revive: ${activeMonName}` : "Revive";
-      }
-      return "Select";
     }
     return "Battle";
   };
@@ -249,6 +246,23 @@ export default function ActionPanel({
       )}
     </div>
   );
+
+  const showBackButton = currentSlotIndex > 0 || (request?.type === "turn" && selectedMove !== null);
+
+  const renderBackButton = () =>
+    showBackButton ? (
+      <div className="flex-row">
+        <button
+          type="button"
+          onClick={goBackStep}
+          className="btn btn-sm btn-secondary"
+          disabled={isLoading}
+          title="Go back to previous choice"
+        >
+          ← Back
+        </button>
+      </div>
+    ) : null;
 
   const renderChoiceBody = () => {
     if (!request || isMeReady) return renderPlaceholder("Waiting...", true);
@@ -308,7 +322,7 @@ export default function ActionPanel({
     }
 
     if (request.type === "switch") {
-      if (activeSwitchSlot === undefined) return renderPlaceholder("Submitting...");
+      if (!canSlotSwitch(request, currentSlotIndex)) return renderPlaceholder("Submitting...");
 
       const chosenSwitchPositions = getChosenSwitchPositions(choices);
       const remainingHealthyBenchCount = getAvailableBenchCount(playerData, chosenSwitchPositions);
@@ -325,20 +339,8 @@ export default function ActionPanel({
 
       return (
         <div className="flex-col gap-m">
-          {showBackButton && (
-            <div className="flex-row">
-              <button
-                type="button"
-                onClick={goBackStep}
-                className="btn btn-sm btn-secondary"
-                disabled={isLoading}
-                title="Go back to previous choice"
-              >
-                ← Back
-              </button>
-            </div>
-          )}
-          {renderPlaceholder("Switching...", true)}
+          {renderBackButton()}
+          {renderPlaceholder(`${actingBadgeText}...`, true)}
           {canPassSwitch && (
             <ActionButton
               title="Pass"
@@ -354,27 +356,12 @@ export default function ActionPanel({
     }
 
     if (request.type === "select") {
-      if (activeSelectSlot === undefined) return renderPlaceholder("Submitting...");
-
-      const reason = request.positions?.[currentSlotIndex]?.reason;
-      const placeholderText = reason === "Revive" ? "Reviving..." : "Selecting...";
+      if (!canSlotSelect(request, currentSlotIndex)) return renderPlaceholder("Submitting...");
 
       return (
         <div className="flex-col gap-m">
-          {showBackButton && (
-            <div className="flex-row">
-              <button
-                type="button"
-                onClick={goBackStep}
-                className="btn btn-sm btn-secondary"
-                disabled={isLoading}
-                title="Go back to previous choice"
-              >
-                ← Back
-              </button>
-            </div>
-          )}
-          {renderPlaceholder(placeholderText, true)}
+          {renderBackButton()}
+          {renderPlaceholder(`${actingBadgeText}...`, true)}
         </div>
       );
     }
@@ -480,25 +467,11 @@ export default function ActionPanel({
   let showHeader = false;
   let showStepper = false;
   if (request && !isMeReady && !playbackPending) {
-    if (request.type === "team") {
-      showHeader = true;
-    } else if (isSwitch) {
-      showHeader = activeSwitchSlot !== undefined;
-      showStepper = activeSwitchSlot !== undefined;
-    } else if (isSelect) {
-      showHeader = activeSelectSlot !== undefined;
-      showStepper = activeSelectSlot !== undefined;
-    } else if (isTurn && request.type === "turn") {
-      showHeader = !!request.active?.[currentSlotIndex];
-      showStepper = !!request.active?.[currentSlotIndex];
-    }
+    const hasSlot =
+      request.type === "team" || currentSlotIndex < getRequestSlotCount(request);
+    showHeader = hasSlot;
+    showStepper = request.type !== "team" && hasSlot;
   }
-
-  const showBackButton = isSwitch || isSelect
-    ? currentSlotIndex > 0
-    : isTurn
-      ? currentSlotIndex > 0 || selectedMove !== null
-      : false;
 
   return (
     <div className={`card ${styles.actionPanelCard}`}>

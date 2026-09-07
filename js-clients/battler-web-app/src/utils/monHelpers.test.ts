@@ -38,6 +38,7 @@ describe("monHelpers", () => {
 
   it("calculates request slot count correctly", () => {
     expect(getRequestSlotCount(null)).toBe(0);
+    expect(getRequestSlotCount(undefined)).toBe(0);
     const turnReq = {
       type: "turn",
       active: [{ team_position: 0 }, { team_position: 1 }],
@@ -101,6 +102,11 @@ describe("monHelpers", () => {
       positions: [{ position: 1, reason: "Revive" }],
     } as unknown as Request;
 
+    expect(canSlotSelect(null, 0)).toBe(false);
+    expect(canSlotSelect(undefined, 0)).toBe(false);
+    expect(getSelectReason(null, 0)).toBeNull();
+    expect(getSelectReason(undefined, 0)).toBeNull();
+
     expect(getActiveSlotPosition(selectReq, 0)).toBe(1);
     expect(canSlotSelect(selectReq, 0)).toBe(true);
     expect(canSlotSelect(selectReq, 1)).toBe(false);
@@ -131,6 +137,7 @@ describe("monHelpers", () => {
   });
 
   it("determines canSlotSwitch correctly including trapped mon attempts", () => {
+    expect(canSlotSwitch(null, 0)).toBe(false);
     expect(canSlotSwitch(null, 0, null)).toBe(false);
 
     // Turn request without trapped
@@ -138,6 +145,7 @@ describe("monHelpers", () => {
       type: "turn",
       active: [{ team_position: 0, trapped: false }],
     } as unknown as Request;
+    expect(canSlotSwitch(normalTurnReq, 0)).toBe(true);
     expect(canSlotSwitch(normalTurnReq, 0, null)).toBe(true);
     // When a move is selected, cannot switch
     expect(
@@ -162,7 +170,9 @@ describe("monHelpers", () => {
       type: "switch",
       needs_switch: [0],
     } as unknown as Request;
+    expect(canSlotSwitch(switchReq, 0)).toBe(true);
     expect(canSlotSwitch(switchReq, 0, null)).toBe(true);
+    expect(canSlotSwitch(switchReq, 1)).toBe(false);
     expect(canSlotSwitch(switchReq, 1, null)).toBe(false);
   });
 

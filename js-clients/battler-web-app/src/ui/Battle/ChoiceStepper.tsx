@@ -7,6 +7,7 @@ import {
   getMonDisplayName,
   getMonForSlot,
   getRequestSlotCount,
+  getSelectReason,
   getSlotLabel,
   getActiveSlotPosition,
 } from "../../utils/monHelpers";
@@ -34,6 +35,16 @@ function StepChip({
   const containerClass = `${styles.choiceChip} ${styles[status]}`;
   const badgeClass = `${styles.chipStepBadge} ${styles[status]}`;
 
+  const inner = (
+    <>
+      <span className={badgeClass}>{badgeContent}</span>
+      <div className={styles.chipContent}>
+        <span className={styles.chipMonName}>{monName}</span>
+        <span className={styles.chipSummary}>{summaryContent}</span>
+      </div>
+    </>
+  );
+
   if (onClick) {
     return (
       <button
@@ -43,22 +54,14 @@ function StepChip({
         title={title}
         disabled={disabled}
       >
-        <span className={badgeClass}>{badgeContent}</span>
-        <div className={styles.chipContent}>
-          <span className={styles.chipMonName}>{monName}</span>
-          <span className={styles.chipSummary}>{summaryContent}</span>
-        </div>
+        {inner}
       </button>
     );
   }
 
   return (
     <div className={containerClass} title={title}>
-      <span className={badgeClass}>{badgeContent}</span>
-      <div className={styles.chipContent}>
-        <span className={styles.chipMonName}>{monName}</span>
-        <span className={styles.chipSummary}>{summaryContent}</span>
-      </div>
+      {inner}
     </div>
   );
 }
@@ -91,11 +94,10 @@ export default function ChoiceStepper({
   const slotCount = getRequestSlotCount(request);
   if (slotCount <= 1) return null;
 
-  const slotItems = Array.from({ length: slotCount }).map((_, idx) => {
+  const slotMonNames = Array.from({ length: slotCount }, (_, idx) => {
     const mon = getMonForSlot(playerData, request, idx);
     const activePos = getActiveSlotPosition(request, idx);
-    const slotMonName = getSlotLabel(activePos + 1, getMonDisplayName(mon));
-    return { slotMonName };
+    return getSlotLabel(activePos + 1, getMonDisplayName(mon));
   });
 
   const titlePrefix =
@@ -104,12 +106,6 @@ export default function ChoiceStepper({
       : request.type === "select"
         ? "Select progress"
         : "Switch progress";
-  const selectingText =
-    request.type === "turn"
-      ? "Selecting move..."
-      : request.type === "select"
-        ? "Selecting..."
-        : "Selecting switch...";
 
   return (
     <div className={styles.choiceStepper}>
@@ -119,7 +115,7 @@ export default function ChoiceStepper({
         title={isCollapsed ? "Expand choices" : "Collapse choices"}
       >
         <span className={styles.stepperTitle}>
-          {isCollapsed ? "▶" : "▼"} {titlePrefix} ({choices.length}/{slotItems.length} completed)
+          {isCollapsed ? "▶" : "▼"} {titlePrefix} ({choices.length}/{slotMonNames.length} completed)
         </span>
         <span className={styles.stepperToggleText}>
           {isCollapsed ? "Show details" : "Hide"}
@@ -128,11 +124,10 @@ export default function ChoiceStepper({
 
       {!isCollapsed && (
         <div className="flex-col gap-xs">
-          {slotItems.map((item, idx) => {
+          {slotMonNames.map((slotMonName, idx) => {
             const isCompleted = idx < currentSlotIndex;
             const isActive = idx === currentSlotIndex;
             const isErrored = parsedChoiceError.failedSlotIndex === idx;
-            const slotMonName = item.slotMonName;
 
             if (isCompleted && choices[idx] && !isErrored) {
               const formatted = formatTurnChoice(
@@ -177,6 +172,14 @@ export default function ChoiceStepper({
             if (isActive || isErrored) {
               const status = isErrored ? "errored" : "active";
               const badgeContent = isErrored ? "!" : idx + 1;
+              const selectingText =
+                request.type === "turn"
+                  ? "Selecting move..."
+                  : request.type === "select"
+                    ? getSelectReason(request, idx) === "Revive"
+                      ? "Reviving..."
+                      : "Selecting..."
+                    : "Selecting switch...";
               const summaryContent = isErrored ? parsedChoiceError.errorMessage : selectingText;
               
               return (

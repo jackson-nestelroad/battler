@@ -51,7 +51,6 @@ export function getMonByTeamPosition(
   return playerData.mons.find((m) => getMonTeamPosition(m, -1) === teamPos) || null;
 }
 
-
 /**
  * Formats a clean slot label string e.g. "Slot 1: Pikachu" or "Slot 1".
  */
@@ -65,7 +64,7 @@ export function getSlotLabel(slotNumber: number, monName?: string | null, prefix
 /**
  * Gets the total number of slots required for a battle request.
  */
-export function getRequestSlotCount(request: Request | null): number {
+export function getRequestSlotCount(request: Request | null | undefined): number {
   if (!request) return 0;
   if (request.type === "turn") {
     return request.active?.length || 0;
@@ -114,19 +113,10 @@ export function getMonForSlot(
     return getMonByTeamPosition(playerData, req.team_position);
   }
 
-  if (request.type === "switch") {
+  if (request.type === "switch" || request.type === "select") {
     const activePos = getActiveSlotPosition(request, slotIndex);
-    if (activePos === undefined) return null;
-
-    // Returns the mon currently active in activePos (e.g. U-turn / Volt Switch),
+    // Returns the mon currently active in activePos (e.g. U-turn / Volt Switch / Revival Blessing),
     // or null if the slot is empty because a mon fainted.
-    return getMonByActivePosition(playerData, activePos);
-  }
-
-  if (request.type === "select") {
-    const activePos = getActiveSlotPosition(request, slotIndex);
-    if (activePos === undefined) return null;
-
     return getMonByActivePosition(playerData, activePos);
   }
 
@@ -137,24 +127,20 @@ export function getMonForSlot(
  * Determines whether a select action is allowed for the given request and slot.
  */
 export function canSlotSelect(
-  request: Request | null,
+  request: Request | null | undefined,
   slotIndex: number,
 ): boolean {
-  if (!request) return false;
-  return request.type === "select" && request.positions?.[slotIndex] !== undefined;
+  return request?.type === "select" && request.positions?.[slotIndex] !== undefined;
 }
 
 /**
  * Returns the SelectReason for a given request and slot, if applicable.
  */
 export function getSelectReason(
-  request: Request | null,
+  request: Request | null | undefined,
   slotIndex: number,
 ): SelectReason | null {
-  if (request?.type === "select") {
-    return request.positions?.[slotIndex]?.reason ?? null;
-  }
-  return null;
+  return request?.type === "select" ? (request.positions?.[slotIndex]?.reason ?? null) : null;
 }
 
 /**
@@ -207,7 +193,7 @@ export function getAvailableBenchCount(
  * Determines the target team size for the Team Preview phase.
  */
 export function getTeamPreviewTargetSize(
-  request: Request | null,
+  request: Request | null | undefined,
   playerData: PlayerBattleData | null | undefined,
 ): number {
   if (request?.type !== "team" || !playerData?.mons) return 0;
@@ -219,17 +205,15 @@ export function getTeamPreviewTargetSize(
  * Determines whether a switch action is allowed for the given request and slot.
  */
 export function canSlotSwitch(
-  request: Request | null,
+  request: Request | null | undefined,
   slotIndex: number,
-  selectedMove: MonMoveSlotData | null,
+  selectedMove: MonMoveSlotData | null = null,
 ): boolean {
-  if (!request) return false;
-  if (request.type === "switch") {
+  if (request?.type === "switch") {
     return request.needs_switch?.[slotIndex] !== undefined;
   }
-  if (request.type === "turn" && selectedMove === null) {
-    const activeReq = request.active?.[slotIndex];
-    return !!activeReq;
+  if (request?.type === "turn" && selectedMove === null) {
+    return !!request.active?.[slotIndex];
   }
   return false;
 }

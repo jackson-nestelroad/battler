@@ -1,11 +1,13 @@
 import type { BattleState } from "battler-state";
 import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { 
+  canSlotSelect,
+  canSlotSwitch,
   getMonDisplayName, 
   getMonTeamPosition, 
   getRequestSlotCount,
+  getSelectReason,
   getTeamPreviewTargetSize,
-  canSlotSwitch,
 } from "../../utils/monHelpers";
 import MonCard from "../Common/MonCard";
 import styles from "./ActionPanel.module.scss";
@@ -48,6 +50,7 @@ export default function TeamSummary({
   if (!playerData || !playerData.mons) return null;
 
   const targetSize = request?.type === "team" ? getTeamPreviewTargetSize(request, playerData) : 0;
+  const totalSlots = getRequestSlotCount(request);
 
   return (
     <div className={styles.teamSummarySection}>
@@ -74,19 +77,17 @@ export default function TeamSummary({
               if (isClickable && onSelectMon) {
                 handleClick = () => onSelectMon(idx);
               }
-            } else if (request.type === "select") {
-              const reason = request.positions?.[currentSlotIndex]?.reason;
+            } else if (canSlotSelect(request, currentSlotIndex) && onSelect) {
+              const reason = getSelectReason(request, currentSlotIndex);
               if (reason === "Revive") {
-                isClickable = !mon.active && mon.hp === 0;
-                if (isClickable && onSelect) {
-                  const totalSlots = getRequestSlotCount(request);
+                isClickable = !mon.active && (mon.hp ?? 0) <= 0;
+                if (isClickable) {
                   handleClick = () => onSelect(monPos, totalSlots);
                 }
               }
             } else if (canSlotSwitch(request, currentSlotIndex, selectedMove)) {
               isClickable = !mon.active && mon.hp > 0;
               if (isClickable) {
-                const totalSlots = getRequestSlotCount(request);
                 handleClick = () => onSwitch(monPos, totalSlots);
               }
             }
