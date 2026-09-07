@@ -695,7 +695,15 @@ export function resolveBattleMonRef(
 function makeEmptyPublicTooltip(species: string, player?: string): MonTooltipViewModel {
   return {
     species,
+    name: species,
     ownerLabel: player ? `Player: ${player}` : null,
+    hp: null,
+    maxHp: null,
+    hpPercentage: null,
+    status: null,
+    isFainted: false,
+    ability: null,
+    item: null,
     boosts: [],
     conditions: [],
     moves: [],
@@ -724,19 +732,30 @@ export function publicMonStateToTooltip(
   }
 
   try {
-    const species = stateSelectors.monSpecies(state, monRef) || fallbackName;
-    const phys = stateSelectors.monPhysicalAppearance(state, monRef);
-    const level = stateSelectors.monLevel(state, monRef);
-    const health = stateSelectors.monHealth(state, monRef);
-    const rawStatus = stateSelectors.monStatus(state, monRef);
-    const status = normalizeStatusCode(rawStatus);
-    const isFainted = stateSelectors.monIsFainted(state, monRef);
-    const ability = stateSelectors.monAbility(state, monRef);
-    const rawBoosts = stateSelectors.monBoosts(state, monRef);
-    const conditions = stateSelectors.monConditions(state, monRef) || [];
-    const types = stateSelectors.monTypes(state, monRef, () => []) || [];
+    const m = stateSelectors.mon(state, monRef);
+    const hasBattleAppearance = (m?.battle_appearances?.length ?? 0) > 0;
 
-    const app = stateSelectors.monBattleAppearance(state, monRef);
+    const species =
+      (m?.volatile_data?.transformed
+        ? stateSelectors.monSpecies(state, monRef)
+        : m?.physical_appearance?.species) || fallbackName;
+    const phys = stateSelectors.monPhysicalAppearance(state, monRef);
+    const isFainted = stateSelectors.monIsFainted(state, monRef);
+
+    const level = hasBattleAppearance ? stateSelectors.monLevel(state, monRef) : null;
+    const health = hasBattleAppearance ? stateSelectors.monHealth(state, monRef) : null;
+    const rawStatus = hasBattleAppearance ? stateSelectors.monStatus(state, monRef) : null;
+    const status = normalizeStatusCode(rawStatus);
+    const ability = hasBattleAppearance ? stateSelectors.monAbility(state, monRef) : null;
+    const rawBoosts = hasBattleAppearance ? stateSelectors.monBoosts(state, monRef) : {};
+    const conditions = hasBattleAppearance
+      ? stateSelectors.monConditions(state, monRef) || []
+      : [];
+    const types = hasBattleAppearance
+      ? stateSelectors.monTypes(state, monRef, () => []) || []
+      : [];
+
+    const app = hasBattleAppearance ? stateSelectors.monBattleAppearance(state, monRef) : null;
 
     // Item: distinguished between unrevealed (null), known empty ("None"), or known item name
     let item: string | null = null;
@@ -768,19 +787,15 @@ export function publicMonStateToTooltip(
       isTerastallized = false;
     }
 
-    // Health calculations
-    let hp: number | null = null;
-    let maxHp: number | null = null;
-    let hpPercentage: number | null = null;
-
-    if (health) {
-      hp = health[0];
-      maxHp = health[1];
-      hpPercentage = computeHpPercentage(hp, maxHp);
-    }
+    // Health calculations (null if in-battle health has not been observed yet)
+    const hp = health ? health[0] : null;
+    const maxHp = health ? health[1] : null;
+    const hpPercentage = health ? computeHpPercentage(hp!, maxHp!) : null;
 
     // Known / revealed moves (only include moves that have actually been seen in battle)
-    const knownMoves = stateSelectors.monMoves(state, monRef, false) || [];
+    const knownMoves = hasBattleAppearance
+      ? stateSelectors.monMoves(state, monRef, false) || []
+      : [];
     const moveSlots: TooltipMoveSlot[] = knownMoves.map((name) => ({
       name,
       revealed: true,
@@ -797,7 +812,6 @@ export function publicMonStateToTooltip(
       // Ignore error
     }
 
-    const m = stateSelectors.mon(state, monRef);
     if (m?.volatile_data?.transformed) {
       isTransformed = true;
       originalSpecies = m.physical_appearance?.species;

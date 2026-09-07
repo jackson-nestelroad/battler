@@ -1058,6 +1058,71 @@ describe("monTooltipModel", () => {
       expect(vm).toBeDefined();
       expect(vm?.item).toBe("None");
     });
+
+    it("defaults to 100% HP and not fainted when a Mon has no battle appearances (e.g. unseen illusion target)", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              players: {
+                "ai-random-1": {
+                  id: "ai-random-1",
+                  name: "AI Random",
+                  mons: [
+                    {
+                      physical_appearance: {
+                        name: "Froslass",
+                        species: "Froslass",
+                        gender: "F",
+                        shiny: false,
+                      },
+                      battle_appearances: [], // Illusion broke, no battle appearances exist
+                      fainted: false,
+                      volatile_data: { types: [], conditions: {}, moves: [] },
+                    },
+                  ],
+                },
+              },
+              active: [],
+            },
+          ],
+        },
+      } as any;
+
+      const vm = publicMonStateToTooltip(mockState, {
+        Inactive: { player: "ai-random-1", name: "Froslass" },
+      });
+
+      expect(vm).toBeDefined();
+      expect(vm?.species).toBe("Froslass");
+      expect(vm?.name).toBe("Froslass");
+      expect(vm?.ownerLabel).toBe("Player: ai-random-1");
+      expect(vm?.hp).toBeNull();
+      expect(vm?.maxHp).toBeNull();
+      expect(vm?.hpPercentage).toBeNull();
+      expect(vm?.isFainted).toBe(false);
+      expect(vm?.status).toBeNull();
+      expect(vm?.moves).toEqual([]);
+      expect(vm?.ability).toBeNull();
+      expect(vm?.item).toBeNull();
+    });
+
+    it("returns null health and not fainted in makeEmptyPublicTooltip fallback", () => {
+      const emptyState = {
+        field: { sides: [] },
+      } as any;
+
+      const vm = publicMonStateToTooltip(emptyState, {
+        Inactive: { player: "opponent", name: "Gengar" },
+      });
+
+      expect(vm).toBeDefined();
+      expect(vm?.species).toBe("Gengar");
+      expect(vm?.hp).toBeNull();
+      expect(vm?.maxHp).toBeNull();
+      expect(vm?.hpPercentage).toBeNull();
+      expect(vm?.isFainted).toBe(false);
+    });
   });
 });
 

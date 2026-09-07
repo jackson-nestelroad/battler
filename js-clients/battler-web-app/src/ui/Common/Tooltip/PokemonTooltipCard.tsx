@@ -136,11 +136,14 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
   const current = activeTab === "summary" && data.baseSummary ? data.baseSummary : data;
   const hasSummaryTab = Boolean(data.baseSummary);
 
-  const hp = current.hp ?? 0;
+  const isFainted = Boolean(
+    current.isFainted ||
+    current.status === "fnt" ||
+    (current.hp != null && current.hp <= 0),
+  );
   const maxHp = current.maxHp ?? 100;
+  const hp = isFainted ? (current.hp ?? 0) : (current.hp ?? maxHp);
   const hpPct = current.hpPercentage ?? computeHpPercentage(hp, maxHp);
-
-  const isFainted = Boolean(current.isFainted || hp <= 0 || current.status === "fnt");
 
   const conditions = (current.conditions || []).filter(
     (c) => c.toLowerCase() !== "transformed",

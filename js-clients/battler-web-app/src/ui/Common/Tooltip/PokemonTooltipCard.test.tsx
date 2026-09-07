@@ -172,4 +172,41 @@ describe("PokemonTooltipCard", () => {
       expect(html.match(/Dynamax/g)!.length).toBe(1);
     });
   });
+
+  describe("Health and fainted status rendering", () => {
+    it("renders unrevealed Mon with unknown HP as 100% and not fainted without FNT badge", () => {
+      const mon = createMockMon({
+        species: "Froslass",
+        name: "Froslass",
+        hp: null,
+        maxHp: null,
+        hpPercentage: null,
+        status: null,
+        isFainted: false,
+      });
+
+      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+
+      expect(html).toContain("100%");
+      expect(html).not.toContain("FNT");
+      expect(html).toContain("status-badge ok");
+    });
+
+    it("renders explicitly fainted Mon with 0% and FNT badge", () => {
+      const mon = createMockMon({
+        species: "Gengar",
+        name: "Gengar",
+        hp: 0,
+        maxHp: 120,
+        hpPercentage: 0,
+        status: "fnt",
+        isFainted: true,
+      });
+
+      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+
+      expect(html).toContain("0/120 (0%)");
+      expect(html).toContain("FNT");
+    });
+  });
 });
