@@ -1100,6 +1100,9 @@ pub struct Field {
     pub conditions: BTreeMap<String, ConditionData>,
     pub rules: Vec<String>,
     pub max_side_length: usize,
+    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
+    #[cfg_attr(feature = "typescript", ts(skip))]
+    pub swapped_side_conditions: HashSet<(usize, usize, String)>,
 }
 
 impl Field {

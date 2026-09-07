@@ -58,6 +58,7 @@ fn alter_battle_state_for_turn(
     min_index: usize,
 ) -> Result<()> {
     state.turn = turn.try_into().context("failed to convert turn number")?;
+    state.field.swapped_side_conditions.clear();
 
     let mut ui_log = Vec::default();
     for entry in log.entries_for_turn(turn, Some(min_index)) {
@@ -1493,31 +1494,31 @@ fn alter_battle_state_for_entry(
             }
         }
         "swapsideconditions" => {
-            let side_idx: usize = entry.value_or_else("side")?;
-            let with_idx: usize = entry.value_or_else("with")?;
-            if side_idx < state.field.sides.len() && with_idx < state.field.sides.len() {
-                let cond1 = state.field.sides[side_idx].conditions.clone();
-                let cond2 = state.field.sides[with_idx].conditions.clone();
-                state.field.sides[side_idx].conditions = cond2;
-                state.field.sides[with_idx].conditions = cond1;
-            }
+            state.field.swapped_side_conditions.clear();
         }
         "swapsidecondition" => {
             let side_idx: usize = entry.value_or_else("side")?;
             let source_idx: usize = entry.value_or_else("source")?;
             let condition: String = entry.value_or_else("condition")?;
-            if side_idx < state.field.sides.len() && source_idx < state.field.sides.len() {
-                let cond_source = state.field.sides[source_idx].conditions.remove(&condition);
-                let cond_target = state.field.sides[side_idx].conditions.remove(&condition);
-                if let Some(c) = cond_source {
-                    state.field.sides[side_idx]
-                        .conditions
-                        .insert(condition.clone(), c);
-                }
-                if let Some(c) = cond_target {
-                    state.field.sides[source_idx]
-                        .conditions
-                        .insert(condition, c);
+            let key = (
+                core::cmp::min(side_idx, source_idx),
+                core::cmp::max(side_idx, source_idx),
+                condition.clone(),
+            );
+            if state.field.swapped_side_conditions.insert(key) {
+                if side_idx < state.field.sides.len() && source_idx < state.field.sides.len() {
+                    let cond_source = state.field.sides[source_idx].conditions.remove(&condition);
+                    let cond_target = state.field.sides[side_idx].conditions.remove(&condition);
+                    if let Some(c) = cond_source {
+                        state.field.sides[side_idx]
+                            .conditions
+                            .insert(condition.clone(), c);
+                    }
+                    if let Some(c) = cond_target {
+                        state.field.sides[source_idx]
+                            .conditions
+                            .insert(condition, c);
+                    }
                 }
             }
         }

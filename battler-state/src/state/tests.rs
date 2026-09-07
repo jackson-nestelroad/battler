@@ -2450,6 +2450,7 @@ mod state_test {
         let state = setup_singles_battle(&[
             "sidestart|side:0|condition:Spikes",
             "swapsideconditions|side:0|with:1",
+            "swapsidecondition|side:1|condition:Spikes|source:0",
         ]);
         let side0_conds = state_selectors::side_conditions(&state, 0)
             .unwrap()
@@ -2465,8 +2466,151 @@ mod state_test {
                 ui_log!(title = "turn", values = { "turn" => 1 }),
                 ui_log!(title = "sidestart", side = 0usize, effect = ui::Effect { effect_type: Some("condition".to_owned()), name: "Spikes".to_owned() }, values = { "condition" => "Spikes" }),
                 ui_log!(title = "swapsideconditions", side = 0usize, values = { "with" => 1 }),
+                ui_log!(title = "swapsidecondition", side = 1usize, effect = ui::Effect { effect_type: Some("condition".to_owned()), name: "Spikes".to_owned() }, values = { "condition" => "Spikes", "source" => 0 }),
             ]
         );
+    }
+
+    #[test]
+    fn court_change_swaps_single_sided_conditions() {
+        let state = setup_singles_battle(&[
+            "sidestart|side:0|move:Light Screen",
+            "sidestart|side:0|move:Mist",
+            "sidestart|side:1|move:Reflect",
+            "sidestart|side:1|move:Stealth Rock",
+            "swapsideconditions|side:1|with:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Reflect|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Stealth Rock|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Light Screen|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Mist|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "activate|move:Court Change|of:Squirtle,player-1,1",
+        ]);
+
+        let side0_conds = state_selectors::side_conditions(&state, 0)
+            .unwrap()
+            .collect::<Vec<_>>();
+        let side1_conds = state_selectors::side_conditions(&state, 1)
+            .unwrap()
+            .collect::<Vec<_>>();
+
+        assert_eq!(side0_conds, vec!["Reflect", "Stealth Rock"]);
+        assert_eq!(side1_conds, vec!["Light Screen", "Mist"]);
+    }
+
+    #[test]
+    fn court_change_swaps_dual_sided_conditions_with_different_data() {
+        let state = setup_singles_battle(&[
+            "sidestart|side:0|move:Spikes|count:1",
+            "sidestart|side:0|move:Tailwind",
+            "turn|turn:2",
+            "continue",
+            "sidestart|side:1|move:Spikes|count:2",
+            "sidestart|side:1|move:Tailwind",
+            "turn|turn:3",
+            "continue",
+            "swapsideconditions|side:1|with:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Spikes|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Tailwind|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Spikes|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Tailwind|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "activate|move:Court Change|of:Squirtle,player-1,1",
+        ]);
+
+        let side0 = &state.field.sides[0];
+        let side1 = &state.field.sides[1];
+
+        // Side 0 should now have the Spikes that came from side 1 (count: 2, since_turn: 2)
+        let side0_spikes = side0.conditions.get("Spikes").unwrap();
+        assert_eq!(side0_spikes.data.get("count").unwrap(), "2");
+        assert_eq!(side0_spikes.since_turn, 2);
+
+        // Side 0 should have the Tailwind from side 1 (since_turn: 2)
+        let side0_tailwind = side0.conditions.get("Tailwind").unwrap();
+        assert_eq!(side0_tailwind.since_turn, 2);
+
+        // Side 1 should now have the Spikes that came from side 0 (count: 1, since_turn: 1)
+        let side1_spikes = side1.conditions.get("Spikes").unwrap();
+        assert_eq!(side1_spikes.data.get("count").unwrap(), "1");
+        assert_eq!(side1_spikes.since_turn, 1);
+
+        // Side 1 should have the Tailwind from side 0 (since_turn: 1)
+        let side1_tailwind = side1.conditions.get("Tailwind").unwrap();
+        assert_eq!(side1_tailwind.since_turn, 1);
+    }
+
+    #[test]
+    fn court_change_does_not_swap_unswappable_conditions() {
+        let state = setup_singles_battle(&[
+            "sidestart|side:0|move:Quick Guard",
+            "sidestart|side:0|move:Spikes|count:1",
+            "sidestart|side:1|move:Reflect",
+            "swapsideconditions|side:1|with:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Reflect|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Spikes|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "activate|move:Court Change|of:Squirtle,player-1,1",
+        ]);
+
+        let side0_conds = state_selectors::side_conditions(&state, 0)
+            .unwrap()
+            .collect::<Vec<_>>();
+        let side1_conds = state_selectors::side_conditions(&state, 1)
+            .unwrap()
+            .collect::<Vec<_>>();
+
+        // Quick Guard stayed on side 0, Reflect was moved to side 0
+        assert!(side0_conds.contains(&"Quick Guard"));
+        assert!(side0_conds.contains(&"Reflect"));
+        assert!(!side0_conds.contains(&"Spikes"));
+
+        // Spikes was moved to side 1, Quick Guard was NOT moved to side 1
+        assert!(side1_conds.contains(&"Spikes"));
+        assert!(!side1_conds.contains(&"Quick Guard"));
+        assert!(!side1_conds.contains(&"Reflect"));
+    }
+
+    #[test]
+    fn court_change_full_battle_log() {
+        let state = setup_singles_battle(&[
+            "move|mon:Squirtle,player-1,1|name:Light Screen",
+            "sidestart|side:0|move:Light Screen",
+            "move|mon:Charmander,player-2,1|name:Reflect",
+            "sidestart|side:1|move:Reflect",
+            "move|mon:Squirtle,player-1,1|name:Mist",
+            "sidestart|side:0|move:Mist",
+            "move|mon:Charmander,player-2,1|name:Spikes",
+            "sidestart|side:0|move:Spikes|count:1",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Squirtle,player-1,1|name:Stealth Rock",
+            "sidestart|side:1|move:Stealth Rock",
+            "move|mon:Charmander,player-2,1|name:Tailwind",
+            "sidestart|side:1|move:Tailwind",
+            "residual",
+            "turn|turn:3",
+            "continue",
+            "move|mon:Squirtle,player-1,1|name:Court Change",
+            "swapsideconditions|side:1|with:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Reflect|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Stealth Rock|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:0|condition:Tailwind|source:1|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Light Screen|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Mist|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "swapsidecondition|side:1|condition:Spikes|source:0|from:move:Court Change|of:Squirtle,player-1,1",
+            "activate|move:Court Change|of:Squirtle,player-1,1",
+            "residual",
+            "turn|turn:4",
+        ]);
+
+        let side0_conds = state_selectors::side_conditions(&state, 0)
+            .unwrap()
+            .collect::<Vec<_>>();
+        let side1_conds = state_selectors::side_conditions(&state, 1)
+            .unwrap()
+            .collect::<Vec<_>>();
+
+        assert_eq!(side0_conds, vec!["Reflect", "Stealth Rock", "Tailwind"]);
+        assert_eq!(side1_conds, vec!["Light Screen", "Mist", "Spikes"]);
     }
 
     #[test]
