@@ -71,12 +71,12 @@ export default function FloatingTooltip({
     );
   }, [isOpen, targetRect, preferredPlacement]);
 
+  if (!mounted || typeof document === "undefined") return null;
+
   const isPositioned = coords.top !== -9999;
   if (!isOpen && !isPositioned) return null;
 
-  const placementClass = BRIDGE_CLASSES[coords.placement];
-
-  if (!mounted || typeof document === "undefined") return null;
+  const placementClass = BRIDGE_CLASSES[coords.placement] ?? styles.bridgeTop;
 
   return createPortal(
     <div

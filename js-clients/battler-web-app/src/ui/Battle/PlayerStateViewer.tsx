@@ -119,25 +119,59 @@ function renderPlayerLabel(player: Player, isLocalPlayer: boolean) {
   );
 }
 
-function renderUnbroughtMonRow(
+function renderStateMonRow(
   m: Player["mons"][number],
   monIdx: number,
   playerId: string,
   sideIdx: number,
   battleState: BattleState,
   rules?: string[] | null,
-  keyPrefix = "unbrought",
+  keyPrefix = "mon",
+  forceUnbrought = false,
 ) {
+  const isUnbrought = forceUnbrought || !m.brought;
   const monRef = resolveAppearanceRef(battleState, playerId, monIdx, m, sideIdx);
   const hasBattleAppearance = (m.battle_appearances?.length ?? 0) > 0;
-  const phys = m.physical_appearance;
-  const name = phys?.name || phys?.species || "Mon";
+  let phys = m.physical_appearance;
+  let name = phys?.name || phys?.species || "Mon";
   let level = 50;
+  let status: string | null = null;
+  let isFainted = m.fainted;
+  let isActive = false;
+  let health: [number, number] | null = null;
+
   if (hasBattleAppearance) {
     try {
+      phys = stateSelectors.monPhysicalAppearance(battleState, monRef) || phys;
+      name =
+        phys?.name ||
+        phys?.species ||
+        stateSelectors.monSpecies(battleState, monRef) ||
+        name;
       level = stateSelectors.monLevel(battleState, monRef) ?? 50;
+      status = stateSelectors.monStatus(battleState, monRef);
+      isFainted = m.fainted || stateSelectors.monIsFainted(battleState, monRef);
+      isActive = !isUnbrought && isMonActiveOnField(battleState, sideIdx, playerId, monIdx);
+      health = stateSelectors.monHealth(battleState, monRef);
     } catch {
-      level = 50;
+      // Fallback to basic appearance properties
+    }
+  }
+
+  let hp = 100;
+  let maxHp = 100;
+  let hpText = "100%";
+
+  if (!isUnbrought) {
+    if (health) {
+      const pct = computeHpPercentage(health[0], health[1]);
+      hp = pct;
+      maxHp = 100;
+      hpText = `${pct}%`;
+    } else if (isFainted) {
+      hp = 0;
+      maxHp = 100;
+      hpText = "0%";
     }
   }
 
@@ -146,12 +180,12 @@ function renderUnbroughtMonRow(
       key={`${keyPrefix}-${monIdx}`}
       name={name}
       level={level}
-      hp={100}
-      maxHp={100}
-      hpText="100%"
-      status={null}
-      active={false}
-      isUnbrought={true}
+      hp={hp}
+      maxHp={maxHp}
+      hpText={hpText}
+      status={isUnbrought ? null : status}
+      active={isUnbrought ? false : isActive}
+      isUnbrought={isUnbrought}
       appearanceRef={monRef}
       battleState={battleState}
       rules={rules}
@@ -189,7 +223,8 @@ function renderPrivatePlayerTeam(
     }
 
     const isMonActive =
-      matchIdx !== -1
+      !player.left_battle &&
+      (matchIdx !== -1
         ? isMonActiveOnField(
             battleState,
             sideIdx,
@@ -197,7 +232,7 @@ function renderPrivatePlayerTeam(
             matchIdx,
             mon.active,
           )
-        : Boolean(mon.active);
+        : Boolean(mon.active));
 
     return (
       <MonCard
@@ -224,7 +259,7 @@ function renderPrivatePlayerTeam(
     <div className="flex-col gap-xs">
       {broughtCards}
       {unbroughtMons.map(({ m, monIdx }) =>
-        renderUnbroughtMonRow(
+        renderStateMonRow(
           m,
           monIdx,
           player.id,
@@ -232,6 +267,7 @@ function renderPrivatePlayerTeam(
           battleState,
           rules,
           "unbrought",
+          true,
         ),
       )}
     </div>
@@ -249,98 +285,17 @@ function renderPublicPlayerTeam(
 
   return (
     <div className="flex-col gap-xs">
-      {player.mons.map((m, monIdx) => {
-        const isBrought = Boolean(m.brought);
-        if (!isBrought) {
-          return renderUnbroughtMonRow(
-            m,
-            monIdx,
-            player.id,
-            sideIdx,
-            battleState,
-            rules,
-            "mon",
-          );
-        }
-
-        const monRef = resolveAppearanceRef(
-          battleState,
-          player.id,
-          monIdx,
+      {player.mons.map((m, monIdx) =>
+        renderStateMonRow(
           m,
+          monIdx,
+          player.id,
           sideIdx,
-        );
-        const hasBattleAppearance = (m.battle_appearances?.length ?? 0) > 0;
-        let phys = m.physical_appearance;
-        let name = phys?.name || phys?.species || "Mon";
-        let level = 50;
-        let status: string | null = null;
-        let isFainted = m.fainted;
-        let isActive = false;
-        let health: [number, number] | null = null;
-
-        try {
-          phys =
-            stateSelectors.monPhysicalAppearance(battleState, monRef) || phys;
-          name =
-            phys?.name ||
-            phys?.species ||
-            stateSelectors.monSpecies(battleState, monRef) ||
-            name;
-          level = hasBattleAppearance
-            ? (stateSelectors.monLevel(battleState, monRef) ?? 50)
-            : 50;
-          status = hasBattleAppearance
-            ? stateSelectors.monStatus(battleState, monRef)
-            : null;
-          isFainted =
-            m.fainted || stateSelectors.monIsFainted(battleState, monRef);
-          isActive = isMonActiveOnField(
-            battleState,
-            sideIdx,
-            player.id,
-            monIdx,
-          );
-          health = hasBattleAppearance
-            ? stateSelectors.monHealth(battleState, monRef)
-            : null;
-        } catch {
-          // Fallback to basic appearance properties
-        }
-
-        let hp = 100;
-        let maxHp = 100;
-        let hpText = "100%";
-
-        if (health) {
-          const pct = computeHpPercentage(health[0], health[1]);
-          hp = pct;
-          maxHp = 100;
-          hpText = `${pct}%`;
-        } else if (isFainted) {
-          hp = 0;
-          maxHp = 100;
-          hpText = "0%";
-        }
-
-        return (
-          <MonCard
-            key={monIdx}
-            name={name}
-            level={level}
-            hp={hp}
-            maxHp={maxHp}
-            hpText={hpText}
-            status={status}
-            active={isActive}
-            isUnbrought={false}
-            appearanceRef={monRef}
-            battleState={battleState}
-            rules={rules}
-            variant="row"
-          />
-        );
-      })}
+          battleState,
+          rules,
+          "mon",
+        ),
+      )}
 
       {Array.from({ length: unrevealedCount }).map((_, uIdx) => (
         <MonCard

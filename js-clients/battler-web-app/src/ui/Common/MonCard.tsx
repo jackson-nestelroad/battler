@@ -72,14 +72,20 @@ export default function MonCard({
 
   const isFainted = hp <= 0 || normalizeStatusCode(status) === "fnt";
 
+  const stateClasses = [
+    active && styles.summaryActive,
+    isActing && styles.summaryActing,
+    isFainted && styles.summaryFainted,
+    isUnbrought && styles.summaryUnbrought,
+    isClickable && styles.clickableSummaryCard,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const rowContent = (
     <div
       onClick={isClickable ? onClick : undefined}
-      className={`${styles.teamSummaryRow} ${active ? styles.summaryActive : ""} ${
-        isActing ? styles.summaryActing : ""
-      } ${isFainted ? styles.summaryFainted : ""} ${
-        isUnbrought ? styles.summaryUnbrought : ""
-      } ${isClickable ? styles.clickableSummaryCard : ""}`}
+      className={`${styles.teamSummaryRow} ${stateClasses}`.trim()}
     >
       <div className={styles.rowIdentity}>
         <span
@@ -109,13 +115,9 @@ export default function MonCard({
   const cardContent = (
     <div
       onClick={isClickable ? onClick : undefined}
-      className={`${styles.teamSummaryCard} ${active ? styles.summaryActive : ""} ${
-        isActing ? styles.summaryActing : ""
-      } ${isFainted ? styles.summaryFainted : ""} ${
-        isUnbrought ? styles.summaryUnbrought : ""
-      } ${isClickable ? styles.clickableSummaryCard : ""} ${
+      className={`${styles.teamSummaryCard} ${stateClasses} ${
         selectionOrder != null ? styles.selectedCard : ""
-      }`}
+      }`.trim()}
     >
       {selectionOrder != null && (
         <div className={styles.selectionBadge}>{selectionOrder}</div>

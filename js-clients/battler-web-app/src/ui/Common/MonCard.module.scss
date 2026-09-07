@@ -179,12 +179,12 @@
 .rowPip,
 .unrevealedPip {
   font-size: var(--font-size-xxs);
-  color: var(--color-success);
   flex-shrink: 0;
   line-height: 1;
 }
 
 .rowPip {
+  color: var(--color-success);
   &.activePip {
     color: var(--color-primary);
   }
