@@ -833,7 +833,6 @@ pub fn type_change(context: &mut ApplyingEffectContext, types: &[Type]) -> Resul
     let types = types.iter().map(|typ| typ.to_string()).join("/");
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
-        ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
         additional: Vec::from_iter([format!("types:{types}")]),

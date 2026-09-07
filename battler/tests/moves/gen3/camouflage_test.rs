@@ -66,7 +66,7 @@ fn camouflage_changes_user_type_to_normal_by_default() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Staryu,player-1,1|name:Camouflage|target:Staryu,player-1,1",
-            "typechange|mon:Staryu,player-1,1|types:Normal",
+            "typechange|mon:Staryu,player-1,1|types:Normal|from:move:Camouflage",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -94,7 +94,7 @@ fn camouflage_changes_user_type_to_psychic_in_psychic_terrain() {
             "turn|turn:2",
             "continue",
             "move|mon:Staryu,player-1,1|name:Camouflage|target:Staryu,player-1,1",
-            "typechange|mon:Staryu,player-1,1|types:Psychic",
+            "typechange|mon:Staryu,player-1,1|types:Psychic|from:move:Camouflage",
             "residual",
             "turn|turn:3"
         ]"#,
@@ -120,7 +120,7 @@ fn camouflage_changes_user_type_based_on_field_environment() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Staryu,player-1,1|name:Camouflage|target:Staryu,player-1,1",
-            "typechange|mon:Staryu,player-1,1|types:Flying",
+            "typechange|mon:Staryu,player-1,1|types:Flying|from:move:Camouflage",
             "residual",
             "turn|turn:2"
         ]"#,

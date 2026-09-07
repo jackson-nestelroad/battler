@@ -661,7 +661,7 @@ export function calculatePatternScore(pattern: string): number {
         if (v.includes("*")) {
           score += 30;
         } else {
-          score += 80;
+          score += 110;
         }
       } else if (PRIMARY_TAG_NAMES.has(k)) {
         if (v === "*") {

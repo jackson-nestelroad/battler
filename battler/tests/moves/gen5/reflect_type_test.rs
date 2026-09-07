@@ -120,7 +120,7 @@ fn reflect_type_success() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Starmie,player-1,1|name:Reflect Type|target:Ferrothorn,player-2,1",
-            "typechange|mon:Starmie,player-1,1|types:Grass/Steel",
+            "typechange|mon:Starmie,player-1,1|types:Grass/Steel|from:move:Reflect Type",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -197,7 +197,7 @@ fn reflect_type_copies_none_type_from_typeless_target() {
             "heal|mon:Tornadus,player-2,1|health:88/100",
             "singleturn|mon:Tornadus,player-2,1|move:Roost",
             "move|mon:Starmie,player-1,1|name:Reflect Type|target:Tornadus,player-2,1",
-            "typechange|mon:Starmie,player-1,1|types:None",
+            "typechange|mon:Starmie,player-1,1|types:None|from:move:Reflect Type",
             "residual",
             "turn|turn:2"
         ]"#,

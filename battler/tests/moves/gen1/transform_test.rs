@@ -385,7 +385,7 @@ fn transform_copies_type_change() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Charizard,player-2,1|name:Conversion|target:Charizard,player-2,1",
-            "typechange|mon:Charizard,player-2,1|types:Normal",
+            "typechange|mon:Charizard,player-2,1|types:Normal|from:move:Conversion",
             "residual",
             "turn|turn:2",
             "continue",

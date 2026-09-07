@@ -43700,6 +43700,70 @@ exports[`Exhaustive Log Coverage > should parse and format log string: turn|turn
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Charizard,player-2,1|types:Normal|from:move:Conversion 1`] = `
+{
+  "rawLog": "typechange|mon:Charizard,player-2,1|types:Normal|from:move:Conversion",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Normal",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Charizard",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Charizard",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Charizard transformed into the Normal type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Charmander,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1 1`] = `
+{
+  "rawLog": "typechange|mon:Charmander,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Charmander",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Charmander",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Charmander transformed into the Water type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean 1`] = `
 {
   "rawLog": "typechange|mon:Greninja,player-1,1|types:Fire|from:ability:Protean",
@@ -43742,6 +43806,37 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
         "type": "Ability",
       },
     ],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Heatmor,player-1,1|types:None|from:move:Burn Up 1`] = `
+{
+  "rawLog": "typechange|mon:Heatmor,player-1,1|types:None|from:move:Burn Up",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Heatmor",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Heatmor",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Heatmor burned itself out!",
+        },
+        "key": "typechange__from_move_burnup",
+      },
+    ],
+    "notices": [],
   },
 }
 `;
@@ -43834,6 +43929,482 @@ exports[`Exhaustive Log Coverage > should parse and format log string: typechang
         "type": "Ability",
       },
     ],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Oricorio,player-2,1|types:Flying|from:move:Burn Up 1`] = `
+{
+  "rawLog": "typechange|mon:Oricorio,player-2,1|types:Flying|from:move:Burn Up",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Oricorio",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Oricorio",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Oricorio burned itself out!",
+        },
+        "key": "typechange__from_move_burnup",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Oricorio,player-2,1|types:Water|from:move:Soak|of:Oricorio,player-1,1 1`] = `
+{
+  "rawLog": "typechange|mon:Oricorio,player-2,1|types:Water|from:move:Soak|of:Oricorio,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Oricorio",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Oricorio",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Oricorio transformed into the Water type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Pawmot,player-1,1|types:Fighting|from:move:Double Shock 1`] = `
+{
+  "rawLog": "typechange|mon:Pawmot,player-1,1|types:Fighting|from:move:Double Shock",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Fighting",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Pawmot",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Pawmot",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Pawmot transformed into the Fighting type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon,player-1,1|types:Water|from:move:Conversion 1`] = `
+{
+  "rawLog": "typechange|mon:Porygon,player-1,1|types:Water|from:move:Conversion",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Porygon",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Porygon",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Porygon transformed into the Water type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon2,player-1,1|types:Dragon|from:move:Conversion 2 1`] = `
+{
+  "rawLog": "typechange|mon:Porygon2,player-1,1|types:Dragon|from:move:Conversion 2",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Dragon",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Porygon2",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Porygon2",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Porygon2 transformed into the Dragon type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon2,player-1,1|types:Ghost|from:move:Conversion 2 1`] = `
+{
+  "rawLog": "typechange|mon:Porygon2,player-1,1|types:Ghost|from:move:Conversion 2",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Ghost",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Porygon2",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Porygon2",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Porygon2 transformed into the Ghost type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Porygon2,player-1,1|types:Rock|from:move:Conversion 2 1`] = `
+{
+  "rawLog": "typechange|mon:Porygon2,player-1,1|types:Rock|from:move:Conversion 2",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Rock",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Porygon2",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Porygon2",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Porygon2 transformed into the Rock type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Starmie,player-1,1|types:Grass/Steel|from:move:Reflect Type 1`] = `
+{
+  "rawLog": "typechange|mon:Starmie,player-1,1|types:Grass/Steel|from:move:Reflect Type",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Grass/Steel",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Starmie",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Starmie",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Starmie transformed into the Grass/Steel type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Starmie,player-1,1|types:None|from:move:Reflect Type 1`] = `
+{
+  "rawLog": "typechange|mon:Starmie,player-1,1|types:None|from:move:Reflect Type",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Starmie",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Starmie",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Starmie became typeless!",
+        },
+        "key": "typechange__types_none",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Staryu,player-1,1|types:Flying|from:move:Camouflage 1`] = `
+{
+  "rawLog": "typechange|mon:Staryu,player-1,1|types:Flying|from:move:Camouflage",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Flying",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Staryu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Staryu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Staryu transformed into the Flying type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Staryu,player-1,1|types:Normal|from:move:Camouflage 1`] = `
+{
+  "rawLog": "typechange|mon:Staryu,player-1,1|types:Normal|from:move:Camouflage",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Normal",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Staryu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Staryu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Staryu transformed into the Normal type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Staryu,player-1,1|types:Psychic|from:move:Camouflage 1`] = `
+{
+  "rawLog": "typechange|mon:Staryu,player-1,1|types:Psychic|from:move:Camouflage",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Psychic",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Staryu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Staryu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Staryu transformed into the Psychic type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Swampert,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1 1`] = `
+{
+  "rawLog": "typechange|mon:Swampert,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "TYPES": "Water",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Swampert",
+                "player": "player-2",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Swampert",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Swampert transformed into the Water type!",
+        },
+        "key": "typechange__types_any",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Torracat,player-1,1|types:None|from:move:Burn Up 1`] = `
+{
+  "rawLog": "typechange|mon:Torracat,player-1,1|types:None|from:move:Burn Up",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Torracat",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Torracat",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Torracat burned itself out!",
+        },
+        "key": "typechange__from_move_burnup",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: typechange|mon:Turtonator,player-1,1|types:Dragon|from:move:Burn Up 1`] = `
+{
+  "rawLog": "typechange|mon:Turtonator,player-1,1|types:Dragon|from:move:Burn Up",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Turtonator",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Turtonator",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Turtonator burned itself out!",
+        },
+        "key": "typechange__from_move_burnup",
+      },
+    ],
+    "notices": [],
   },
 }
 `;

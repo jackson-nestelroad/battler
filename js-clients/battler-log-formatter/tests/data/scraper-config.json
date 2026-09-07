@@ -270,7 +270,6 @@
       "match": {},
       "collapse": [
         "type",
-        "types",
         "battletype",
         "environment",
         "rule",
@@ -278,6 +277,13 @@
         "forgot",
         "mimic"
       ]
+    },
+    {
+      "match": {},
+      "collapse": ["types"],
+      "except": {
+        "types": "None"
+      }
     },
     {
       "match": {
@@ -347,7 +353,10 @@
       "match": {
         "title": "typechange"
       },
-      "strip": ["from"]
+      "strip": ["from"],
+      "except": {
+        "from": "move:*"
+      }
     },
     {
       "match": {

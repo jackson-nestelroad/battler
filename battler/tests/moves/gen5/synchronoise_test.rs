@@ -85,7 +85,7 @@ fn synchronoise_hits_target_with_shared_type() {
             "split|side:1",
             "damage|mon:Heatmor,player-2,1|health:18/145",
             "damage|mon:Heatmor,player-2,1|health:13/100",
-            "typechange|mon:Heatmor,player-1,1|types:None",
+            "typechange|mon:Heatmor,player-1,1|types:None|from:move:Burn Up",
             "residual",
             "turn|turn:3",
             "continue",

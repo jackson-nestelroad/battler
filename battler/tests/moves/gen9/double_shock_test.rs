@@ -69,7 +69,7 @@ fn double_shock_dual_type_loses_electric_type() {
             "split|side:1",
             "damage|mon:Pawmot,player-2,1|health:130/250",
             "damage|mon:Pawmot,player-2,1|health:52/100",
-            "typechange|mon:Pawmot,player-1,1|types:Fighting",
+            "typechange|mon:Pawmot,player-1,1|types:Fighting|from:move:Double Shock",
             "residual",
             "turn|turn:2",
             "continue",

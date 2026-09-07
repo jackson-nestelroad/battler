@@ -947,6 +947,15 @@ transform|from:ability:Imposter
 turn
 turnlimit
 typechange|types:*
+typechange|types:*|from:move:Burn Up
+typechange|types:*|from:move:Camouflage
+typechange|types:*|from:move:Conversion
+typechange|types:*|from:move:Conversion 2
+typechange|types:*|from:move:Double Shock
+typechange|types:*|from:move:Reflect Type
+typechange|types:*|from:move:Soak
+typechange|types:None|from:move:Burn Up
+typechange|types:None|from:move:Reflect Type
 ultra|from:item:Ultranecrozium Z
 unboost|by:0
 unboost|by:1
