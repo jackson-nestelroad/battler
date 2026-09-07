@@ -75,6 +75,20 @@ pub fn side_conditions<'s>(
         .map(|s| s.as_str()))
 }
 
+/// The slot conditions on a side of a battle for a given slot.
+pub fn slot_conditions<'s>(
+    state: &'s BattleState,
+    side: usize,
+    slot: usize,
+) -> Result<impl Iterator<Item = &'s str>> {
+    Ok(side_or_else(state, side)?
+        .slot_conditions
+        .get(slot)
+        .into_iter()
+        .flat_map(|conditions| conditions.keys())
+        .map(|s| s.as_str()))
+}
+
 fn side_and_player_or_else<'s>(
     state: &'s BattleState,
     player: &str,

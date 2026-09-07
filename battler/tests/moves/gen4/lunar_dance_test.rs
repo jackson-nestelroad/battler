@@ -149,6 +149,7 @@ fn lunar_dance_faints_user_and_heals_slot() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Cresselia,player-1,1|name:Lunar Dance|target:Cresselia,player-1,1",
+            "slotstart|side:0|slot:0|move:Lunar Dance|of:Cresselia,player-1,1",
             "faint|mon:Cresselia,player-1,1",
             "residual",
             "continue",
@@ -172,6 +173,7 @@ fn lunar_dance_faints_user_and_heals_slot() {
             "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:180/180",
             "heal|mon:Cresselia,player-1,1|from:move:Lunar Dance|health:100/100",
             "curestatus|mon:Cresselia,player-1,1|status:Sleep|from:move:Lunar Dance",
+            "slotend|side:0|slot:0|move:Lunar Dance",
             "residual",
             "turn|turn:7",
             "continue",

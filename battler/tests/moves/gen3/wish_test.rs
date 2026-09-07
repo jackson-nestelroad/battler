@@ -69,6 +69,7 @@ fn wish_heals_slot_on_next_turn() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Gardevoir,player-1,1|name:Wish|target:Gardevoir,player-1,1",
+                "slotstart|side:0|slot:0|move:Wish|of:Gardevoir,player-1,1",
                 "residual",
                 "turn|turn:2",
                 "continue",
@@ -81,9 +82,37 @@ fn wish_heals_slot_on_next_turn() {
                 "damage|mon:Blaziken,player-1,1|health:166/270",
                 "damage|mon:Blaziken,player-1,1|health:62/100",
                 "residual",
+                "activate|mon:Blaziken,player-1,1|move:Wish|of:Gardevoir,player-1",
                 "split|side:0",
                 "heal|mon:Blaziken,player-1,1|from:move:Wish|health:230/270",
                 "heal|mon:Blaziken,player-1,1|from:move:Wish|health:86/100",
+                "slotend|side:0|slot:0|move:Wish",
+                "turn|turn:3"
+            ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn wish_is_silent_when_target_at_full_hp() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+                "move|mon:Gardevoir,player-1,1|name:Wish|target:Gardevoir,player-1,1",
+                "slotstart|side:0|slot:0|move:Wish|of:Gardevoir,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "slotend|side:0|slot:0|move:Wish",
                 "turn|turn:3"
             ]"#,
     )

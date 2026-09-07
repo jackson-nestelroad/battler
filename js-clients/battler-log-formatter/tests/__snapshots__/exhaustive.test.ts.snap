@@ -3081,6 +3081,67 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Blaziken,player-1,1|move:Wish|of:Gardevoir,player-1 1`] = `
+{
+  "rawLog": "activate|mon:Blaziken,player-1,1|move:Wish|of:Gardevoir,player-1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_OF_POSSESSIVE": {
+            "monRef": {
+              "Inactive": {
+                "name": "Gardevoir",
+                "player": "player-1",
+              },
+            },
+            "text": "The opposing Gardevoir's",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Gardevoir's wish came true!",
+        },
+        "key": "activate__move_wish",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Blaziken,player-2,2|move:Doom Desire 1`] = `
+{
+  "rawLog": "activate|mon:Blaziken,player-2,2|move:Doom Desire",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Doom Desire",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Blaziken",
+                "player": "player-2",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Blaziken",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Blaziken took the Doom Desire attack!",
+        },
+        "key": "activate__move_doomdesire",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Blissey,player-1,1|move:Bide 1`] = `
 {
   "rawLog": "activate|mon:Blissey,player-1,1|move:Bide",
@@ -5196,6 +5257,38 @@ exports[`Exhaustive Log Coverage > should parse and format log string: activate|
           "text": "The opposing Machamp shared its power with the target!",
         },
         "key": "activate__move_powersplit",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: activate|mon:Machamp,player-2,2|move:Future Sight 1`] = `
+{
+  "rawLog": "activate|mon:Machamp,player-2,2|move:Future Sight",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "MOVE": "Future Sight",
+          "__CAPITALIZED_MON": {
+            "monRef": {
+              "Active": {
+                "name": "Machamp",
+                "player": "player-2",
+                "position": 1,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Machamp",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Machamp took the Future Sight attack!",
+        },
+        "key": "activate__move_futuresight",
       },
     ],
     "notices": [],
@@ -18098,38 +18191,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:B
 }
 `;
 
-exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1 1`] = `
-{
-  "rawLog": "end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Doom Desire",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Blaziken",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Blaziken",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Blaziken took the Doom Desire attack!",
-        },
-        "key": "end__move_doomdesire",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
 exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Blissey,player-1,1|move:Bide 1`] = `
 {
   "rawLog": "end|mon:Blissey,player-1,1|move:Bide",
@@ -18705,70 +18766,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:M
           "text": "The opposing Machamp's substitute faded!",
         },
         "key": "end__move_substitute",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1 1`] = `
-{
-  "rawLog": "end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Future Sight",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Machamp",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Machamp",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Machamp took the Future Sight attack!",
-        },
-        "key": "end__move_futuresight",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1,1 1`] = `
-{
-  "rawLog": "end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "MOVE": "Future Sight",
-          "__CAPITALIZED_MON": {
-            "monRef": {
-              "Active": {
-                "name": "Machamp",
-                "player": "player-2",
-                "position": 1,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Machamp",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Machamp took the Future Sight attack!",
-        },
-        "key": "end__move_futuresight",
       },
     ],
     "notices": [],
@@ -23751,7 +23748,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Blaziken",
@@ -23760,14 +23757,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
                 "side": 0,
               },
             },
-            "text": "The opposing Blaziken's",
+            "text": "The opposing Blaziken",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Blaziken's wish came true!",
+          "text": "The opposing Blaziken had its HP restored!",
         },
-        "key": "heal__from_move_wish",
+        "key": "heal",
       },
     ],
     "notices": [
@@ -23796,7 +23793,7 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
     "messages": [
       {
         "context": {
-          "__CAPITALIZED_MON_POSSESSIVE": {
+          "__CAPITALIZED_MON": {
             "monRef": {
               "Active": {
                 "name": "Blaziken",
@@ -23805,14 +23802,14 @@ exports[`Exhaustive Log Coverage > should parse and format log string: heal|mon:
                 "side": 0,
               },
             },
-            "text": "The opposing Blaziken's",
+            "text": "The opposing Blaziken",
           },
         },
         "formatted": {
           "category": "secondary",
-          "text": "The opposing Blaziken's wish came true!",
+          "text": "The opposing Blaziken had its HP restored!",
         },
-        "key": "heal__from_move_wish",
+        "key": "heal",
       },
     ],
     "notices": [
@@ -38270,6 +38267,178 @@ exports[`Exhaustive Log Coverage > should parse and format log string: singletur
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:0|slot:0|condition:Z-Power 1`] = `
+{
+  "rawLog": "slotend|side:0|slot:0|condition:Z-Power",
+  "result": {
+    "key": "slotend__condition_zpower",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:0|slot:0|move:Healing Wish 1`] = `
+{
+  "rawLog": "slotend|side:0|slot:0|move:Healing Wish",
+  "result": {
+    "key": "slotend__move_healingwish",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:0|slot:0|move:Lunar Dance 1`] = `
+{
+  "rawLog": "slotend|side:0|slot:0|move:Lunar Dance",
+  "result": {
+    "key": "slotend__move_lunardance",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:0|slot:0|move:Wish 1`] = `
+{
+  "rawLog": "slotend|side:0|slot:0|move:Wish",
+  "result": {
+    "key": "slotend__move_wish",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:1|slot:1|move:Doom Desire 1`] = `
+{
+  "rawLog": "slotend|side:1|slot:1|move:Doom Desire",
+  "result": {
+    "key": "slotend__move_doomdesire",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotend|side:1|slot:1|move:Future Sight 1`] = `
+{
+  "rawLog": "slotend|side:1|slot:1|move:Future Sight",
+  "result": {
+    "key": "slotend__move_futuresight",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:0|slot:0|condition:Z-Power|of:Pikachu,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:0|slot:0|condition:Z-Power|of:Pikachu,player-1,1",
+  "result": {
+    "key": "slotstart__condition_zpower",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:0|slot:0|move:Healing Wish|of:Lopunny,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:0|slot:0|move:Healing Wish|of:Lopunny,player-1,1",
+  "result": {
+    "key": "slotstart__move_healingwish",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:0|slot:0|move:Lunar Dance|of:Cresselia,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:0|slot:0|move:Lunar Dance|of:Cresselia,player-1,1",
+  "result": {
+    "key": "slotstart__move_lunardance",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:0|slot:0|move:Wish|of:Gardevoir,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:0|slot:0|move:Wish|of:Gardevoir,player-1,1",
+  "result": {
+    "key": "slotstart__move_wish",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:1|slot:1|move:Doom Desire|of:Jirachi,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:1|slot:1|move:Doom Desire|of:Jirachi,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Jirachi",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Jirachi",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Jirachi chose Doom Desire as its destiny!",
+        },
+        "key": "slotstart__move_doomdesire",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1 1`] = `
+{
+  "rawLog": "slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1",
+  "result": {
+    "messages": [
+      {
+        "context": {
+          "__CAPITALIZED_OF": {
+            "monRef": {
+              "Active": {
+                "name": "Xatu",
+                "player": "player-1",
+                "position": 0,
+                "side": 0,
+              },
+            },
+            "text": "The opposing Xatu",
+          },
+        },
+        "formatted": {
+          "category": "secondary",
+          "text": "The opposing Xatu foresaw an attack!",
+        },
+        "key": "slotstart__move_futuresight",
+      },
+    ],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: specieschange|player:player-1|position:1|name:Venusaur|health:56/100|species:Venusaur-Mega|level:50|gender:U 1`] = `
 {
   "rawLog": "specieschange|player:player-1|position:1|name:Venusaur|health:56/100|species:Venusaur-Mega|level:50|gender:U",
@@ -41451,68 +41620,6 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
           "text": "The opposing Zigzagoon began charging power!",
         },
         "key": "start__move_charge",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: start|move:Doom Desire|of:Jirachi,player-1,1 1`] = `
-{
-  "rawLog": "start|move:Doom Desire|of:Jirachi,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_OF": {
-            "monRef": {
-              "Active": {
-                "name": "Jirachi",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Jirachi",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Jirachi chose Doom Desire as its destiny!",
-        },
-        "key": "start__move_doomdesire",
-      },
-    ],
-    "notices": [],
-  },
-}
-`;
-
-exports[`Exhaustive Log Coverage > should parse and format log string: start|move:Future Sight|of:Xatu,player-1,1 1`] = `
-{
-  "rawLog": "start|move:Future Sight|of:Xatu,player-1,1",
-  "result": {
-    "messages": [
-      {
-        "context": {
-          "__CAPITALIZED_OF": {
-            "monRef": {
-              "Active": {
-                "name": "Xatu",
-                "player": "player-1",
-                "position": 0,
-                "side": 0,
-              },
-            },
-            "text": "The opposing Xatu",
-          },
-        },
-        "formatted": {
-          "category": "secondary",
-          "text": "The opposing Xatu foresaw an attack!",
-        },
-        "key": "start__move_futuresight",
       },
     ],
     "notices": [],

@@ -107,7 +107,7 @@ activate|condition:Break Protect|broken
 activate|condition:Confusion
 activate|condition:Disobedience
 activate|condition:Disobedience|confusion
-activate|condition:Heal Replacement
+activate|condition:Future Move
 activate|condition:Highlighting Sample
 activate|condition:Knock Down
 activate|condition:Must Recharge
@@ -157,12 +157,14 @@ activate|move:Clamp
 activate|move:Court Change
 activate|move:Crafty Shield
 activate|move:Destiny Bond
+activate|move:Doom Desire
 activate|move:Electric Terrain
 activate|move:Endure
 activate|move:Fickle Beam
 activate|move:Fire Spin
 activate|move:Fling
 activate|move:Fling|item:*
+activate|move:Future Sight
 activate|move:G-Max Centiferno
 activate|move:G-Max Sandblast
 activate|move:Grassy Terrain
@@ -207,6 +209,7 @@ activate|move:Substitute|damage
 activate|move:Thunder Cage
 activate|move:Whirlpool
 activate|move:Wide Guard
+activate|move:Wish
 activate|move:Wrap
 addedtype|type:*
 addpseudoweather|condition:*
@@ -386,7 +389,6 @@ end|ability:Supreme Overlord|silent
 end|ability:Zen Mode
 end|condition:Commanding
 end|condition:Confusion
-end|condition:Future Move
 end|condition:Highlighting Sample
 end|condition:Immobilized
 end|condition:Partially Trapped
@@ -399,12 +401,10 @@ end|move:Charge|silent
 end|move:Clamp
 end|move:Clamp|silent
 end|move:Disable
-end|move:Doom Desire
 end|move:Embargo
 end|move:Encore
 end|move:Fire Spin
 end|move:Fire Spin|silent
-end|move:Future Sight
 end|move:G-Max Centiferno
 end|move:G-Max Centiferno|silent
 end|move:G-Max Sandblast
@@ -829,6 +829,22 @@ singleturn|move:Shell Trap
 singleturn|move:Snatch
 singleturn|move:Spotlight
 singleturn|move:Wide Guard
+slotend|condition:Future Move
+slotend|condition:Heal Replacement
+slotend|condition:Z-Power
+slotend|move:Doom Desire
+slotend|move:Future Sight
+slotend|move:Healing Wish
+slotend|move:Lunar Dance
+slotend|move:Wish
+slotstart|condition:Future Move
+slotstart|condition:Heal Replacement
+slotstart|condition:Z-Power
+slotstart|move:Doom Desire
+slotstart|move:Future Sight
+slotstart|move:Healing Wish
+slotstart|move:Lunar Dance
+slotstart|move:Wish
 specieschange
 specieschange|status:Bad Poison
 specieschange|status:Burn
@@ -848,7 +864,6 @@ start|ability:Zen Mode
 start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|fatigue
-start|condition:Future Move
 start|condition:Highlighting Sample
 start|move:Aqua Ring
 start|move:Attract
@@ -858,7 +873,6 @@ start|move:Charge
 start|move:Curse
 start|move:Disable
 start|move:Disable|disabledmove:*
-start|move:Doom Desire
 start|move:Dragon Cheer
 start|move:Dragon Cheer|silent
 start|move:Embargo
@@ -867,7 +881,6 @@ start|move:Focus Energy
 start|move:Focus Energy|from:Z-Power
 start|move:Focus Energy|silent
 start|move:Foresight
-start|move:Future Sight
 start|move:G-Max Chi Strike
 start|move:Heal Block
 start|move:Imprison

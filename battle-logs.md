@@ -224,6 +224,7 @@ Logs the activation of a status, condition, effect, or clause.
   - `clause:ClauseName`
   - `sides:SideIndexList`
   - `from:EffectName`
+  - `of:MonPositionDetails`
 - **Optional flags**:
   - `broken` (e.g. protection broken)
   - `confusion` (e.g. self-hurt from disobedience)
@@ -234,6 +235,8 @@ Logs the activation of a status, condition, effect, or clause.
   - `activate|move:Splash`
   - `activate|mon:Mew,player-2,1|condition:Must Recharge`
   - `activate|mon:Infernape,player-2,1|condition:Break Protect|broken`
+  - `activate|mon:Machamp,player-2,2|move:Future Sight`
+  - `activate|mon:Blaziken,player-1,1|move:Wish|of:Gardevoir,player-1`
 
 #### `addedtype`
 
@@ -272,7 +275,7 @@ Logs side conditions (e.g. entry hazards, screens) being added or removed.
 
 #### `addslotcondition` / `removeslotcondition`
 
-Logs slot-based conditions (e.g. Wish, Future Sight) applied to/removed from a field slot.
+Internal engine debug logs for slot-based conditions (e.g. Wish, Future Sight) applied to/removed from a field slot when `log_slot_conditions` is enabled. For public battle logs, see `slotstart` and `slotend`.
 
 - **Required fields**:
   - `side:SideIndex` (integer)
@@ -715,6 +718,23 @@ Logs the start or end of a side condition (e.g., Light Screen, Mist, entry hazar
 - **Examples**:
   - `sidestart|side:1|move:Stealth Rock`
   - `sideend|side:1|move:Light Screen`
+
+#### `slotstart` / `slotend`
+
+Logs the start or end of a slot condition on a specific field position (e.g., Wish, Future Sight, Doom Desire, Healing Wish, Lunar Dance).
+
+- **Required fields**:
+  - `side:SideIndex` (integer)
+  - `slot:SlotIndex` (integer, 0-based position index on the side)
+  - `move:MoveName` or `condition:ConditionName` (the move or condition ID/name)
+- **Optional fields**:
+  - `of:MonPositionDetails` (the source Mon that created the slot condition, e.g. on `slotstart`)
+- **Examples**:
+  - `slotstart|side:0|slot:0|move:Wish|of:Gardevoir,player-1,1`
+  - `slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1`
+  - `slotend|side:0|slot:0|move:Wish`
+  - `slotend|side:1|slot:1|move:Future Sight`
+  - `slotend|side:0|slot:0|condition:Z-Power`
 
 #### `singlemove`
 

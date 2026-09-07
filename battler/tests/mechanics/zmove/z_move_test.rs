@@ -436,6 +436,7 @@ fn z_power_fully_heals_replacement() {
         r#"[
             "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Darkinium Z",
             "move|mon:Pikachu,player-1,1|name:Memento|target:Eevee,player-2,1|zpower",
+            "slotstart|side:0|slot:0|condition:Z-Power|of:Pikachu,player-1,1",
             "unboost|mon:Eevee,player-2,1|stat:atk|by:2",
             "unboost|mon:Eevee,player-2,1|stat:spa|by:2",
             "faint|mon:Pikachu,player-1,1",
@@ -447,6 +448,7 @@ fn z_power_fully_heals_replacement() {
             "split|side:0",
             "heal|mon:Raichu,player-1,1|from:Z-Power|health:120/120",
             "heal|mon:Raichu,player-1,1|from:Z-Power|health:100/100",
+            "slotend|side:0|slot:0|condition:Z-Power",
             "turn|turn:4"
         ]"#,
     )

@@ -104,7 +104,7 @@ fn future_sight_attacks_slot_three_turns_later() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Xatu,player-1,1|name:Future Sight|noanim",
-                "start|move:Future Sight|of:Xatu,player-1,1",
+                "slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1",
                 "residual",
                 "turn|turn:2",
                 "continue",
@@ -114,7 +114,8 @@ fn future_sight_attacks_slot_three_turns_later() {
                 "turn|turn:3",
                 "continue",
                 "residual",
-                "end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1,1",
+                "activate|mon:Machamp,player-2,2|move:Future Sight",
+                "slotend|side:1|slot:1|move:Future Sight",
                 "animatemove|mon:Xatu,player-1,1|name:Future Sight|target:Machamp,player-2,2",
                 "supereffective|mon:Machamp,player-2,2",
                 "split|side:1",
@@ -149,7 +150,7 @@ fn future_sight_attacks_even_if_user_faints() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Xatu,player-1,1|name:Future Sight|noanim",
-                "start|move:Future Sight|of:Xatu,player-1,1",
+                "slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1",
                 "move|mon:Ampharos,player-2,1|name:Thunderbolt|target:Xatu,player-1,1",
                 "supereffective|mon:Xatu,player-1,1",
                 "split|side:0",
@@ -163,13 +164,83 @@ fn future_sight_attacks_even_if_user_faints() {
                 "turn|turn:3",
                 "continue",
                 "residual",
-                "end|mon:Machamp,player-2,2|move:Future Sight|of:Xatu,player-1",
+                "activate|mon:Machamp,player-2,2|move:Future Sight",
+                "slotend|side:1|slot:1|move:Future Sight",
                 "animatemove|mon:Xatu,player-1|name:Future Sight|target:Machamp,player-2,2",
                 "supereffective|mon:Machamp,player-2,2",
                 "split|side:1",
                 "damage|mon:Machamp,player-2,2|health:0",
                 "damage|mon:Machamp,player-2,2|health:0",
                 "faint|mon:Machamp,player-2,2",
+                "turn|turn:4"
+            ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+fn memento_machamp() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Ampharos",
+                    "species": "Ampharos",
+                    "ability": "No Ability",
+                    "moves": [],
+                    "nature": "Hardy",
+                    "level": 50
+                },
+                {
+                    "name": "Machamp",
+                    "species": "Machamp",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Memento"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+#[test]
+fn future_sight_ends_cleanly_on_empty_slot() {
+    let mut battle = make_battle(0, xatu().unwrap(), memento_machamp().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,2;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "pass;move 0,1"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+                "move|mon:Xatu,player-1,1|name:Future Sight|noanim",
+                "slotstart|side:1|slot:1|move:Future Sight|of:Xatu,player-1,1",
+                "move|mon:Machamp,player-2,2|name:Memento|target:Xatu,player-1,1",
+                "unboost|mon:Xatu,player-1,1|stat:atk|by:2",
+                "unboost|mon:Xatu,player-1,1|stat:spa|by:2",
+                "faint|mon:Machamp,player-2,2",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "residual",
+                "slotend|side:1|slot:1|move:Future Sight",
                 "turn|turn:4"
             ]"#,
     )

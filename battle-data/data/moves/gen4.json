@@ -171,6 +171,8 @@
     },
     "condition": {
       "callbacks": {
+        "on_slot_start": ["log_slot_start: $slot with_source"],
+        "on_slot_end": ["log_slot_end: $slot"],
         "on_switch_in": [
           "require !$mon.fainted and ($mon.hp < $mon.max_hp or $mon.status) else return",
           "log_activate: with_target",
@@ -2130,6 +2132,8 @@
     },
     "condition": {
       "callbacks": {
+        "on_slot_start": ["log_slot_start: $slot with_source"],
+        "on_slot_end": ["log_slot_end: $slot"],
         "on_switch_in": [
           "$needs_pp_restore = false",
           "foreach $move_slot in $mon.move_slots:",

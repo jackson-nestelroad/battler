@@ -2470,6 +2470,85 @@ mod state_test {
     }
 
     #[test]
+    fn records_slot_conditions() {
+        let state = setup_singles_battle(&[
+            "slotstart|side:0|slot:0|move:Wish|of:Squirtle,player-1,1",
+            "slotend|side:0|slot:0|move:Wish",
+            "slotstart|side:1|slot:0|move:Future Sight|of:Squirtle,player-1,1",
+        ]);
+        let side0_slot0_conds = state_selectors::slot_conditions(&state, 0, 0)
+            .unwrap()
+            .collect::<Vec<_>>();
+        let side1_slot0_conds = state_selectors::slot_conditions(&state, 1, 0)
+            .unwrap()
+            .collect::<Vec<_>>();
+        assert!(side0_slot0_conds.is_empty());
+        assert!(side1_slot0_conds.contains(&"Future Sight"));
+        assert_eq!(
+            state.ui_log[1],
+            vec![
+                ui_log!(title = "turn", values = { "turn" => 1 }),
+                ui_log!(
+                    title = "slotstart",
+                    side = 0usize,
+                    slot = 0usize,
+                    source = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize,
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned(),
+                        },
+                    }),
+                    effect = ui::Effect {
+                        effect_type: Some("move".to_owned()),
+                        name: "Wish".to_owned(),
+                    },
+                    values = {
+                        "move" => "Wish",
+                    }
+                ),
+                ui_log!(
+                    title = "slotend",
+                    side = 0usize,
+                    slot = 0usize,
+                    effect = ui::Effect {
+                        effect_type: Some("move".to_owned()),
+                        name: "Wish".to_owned(),
+                    },
+                    values = {
+                        "move" => "Wish",
+                    }
+                ),
+                ui_log!(
+                    title = "slotstart",
+                    side = 1usize,
+                    slot = 0usize,
+                    source = ui::Mon::Active(ui::ActiveMonReference {
+                        position: ui::FieldPosition {
+                            side: 0usize,
+                            position: 0usize,
+                        },
+                        reference: ui::MonReference {
+                            player: "player-1".to_owned(),
+                            name: "Squirtle".to_owned(),
+                        },
+                    }),
+                    effect = ui::Effect {
+                        effect_type: Some("move".to_owned()),
+                        name: "Future Sight".to_owned(),
+                    },
+                    values = {
+                        "move" => "Future Sight",
+                    }
+                ),
+            ]
+        );
+    }
+
+    #[test]
     fn records_single_turn_volatile() {
         let state = setup_singles_battle(&["singleturn|mon:Squirtle,player-1,1|move:Protect"]);
         let sq = squirtle_ref();

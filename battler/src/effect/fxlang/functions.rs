@@ -269,6 +269,8 @@ pub fn run_function(
         "log_side_start" => log_side_start(context).map(|()| None),
         "log_single_move" => log_single_move(context).map(|()| None),
         "log_single_turn" => log_single_turn(context).map(|()| None),
+        "log_slot_end" => log_slot_end(context).map(|()| None),
+        "log_slot_start" => log_slot_start(context).map(|()| None),
         "log_start" => log_start(context).map(|()| None),
         "log_status" => log_status(context).map(|()| None),
         "log_use_move" => log_use_move(context).map(|()| None),
@@ -1045,6 +1047,7 @@ fn log(mut context: FunctionContext) -> Result<()> {
 #[derive(Default)]
 struct LogEffectActivationBaseContext {
     include_side: bool,
+    slot: Option<usize>,
     additional: Vec<String>,
 }
 
@@ -1070,6 +1073,7 @@ fn log_effect_activation_base(
         } else {
             None
         },
+        slot: activation_base_context.slot,
         target,
         ignore_active_move_source_effect: !context.has_flag("no_ignore_active_move_source_effect"),
         ignore_source_effect_equal_to_effect: true,
@@ -1257,6 +1261,48 @@ fn log_side_end(context: FunctionContext) -> Result<()> {
         "sideend",
         LogEffectActivationBaseContext {
             include_side: true,
+            ..Default::default()
+        },
+    )
+}
+
+/// Logs the start of a slot condition to the battle log.
+///
+/// @param {[`ValueType::UFraction`]} slot The slot index.
+/// @param {[`ValueType::String`]} ... Additional log entries.
+fn log_slot_start(mut context: FunctionContext) -> Result<()> {
+    let slot = context
+        .pop_front()
+        .wrap_expectation("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    log_effect_activation_base(
+        context,
+        "slotstart",
+        LogEffectActivationBaseContext {
+            include_side: true,
+            slot: Some(slot),
+            ..Default::default()
+        },
+    )
+}
+
+/// Logs the end of a slot condition to the battle log.
+///
+/// @param {[`ValueType::UFraction`]} slot The slot index.
+/// @param {[`ValueType::String`]} ... Additional log entries.
+fn log_slot_end(mut context: FunctionContext) -> Result<()> {
+    let slot = context
+        .pop_front()
+        .wrap_expectation("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    log_effect_activation_base(
+        context,
+        "slotend",
+        LogEffectActivationBaseContext {
+            include_side: true,
+            slot: Some(slot),
             ..Default::default()
         },
     )

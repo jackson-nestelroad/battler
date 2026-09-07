@@ -797,6 +797,34 @@ fn modify_state_from_effect(state: &mut BattleState, entry: &LogEntry) -> Result
                 );
             }
         }
+        "slotend" => {
+            let side: usize = entry.value_or_else("side")?;
+            let slot: usize = entry.value_or_else("slot")?;
+            let side = state.field.side_mut_or_else(side)?;
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
+                if let Some(slot_conditions) = side.slot_conditions.get_mut(slot) {
+                    slot_conditions.remove(&effect.name);
+                }
+            }
+        }
+        "slotstart" => {
+            let side: usize = entry.value_or_else("side")?;
+            let slot: usize = entry.value_or_else("slot")?;
+            let side = state.field.side_mut_or_else(side)?;
+            if slot + 1 > side.slot_conditions.len() {
+                side.slot_conditions
+                    .resize_with(slot + 1, BTreeMap::default);
+            }
+            if let Ok(effect) = effect_from_log_entry(entry, None) {
+                side.slot_conditions[slot].insert(
+                    effect.name.clone(),
+                    ConditionData {
+                        since_turn: state.turn,
+                        data: values_to_condition_data_map(entry),
+                    },
+                );
+            }
+        }
         "singlemove" | "singleturn" => {
             if let Some(mon) = entry.value::<MonName>("mon") {
                 if let Ok(effect) = effect_from_log_entry(entry, None) {
@@ -1025,6 +1053,8 @@ fn alter_battle_state_for_entry(
         | "setpp"
         | "sidestart"
         | "sideend"
+        | "slotstart"
+        | "slotend"
         | "singlemove"
         | "singleturn"
         | "specieschange"

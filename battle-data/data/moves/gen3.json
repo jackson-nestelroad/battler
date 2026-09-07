@@ -653,11 +653,18 @@
     "condition": {
       "duration": 2,
       "callbacks": {
-        "on_slot_start": ["$effect_state.hp = $source.max_hp / 2"],
+        "on_slot_start": [
+          "$effect_state.hp = $source.max_hp / 2",
+          "log_slot_start: $slot with_source"
+        ],
         "on_slot_end": [
           "$target = func_call(mon_in_position: $side $slot)",
-          "if $target.is_defined and $target.active:",
-          ["heal: $target $effect_state.hp"]
+          "if $target.is_defined and $target.active and $target.hp < $target.max_hp:",
+          [
+            "log_activate: $target with_target use_effect_state_source_effect with_source use_effect_state_source_as_source",
+            "heal: $target $effect_state.hp use_source_effect"
+          ],
+          "log_slot_end: $slot"
         ]
       }
     }

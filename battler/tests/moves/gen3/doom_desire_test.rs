@@ -76,7 +76,7 @@ fn doom_desire_attacks_slot_three_turns_later() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
                 "move|mon:Jirachi,player-1,1|name:Doom Desire|noanim",
-                "start|move:Doom Desire|of:Jirachi,player-1,1",
+                "slotstart|side:1|slot:1|move:Doom Desire|of:Jirachi,player-1,1",
                 "residual",
                 "turn|turn:2",
                 "continue",
@@ -86,7 +86,8 @@ fn doom_desire_attacks_slot_three_turns_later() {
                 "turn|turn:3",
                 "continue",
                 "residual",
-                "end|mon:Blaziken,player-2,2|move:Doom Desire|of:Jirachi,player-1,1",
+                "activate|mon:Blaziken,player-2,2|move:Doom Desire",
+                "slotend|side:1|slot:1|move:Doom Desire",
                 "animatemove|mon:Jirachi,player-1,1|name:Doom Desire|target:Blaziken,player-2,2",
                 "resisted|mon:Blaziken,player-2,2",
                 "split|side:1",
