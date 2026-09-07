@@ -190,8 +190,8 @@ impl Trainer {
         return Err(Error::msg("learn move is not implemented"));
     }
 
-    fn select(&mut self, context: &AiContext, request: &SelectRequest) -> Result<Vec<Choice>> {
-        return Err(Error::msg("select is not implemented"));
+    fn select(&mut self, _context: &AiContext, _request: &SelectRequest) -> Result<Vec<Choice>> {
+        Ok(Vec::from_iter([Choice::RandomAll]))
     }
 
     async fn select_mon_to_switch_in(

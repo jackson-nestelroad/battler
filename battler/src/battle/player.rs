@@ -369,6 +369,8 @@ pub struct ChoiceState {
     pub forced_passes_left: usize,
     /// Mons chosen to switch in.
     pub switch_ins: HashSet<usize>,
+    /// Mons chosen to select.
+    pub selections: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
     /// Did the Player choose to Z-Move?
@@ -394,6 +396,7 @@ impl ChoiceState {
             forced_selections_left: 0,
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
+            selections: HashSet::default(),
             mega: false,
             z_move: false,
             ultra: false,
@@ -737,6 +740,18 @@ impl Player {
         })
     }
 
+    /// Creates an iterator over all Mons that can be selected for the given reason.
+    pub fn selectable_mon_handles<'p, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
+        reason: SelectReason,
+    ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
+        context.player().mon_handles().filter(move |mon_handle| {
+            context.mon(**mon_handle).is_ok_and(|mon| match reason {
+                SelectReason::Revive => mon.exited == Some(MonExitType::Fainted),
+            })
+        })
+    }
+
     /// Counts the number of Mons left that the player owns.
     pub fn mons_left(context: &PlayerContext) -> Result<usize> {
         if context.player().escaped {
@@ -884,6 +899,34 @@ impl Player {
             .count()
     }
 
+    /// Counts the number of Mons that can be selected.
+    pub fn count_can_select(context: &mut PlayerContext) -> usize {
+        let reasons = context
+            .player()
+            .active_or_exited_mon_handles()
+            .filter_map(|mon_handle| {
+                context
+                    .mon(*mon_handle)
+                    .ok()
+                    .and_then(|mon| mon.volatile_state.select.clone())
+            })
+            .collect::<Vec<_>>();
+        if reasons.is_empty() {
+            return 0;
+        }
+        let mut count = 0;
+        for mon_handle in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+            if let Ok(mon) = context.mon(mon_handle) {
+                if reasons.iter().any(|reason| match reason {
+                    SelectReason::Revive => mon.exited == Some(MonExitType::Fainted),
+                }) {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
+
     /// Clears any active choice.
     pub fn clear_choice(context: &mut PlayerContext) {
         let mut choice = ChoiceState::new();
@@ -898,7 +941,11 @@ impl Player {
             }
             Some(RequestType::Select) => {
                 let must_select = Self::count_must_select(context);
-                choice.forced_selections_left = must_select;
+                let can_select = Self::count_can_select(context);
+                let selections = must_select.min(can_select);
+                let passes = must_select - selections;
+                choice.forced_selections_left = selections;
+                choice.forced_passes_left = passes;
             }
             _ => (),
         }
@@ -1285,7 +1332,20 @@ impl Player {
                 }
             }
             Some(RequestType::LearnMove) => (),
-            Some(RequestType::Select) => (),
+            Some(RequestType::Select) => {
+                if let Some(mon) = context.player().active_or_exited_mon_handle(position) {
+                    let mut context = context.mon_context(mon)?;
+                    if context.mon().volatile_state.select.is_some() {
+                        if context.player().choice.forced_passes_left == 0 {
+                            return Err(general_error(format!(
+                                "you must select a mon for {}",
+                                context.mon().name,
+                            )));
+                        }
+                        context.player_mut().choice.forced_passes_left -= 1;
+                    }
+                }
+            }
             _ => {
                 return Err(general_error("only a move or switch can be passed"));
             }
@@ -1836,11 +1896,23 @@ impl Player {
         let slot = match choice.mon {
             Some(mon) => mon,
             None => {
-                // Choose a random Mon.
+                // Choose a random Mon to select, excluding Mons we have already selected.
                 let player = context.player().index;
-                let switch_to = CoreBattle::random_mon(context.as_battle_context_mut(), player)?
-                    .wrap_expectation("no mons can be switched in at random")?;
-                context.mon(switch_to)?.team_position
+                let exclude = context
+                    .player()
+                    .choice
+                    .selections
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>();
+                let select = CoreBattle::random_selectable_excluding_team_positions(
+                    context.as_battle_context_mut(),
+                    player,
+                    reason.clone(),
+                    exclude,
+                )?
+                .wrap_expectation("no mons can be selected at random")?;
+                context.mon(select)?.team_position
             }
         };
         let target_mon_handle = context
@@ -1867,6 +1939,12 @@ impl Player {
             }
         }
 
+        if context.player().choice.selections.contains(&slot) {
+            return Err(general_error(format!(
+                "the mon in slot {slot} can only be selected once",
+            )));
+        }
+
         match context.player().request_type() {
             Some(RequestType::Select) => {
                 let player = context.player_mut();
@@ -1878,6 +1956,7 @@ impl Player {
             _ => (),
         }
 
+        context.player_mut().choice.selections.insert(slot);
         context
             .player_mut()
             .choice
@@ -1921,7 +2000,27 @@ impl Player {
                 }
             }
             // Randomly select in a Mon.
-            Some(RequestType::Select) => Self::choose_select(context, SelectChoice::default()),
+            Some(RequestType::Select) => {
+                let passes = context.player().choice.forced_passes_left;
+                let selections = context.player().choice.forced_selections_left;
+                let should_pass = if selections == 0 {
+                    true
+                } else if passes == 0 {
+                    false
+                } else {
+                    rand_util::chance(
+                        context.battle_mut().prng.as_mut(),
+                        passes as u64,
+                        (passes + selections) as u64,
+                    )
+                };
+
+                if should_pass {
+                    Self::choose_pass(context, false)
+                } else {
+                    Self::choose_select(context, SelectChoice::default())
+                }
+            }
             // Auto-select first Mons.
             Some(RequestType::TeamPreview) => {
                 Self::choose_team(context, TeamSelectionChoice::default())
@@ -2012,6 +2111,18 @@ impl Player {
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.volatile_state.select.is_some() {
                 return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Checks if the player can select.
+    pub fn can_select(context: &PlayerContext) -> Result<bool> {
+        for mon_handle in context.player().active_or_exited_mon_handles() {
+            if let Some(reason) = &context.mon(*mon_handle)?.volatile_state.select {
+                if Self::selectable_mon_handles(context, reason.clone()).count() > 0 {
+                    return Ok(true);
+                }
             }
         }
         Ok(false)

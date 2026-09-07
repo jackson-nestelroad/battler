@@ -72,6 +72,7 @@ use crate::{
         Request,
         RequestType,
         SelectPosition,
+        SelectReason,
         SelectRequest,
         Side,
         SpeedOrderable,
@@ -1723,7 +1724,24 @@ impl<'d> CoreBattle<'d> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
 
-            some_select_needed = some_select_needed || Player::needs_select(&context)?;
+            let needs_select = Player::needs_select(&context)?;
+            let can_select = Player::can_select(&context)?;
+            if needs_select {
+                if !can_select {
+                    // Selection can't happen, so unset the select flag.
+                    for mon in context
+                        .player()
+                        .active_or_exited_mon_handles()
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                    {
+                        context.mon_mut(mon)?.volatile_state.select = None;
+                    }
+                } else {
+                    some_select_needed = true;
+                }
+            }
 
             let needs_switch = Player::needs_switch(&context)?;
             let can_switch = Player::can_switch(&context);
@@ -2187,6 +2205,35 @@ impl<'d> CoreBattle<'d> {
             }
         }
         Ok(rand_util::sample_iter(prng, switchables.iter()).cloned())
+    }
+
+    /// Selects a random selectable Mon from the player for the given reason, excluding the given
+    /// team positions.
+    pub fn random_selectable_excluding_team_positions<I>(
+        context: &mut Context,
+        player: usize,
+        reason: SelectReason,
+        exclude: I,
+    ) -> Result<Option<MonHandle>>
+    where
+        I: IntoIterator<Item = usize>,
+    {
+        let exclude: HashSet<usize> = exclude.into_iter().collect();
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG is completely disjoint from the iterator created below.
+        let prng = unsafe { mem::transmute(prng) };
+
+        let context = context.player_context(player)?;
+        let mut selectables = Vec::new();
+        for mon_handle in Player::selectable_mon_handles(&context, reason)
+            .cloned()
+            .collect::<Vec<_>>()
+        {
+            if !exclude.contains(&context.mon(mon_handle)?.team_position) {
+                selectables.push(mon_handle);
+            }
+        }
+        Ok(rand_util::sample_iter(prng, selectables.iter()).cloned())
     }
 
     /// Selects a random target for the move.
