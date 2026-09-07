@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getAllyPlayerIds,
   getBattleStateLabel,
   isMonActiveOnField,
   isMonDynamaxedInState,
@@ -229,5 +230,78 @@ describe("isMonActiveOnField", () => {
 
     expect(isMonActiveOnField(mockState, 0, "player-1", 0)).toBe(true);
     expect(isMonActiveOnField(mockState, 0, "player-1", 1)).toBe(false);
+  });
+});
+
+describe("getAllyPlayerIds", () => {
+  it("returns empty array when battleState or playerId is null or undefined", () => {
+    expect(getAllyPlayerIds(null, "p1")).toEqual([]);
+    expect(getAllyPlayerIds(undefined, "p1")).toEqual([]);
+    expect(getAllyPlayerIds({} as unknown as BattleState, null)).toEqual([]);
+    expect(getAllyPlayerIds({} as unknown as BattleState, undefined)).toEqual([]);
+  });
+
+  it("returns empty array when side has only one player", () => {
+    const mockState = {
+      field: {
+        sides: [
+          {
+            players: {
+              "player-1": { id: "player-1" },
+            },
+          },
+          {
+            players: {
+              "player-2": { id: "player-2" },
+            },
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    expect(getAllyPlayerIds(mockState, "player-1")).toEqual([]);
+    expect(getAllyPlayerIds(mockState, "player-2")).toEqual([]);
+  });
+
+  it("returns ally player IDs on the same side and excludes current player and opponents", () => {
+    const mockState = {
+      field: {
+        sides: [
+          {
+            players: {
+              "player-1": { id: "player-1" },
+              "player-2": { id: "player-2" },
+              "player-3": { id: "player-3" },
+            },
+          },
+          {
+            players: {
+              "player-4": { id: "player-4" },
+              "player-5": { id: "player-5" },
+            },
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    expect(getAllyPlayerIds(mockState, "player-1")).toEqual(["player-2", "player-3"]);
+    expect(getAllyPlayerIds(mockState, "player-2")).toEqual(["player-1", "player-3"]);
+    expect(getAllyPlayerIds(mockState, "player-4")).toEqual(["player-5"]);
+  });
+
+  it("returns empty array when player is not found on any side", () => {
+    const mockState = {
+      field: {
+        sides: [
+          {
+            players: {
+              "player-1": { id: "player-1" },
+            },
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    expect(getAllyPlayerIds(mockState, "player-999")).toEqual([]);
   });
 });

@@ -1,14 +1,10 @@
-.teamSummaryCard {
+.teamSummaryCard,
+.teamSummaryRow {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-m);
   padding: var(--spacing-xs) var(--spacing-s);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
   position: relative;
   transition: var(--transition-fast);
-  min-height: 4.5rem;
 
   &.summaryActive {
     border-color: var(--color-primary);
@@ -19,6 +15,39 @@
     border: 1px solid var(--color-primary);
     background-color: color-mix(in srgb, var(--color-primary) 14%, var(--bg-input));
     box-shadow: 0 0 0 1px var(--color-primary-border);
+  }
+
+  &.summaryFainted,
+  &.summaryUnbrought {
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
+  }
+
+  &.unrevealed {
+    border-style: dashed;
+    border-color: var(--border-disabled);
+    opacity: 0.75;
+  }
+
+  &.clickableSummaryCard {
+    cursor: pointer;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
+      border-color: var(--color-primary);
+    }
+  }
+}
+
+.teamSummaryCard {
+  border-radius: var(--border-radius-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-height: 4.5rem;
+
+  &.summaryActing {
     z-index: 2;
 
     .summaryMonLevel {
@@ -30,41 +59,34 @@
     }
   }
 
-  &.summaryFainted {
-    opacity: 0.65;
-    background-color: var(--bg-input);
-    border-color: var(--border-disabled);
-
-    &.clickableSummaryCard {
-      opacity: 0.9;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
-  &.summaryUnbrought {
-    opacity: 0.65;
-    background-color: var(--bg-input);
-    border-color: var(--border-disabled);
-  }
-
-  &.clickableSummaryCard {
-    cursor: pointer;
+  &.summaryFainted.clickableSummaryCard {
+    opacity: 0.9;
 
     &:hover {
-      background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
-      border-color: var(--color-primary);
-      transform: translateY(calc(-1 * var(--spacing-xxs)));
-      box-shadow: 0 var(--spacing-xs) var(--spacing-s) var(--color-primary-border);
+      opacity: 1;
     }
+  }
+
+  &.clickableSummaryCard:hover {
+    transform: translateY(calc(-1 * var(--spacing-xxs)));
+    box-shadow: 0 var(--spacing-xs) var(--spacing-s) var(--color-primary-border);
   }
 
   &.selectedCard {
     border-color: var(--color-primary);
     background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
   }
+}
+
+/* Row Variant (Collapsed view in narrow lists / Log Panel) */
+.teamSummaryRow {
+  border-radius: var(--border-radius-s);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  min-height: 2.25rem;
+  width: 100%;
 }
 
 .summaryCardHeader {
@@ -74,17 +96,20 @@
   font-size: var(--font-size-xs);
   font-weight: 700;
 
-  .summaryMonName {
-    color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .summaryMonLevel {
     color: var(--text-muted);
     font-size: var(--font-size-xs);
   }
+}
+
+.summaryMonName {
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .summaryCardMetaRow {
@@ -94,13 +119,6 @@
   width: 100%;
   margin-top: var(--spacing-xs);
   gap: var(--spacing-xs);
-
-  :global(.status-badge) {
-    min-width: 2.25rem;
-    text-align: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
 }
 
 .summaryHpText {
@@ -149,60 +167,6 @@
   pointer-events: none;
 }
 
-/* Row Variant (Collapsed view in narrow lists / Log Panel) */
-.teamSummaryRow {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-s);
-  padding: var(--spacing-xs) var(--spacing-s);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-xs);
-  position: relative;
-  transition: var(--transition-fast);
-  min-height: 2.25rem;
-  width: 100%;
-
-  &.summaryActive {
-    border-color: var(--color-primary);
-    background-color: color-mix(in srgb, var(--color-primary) 8%, var(--bg-input));
-  }
-
-  &.summaryActing {
-    border: 1px solid var(--color-primary);
-    background-color: color-mix(in srgb, var(--color-primary) 14%, var(--bg-input));
-    box-shadow: 0 0 0 1px var(--color-primary-border);
-  }
-
-  &.summaryFainted {
-    opacity: 0.65;
-    background-color: var(--bg-input);
-    border-color: var(--border-disabled);
-  }
-
-  &.summaryUnbrought {
-    opacity: 0.65;
-    background-color: var(--bg-input);
-    border-color: var(--border-disabled);
-  }
-
-  &.unrevealed {
-    border-style: dashed;
-    border-color: var(--border-disabled);
-    opacity: 0.75;
-  }
-
-  &.clickableSummaryCard {
-    cursor: pointer;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--color-primary) 10%, var(--bg-input));
-      border-color: var(--color-primary);
-    }
-  }
-}
-
 .rowIdentity {
   display: flex;
   align-items: center;
@@ -210,24 +174,17 @@
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
-
-  .summaryMonName {
-    color: var(--text-primary);
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-  }
 }
 
-.rowPip {
+.rowPip,
+.unrevealedPip {
   font-size: var(--font-size-xxs);
   color: var(--color-success);
   flex-shrink: 0;
   line-height: 1;
+}
 
+.rowPip {
   &.activePip {
     color: var(--color-primary);
   }
@@ -242,10 +199,7 @@
 }
 
 .unrevealedPip {
-  font-size: var(--font-size-xxs);
   color: var(--text-muted);
-  flex-shrink: 0;
-  line-height: 1;
 }
 
 .rowActingBadge {
@@ -266,13 +220,6 @@
   align-items: center;
   gap: var(--spacing-xs);
   flex-shrink: 0;
-
-  :global(.status-badge) {
-    min-width: 2.25rem;
-    text-align: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
 }
 
 .rowHpGroup {
@@ -284,12 +231,7 @@
   flex-shrink: 0;
 
   .summaryHpText {
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
-    white-space: nowrap;
     text-align: right;
-    line-height: 1;
   }
 }
 

@@ -6,6 +6,10 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  calculateFloatingCoords,
+  type FloatingCoordsResult,
+} from "../../../utils/floatingCoords";
 import styles from "./FloatingTooltip.module.scss";
 
 interface FloatingTooltipProps {
@@ -17,82 +21,12 @@ interface FloatingTooltipProps {
   preferredPlacement?: "top" | "bottom" | "left" | "right";
 }
 
-export interface FloatingCoordsResult {
-  top: number;
-  left: number;
-  placement: "top" | "bottom" | "left" | "right";
-}
-
-export function calculateFloatingCoords(
-  targetRect: DOMRect,
-  tooltipWidth: number,
-  tooltipHeight: number,
-  preferredPlacement: "top" | "bottom" | "left" | "right" = "top",
-  viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1024,
-  viewportHeight = typeof window !== "undefined" ? window.innerHeight : 768,
-): FloatingCoordsResult {
-  const padding = 12;
-  const gap = 8;
-
-  let placement: "top" | "bottom" | "left" | "right" = preferredPlacement;
-  let left = 0;
-  let top = 0;
-
-  if (placement === "left") {
-    const roomOnLeft = targetRect.left - tooltipWidth - gap >= padding;
-    if (roomOnLeft) {
-      left = targetRect.left - tooltipWidth - gap;
-      top = Math.max(
-        padding,
-        Math.min(
-          targetRect.top + targetRect.height / 2 - tooltipHeight / 2,
-          viewportHeight - tooltipHeight - padding,
-        ),
-      );
-    } else {
-      placement = "top";
-    }
-  } else if (placement === "right") {
-    const roomOnRight =
-      viewportWidth - targetRect.right - tooltipWidth - gap >= padding;
-    if (roomOnRight) {
-      left = targetRect.right + gap;
-      top = Math.max(
-        padding,
-        Math.min(
-          targetRect.top + targetRect.height / 2 - tooltipHeight / 2,
-          viewportHeight - tooltipHeight - padding,
-        ),
-      );
-    } else {
-      placement = "top";
-    }
-  }
-
-  if (placement === "top" || placement === "bottom") {
-    // Center horizontally on target
-    left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-    // Clamp to viewport
-    left = Math.max(padding, Math.min(left, viewportWidth - tooltipWidth - padding));
-
-    // Prefer placing above target
-    top = targetRect.top - tooltipHeight - gap;
-    placement = "top";
-
-    // If clipping off top edge, place below target
-    if (top < padding) {
-      top = targetRect.bottom + gap;
-      placement = "bottom";
-    }
-
-    // If also clipping bottom, clamp within screen
-    if (top + tooltipHeight > viewportHeight - padding) {
-      top = Math.max(padding, viewportHeight - tooltipHeight - padding);
-    }
-  }
-
-  return { top, left, placement };
-}
+const BRIDGE_CLASSES: Record<FloatingCoordsResult["placement"], string> = {
+  top: styles.bridgeTop,
+  bottom: styles.bridgeBottom,
+  left: styles.bridgeLeft,
+  right: styles.bridgeRight,
+};
 
 export default function FloatingTooltip({
   isOpen,
@@ -140,14 +74,7 @@ export default function FloatingTooltip({
   const isPositioned = coords.top !== -9999;
   if (!isOpen && !isPositioned) return null;
 
-  const placementClass =
-    coords.placement === "top"
-      ? styles.bridgeTop
-      : coords.placement === "bottom"
-        ? styles.bridgeBottom
-        : coords.placement === "left"
-          ? styles.bridgeLeft
-          : styles.bridgeRight;
+  const placementClass = BRIDGE_CLASSES[coords.placement];
 
   if (!mounted || typeof document === "undefined") return null;
 

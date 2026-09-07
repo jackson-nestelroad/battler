@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import FloatingTooltip, { calculateFloatingCoords } from "./FloatingTooltip";
+import FloatingTooltip from "./FloatingTooltip";
+import { calculateFloatingCoords } from "../../../utils/floatingCoords";
 
 function createMockRect(rect: Partial<DOMRect>): DOMRect {
   return {
@@ -63,6 +64,21 @@ describe("calculateFloatingCoords", () => {
     const coords = calculateFloatingCoords(target, 200, 200, "top", 1000, 800);
     expect(coords.placement).toBe("top");
     expect(coords.top).toBe(500 - 200 - 8); // 292
+  });
+
+  it("places tooltip below target when preferredPlacement is bottom", () => {
+    const target = createMockRect({
+      left: 400,
+      right: 500,
+      top: 100,
+      bottom: 150,
+      width: 100,
+      height: 50,
+    });
+
+    const coords = calculateFloatingCoords(target, 200, 200, "bottom", 1000, 800);
+    expect(coords.placement).toBe("bottom");
+    expect(coords.top).toBe(150 + 8); // 158
   });
 
   it("flips to bottom when top clips off-screen", () => {

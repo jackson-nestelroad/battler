@@ -7,13 +7,13 @@ import styles from "./MonCard.module.scss";
 import MonTooltipTrigger from "./Tooltip/MonTooltipTrigger";
 
 export interface MonCardProps {
-  name: string;
+  name?: string;
   level?: number | null;
-  hp: number;
-  maxHp: number;
+  hp?: number;
+  maxHp?: number;
   hpText?: string;
-  status: string | null;
-  active: boolean;
+  status?: string | null;
+  active?: boolean;
   isClickable?: boolean;
   onClick?: () => void;
   selectionOrder?: number;
@@ -31,13 +31,13 @@ export interface MonCardProps {
 }
 
 export default function MonCard({
-  name,
+  name = "Mon",
   level,
-  hp,
-  maxHp,
+  hp = 100,
+  maxHp = 100,
   hpText,
-  status,
-  active,
+  status = null,
+  active = false,
   isClickable = false,
   onClick,
   selectionOrder,

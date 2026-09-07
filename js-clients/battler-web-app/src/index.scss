@@ -824,6 +824,9 @@ a.badge-primary,
   text-transform: uppercase;
   color: var(--color-white);
   line-height: 1;
+  min-width: 2.25rem;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .status-badge.ok {
@@ -1225,3 +1228,14 @@ a.badge-primary,
   font-weight: 600;
   color: var(--text-muted);
 }
+
+/* 18. Unified Empty State Text */
+.empty-state {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin: 0;
+}
+

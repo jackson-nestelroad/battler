@@ -178,10 +178,19 @@ async function fetchTeamPlayerData(
 ) {
   if (!connectionManager.serviceClient) return;
   const allyIds = getAllyPlayerIds(state, playerId);
+  const playerDataPromise = connectionManager.serviceClient.playerData(battleId, playerId);
+  const allyPromises = allyIds.map((id) =>
+    connectionManager.serviceClient!.playerData(battleId, id).catch((err) => {
+      console.warn(`[WAMP] Failed to fetch ally data for player ${id}:`, err);
+      return null;
+    }),
+  );
+
   const [playerData, ...allyDataList] = await Promise.all([
-    connectionManager.serviceClient.playerData(battleId, playerId),
-    ...allyIds.map((id) => connectionManager.serviceClient!.playerData(battleId, id)),
+    playerDataPromise,
+    ...allyPromises,
   ]);
+
   const allyPlayerData: Record<string, PlayerBattleData> = {};
   for (const ally of allyDataList) {
     if (ally?.id) {

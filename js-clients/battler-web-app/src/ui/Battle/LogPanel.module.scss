@@ -31,10 +31,8 @@
 }
 
 .header {
-  flex-shrink: 0;
   padding: var(--spacing-s) var(--spacing-m); // override default card-header padding
   margin-bottom: 0; // scrollArea handles padding natively
-  border-bottom: 1px solid var(--border-color);
 }
 
 
@@ -198,14 +196,6 @@
 .text {
   color: var(--text-primary);
   word-break: break-word;
-}
-
-.emptyLogs {
-  color: var(--text-muted);
-  font-size: var(--font-size-s);
-  font-style: italic;
-  text-align: center;
-  padding: var(--spacing-xl) 0;
 }
 
 .monHoverTrigger {

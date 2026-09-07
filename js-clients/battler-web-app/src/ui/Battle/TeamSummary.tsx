@@ -54,7 +54,7 @@ export default function TeamSummary({
   const totalSlots = getRequestSlotCount(request);
   const isPlayerLeft = Boolean(
     battleState &&
-      stateSelectors.side(battleState, playerData.side)?.players?.[playerData.id]?.left_battle,
+      stateSelectors.player(battleState, playerData.id)?.left_battle,
   );
 
   return (

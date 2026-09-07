@@ -5,44 +5,41 @@
   max-width: calc(100vw - var(--spacing-l) * 2);
 }
 
-.bridgeTop::after {
+.bridgeTop::after,
+.bridgeBottom::before,
+.bridgeLeft::after,
+.bridgeRight::before {
   content: "";
   position: absolute;
+  pointer-events: auto;
+}
+
+.bridgeTop::after {
   left: 0;
   right: 0;
   bottom: calc(-1 * var(--spacing-s));
   height: calc(var(--spacing-s) + var(--spacing-xs));
-  pointer-events: auto;
 }
 
 .bridgeBottom::before {
-  content: "";
-  position: absolute;
   left: 0;
   right: 0;
   top: calc(-1 * var(--spacing-s));
   height: calc(var(--spacing-s) + var(--spacing-xs));
-  pointer-events: auto;
 }
 
 .bridgeLeft::after {
-  content: "";
-  position: absolute;
   top: 0;
   bottom: 0;
   right: calc(-1 * var(--spacing-s));
   width: calc(var(--spacing-s) + var(--spacing-xs));
-  pointer-events: auto;
 }
 
 .bridgeRight::before {
-  content: "";
-  position: absolute;
   top: 0;
   bottom: 0;
   left: calc(-1 * var(--spacing-s));
   width: calc(var(--spacing-s) + var(--spacing-xs));
-  pointer-events: auto;
 }
 
 .visible {

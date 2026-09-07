@@ -216,7 +216,7 @@ export default function LogPanel({
                 </div>
               );
             })}
-            {visibleLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
+            {visibleLogs.length === 0 && <p className="empty-state">None</p>}
           </div>
         )}
       </div>

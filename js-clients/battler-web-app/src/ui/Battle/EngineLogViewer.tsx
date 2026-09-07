@@ -44,7 +44,7 @@ export default function EngineLogViewer({
             </div>
           );
         })}
-        {displayLogs.length === 0 && <p className={styles.emptyLogs}>None</p>}
+        {displayLogs.length === 0 && <p className="empty-state">None</p>}
       </div>
     </div>
   );
