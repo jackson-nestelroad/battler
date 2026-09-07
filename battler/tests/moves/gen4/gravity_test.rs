@@ -335,6 +335,7 @@ fn gravity_cancels_sky_drop() {
         r#"[
             "move|mon:Hawlucha,player-2,2|name:Sky Drop|noanim",
             "prepare|mon:Hawlucha,player-2,2|move:Sky Drop|target:Hawlucha,player-1,2",
+            "start|mon:Hawlucha,player-1,2|move:Sky Drop|silent",
             "move|mon:Probopass,player-1,1|name:Gravity",
             "fieldstart|move:Gravity",
             "activate|mon:Hawlucha,player-1,2|move:Gravity",
@@ -370,6 +371,7 @@ fn gravity_cancels_sky_drop_before_second_use() {
         r#"[
             "move|mon:Hawlucha,player-2,2|name:Sky Drop|noanim",
             "prepare|mon:Hawlucha,player-2,2|move:Sky Drop|target:Hawlucha,player-1,2",
+            "start|mon:Hawlucha,player-1,2|move:Sky Drop|silent",
             "residual",
             "turn|turn:2",
             "continue",

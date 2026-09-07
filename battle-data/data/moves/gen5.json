@@ -950,6 +950,9 @@
             "# Ensure we are targeting the original target.",
             "$immobilizing_effect_state = func_call(volatile_status_effect_state: $source immobilizingmove)",
             "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source",
+            "$target_immobilized_effect_state = func_call(volatile_status_effect_state: $target immobilized)",
+            "if $target_immobilized_effect_state.is_defined:",
+            ["$target_immobilized_effect_state.hit = true"],
             "remove_volatile: $source immobilizingmove"
           ],
           "else:",

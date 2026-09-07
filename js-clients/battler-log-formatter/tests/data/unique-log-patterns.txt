@@ -425,6 +425,7 @@ end|move:Salt Cure
 end|move:Sand Tomb
 end|move:Sand Tomb|silent
 end|move:Sky Drop
+end|move:Sky Drop|silent
 end|move:Snap Trap
 end|move:Snap Trap|silent
 end|move:Stockpile
@@ -865,6 +866,7 @@ start|condition:Commanding
 start|condition:Confusion
 start|condition:Confusion|fatigue
 start|condition:Highlighting Sample
+start|condition:Immobilized
 start|move:Aqua Ring
 start|move:Attract
 start|move:Autotomize
@@ -896,6 +898,7 @@ start|move:Octolock
 start|move:Perish Song
 start|move:Power Trick
 start|move:Salt Cure
+start|move:Sky Drop|silent
 start|move:Smack Down
 start|move:Stockpile
 start|move:Substitute

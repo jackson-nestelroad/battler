@@ -738,6 +738,7 @@ fn emergency_exit_does_not_activate_during_sky_drop() {
                 "continue",
                 "move|mon:Pikachu,player-2,1|name:Sky Drop|noanim",
                 "prepare|mon:Pikachu,player-2,1|move:Sky Drop|target:Golisopod,player-1,1",
+                "start|mon:Golisopod,player-1,1|move:Sky Drop|silent",
                 "residual",
                 "split|side:0",
                 "damage|mon:Golisopod,player-1,1|from:status:Bad Poison|health:53/135",

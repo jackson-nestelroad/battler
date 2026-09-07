@@ -19214,6 +19214,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:S
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Samurott,player-2,2|move:Sky Drop|silent 1`] = `
+{
+  "rawLog": "end|mon:Samurott,player-2,2|move:Sky Drop|silent",
+  "result": {
+    "key": "end__move_skydrop",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: end|mon:Shuckle,player-1,1|move:Power Trick 1`] = `
 {
   "rawLog": "end|mon:Shuckle,player-1,1|move:Power Trick",
@@ -39467,6 +39478,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
 }
 `;
 
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Golisopod,player-1,1|move:Sky Drop|silent 1`] = `
+{
+  "rawLog": "start|mon:Golisopod,player-1,1|move:Sky Drop|silent",
+  "result": {
+    "key": "start__move_any",
+    "messages": [],
+    "notices": [],
+  },
+}
+`;
+
 exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Grapploct,player-2,1|move:Octolock 1`] = `
 {
   "rawLog": "start|mon:Grapploct,player-2,1|move:Octolock",
@@ -39616,6 +39638,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "key": "start__move_yawn",
       },
     ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Hawlucha,player-1,2|move:Sky Drop|silent 1`] = `
+{
+  "rawLog": "start|mon:Hawlucha,player-1,2|move:Sky Drop|silent",
+  "result": {
+    "key": "start__move_any",
+    "messages": [],
     "notices": [],
   },
 }
@@ -40845,6 +40878,17 @@ exports[`Exhaustive Log Coverage > should parse and format log string: start|mon
         "key": "start__move_ingrain",
       },
     ],
+    "notices": [],
+  },
+}
+`;
+
+exports[`Exhaustive Log Coverage > should parse and format log string: start|mon:Samurott,player-2,2|move:Sky Drop|silent 1`] = `
+{
+  "rawLog": "start|mon:Samurott,player-2,2|move:Sky Drop|silent",
+  "result": {
+    "key": "start__move_any",
+    "messages": [],
     "notices": [],
   },
 }

@@ -1366,6 +1366,50 @@ mod state_test {
     }
 
     #[test]
+    fn tracks_and_removes_sky_drop_condition_on_user_and_target() {
+        let mut logs = Vec::from_iter([
+            "move|mon:Squirtle,player-1,1|name:Sky Drop|noanim",
+            "prepare|mon:Squirtle,player-1,1|move:Sky Drop|target:Charmander,player-2,1",
+            "start|mon:Charmander,player-2,1|move:Sky Drop|silent",
+        ]);
+        let state = setup_singles_battle(&logs);
+        let sq = squirtle_ref();
+        let ch = charmander_ref();
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            vec!["Sky Drop"]
+        );
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &ch)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            vec!["Sky Drop"]
+        );
+
+        logs.extend([
+            "turn|turn:2",
+            "continue",
+            "move|mon:Squirtle,player-1,1|name:Sky Drop|target:Charmander,player-2,1",
+            "end|mon:Charmander,player-2,1|move:Sky Drop|silent",
+        ]);
+        let state = setup_singles_battle(&logs);
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &sq)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            Vec::<&str>::new()
+        );
+        assert_eq!(
+            state_selectors::mon_conditions(&state, &ch)
+                .unwrap()
+                .collect::<Vec<_>>(),
+            Vec::<&str>::new()
+        );
+    }
+
+    #[test]
     fn records_move_volatile_until_next_move() {
         let state = setup_singles_battle(&["singlemove|mon:Squirtle,player-1,1|move:Destiny Bond"]);
         let sq = squirtle_ref();
