@@ -132,7 +132,8 @@
   min-width: 0;
 }
 
-.conditionBadge {
+.conditionBadge,
+.slotBadge {
   font-size: var(--font-size-xxs);
   padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
@@ -144,21 +145,14 @@
 }
 
 .slotBadge {
-  font-size: var(--font-size-xxs);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  border-radius: var(--border-radius-xs);
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-subtle-neutral);
-  color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  white-space: nowrap;
 }
 
 .slotTag {
-  color: var(--text-muted);
-  font-weight: 600;
+  opacity: 0.75;
+  font-weight: 500;
 }
 
 .slotName {
