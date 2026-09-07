@@ -5,6 +5,7 @@ import Tabs from "../Common/Tabs";
 import type { ContextValue } from "battler-log-formatter";
 import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFormatter";
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
+import { useFormattedLogs } from "../../hooks/useFormattedLogs";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
 import EngineLogViewer from "./EngineLogViewer";
 import PlayerStateViewer from "./PlayerStateViewer";
@@ -12,14 +13,16 @@ import PlayerStateViewer from "./PlayerStateViewer";
 import styles from "./LogPanel.module.scss";
 
 interface LogPanelProps {
-  visibleLogs: FormattedLogDisplayItem[];
-  uiLogs: UiLogEntry[];
+  battleId?: string | null;
+  uiLogs?: UiLogEntry[];
+  visibleLogs?: FormattedLogDisplayItem[];
   engineLogs?: string[];
   battleState?: BattleState | null;
   rules?: string[] | null;
   playerData?: PlayerBattleData | null;
   allyPlayerData?: Record<string, PlayerBattleData> | null;
   localPlayerId?: string | null;
+  isSpectator?: boolean;
 }
 
 function renderLogDivider(
@@ -101,25 +104,37 @@ function renderTokenValue(
 }
 
 export default function LogPanel({
-  visibleLogs,
-  uiLogs,
+  battleId,
+  uiLogs = [],
+  visibleLogs: explicitVisibleLogs,
   engineLogs = [],
   battleState,
   rules,
   playerData,
   allyPlayerData,
   localPlayerId,
+  isSpectator = false,
 }: LogPanelProps) {
   const [mode, setMode] = useState<"text" | "players" | "engine">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const formattedLogs = useFormattedLogs({
+    battleId,
+    uiLogs,
+    battleState,
+    localPlayerId,
+    isSpectator,
+  });
+
+  const visibleLogs = explicitVisibleLogs ?? formattedLogs;
 
   // Automatically scroll to bottom on new logs when in text mode
   useEffect(() => {
     if (scrollRef.current && mode === "text") {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [visibleLogs, uiLogs, engineLogs, mode]);
+  }, [visibleLogs.length, engineLogs.length, mode]);
 
   return (
     <div className={`card ${styles.logPanel} ${isCollapsed ? styles.collapsed : ""}`}>

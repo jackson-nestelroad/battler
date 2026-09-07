@@ -156,6 +156,7 @@ class WampConnectionManager {
   public proposalSubscription: Subscription | null = null;
   public readonly clientsRegistry = new Map<string, BattlerClient>();
   public readonly pendingInitializations = new Map<string, Promise<BattlerClient | undefined>>();
+  public readonly cleanupRegistry = new Map<string, () => void>();
 
   public clear() {
     this.sessionProvider = null;
@@ -163,6 +164,10 @@ class WampConnectionManager {
     this.mpServiceClient = null;
     this.multiplayerClient = null;
     this.proposalSubscription = null;
+    for (const cleanup of this.cleanupRegistry.values()) {
+      cleanup();
+    }
+    this.cleanupRegistry.clear();
     this.clientsRegistry.clear();
     this.pendingInitializations.clear();
   }
@@ -207,15 +212,23 @@ function bindClientEvents(
   dispatch: Dispatch,
   getState?: () => RootState,
 ) {
-  client.on("update", async () => {
+  let frameUpdateId: number | null = null;
+  let pendingUpdate = false;
+
+  const flushUpdate = async () => {
+    frameUpdateId = null;
+    pendingUpdate = false;
     const state = client.state();
     dispatch(battleStateUpdated({ battleId, state, engineLogs: client.getLogs() }));
 
     const session = getState ? getState().battles.battles[battleId] : undefined;
     if (session?.isDeleted) return;
 
-    // Only update high-level serviceBattle status while the battle is in preparation mode
-    if (connectionManager.serviceClient && state.phase === "pre_battle") {
+    // Update high-level serviceBattle status while in preparation or transitioning to active
+    if (
+      connectionManager.serviceClient &&
+      (state.phase === "pre_battle" || session?.serviceBattle?.state === "preparing")
+    ) {
       try {
         const serviceBattle = await connectionManager.serviceClient.battle(battleId);
         dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
@@ -223,9 +236,40 @@ function bindClientEvents(
         console.warn(`[WAMP] Failed to fetch service battle for battle ${battleId}:`, err);
       }
     }
+  };
+
+  const cancelPendingFrame = () => {
+    if (
+      frameUpdateId !== null &&
+      typeof window !== "undefined" &&
+      typeof window.cancelAnimationFrame === "function"
+    ) {
+      window.cancelAnimationFrame(frameUpdateId);
+      frameUpdateId = null;
+    }
+  };
+
+  connectionManager.cleanupRegistry.set(battleId, cancelPendingFrame);
+
+  client.on("update", () => {
+    pendingUpdate = true;
+    if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+      if (frameUpdateId === null) {
+        frameUpdateId = window.requestAnimationFrame(() => {
+          flushUpdate();
+        });
+      }
+    } else {
+      flushUpdate();
+    }
   });
 
   client.on("request", async (req) => {
+    cancelPendingFrame();
+    if (pendingUpdate) {
+      await flushUpdate();
+    }
+
     const session = getState ? getState().battles.battles[battleId] : undefined;
     if (session?.isDeleted) return;
     dispatch(setBattleRequest({ battleId, request: req }));
@@ -243,10 +287,18 @@ function bindClientEvents(
   });
 
   client.on("end", () => {
+    cancelPendingFrame();
+    if (pendingUpdate) {
+      flushUpdate().catch((err) => {
+        console.warn(`[WAMP] Failed to flush update on end for battle ${battleId}:`, err);
+      });
+    }
     dispatch(battleSessionEnded(battleId));
   });
 
   client.on("deleted", () => {
+    cancelPendingFrame();
+    connectionManager.cleanupRegistry.delete(battleId);
     dispatch(clearBattleState(battleId));
   });
 }
@@ -720,6 +772,11 @@ export const closeBattleSession = createAsyncThunk(
   "wamp/closeBattleSession",
   async (rawBattleId: string, { dispatch }) => {
     const battleId = formatUuid(rawBattleId);
+    const cleanup = connectionManager.cleanupRegistry.get(battleId);
+    if (cleanup) {
+      cleanup();
+      connectionManager.cleanupRegistry.delete(battleId);
+    }
     const client = connectionManager.clientsRegistry.get(battleId);
     if (client) {
       try {
@@ -837,6 +894,18 @@ export const submitBattleTeam = createAsyncThunk(
       dispatch(setBattleLoading({ battleId, isLoading: true }));
       dispatch(setBattleError({ battleId, error: null }));
       await client.updateTeam({ members: team, bag: { items: {} } });
+
+      if (connectionManager.serviceClient) {
+        try {
+          const serviceBattle = await connectionManager.serviceClient.battle(battleId);
+          dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
+        } catch (err) {
+          console.warn(
+            `[WAMP] Failed to refresh service battle on team submit for battle ${battleId}:`,
+            err,
+          );
+        }
+      }
 
       dispatch(setChoiceSubmitted({ battleId, submitted: true }));
     } catch (err: unknown) {

@@ -46,9 +46,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
     );
     const turnNumber = battle.battleState?.turn || 0;
     const isFinished = battle.battleState?.phase === "finished";
-    const isPreparing =
-      battle.serviceBattle?.state === "preparing" ||
-      battle.battleState?.phase === "pre_battle";
+    const isPreparing = battle.battleState
+      ? battle.battleState.phase === "pre_battle"
+      : battle.serviceBattle?.state === "preparing";
     const isCloseable = isFinished || isDeleted || isSpectator;
 
     return (

@@ -3,7 +3,6 @@ import { checkBattleStatus, closeBattleSession, refreshBattleSession } from "../
 import { isSpectatorSession, selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getBattleTitle } from "../../utils/battle";
-import { formatUiLogEntry } from "../../utils/logFormatter";
 import BattleDetailsGrid from "../Common/BattleDetailsGrid";
 import CopyableId from "../Common/CopyableId";
 import ErrorBanner from "../Common/ErrorBanner";
@@ -119,17 +118,7 @@ export default function BattleScreen() {
     };
   }, [title]);
 
-  const visibleLogs = useMemo(() => {
-    if (!battleSession || !battleSession.battleState) return [];
-    const isSpectator = isSpectatorSession(battleSession, connection.playerId);
-    return battleSession.uiLogs
-      .flatMap((e) =>
-        formatUiLogEntry(e, battleSession.battleState!, {
-          localPlayerId: connection.playerId || undefined,
-          isSpectator,
-        }),
-      );
-  }, [battleSession, connection.playerId]);
+  const isSpectator = battleSession ? isSpectatorSession(battleSession, connection.playerId) : false;
 
   if (!battleId) {
     return (
@@ -233,9 +222,9 @@ export default function BattleScreen() {
     );
   }
 
-  const isPreparing =
-    battleSession.serviceBattle?.state === "preparing" ||
-    battleSession.battleState?.phase === "pre_battle";
+  const isPreparing = battleSession.battleState
+    ? battleSession.battleState.phase === "pre_battle"
+    : battleSession.serviceBattle?.state === "preparing";
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
 
@@ -433,7 +422,7 @@ export default function BattleScreen() {
           {/* Right Column: Log panel only */}
           <section className={`${styles.rightColumn} flex-col gap-s`}>
             <LogPanel
-              visibleLogs={visibleLogs}
+              battleId={battleId}
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
@@ -441,6 +430,7 @@ export default function BattleScreen() {
               playerData={battleSession.playerData}
               allyPlayerData={battleSession.allyPlayerData}
               localPlayerId={connection.playerId}
+              isSpectator={isSpectator}
             />
           </section>
         </div>
@@ -479,7 +469,7 @@ export default function BattleScreen() {
           {/* Right Dashboard column */}
           <section className={`${styles.rightColumn} flex-col gap-s`}>
             <LogPanel
-              visibleLogs={visibleLogs}
+              battleId={battleId}
               uiLogs={battleSession.uiLogs}
               engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
@@ -487,6 +477,7 @@ export default function BattleScreen() {
               playerData={battleSession.playerData}
               allyPlayerData={battleSession.allyPlayerData}
               localPlayerId={connection.playerId}
+              isSpectator={isSpectator}
             />
           </section>
         </div>

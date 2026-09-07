@@ -191,7 +191,6 @@ const battlesSlice = createSlice({
           battle.choiceSubmitted = false;
           battle.choiceError = null;
         }
-        rebuildActiveTimers(battle);
       }
     },
     setBattlePlayerData(
@@ -210,7 +209,6 @@ const battlesSlice = createSlice({
         if (allyPlayerData !== undefined) {
           battle.allyPlayerData = allyPlayerData || {};
         }
-        rebuildActiveTimers(battle);
       }
     },
     setChoiceSubmitted(state, action: PayloadAction<{ battleId: string; submitted: boolean }>) {
@@ -219,7 +217,6 @@ const battlesSlice = createSlice({
       const battle = state.battles[battleId];
       if (battle) {
         battle.choiceSubmitted = submitted;
-        rebuildActiveTimers(battle);
       }
     },
     setBattleError(

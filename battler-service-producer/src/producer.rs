@@ -186,10 +186,11 @@ where
                     Some(log) => log,
                     None => break,
                 };
-                log::trace!("Producer received log entry from channel for battle {}, side: {:?}", log.battle, log.side);
-                if let Err(err) = publish_log_entry(&producer, service.as_ref(), log).await {
-                    log::warn!("Failed to publish log entry: {err:?}");
+                let mut batch = vec![log];
+                while let Ok(next_log) = global_log_rx.try_recv() {
+                    batch.push(next_log);
                 }
+                publish_log_entries(&producer, service.as_ref(), batch).await;
             },
             _ = stop_recv => {
                 producer.stop().await?;
@@ -200,23 +201,45 @@ where
     Ok(())
 }
 
-async fn publish_log_entry<'d, S>(
+async fn publish_log_entries<'d, S>(
     producer: &battler_service_schema::BattlerServiceProducer<S>,
     service: &BattlerService<'d>,
+    batch: Vec<GlobalLogEntry>,
+) where
+    S: Send + 'static,
+{
+    let mut side_players_cache: battler_wamp::core::hash::HashMap<
+        (Uuid, Option<usize>),
+        Option<battler_wamp::core::hash::HashSet<String>>,
+    > = battler_wamp::core::hash::HashMap::default();
+
+    for global_log_entry in batch {
+        let key = (global_log_entry.battle, global_log_entry.side);
+        let players = match side_players_cache.get(&key) {
+            Some(p) => p.clone(),
+            None => {
+                let fetched = service
+                    .side_players(global_log_entry.battle, global_log_entry.side)
+                    .await;
+                side_players_cache.insert(key, fetched.clone());
+                fetched
+            }
+        };
+
+        if let Err(err) = publish_single_log_entry(producer, global_log_entry, players).await {
+            log::warn!("Failed to publish log entry: {err:?}");
+        }
+    }
+}
+
+async fn publish_single_log_entry<S>(
+    producer: &battler_service_schema::BattlerServiceProducer<S>,
     global_log_entry: GlobalLogEntry,
+    players: Option<battler_wamp::core::hash::HashSet<String>>,
 ) -> Result<()>
 where
     S: Send + 'static,
 {
-    log::trace!(
-        "publish_log_entry: fetching side players for battle {}, side: {:?}",
-        global_log_entry.battle,
-        global_log_entry.side
-    );
-    let players = service
-        .side_players(global_log_entry.battle, global_log_entry.side)
-        .await;
-    log::trace!("publish_log_entry: side players fetched: {:?}", players);
     let log_pattern = battler_service_schema::LogPattern(
         uuid_for_uri(&global_log_entry.battle),
         match global_log_entry.side {
@@ -235,16 +258,6 @@ where
         },
         None => battler_wamprat::peer::PublishOptions::default(),
     };
-    log::trace!(
-        "publish_log_entry: publishing log to WAMP for battle {}",
-        global_log_entry.battle
-    );
-    let res = producer.publish_log(log_pattern, log_event, options).await;
-    if res.is_ok() {
-        log::trace!(
-            "publish_log_entry: successfully published log to WAMP for battle {}",
-            global_log_entry.battle
-        );
-    }
-    res
+    producer.publish_log(log_pattern, log_event, options).await
 }
+
