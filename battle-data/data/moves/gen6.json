@@ -704,6 +704,7 @@
     "secondary_effects": [
       {
         "chance": "50%",
+        "apply_once": true,
         "user": {
           "boosts": {
             "def": 2

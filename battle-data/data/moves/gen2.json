@@ -1056,7 +1056,7 @@
         "chance": "10%",
         "user": {
           "boosts": {
-            "def": -1
+            "def": 1
           }
         }
       }

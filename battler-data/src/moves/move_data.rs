@@ -60,6 +60,9 @@ pub struct HitEffect {
 pub struct SecondaryEffectData {
     /// Chance of the effect occurring.
     pub chance: Option<Fraction<u16>>,
+    /// Whether the secondary effect should only apply once across all targets.
+    #[serde(default)]
+    pub apply_once: bool,
     /// Secondary hit effect on the target.
     pub target: Option<HitEffect>,
     /// Secondary hit effect on the user of the move.

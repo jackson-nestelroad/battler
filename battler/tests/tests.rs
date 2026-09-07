@@ -580,6 +580,7 @@ mod moves {
 
     mod gen6 {
         mod crafty_shield_test;
+        mod diamond_storm_test;
         mod electrify_test;
         mod fairy_lock_test;
         mod fell_stinger_test;
@@ -607,6 +608,7 @@ mod moves {
         mod baneful_bunker_test;
         mod beak_blast_test;
         mod burn_up_test;
+        mod clangorous_soulblaze_test;
         mod core_enforcer_test;
         mod floral_healing_test;
         mod freezy_frost_test;
@@ -633,6 +635,7 @@ mod moves {
 
     mod gen8 {
         mod aura_wheel_test;
+        mod bitter_malice_test;
         mod body_press_test;
         mod burning_jealousy_test;
         mod chloroblast_test;
@@ -644,6 +647,7 @@ mod moves {
         mod eerie_spell_test;
         mod eternabeam_test;
         mod expanding_force_test;
+        mod headlong_rush_test;
         mod jaw_lock_test;
         mod lash_out_test;
         mod lunar_blessing_test;
