@@ -14,7 +14,7 @@ This guide establishes the rules and conventions for styling the `battler-web-ap
 - **Font Sizes**: Use standard typography tokens, which automatically resize responsively at small viewport widths:
   - Tokens: `var(--font-size-xxs)` (10px), `var(--font-size-xs)` (12px), `var(--font-size-s)` (14px), `var(--font-size-m)` (16px), `var(--font-size-l)` (18px), `var(--font-size-xl)` (20px), `var(--font-size-xxl)` (28px).
 - **Border Radius**: Use standard border radius values:
-  - Tokens: `var(--border-radius-xs)` (0.25rem), `var(--border-radius-s)` (0.375rem), `var(--border-radius-m)` (0.5rem), `var(--border-radius-l)` (0.75rem), `var(--border-radius-round)` (50%).
+  - Tokens: `var(--border-radius-xs)` (0.25rem), `var(--border-radius-s)` (0.375rem), `var(--border-radius-m)` (0.5rem), `var(--border-radius-l)` (0.75rem), `var(--border-radius-round)` (50%), `var(--border-radius-pill)` (9999px).
 
 ---
 

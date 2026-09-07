@@ -131,8 +131,81 @@
   --color-type-steel-dark: #3e6978;
 
   --color-type-stellar: #40b5a5;
-  --color-type-stellar-light: #83cfc5;
+  --color-type-stellar-light: #70cac0;
   --color-type-stellar-dark: #2a766b;
+  /* Backup sampled palette:
+  --background-type-stellar-backup:
+    radial-gradient(ellipse at 48.5% 50%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 65%),
+    conic-gradient(
+      from 0deg at 48.5% 50%,
+      #f1cd2f 0deg 20deg,
+      #f2ce27 20deg 40deg,
+      #fda92a 40deg 60deg,
+      #f66746 60deg 80deg,
+      #d486d1 80deg 100deg,
+      #8556b3 100deg 120deg,
+      #525775 120deg 140deg,
+      #687c9c 140deg 160deg,
+      #657ca7 160deg 180deg,
+      #4496de 180deg 200deg,
+      #4396e1 200deg 220deg,
+      #2cafec 220deg 240deg,
+      #3ba2ea 240deg 260deg,
+      #4593cd 260deg 280deg,
+      #9fcc48 280deg 300deg,
+      #ced582 300deg 320deg,
+      #dbb855 320deg 340deg,
+      #daae4f 340deg 360deg
+    );
+  */
+  /* Backup palette 2:
+  --background-type-stellar-backup-2:
+    radial-gradient(ellipse at 48.5% 50%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 65%),
+    conic-gradient(
+      from 0deg at 48.5% 50%,
+      #f9dd3a 0deg 20deg,
+      #fba520 20deg 40deg,
+      #f85628 40deg 60deg,
+      #e34964 60deg 80deg,
+      #cc66bb 80deg 100deg,
+      #8c44cb 100deg 120deg,
+      #7a5abe 120deg 140deg,
+      #697a9c 140deg 160deg,
+      #879da9 160deg 180deg,
+      #5bb9e3 180deg 200deg,
+      #30b8eb 200deg 220deg,
+      #2473db 220deg 240deg,
+      #3558c2 240deg 260deg,
+      #439fb7 260deg 280deg,
+      #5ad948 280deg 300deg,
+      #c3d660 300deg 320deg,
+      #dde2be 320deg 340deg,
+      #e7cb9a 340deg 360deg
+    );
+  */
+  --background-type-stellar:
+    radial-gradient(ellipse at 48.5% 50%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 65%),
+    conic-gradient(
+      from 0deg at 48.5% 50%,
+      #f4d22b 0deg 40deg,
+      #feaa2c 40deg 63deg,
+      #f75a29 63deg 76deg,
+      #ef6a9a 76deg 85.5deg,
+      #d690d8 85.5deg 94.5deg,
+      #aa64dc 94.5deg 104deg,
+      #7d4fa4 104deg 117deg,
+      #595975 117deg 140deg,
+      #677b9d 140deg 180deg,
+      #4195df 180deg 220deg,
+      #30bcee 220deg 243deg,
+      #32a2ee 243deg 256deg,
+      #4474de 256deg 265.5deg,
+      #4294d6 265.5deg 274.5deg,
+      #58c366 274.5deg 284deg,
+      #bad240 284deg 297deg,
+      #d0d684 297deg 320deg,
+      #dab250 320deg 360deg
+    );
 
   --color-type-water: #2980ef;
   --color-type-water-light: #74acf5;
@@ -182,6 +255,8 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-glow: 0 0 15px 0 color-mix(in srgb, var(--color-primary) 30%, transparent);
+  --shadow-text-contrast: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --drop-shadow-contrast: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
   --color-shadow-acting: rgba(0, 0, 0, 0.4);
 
   /* Font Sizes */
@@ -208,11 +283,16 @@
   --border-radius-m: 0.5rem;
   --border-radius-l: 0.75rem;
   --border-radius-round: 50%;
+  --border-radius-pill: 9999px;
 
   /* Layout Tokens */
   --sidebar-width: 16.25rem;
   --sidebar-collapsed-width: 4.5rem;
   --mobile-header-height: 3.25rem;
+  --type-badge-width-md: 5.75rem;
+  --type-badge-width-sm: 4.75rem;
+  --type-icon-size-md: 1.0625rem;
+  --type-icon-size-sm: 0.875rem;
 
   /* Transitions */
   --transition-duration: 0.2s;
@@ -229,6 +309,8 @@
     --font-size-l: 1rem; /* 16px */
     --font-size-xl: 1.15rem; /* 18.4px */
     --font-size-xxl: 1.5rem; /* 24px */
+    --type-icon-size-md: 0.95rem;
+    --type-icon-size-sm: 0.8rem;
   }
 }
 
@@ -599,7 +681,6 @@ a.badge-primary,
     filter: brightness(1.15);
   }
 }
-
 
 /* 4. Form Layout Helpers */
 .form-group {

@@ -3,20 +3,77 @@
   align-items: center;
   justify-content: center;
   font-size: var(--font-size-xxs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-white);
-  border-radius: var(--border-radius-xs);
+  border-radius: var(--border-radius-pill);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
+  text-shadow: var(--shadow-text-contrast);
+  user-select: none;
 }
 
 .typeBadgeMd {
-  padding: var(--spacing-xxs) var(--spacing-xs);
+  padding: 0 var(--spacing-s);
+  gap: var(--spacing-xs);
   line-height: 1.2;
+
+  .typeIcon {
+    width: var(--type-icon-size-md);
+    height: var(--type-icon-size-md);
+  }
+
+  &.fixedWidth {
+    width: var(--type-badge-width-md);
+    padding: 0 var(--spacing-xs);
+
+    .typeIcon {
+      margin-left: var(--spacing-xxs);
+    }
+
+    .typeText {
+      flex: 1;
+      text-align: center;
+      margin-right: var(--spacing-xxs);
+    }
+  }
 }
 
 .typeBadgeSm {
-  padding: 0 var(--spacing-xxs);
-  line-height: 1.4;
+  padding: 0 var(--spacing-xs);
+  gap: var(--spacing-xxs);
+  line-height: 1.3;
+
+  .typeIcon {
+    width: var(--type-icon-size-sm);
+    height: var(--type-icon-size-sm);
+  }
+
+  &.fixedWidth {
+    width: var(--type-badge-width-sm);
+    padding: 0 var(--spacing-xxs);
+
+    .typeIcon {
+      margin-left: var(--spacing-xxs);
+    }
+
+    .typeText {
+      flex: 1;
+      text-align: center;
+      margin-right: var(--spacing-xxs);
+    }
+  }
+}
+
+.typeIcon {
+  display: block;
+  object-fit: contain;
+  filter: var(--drop-shadow-contrast);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.typeText {
+  display: inline-block;
 }

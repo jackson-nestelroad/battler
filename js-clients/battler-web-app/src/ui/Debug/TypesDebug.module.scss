@@ -1,0 +1,176 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-m);
+  max-width: 64rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-m);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.controlsCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+  flex-wrap: wrap;
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.controlLabel {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.typesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--spacing-s);
+}
+
+.typeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-s) var(--spacing-m);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  gap: var(--spacing-s);
+}
+
+.typeMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-xxs);
+}
+
+.typeName {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.typeVar {
+  font-size: var(--font-size-xxs);
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.comparisonSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--spacing-m);
+}
+
+.comparisonCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  padding: var(--spacing-m);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+}
+
+.comparisonCardTitle {
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.comparisonCardDesc {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.badgeList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.badgeLabel {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* Demo custom ellipse for visual explanation */
+.demoEllipseBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+  color: var(--color-white);
+  border-radius: var(--border-radius-round); /* 50% */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  text-shadow: var(--shadow-text-contrast);
+  padding: var(--spacing-xxs) var(--spacing-s);
+  gap: var(--spacing-xs);
+  width: var(--type-badge-width-md);
+  background-color: var(--color-type-electric);
+}
+
+.demoPillBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+  color: var(--color-white);
+  border-radius: var(--border-radius-pill); /* 9999px */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  text-shadow: var(--shadow-text-contrast);
+  padding: var(--spacing-xxs) var(--spacing-s);
+  gap: var(--spacing-xs);
+  width: var(--type-badge-width-md);
+  background-color: var(--color-type-electric);
+}

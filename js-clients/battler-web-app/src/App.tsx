@@ -9,6 +9,7 @@ import Lobby from "./ui/Lobby/Lobby";
 import ReplaysHome from "./ui/Replays/ReplaysHome";
 import Sidebar from "./ui/Sidebar/Sidebar";
 import Teams from "./ui/Teams/Teams";
+import TypesDebug from "./ui/Debug/TypesDebug";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 
 import styles from "./App.module.scss";
@@ -62,6 +63,7 @@ export default function App() {
             {currentView === "teams" && "Teams"}
             {(currentView === "battle" || currentView === "proposal") && "Battles"}
             {currentView === "replays" && "Replays"}
+            {currentView === "debug-types" && "Types"}
           </span>
         </header>
 
@@ -78,6 +80,7 @@ export default function App() {
             </ConnectionRequired>
           )}
           {currentView === "replays" && <ReplaysHome />}
+          {currentView === "debug-types" && <TypesDebug />}
         </div>
       </main>
     </div>

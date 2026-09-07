@@ -4,29 +4,46 @@ import styles from "./TypeBadge.module.scss";
 export interface TypeBadgeProps {
   type: string;
   size?: "sm" | "md";
+  showIcon?: boolean;
+  fixedWidth?: boolean;
   className?: string;
 }
 
 export default function TypeBadge({
   type,
   size = "md",
+  showIcon = true,
+  fixedWidth = false,
   className,
 }: TypeBadgeProps) {
   const normalizedType = type.trim().toLowerCase();
+  const typeKey = normalizedType === "???" ? "unknown" : normalizedType;
+  const iconName = typeKey;
   const sizeClass = size === "sm" ? styles.typeBadgeSm : styles.typeBadgeMd;
-  const badgeClasses = `${styles.typeBadge} ${sizeClass}${className ? ` ${className}` : ""}`;
+  const fixedWidthClass = fixedWidth ? styles.fixedWidth : "";
+  const badgeClasses = `${styles.typeBadge} ${sizeClass}${fixedWidthClass ? ` ${fixedWidthClass}` : ""}${className ? ` ${className}` : ""}`;
+  const baseUrl = import.meta.env?.BASE_URL ?? "/";
 
   return (
     <span
       className={badgeClasses}
       style={
         {
-          backgroundColor: `var(--color-type-${normalizedType}, var(--border-color))`,
+          background: `var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`,
         } as CSSProperties
       }
-      data-type={normalizedType}
+      data-type={typeKey}
     >
-      {type}
+      {showIcon && (
+        <img
+          src={`${baseUrl}assets/types/${iconName}.png`}
+          alt=""
+          className={styles.typeIcon}
+          aria-hidden="true"
+          draggable={false}
+        />
+      )}
+      <span className={styles.typeText}>{type}</span>
     </span>
   );
 }

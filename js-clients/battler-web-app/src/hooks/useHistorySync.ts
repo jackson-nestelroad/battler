@@ -79,6 +79,8 @@ export function useHistorySync() {
         activeId = path.slice(10) || null;
       } else if (path === "/teams") {
         view = "teams";
+      } else if (path === "/types" || path === "/debug/types") {
+        view = "debug-types";
       }
 
       dispatch(selectBattle({ view, battleId: activeId }));
@@ -130,6 +132,8 @@ export function useHistorySync() {
       targetPath = "/teams";
     } else if (currentView === "replays") {
       targetPath = "/replays";
+    } else if (currentView === "debug-types") {
+      targetPath = "/types";
     } else if (currentView === "proposal" && activeBattleId) {
       targetPath = `/proposal/${activeBattleId}`;
     } else if (currentView === "battle" && activeBattleId) {
