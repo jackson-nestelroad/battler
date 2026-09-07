@@ -81,13 +81,13 @@
     "effect": {
       "callbacks": {
         "on_after_set_ability": [
-          "if !func_call(is_ally: $source $target):",
+          "if $source.is_defined and !func_call(is_ally: $source $target):",
           ["$target.volatile_effect_state.stale = true"],
           "else:",
           ["$target.volatile_effect_state.stale = false"]
         ],
         "on_after_heal": [
-          "if !func_call(is_ally: $source $target) and [healpulse, floralhealing] has $effect.id:",
+          "if $source.is_defined and !func_call(is_ally: $source $target) and [healpulse, floralhealing] has $effect.id:",
           ["$target.effect_state.stale = true"],
           "else:",
           ["$target.effect_state.stale = false"]

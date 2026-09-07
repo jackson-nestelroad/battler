@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import type { ActiveTimerState } from "../../store/battlesSlice";
 import { formatSeconds, getPlayerName } from "../../utils/battle";
 import CountdownTimer from "../Common/CountdownTimer";
-import styles from "./BattleScreen.module.scss";
 
 interface BattleTimersProps {
   activeTimers?: Record<string, ActiveTimerState>;
@@ -128,7 +127,8 @@ export default function BattleTimers({
       {otherTimers.length > 0 && (
         <button
           type="button"
-          className={`btn btn-sm btn-secondary ${styles.toggleOthersBtn}`}
+          className="badge badge-secondary"
+          aria-expanded={showOtherTimers}
           onClick={() => setShowOtherTimers(!showOtherTimers)}
         >
           {showOtherTimers ? "Hide" : "Show"} others ({otherTimers.length}){" "}

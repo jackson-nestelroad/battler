@@ -6,13 +6,13 @@ import {
   formatUiLogEntry,
   stringifyLog,
 } from "../src/formatter.js";
+import i18next from "../src/i18n.js";
 import {
   mapUiLogEntry,
   resolveMonContext,
   resolvePlayerNameContext,
   resolveSideNameContext,
 } from "../src/mapper.js";
-import i18next from "../src/i18n.js";
 import { LogCategory } from "../src/types.js";
 
 describe("LogFormatter", () => {
@@ -107,7 +107,7 @@ describe("LogFormatter", () => {
     const state = {
       field: {
         sides: [
-          { name: "Team 1", players: { p1: { name: "Jackson" } } },
+          { name: "Team 1", players: { p1: { name: "Player 1" } } },
           { name: "Team 2", players: { p2: { name: "Opponent" } } },
         ],
       },
@@ -120,8 +120,8 @@ describe("LogFormatter", () => {
     expect(result!.messages.length).toBe(1);
     const log = result!.messages[0];
     expect(log.category).toBe(LogCategory.Secondary);
-    expect(log.context.PLAYER_NAME).toEqual({ text: "Jackson" });
-    expect(stringifyLog(log)).toBe("Congratulations, Jackson!");
+    expect(log.context.PLAYER_NAME).toEqual({ text: "Player 1" });
+    expect(stringifyLog(log)).toBe("Congratulations, Player 1!");
   });
   it("should format tie log without state using fallback side name", () => {
     const formatter = new LogFormatter();
@@ -2267,23 +2267,23 @@ describe("LogFormatter", () => {
           );
           i18next.changeLanguage("fr");
 
-          expect(
-            formatNoticeText({ type: "ability", name: "Intimidation", mon: "Léviator" }),
-          ).toBe("Intimidation de Léviator");
+          expect(formatNoticeText({ type: "ability", name: "Intimidation", mon: "Léviator" })).toBe(
+            "Intimidation de Léviator",
+          );
           expect(formatNoticeText({ type: "ability", name: "Gaz Inhibiteur" })).toBe(
             "Gaz Inhibiteur",
           );
-          expect(
-            formatNoticeText({ type: "damage", name: "50%", mon: "Dracaufeu" }),
-          ).toBe("Dracaufeu a perdu 50% PV");
+          expect(formatNoticeText({ type: "damage", name: "50%", mon: "Dracaufeu" })).toBe(
+            "Dracaufeu a perdu 50% PV",
+          );
           expect(formatNoticeText({ type: "damage", name: "25%" })).toBe("a perdu 25% PV");
-          expect(
-            formatNoticeText({ type: "heal", name: "30%", mon: "Carapuce" }),
-          ).toBe("Carapuce a restauré 30% PV");
+          expect(formatNoticeText({ type: "heal", name: "30%", mon: "Carapuce" })).toBe(
+            "Carapuce a restauré 30% PV",
+          );
           expect(formatNoticeText({ type: "heal", name: "15%" })).toBe("a restauré 15% PV");
-          expect(
-            formatNoticeText({ type: "special", name: "Effet", mon: "Mew" }),
-          ).toBe("special: Effet de Mew");
+          expect(formatNoticeText({ type: "special", name: "Effet", mon: "Mew" })).toBe(
+            "special: Effet de Mew",
+          );
           expect(formatNoticeText({ type: "special", name: "Effet" })).toBe("special: Effet");
         } finally {
           i18next.changeLanguage("en");

@@ -2,6 +2,7 @@ import type { Battle } from "battler-service-client";
 import type { BattleState } from "battler-state";
 import type { ActiveTimerState } from "../../store/battlesSlice";
 import { getBattleStateLabel } from "../../utils/battleState";
+import BattleConditionsBar from "./BattleConditionsBar";
 import BattleTimers from "./BattleTimers";
 import styles from "./Field.module.scss";
 
@@ -32,16 +33,11 @@ export default function Field({
     );
   }
 
-  const weather = battleState.field?.weather || "Clear";
-  const terrainKeys = Object.keys(battleState.field?.conditions || {});
-  const terrain = terrainKeys.find((name) => name.endsWith("Terrain")) || "None";
-
   return (
     <div className={styles.arena}>
       <div className={styles.fieldHeader}>
         <div className={styles.fieldConditions}>
-          <span className="badge badge-warning">Weather: {weather}</span>
-          <span className="badge badge-info">Terrain: {terrain}</span>
+          <BattleConditionsBar battleState={battleState} playerId={playerId} />
           {activeTimers && (
             <BattleTimers
               activeTimers={activeTimers}

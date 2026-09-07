@@ -481,6 +481,69 @@ input[type="checkbox"] {
   border: 1px solid var(--color-secondary-border);
 }
 
+/* Interactive / Clickable Badges */
+button.badge,
+a.badge,
+.badge-clickable {
+  cursor: pointer;
+  border-style: solid;
+  user-select: none;
+  font-family: inherit;
+  transition: var(--transition-fast);
+
+  &:focus {
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+button.badge-secondary,
+a.badge-secondary,
+.badge-clickable.badge-secondary {
+  &:focus:not(:focus-visible) {
+    border-color: var(--color-secondary-border) !important;
+  }
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    background-color: var(--bg-subtle-neutral);
+    color: var(--text-primary);
+    border-color: var(--text-secondary) !important;
+  }
+
+  &.active,
+  &[aria-pressed="true"] {
+    background-color: var(--bg-subtle-hover);
+    color: var(--text-primary);
+    border-color: var(--text-primary) !important;
+
+    &:hover:not(:disabled) {
+      background-color: var(--bg-subtle-hover);
+      color: var(--text-primary);
+      border-color: var(--text-primary) !important;
+    }
+
+    &:focus:not(:focus-visible) {
+      border-color: var(--text-primary) !important;
+    }
+  }
+}
+
+button.badge-primary,
+a.badge-primary,
+.badge-clickable.badge-primary {
+  &:hover:not(:disabled) {
+    filter: brightness(1.15);
+  }
+}
+
+
 /* 4. Form Layout Helpers */
 .form-group {
   display: flex;
