@@ -518,11 +518,9 @@ a.badge-secondary,
   }
 
   &.active,
-  &[aria-pressed="true"] {
-    background-color: var(--bg-subtle-hover);
-    color: var(--text-primary);
-    border-color: var(--text-primary) !important;
-
+  &[aria-pressed="true"],
+  &[aria-expanded="true"] {
+    &,
     &:hover:not(:disabled) {
       background-color: var(--bg-subtle-hover);
       color: var(--text-primary);

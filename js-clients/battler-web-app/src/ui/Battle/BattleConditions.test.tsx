@@ -1,6 +1,7 @@
 import type { BattleState } from "battler-state";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { extractAllBattleConditions } from "../../utils/conditionData";
 import BattleConditionPopover from "./BattleConditionPopover";
 import BattleConditionsBar from "./BattleConditionsBar";
 
@@ -136,6 +137,24 @@ describe("BattleConditions", () => {
       expect(html).toContain("None"); // slot conditions is empty
       // Check NO emojis in rendered markup
       expect(html).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+    });
+
+    it("renders with precomputed data prop and semantic tablist", () => {
+      const state = createMockBattleState();
+      const conditions = extractAllBattleConditions(state, "p1");
+      const html = renderToStaticMarkup(
+        <BattleConditionPopover
+          data={conditions}
+          activeTab="field"
+          onTabChange={() => {}}
+        />,
+      );
+
+      expect(html).toContain("Field Conditions");
+      expect(html).toContain("Rain");
+      expect(html).toContain('role="tablist"');
+      expect(html).toContain('role="tab"');
+      expect(html).toContain('aria-selected="true"');
     });
 
     it("renders clean None state when no conditions are active", () => {

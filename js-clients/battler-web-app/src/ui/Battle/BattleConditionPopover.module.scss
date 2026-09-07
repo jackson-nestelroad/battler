@@ -42,16 +42,11 @@
     color: var(--text-primary);
   }
 
-  &:focus {
+  &:focus:not(:focus-visible) {
     outline: none !important;
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--color-primary) !important;
-    outline-offset: 1px !important;
-  }
-
-  &.tabBtnActive {
+  &[aria-selected="true"] {
     background-color: var(--bg-card);
     color: var(--color-primary);
     box-shadow: var(--shadow-sm);
@@ -68,7 +63,7 @@
   line-height: 1.2;
 
   &.hasItems {
-    background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    background-color: var(--color-primary-border);
     color: var(--color-primary);
   }
 }
@@ -90,13 +85,6 @@
   font-size: var(--font-size-xs);
 }
 
-.traitsGrid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-s);
-  font-size: var(--font-size-xs);
-}
-
 .traitRow {
   display: flex;
   align-items: baseline;
@@ -107,20 +95,17 @@
   color: var(--text-muted);
   font-weight: 500;
   min-width: 4.5rem;
-  font-size: var(--font-size-xs);
   flex-shrink: 0;
 }
 
 .traitValue {
   color: var(--text-primary);
   font-weight: 600;
-  font-size: var(--font-size-xs);
 }
 
 .traitNone {
   color: var(--text-muted);
   font-style: italic;
-  font-size: var(--font-size-xs);
 }
 
 .badgeList {
@@ -132,8 +117,10 @@
   min-width: 0;
 }
 
-.conditionBadge,
-.slotBadge {
+.conditionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xxs);
   padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
@@ -144,17 +131,7 @@
   white-space: nowrap;
 }
 
-.slotBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
 .slotTag {
   opacity: 0.75;
   font-weight: 500;
-}
-
-.slotName {
-  font-weight: 600;
 }

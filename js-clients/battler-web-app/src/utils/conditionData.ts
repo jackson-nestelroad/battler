@@ -29,6 +29,20 @@ export interface FormattedSideConditions {
   allCount: number;
 }
 
+export interface SideLabelsInfo {
+  playerSideIndex: number;
+  foeSideIndex: number;
+  playerSideLabel: string;
+  foeSideLabel: string;
+  isSpectatorOrReplay: boolean;
+}
+
+export interface BattleConditionsViewModel extends SideLabelsInfo {
+  fieldData: FormattedFieldConditions;
+  playerData: FormattedSideConditions;
+  foeData: FormattedSideConditions;
+}
+
 function normalizeKey(str: string): string {
   return str.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
@@ -55,7 +69,7 @@ export function formatCondition(name: string, data?: ConditionData | null): Form
 }
 
 export function extractFieldConditions(battleState?: BattleState | null): FormattedFieldConditions {
-  if (!battleState || !battleState.field) {
+  if (!battleState?.field) {
     return {
       weather: null,
       terrain: null,
@@ -87,18 +101,12 @@ export function extractFieldConditions(battleState?: BattleState | null): Format
   if (weather) primaryField.push(weather);
   if (terrain) primaryField.push(terrain);
 
-  let summaryText = "Clear";
-  if (primaryField.length === 1) {
-    summaryText = primaryField[0];
-  } else if (primaryField.length === 2) {
-    summaryText = `${primaryField[0]} / ${primaryField[1]}`;
-  }
-
+  let summaryText = primaryField.join(" / ") || "Clear";
   if (otherConditions.length > 0) {
     summaryText = `${summaryText} (+${otherConditions.length})`;
   }
 
-  const allCount = (weather ? 1 : 0) + (terrain ? 1 : 0) + otherConditions.length;
+  const allCount = primaryField.length + otherConditions.length;
 
   return {
     weather,
@@ -110,45 +118,27 @@ export function extractFieldConditions(battleState?: BattleState | null): Format
 }
 
 export function extractSlotConditions(
-  battleState: BattleState | null | undefined,
-  sideIndex: number,
+  battleState?: BattleState | null,
+  sideIndex: number = 0,
 ): FormattedSlotCondition[] {
-  if (!battleState || !battleState.field?.sides) return [];
-  const side = battleState.field.sides[sideIndex];
-  if (!side || !side.slot_conditions) return [];
+  const side = battleState?.field?.sides?.[sideIndex];
+  if (!side?.slot_conditions) return [];
 
-  const items: FormattedSlotCondition[] = [];
-  side.slot_conditions.forEach((slotMap, slotIdx) => {
-    if (!slotMap) return;
-    for (const [name, condData] of Object.entries(slotMap)) {
-      const formatted = formatCondition(name, condData);
-      items.push({
-        ...formatted,
-        slotIndex: slotIdx,
-        slotLabel: `Slot ${slotIdx + 1}`,
-      });
-    }
-  });
-
-  return items;
+  return side.slot_conditions.flatMap((slotMap, slotIdx) =>
+    Object.entries(slotMap || {}).map(([name, condData]) => ({
+      ...formatCondition(name, condData),
+      slotIndex: slotIdx,
+      slotLabel: `Slot ${slotIdx + 1}`,
+    })),
+  );
 }
 
 export function extractSideConditions(
-  battleState: BattleState | null | undefined,
-  sideIndex: number,
-  sideLabel: string,
+  battleState?: BattleState | null,
+  sideIndex: number = 0,
+  sideLabel: string = "",
 ): FormattedSideConditions {
-  if (!battleState || !battleState.field?.sides) {
-    return {
-      sideIndex,
-      sideLabel,
-      conditions: [],
-      slotConditions: [],
-      allCount: 0,
-    };
-  }
-
-  const side = battleState.field.sides[sideIndex];
+  const side = battleState?.field?.sides?.[sideIndex];
   if (!side) {
     return {
       sideIndex,
@@ -159,11 +149,9 @@ export function extractSideConditions(
     };
   }
 
-  const rawConditions = side.conditions || {};
-  const conditions: FormattedCondition[] = [];
-  for (const [name, condData] of Object.entries(rawConditions)) {
-    conditions.push(formatCondition(name, condData));
-  }
+  const conditions = Object.entries(side.conditions || {}).map(([name, condData]) =>
+    formatCondition(name, condData),
+  );
 
   const slotConditions = extractSlotConditions(battleState, sideIndex);
   const allCount = conditions.length + slotConditions.length;
@@ -178,16 +166,10 @@ export function extractSideConditions(
 }
 
 export function resolveSideLabels(
-  battleState: BattleState | null | undefined,
+  battleState?: BattleState | null,
   playerId?: string | null,
-): {
-  playerSideIndex: number;
-  foeSideIndex: number;
-  playerSideLabel: string;
-  foeSideLabel: string;
-  isSpectatorOrReplay: boolean;
-} {
-  if (!battleState || !battleState.field?.sides || battleState.field.sides.length === 0) {
+): SideLabelsInfo {
+  if (!battleState?.field?.sides?.length) {
     return {
       playerSideIndex: 0,
       foeSideIndex: 1,
@@ -226,5 +208,30 @@ export function resolveSideLabels(
     playerSideLabel: side0Name,
     foeSideLabel: side1Name,
     isSpectatorOrReplay: true,
+  };
+}
+
+export function extractAllBattleConditions(
+  battleState?: BattleState | null,
+  playerId?: string | null,
+): BattleConditionsViewModel {
+  const sideLabels = resolveSideLabels(battleState, playerId);
+  const fieldData = extractFieldConditions(battleState);
+  const playerData = extractSideConditions(
+    battleState,
+    sideLabels.playerSideIndex,
+    sideLabels.playerSideLabel,
+  );
+  const foeData = extractSideConditions(
+    battleState,
+    sideLabels.foeSideIndex,
+    sideLabels.foeSideLabel,
+  );
+
+  return {
+    ...sideLabels,
+    fieldData,
+    playerData,
+    foeData,
   };
 }

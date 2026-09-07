@@ -1,11 +1,70 @@
 import type { BattleState } from "battler-state";
 import { describe, expect, it } from "vitest";
 import {
+  extractAllBattleConditions,
   extractFieldConditions,
   extractSideConditions,
   formatCondition,
   resolveSideLabels,
 } from "./conditionData";
+
+function createMockBattleState(overrides: Partial<BattleState> = {}): BattleState {
+  return {
+    phase: "battle",
+    turn: 1,
+    winning_side: null,
+    last_log_index: 0,
+    battle_type: "Singles",
+    field: {
+      sides: [
+        {
+          name: "Player 1",
+          id: 0,
+          players: {
+            p1: {
+              name: "Player 1",
+              id: "p1",
+              position: 0,
+              team_size: 6,
+              mons: [],
+              left_battle: false,
+              wild: false,
+            },
+          },
+          conditions: {},
+          slot_conditions: [],
+          active: [],
+        },
+        {
+          name: "Player 2",
+          id: 1,
+          players: {
+            p2: {
+              name: "Player 2",
+              id: "p2",
+              position: 1,
+              team_size: 6,
+              mons: [],
+              left_battle: false,
+              wild: false,
+            },
+          },
+          conditions: {},
+          slot_conditions: [],
+          active: [],
+        },
+      ],
+      environment: null,
+      time: null,
+      weather: null,
+      conditions: {},
+      rules: [],
+      max_side_length: 6,
+    },
+    ui_log: [],
+    ...overrides,
+  };
+}
 
 describe("conditionData", () => {
   it("formats condition item with layer tracking", () => {
@@ -33,12 +92,9 @@ describe("conditionData", () => {
     expect(emptyField.weather).toBeNull();
     expect(emptyField.terrain).toBeNull();
 
-    const mockState: BattleState = {
-      phase: "battle",
+    const mockState = createMockBattleState({
       turn: 3,
-      winning_side: null,
       last_log_index: 10,
-      battle_type: "Singles",
       field: {
         sides: [],
         environment: null,
@@ -51,8 +107,7 @@ describe("conditionData", () => {
         rules: [],
         max_side_length: 6,
       },
-      ui_log: [],
-    };
+    });
 
     const field = extractFieldConditions(mockState);
     expect(field.weather).toBe("Rain");
@@ -82,12 +137,9 @@ describe("conditionData", () => {
   });
 
   it("extracts side and slot conditions with clean counts without favoring one condition", () => {
-    const mockState: BattleState = {
-      phase: "battle",
+    const mockState = createMockBattleState({
       turn: 3,
-      winning_side: null,
       last_log_index: 10,
-      battle_type: "Singles",
       field: {
         sides: [
           {
@@ -143,8 +195,7 @@ describe("conditionData", () => {
         rules: [],
         max_side_length: 6,
       },
-      ui_log: [],
-    };
+    });
 
     const side0 = extractSideConditions(mockState, 0, "Your Side");
     expect(side0.conditions).toHaveLength(2);
@@ -160,60 +211,7 @@ describe("conditionData", () => {
   });
 
   it("resolves side labels for active player vs spectator/replay", () => {
-    const mockState: BattleState = {
-      phase: "battle",
-      turn: 1,
-      winning_side: null,
-      last_log_index: 0,
-      battle_type: "Singles",
-      field: {
-        sides: [
-          {
-            name: "Player 1",
-            id: 0,
-            players: {
-              p1: {
-                name: "Player 1",
-                id: "p1",
-                position: 0,
-                team_size: 6,
-                mons: [],
-                left_battle: false,
-                wild: false,
-              },
-            },
-            conditions: {},
-            slot_conditions: [],
-            active: [],
-          },
-          {
-            name: "Player 2",
-            id: 1,
-            players: {
-              p2: {
-                name: "Player 2",
-                id: "p2",
-                position: 1,
-                team_size: 6,
-                mons: [],
-                left_battle: false,
-                wild: false,
-              },
-            },
-            conditions: {},
-            slot_conditions: [],
-            active: [],
-          },
-        ],
-        environment: null,
-        time: null,
-        weather: null,
-        conditions: {},
-        rules: [],
-        max_side_length: 6,
-      },
-      ui_log: [],
-    };
+    const mockState = createMockBattleState();
 
     const activePlayer = resolveSideLabels(mockState, "p1");
     expect(activePlayer.playerSideLabel).toBe("Your Side");
@@ -226,5 +224,36 @@ describe("conditionData", () => {
     expect(spectator.playerSideLabel).toBe("Player 1");
     expect(spectator.foeSideLabel).toBe("Player 2");
     expect(spectator.isSpectatorOrReplay).toBe(true);
+  });
+
+  it("extracts all battle conditions into a unified view model", () => {
+    const baseState = createMockBattleState();
+    const mockState: BattleState = {
+      ...baseState,
+      turn: 2,
+      last_log_index: 4,
+      field: {
+        ...baseState.field!,
+        weather: "Sun",
+        sides: [
+          {
+            ...baseState.field!.sides[0],
+            conditions: {
+              "Stealth Rock": { since_turn: 1, data: {} },
+            },
+          },
+          baseState.field!.sides[1],
+        ],
+      },
+    };
+
+    const allConditions = extractAllBattleConditions(mockState, "p1");
+    expect(allConditions.playerSideLabel).toBe("Your Side");
+    expect(allConditions.foeSideLabel).toBe("Foe Side");
+    expect(allConditions.fieldData.weather).toBe("Sun");
+    expect(allConditions.fieldData.summaryText).toBe("Sun");
+    expect(allConditions.playerData.allCount).toBe(1);
+    expect(allConditions.playerData.conditions[0].name).toBe("Stealth Rock");
+    expect(allConditions.foeData.allCount).toBe(0);
   });
 });

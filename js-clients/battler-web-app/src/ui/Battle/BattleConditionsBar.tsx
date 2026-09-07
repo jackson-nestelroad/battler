@@ -1,16 +1,11 @@
 import type { BattleState } from "battler-state";
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
-import {
-  extractFieldConditions,
-  extractSideConditions,
-  resolveSideLabels,
-} from "../../utils/conditionData";
+import { extractAllBattleConditions } from "../../utils/conditionData";
 import FloatingTooltip from "../Common/Tooltip/FloatingTooltip";
 import BattleConditionPopover, { type ConditionTab } from "./BattleConditionPopover";
-import styles from "./BattleConditionsBar.module.scss";
 
 export interface BattleConditionsBarProps {
-  battleState: BattleState | null;
+  battleState?: BattleState | null;
   playerId?: string | null;
 }
 
@@ -24,32 +19,21 @@ export default function BattleConditionsBar({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const {
-    playerSideIndex,
-    foeSideIndex,
-    playerSideLabel,
-    foeSideLabel,
-  } = useMemo(
-    () => resolveSideLabels(battleState, playerId),
+  const conditions = useMemo(
+    () => extractAllBattleConditions(battleState, playerId),
     [battleState, playerId],
   );
 
-  const fieldData = useMemo(
-    () => extractFieldConditions(battleState),
-    [battleState],
-  );
-
-  const playerData = useMemo(
-    () => extractSideConditions(battleState, playerSideIndex, playerSideLabel),
-    [battleState, playerSideIndex, playerSideLabel],
-  );
-
-  const foeData = useMemo(
-    () => extractSideConditions(battleState, foeSideIndex, foeSideLabel),
-    [battleState, foeSideIndex, foeSideLabel],
-  );
+  const {
+    fieldData,
+    playerData,
+    foeData,
+    playerSideLabel,
+    foeSideLabel,
+  } = conditions;
 
   const clearCloseTimer = () => {
     if (closeTimerRef.current) {
@@ -104,12 +88,10 @@ export default function BattleConditionsBar({
       const target = e.target as Node | null;
       if (!target) return;
 
-      if (containerRef.current && containerRef.current.contains(target)) {
-        return;
-      }
-
-      const dialog = document.querySelector('[role="dialog"][aria-label="Battle Conditions"]');
-      if (dialog && dialog.contains(target)) {
+      if (
+        containerRef.current?.contains(target) ||
+        popoverRef.current?.contains(target)
+      ) {
         return;
       }
 
@@ -138,46 +120,40 @@ export default function BattleConditionsBar({
     };
   }, []);
 
+  const chips: { tab: ConditionTab; label: string; text: string }[] = [
+    {
+      tab: "field",
+      label: "View field conditions",
+      text: `Field: ${fieldData.summaryText}`,
+    },
+    {
+      tab: "player",
+      label: `View ${playerSideLabel} conditions`,
+      text: `${playerSideLabel}: ${playerData.allCount}`,
+    },
+    {
+      tab: "foe",
+      label: `View ${foeSideLabel} conditions`,
+      text: `${foeSideLabel}: ${foeData.allCount}`,
+    },
+  ];
+
   return (
-    <div className={styles.container} ref={containerRef}>
-      {/* Field Trigger Chip */}
-      <button
-        type="button"
-        className={`badge badge-secondary ${isOpen && activeTab === "field" ? "active" : ""}`}
-        aria-expanded={isOpen && activeTab === "field"}
-        onMouseEnter={(e) => handleChipMouseEnter(e, "field")}
-        onMouseLeave={scheduleClose}
-        onClick={(e) => handleChipClick(e, "field")}
-        aria-label="View Field Conditions"
-      >
-        Field: {fieldData.summaryText}
-      </button>
-
-      {/* Your Side Trigger Chip */}
-      <button
-        type="button"
-        className={`badge badge-secondary ${isOpen && activeTab === "player" ? "active" : ""}`}
-        aria-expanded={isOpen && activeTab === "player"}
-        onMouseEnter={(e) => handleChipMouseEnter(e, "player")}
-        onMouseLeave={scheduleClose}
-        onClick={(e) => handleChipClick(e, "player")}
-        aria-label={`View ${playerSideLabel} Conditions`}
-      >
-        {playerSideLabel}: {playerData.allCount}
-      </button>
-
-      {/* Foe Side Trigger Chip */}
-      <button
-        type="button"
-        className={`badge badge-secondary ${isOpen && activeTab === "foe" ? "active" : ""}`}
-        aria-expanded={isOpen && activeTab === "foe"}
-        onMouseEnter={(e) => handleChipMouseEnter(e, "foe")}
-        onMouseLeave={scheduleClose}
-        onClick={(e) => handleChipClick(e, "foe")}
-        aria-label={`View ${foeSideLabel} Conditions`}
-      >
-        {foeSideLabel}: {foeData.allCount}
-      </button>
+    <div className="flex-row align-center gap-s flex-wrap" ref={containerRef}>
+      {chips.map(({ tab, label, text }) => (
+        <button
+          key={tab}
+          type="button"
+          className="badge badge-secondary"
+          aria-expanded={isOpen && activeTab === tab}
+          onMouseEnter={(e) => handleChipMouseEnter(e, tab)}
+          onMouseLeave={scheduleClose}
+          onClick={(e) => handleChipClick(e, tab)}
+          aria-label={label}
+        >
+          {text}
+        </button>
+      ))}
 
       {/* Condition Popover inside FloatingTooltip */}
       <FloatingTooltip
@@ -187,8 +163,8 @@ export default function BattleConditionsBar({
         onMouseLeave={scheduleClose}
       >
         <BattleConditionPopover
-          battleState={battleState}
-          playerId={playerId}
+          ref={popoverRef}
+          data={conditions}
           activeTab={activeTab}
           onTabChange={(tab) => {
             setActiveTab(tab);
