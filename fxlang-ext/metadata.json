@@ -3544,6 +3544,46 @@
       "type": "Undefined",
       "returns_item_from_list": false
     },
+    "log_slot_end": {
+      "description": "Logs the end of a slot condition to the battle log.",
+      "parameters": [
+        {
+          "name": "slot",
+          "type": "UFraction",
+          "description": "The slot index.",
+          "optional": false
+        },
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
+    "log_slot_start": {
+      "description": "Logs the start of a slot condition to the battle log.",
+      "parameters": [
+        {
+          "name": "slot",
+          "type": "UFraction",
+          "description": "The slot index.",
+          "optional": false
+        },
+        {
+          "name": "...",
+          "type": "String",
+          "description": "Additional log entries.",
+          "optional": false
+        }
+      ],
+      "flags": [],
+      "type": "Undefined",
+      "returns_item_from_list": false
+    },
     "log_start": {
       "description": "Logs the start of an effect to the battle log.",
       "parameters": [
