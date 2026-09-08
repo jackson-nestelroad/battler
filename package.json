@@ -15,6 +15,7 @@
     "js-clients/battler-types",
     "js-clients/team-converter",
     "js-clients/battler-client",
+    "js-clients/battler-data-service-client",
     "js-clients/battler-service-client",
     "js-clients/battler-log-formatter",
     "js-clients/battler-multiplayer-service-client",

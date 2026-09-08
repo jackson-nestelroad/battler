@@ -15,31 +15,40 @@ use crate::Gender;
 ///
 /// This enum is encoded as a single character: `L`, `T`, `I`, `B`, or `C`.
 #[derive(Debug, Clone, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum EvolutionMethod {
     /// Evolves on level-up.
     #[string = "L"]
     #[alias = "Level"]
+    #[cfg_attr(feature = "typescript", ts(rename = "L"))]
     Level,
     /// Evolves after being traded.
     #[string = "T"]
     #[alias = "Trade"]
+    #[cfg_attr(feature = "typescript", ts(rename = "T"))]
     Trade,
     /// Evolves on item use outside of battle.
     #[string = "I"]
     #[alias = "Item"]
+    #[cfg_attr(feature = "typescript", ts(rename = "I"))]
     Item,
     /// Evolves after a battle ends, regardless of if a level up occurred.
     #[string = "B"]
     #[alias = "Battle"]
+    #[cfg_attr(feature = "typescript", ts(rename = "B"))]
     BattleEnd,
     /// Evolves in some other custom way.
     #[string = "C"]
     #[alias = "Custom"]
+    #[cfg_attr(feature = "typescript", ts(rename = "C"))]
     Custom,
 }
 
 /// Details and conditions for one species to evolve into another.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct EvolutionData {
     /// The evolution method, which determines when the rest of the conditions should be checked.
     pub method: EvolutionMethod,

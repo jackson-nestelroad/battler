@@ -35,6 +35,8 @@ fn default_as_true() -> bool {
 /// Species data is common to all Mons of a given species. Data about a specific Mon (such as its
 /// nature, stats, or battle-specific conditions) does not belong here.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SpeciesData {
     /// The name of the species plus any forme name.
     ///
@@ -78,6 +80,7 @@ pub struct SpeciesData {
     #[serde(default = "default_as_true")]
     pub can_hatch: bool,
     /// Egg groups the species belongs to, which indicates which species can be bred together.
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub egg_groups: HashSet<String>,
     /// The number of egg cycles required to hatch an egg of this species.
     ///
@@ -120,18 +123,22 @@ pub struct SpeciesData {
     pub base_forme: Option<String>,
     /// Formes, which have distinct species data.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub formes: HashSet<String>,
     /// Cosmetic formes, which have no impact on species data.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub cosmetic_formes: HashSet<String>,
     /// Is this forme available only in battles?
     #[serde(default)]
     pub battle_only_forme: bool,
     /// Moves required for transforming into this forme. At least one move must be known.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub required_moves: HashSet<String>,
     /// Items required for transforming into this forme. At least one item must be held.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub required_items: HashSet<String>,
     /// The species and forme name this forme transforms from.
     pub changes_from: Option<String>,
@@ -140,9 +147,11 @@ pub struct SpeciesData {
 
     /// Flags.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<SpeciesFlag>"))]
     pub flags: HashSet<SpeciesFlag>,
     /// Event giveaways for this species.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, EventData>"))]
     pub events: HashMap<String, EventData>,
 
     /// Learnset, which contains all legal moves for this species.
@@ -150,10 +159,12 @@ pub struct SpeciesData {
     /// The learnset also defines how moves are learned by the species
     /// ([`crate::mons::MoveSource`]).
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, string[]>"))]
     pub learnset: LearnSet,
 
     /// Dynamic battle effects.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub effect: serde_json::Value,
 }
 

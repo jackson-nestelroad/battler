@@ -54,6 +54,8 @@ impl<I> FractionInteger for I where I: Integer + FromPrimitive + Copy {}
 /// - A percentage string (`"60%"`).
 /// - A two-length array (`[2,5]`).
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, concrete(I = u32), type = "number | string"))]
 pub struct Fraction<I> {
     num: I,
     den: I,

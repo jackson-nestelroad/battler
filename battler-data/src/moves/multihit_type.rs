@@ -14,6 +14,8 @@ use serde::{
 
 /// The number of hits done by a multihit move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, type = "number | [number, number]"))]
 pub enum MultihitType {
     /// A static number of hits.
     Static(u8),

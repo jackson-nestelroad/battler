@@ -13,6 +13,8 @@ use serde::{
 
 /// The chance that a Mon is shiny.
 #[derive(Debug, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, type = "boolean | \"maybe\""))]
 pub enum ShinyChance {
     /// The Mon cannot be shiny.
     Never,

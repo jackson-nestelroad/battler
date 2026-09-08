@@ -14,6 +14,8 @@ use serde::{
 
 /// The base accuracy of a move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, type = "number | \"exempt\""))]
 pub enum Accuracy {
     /// The base chance for the move to hit.
     Chance(u8),

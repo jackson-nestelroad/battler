@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::HashMap;
 
 use battler_data::{
     AbilityData,
@@ -98,17 +98,38 @@ pub struct BatchQuery {
 
 /// Result of a batch resource lookup.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct BatchResult {
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, MoveData | null>"))]
     pub moves: HashMap<String, Option<MoveData>>,
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, AbilityData | null>"))]
     pub abilities: HashMap<String, Option<AbilityData>>,
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, ItemData | null>"))]
     pub items: HashMap<String, Option<ItemData>>,
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, ConditionData | null>"))]
     pub conditions: HashMap<String, Option<ConditionData>>,
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "Record<string, SpeciesData | null>"))]
     pub species: HashMap<String, Option<SpeciesData>>,
+}
+
+#[cfg(test)]
+#[cfg(feature = "typescript")]
+mod typescript_tests {
+    use ts_rs::TS;
+
+    use super::*;
+
+    #[test]
+    fn export_types() {
+        ResourceOptions::export().unwrap();
+        BatchQuery::export().unwrap();
+        BatchResult::export().unwrap();
+    }
 }
 
 /// Service for querying game data from the `battler` data store.

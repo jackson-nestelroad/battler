@@ -26,6 +26,8 @@ pub enum CopyVolatileType {
 
 /// The type of user switch performed when using a move.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, type = "true | \"copyvolatile\" | \"shedtail\" | \"ifhit\""))]
 pub enum SwitchType {
     /// Normal switch out.
     #[default]

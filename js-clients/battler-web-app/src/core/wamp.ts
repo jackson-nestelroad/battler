@@ -12,6 +12,7 @@ import type {
   ProposedSpecialBattleOptions,
 } from "battler-multiplayer-service-client";
 import { BattlerMultiplayerServiceClient } from "battler-multiplayer-service-client";
+import { BattlerDataServiceClient } from "battler-data-service-client";
 import { BattlerServiceClient, ValidationError, type BattlePreview } from "battler-service-client";
 import type { BattleState } from "battler-state";
 import type { MonData, PlayerBattleData } from "battler-types";
@@ -151,6 +152,7 @@ function handleBattleError(
 class WampConnectionManager {
   public sessionProvider: WampSessionProvider | null = null;
   public serviceClient: BattlerServiceClient | null = null;
+  public dataServiceClient: BattlerDataServiceClient | null = null;
   public mpServiceClient: BattlerMultiplayerServiceClient | null = null;
   public multiplayerClient: BattlerMultiplayerClient | null = null;
   public proposalSubscription: Subscription | null = null;
@@ -161,6 +163,7 @@ class WampConnectionManager {
   public clear() {
     this.sessionProvider = null;
     this.serviceClient = null;
+    this.dataServiceClient = null;
     this.mpServiceClient = null;
     this.multiplayerClient = null;
     this.proposalSubscription = null;
@@ -632,6 +635,9 @@ export const connectWamp = createAsyncThunk<
       });
 
       connectionManager.serviceClient = new BattlerServiceClient(connectionManager.sessionProvider);
+      connectionManager.dataServiceClient = new BattlerDataServiceClient(
+        connectionManager.sessionProvider,
+      );
       connectionManager.mpServiceClient = new BattlerMultiplayerServiceClient(
         connectionManager.sessionProvider,
       );

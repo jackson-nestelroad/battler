@@ -19,6 +19,8 @@ use crate::{
 /// data is stored on each species to mark Mons that would ordinarily be illegal as legal and
 /// legitimate.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct EventData {
     /// Level Mon was given away at.
     pub level: Option<u8>,
@@ -31,6 +33,10 @@ pub struct EventData {
     pub nature: Option<Nature>,
     /// IVs.
     #[serde(default)]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Partial<Record<\"hp\" | \"atk\" | \"def\" | \"spa\" | \"spd\" | \"spe\", number>>")
+    )]
     pub ivs: PartialStatTable,
     /// Does the Mon have its hidden ability?
     #[serde(default)]
@@ -39,6 +45,7 @@ pub struct EventData {
     ///
     /// Moves that are ordinarily illegal should be listed here.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
     pub moves: HashSet<String>,
     /// Type of ball the Mon was given away in.
     pub ball: Option<String>,

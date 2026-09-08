@@ -31,6 +31,8 @@ use crate::{
 
 /// The effect of being hit by a move.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct HitEffect {
     /// Stat boosts.
     pub boosts: Option<BoostTable>,
@@ -57,6 +59,8 @@ pub struct HitEffect {
 
 /// Data about a secondary effect that occurs after a move is used.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct SecondaryEffectData {
     /// Chance of the effect occurring.
     pub chance: Option<Fraction<u16>>,
@@ -71,11 +75,14 @@ pub struct SecondaryEffectData {
     pub source_effect: Option<String>,
     /// Dynamic battle effects.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub effect: serde_json::Value,
 }
 
 /// Data for the Z-Power of a Z-Move.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum ZPower {
     #[serde(rename = "boosts")]
     Boosts(BoostTable),
@@ -94,14 +101,55 @@ pub struct ZMoveData {
     pub z_power: Option<ZPower>,
 }
 
+#[cfg(feature = "typescript")]
+impl ts_rs::TS for ZMoveData {
+    type WithoutGenerics = Self;
+
+    fn decl() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("type ZMoveData = {\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n};")
+    }
+
+    fn decl_concrete() -> alloc::string::String {
+        Self::decl()
+    }
+
+    fn name() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("ZMoveData")
+    }
+
+    fn inline() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("{\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n}")
+    }
+
+    fn inline_flattened() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("base_power: number;\n    boosts?: BoostTable;\n    effect?: string;")
+    }
+
+    fn output_path() -> Option<&'static std::path::Path> {
+        Some(std::path::Path::new("ZMoveData.ts"))
+    }
+
+    fn visit_dependencies(visitor: &mut impl ts_rs::TypeVisitor)
+    where
+        Self: 'static,
+    {
+        visitor.visit::<crate::moves::BoostTable>();
+    }
+}
+
 /// Data about how a move affects Max Moves.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MaxMoveData {
     /// Base power.
     pub base_power: u32,
 }
+
 /// The base number to use for recoil damage calculation.
 #[derive(Debug, Default, Clone, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum RecoilBase {
     /// Damage dealt.
     #[default]
@@ -117,6 +165,8 @@ pub enum RecoilBase {
 
 /// Data for a move's recoil damage to the user.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct RecoilData {
     /// The base number to use for recoil damage calculation.
     #[serde(default)]
@@ -134,11 +184,12 @@ fn default_crit_ratio() -> Option<u8> {
 
 /// Data for advanced move targeting.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct AdvancedTargeting {
     /// Does the move avoid random targets?
     #[serde(default)]
     pub no_random_target: bool,
-
     /// Does the move track the target, even if they have moved?
     #[serde(default)]
     pub tracks_target: bool,
@@ -159,6 +210,8 @@ pub struct AdvancedTargeting {
 /// affect ally Mons or the user itself, boost or drop stats, apply conditions to Mons or the
 /// battlefield itself, and more.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct MoveData {
     /// Name of the move.
     pub name: String,
@@ -180,6 +233,7 @@ pub struct MoveData {
     /// Move target(s).
     pub target: MoveTarget,
     /// Move flags.
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<MoveFlag>"))]
     pub flags: HashSet<MoveFlag>,
 
     /// Static damage dealt.
@@ -270,8 +324,10 @@ pub struct MoveData {
 
     /// Dynamic battle effects.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub effect: serde_json::Value,
     /// Dynamic battle effects of the condition created by this move.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub condition: serde_json::Value,
 }

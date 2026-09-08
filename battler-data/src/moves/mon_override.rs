@@ -5,6 +5,8 @@ use serde_string_enum::{
 
 /// The Mon to use for stat calculations on a move.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum MonOverride {
     /// Use the target for stat calculations.
     #[string = "Target"]
