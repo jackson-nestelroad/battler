@@ -1005,9 +1005,12 @@ async fn test_server_data_service_queries() {
 
     // Single query with fxlang
     let move_data_fx = client
-        .get_move("fly", ResourceOptions {
-            include_fxlang: true,
-        })
+        .get_move(
+            "fly",
+            ResourceOptions {
+                include_fxlang: true,
+            },
+        )
         .await
         .unwrap();
     assert_ne!(move_data_fx.effect, serde_json::Value::Null);

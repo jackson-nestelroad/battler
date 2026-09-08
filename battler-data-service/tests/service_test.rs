@@ -102,9 +102,12 @@ fn preserves_ast_fields_when_include_fxlang_is_true() {
     let service = BattlerDataService::new(static_local_data_store());
 
     let move_data = service
-        .get_move("fly", ResourceOptions {
-            include_fxlang: true,
-        })
+        .get_move(
+            "fly",
+            ResourceOptions {
+                include_fxlang: true,
+            },
+        )
         .unwrap();
     assert_matches::assert_matches!(move_data, Some(data) => {
         assert_ne!(data.effect, serde_json::Value::Null);
@@ -112,9 +115,12 @@ fn preserves_ast_fields_when_include_fxlang_is_true() {
     });
 
     let ability_data = service
-        .get_ability("intimidate", ResourceOptions {
-            include_fxlang: true,
-        })
+        .get_ability(
+            "intimidate",
+            ResourceOptions {
+                include_fxlang: true,
+            },
+        )
         .unwrap();
     assert_matches::assert_matches!(ability_data, Some(data) => {
         assert_ne!(data.effect, serde_json::Value::Null);

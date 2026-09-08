@@ -78,7 +78,11 @@ impl<'d> BattlerDataService<'d> {
     }
 
     /// Queries an ability by name or ID.
-    pub fn get_ability(&self, query: &str, options: ResourceOptions) -> Result<Option<AbilityData>> {
+    pub fn get_ability(
+        &self,
+        query: &str,
+        options: ResourceOptions,
+    ) -> Result<Option<AbilityData>> {
         let id = self.resolve_id(ResourceType::Ability, query)?;
         let data = self.data.get_ability(&id)?;
         Ok(data.map(|d| {
@@ -104,7 +108,11 @@ impl<'d> BattlerDataService<'d> {
     }
 
     /// Queries a condition by name or ID.
-    pub fn get_condition(&self, query: &str, options: ResourceOptions) -> Result<Option<ConditionData>> {
+    pub fn get_condition(
+        &self,
+        query: &str,
+        options: ResourceOptions,
+    ) -> Result<Option<ConditionData>> {
         let id = self.resolve_id(ResourceType::Condition, query)?;
         let data = self.data.get_condition(&id)?;
         Ok(data.map(|d| {
@@ -117,7 +125,11 @@ impl<'d> BattlerDataService<'d> {
     }
 
     /// Queries a species by name or ID.
-    pub fn get_species(&self, query: &str, _options: ResourceOptions) -> Result<Option<SpeciesData>> {
+    pub fn get_species(
+        &self,
+        query: &str,
+        _options: ResourceOptions,
+    ) -> Result<Option<SpeciesData>> {
         let id = self.resolve_id(ResourceType::Species, query)?;
         self.data.get_species(&id)
     }

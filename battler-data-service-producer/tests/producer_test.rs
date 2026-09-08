@@ -153,9 +153,12 @@ async fn queries_move_ability_item_condition_species_over_wamp() {
 
     // Move with fxlang included
     let fly_fx = client
-        .get_move("Fly", ResourceOptions {
-            include_fxlang: true,
-        })
+        .get_move(
+            "Fly",
+            ResourceOptions {
+                include_fxlang: true,
+            },
+        )
         .await
         .unwrap();
     assert_ne!(fly_fx.effect, serde_json::Value::Null);
