@@ -307,11 +307,15 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     "moves": [
                         {
                             "name": "Splash",
-                            "pp": 38
+                            "pp": 38,
+                            "max_pp": 40,
+                            "typ": "Normal"
                         },
                         {
                             "name": "Bounce",
-                            "pp": 5
+                            "pp": 5,
+                            "max_pp": 5,
+                            "typ": "Flying"
                         }
                     ],
                     "ability": "Swift Swim",

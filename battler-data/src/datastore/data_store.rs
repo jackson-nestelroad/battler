@@ -9,6 +9,7 @@ use crate::{
     Id,
     ItemData,
     MoveData,
+    ResourceType,
     SpeciesData,
     TypeChart,
 };
@@ -32,8 +33,9 @@ pub trait DataStore: Send + Sync {
     /// Gets the type chart.
     fn get_type_chart(&self) -> Result<TypeChart>;
 
-    /// Translates the given alias to another ID, if the alias mapping exists.
-    fn translate_alias(&self, id: &Id) -> Result<Option<Id>>;
+    /// Translates the given alias to another ID for the specified resource type, if the alias
+    /// mapping exists.
+    fn translate_alias(&self, resource_type: ResourceType, id: &Id) -> Result<Option<Id>>;
 
     /// Gets an ability by ID.
     fn get_ability(&self, id: &Id) -> Result<Option<AbilityData>>;

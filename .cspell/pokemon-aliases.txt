@@ -185,8 +185,13 @@ giratina
 giratinaaltered
 gourgeist
 gourgeistaverage
+hail
+hailwarning
+hailweather
 healthfeather
 healthwing
+heavyrain
+heavyrainweather
 holocaster
 holocastergreen
 hoopa
@@ -288,12 +293,16 @@ pumpkabooaverage
 pyroar
 pyroarfemale
 pyroarmale
+rain
+rainweather
 reinsofunity
 reinsofunitymerge
 resistfeather
 resistwing
 rotombike
 rotombikewatermode
+sandstorm
+sandstormweather
 sawsbuck
 sawsbuckautumn
 sawsbuckspring
@@ -337,6 +346,9 @@ sinisteaantique
 sinisteaphony
 sleep
 slp
+snow
+snowwarning
+snowweather
 spewpa
 spewpaarchipelago
 spewpacontinental
@@ -374,6 +386,7 @@ thundurusincarnate
 tornadus
 tornadusincarnate
 tox
+toxic
 toxtricity
 toxtricityamped
 toxtricityampedgmax
@@ -441,5 +454,7 @@ xerneasactive
 xerneasneutral
 xtransceiver
 xtransceiverred
+zpowerboostcriticalhitratio
+zpowerboostcritratio
 zygarde
 zygarde50

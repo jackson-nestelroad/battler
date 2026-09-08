@@ -3399,7 +3399,8 @@ fn apply_secondary_effects(
             .secondary_effect_chances(target.handle)
             .collect::<Vec<_>>()
         {
-            if let Some(secondary_effect) = context.active_move().secondary_effect(target.handle, i) {
+            if let Some(secondary_effect) = context.active_move().secondary_effect(target.handle, i)
+            {
                 if secondary_effect.data.apply_once
                     && context.active_move().applied_secondary_effects.contains(&i)
                 {
@@ -3416,7 +3417,10 @@ fn apply_secondary_effects(
                 None => true,
             };
             if secondary_roll {
-                context.active_move_mut().applied_secondary_effects.insert(i);
+                context
+                    .active_move_mut()
+                    .applied_secondary_effects
+                    .insert(i);
 
                 let mut context = context.secondary_active_move_context(target.handle, i);
                 let mut targets = hit_targets_state_from_targets([target.handle]);

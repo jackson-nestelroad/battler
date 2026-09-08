@@ -197,13 +197,17 @@ fn transform_transforms_into_target() {
                             "moves": [
                                 {
                                     "name": "Transform",
-                                    "pp": 9
+                                    "pp": 9,
+                                    "max_pp": 10
                                 }
                             ],
                             "ability": "No Ability",
                             "item": null,
                             "status": null,
-                            "hidden_power_type": "Fighting"
+                            "hidden_power_type": "Fighting",
+                            "level_experience": 125000,
+                            "next_level_experience": 132651,
+                            "weight": 40
                         },
                         "species": "Charizard",
                         "hp": 108,
@@ -283,7 +287,8 @@ fn transform_transforms_into_target() {
                         ],
                         "ability": "Blaze",
                         "item": null,
-                        "status": null
+                        "status": null,
+                        "weight": 905
                     }
                 ]
             }"#

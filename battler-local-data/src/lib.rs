@@ -13,7 +13,6 @@ use anyhow::{
 };
 use battler_data::{
     AbilityData,
-    Aliases,
     ClauseData,
     ConditionData,
     DataStore,
@@ -21,6 +20,8 @@ use battler_data::{
     Id,
     ItemData,
     MoveData,
+    PartitionedAliases,
+    ResourceType,
     SpeciesData,
     TypeChart,
     deserialize_aliases,
@@ -32,7 +33,7 @@ pub struct LocalDataStore {
     root: String,
     pub type_chart: TypeChart,
     pub abilities: HashMap<Id, AbilityData>,
-    pub aliases: Aliases,
+    pub aliases: PartitionedAliases,
     pub clauses: HashMap<Id, ClauseData>,
     pub conditions: HashMap<Id, ConditionData>,
     pub items: HashMap<Id, ItemData>,
@@ -85,7 +86,7 @@ impl LocalDataStore {
             root,
             type_chart: TypeChart::new(),
             abilities: HashMap::default(),
-            aliases: Aliases::default(),
+            aliases: PartitionedAliases::default(),
             clauses: HashMap::default(),
             conditions: HashMap::default(),
             items: HashMap::default(),
@@ -118,9 +119,9 @@ impl LocalDataStore {
         self.aliases = deserialize_aliases(
             serde_json::from_reader(
                 File::open(Path::new(&self.root).join(Self::ALIASES_FILE))
-                    .context("failed to read type chart")?,
+                    .context("failed to read aliases")?,
             )
-            .context("failed to parse type chart")?,
+            .context("failed to parse aliases")?,
         );
 
         let clauses: HashMap<Id, ClauseData> = serde_json::from_reader(
@@ -241,8 +242,8 @@ impl DataStore for LocalDataStore {
         Ok(self.type_chart.clone())
     }
 
-    fn translate_alias(&self, id: &Id) -> Result<Option<Id>> {
-        Ok(self.aliases.get(id).cloned())
+    fn translate_alias(&self, resource_type: ResourceType, id: &Id) -> Result<Option<Id>> {
+        Ok(self.aliases.get(resource_type, id).cloned())
     }
 
     fn get_ability(&self, id: &Id) -> Result<Option<AbilityData>> {
@@ -413,5 +414,59 @@ impl DataStoreByName for LocalDataStore {
             })
             .insert(name.to_owned(), id);
         Ok(Some(species))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use battler_data::{
+        DataStore,
+        Id,
+        ResourceType,
+    };
+
+    use super::LocalDataStore;
+
+    #[test]
+    fn translates_partitioned_aliases() {
+        let store = LocalDataStore::new("../battle-data/data".to_owned()).unwrap();
+
+        // Species alias
+        assert_eq!(
+            store
+                .translate_alias(ResourceType::Species, &Id::from("alcremierainbowswirl"))
+                .unwrap(),
+            Some(Id::from("alcremie"))
+        );
+
+        // Item alias
+        assert_eq!(
+            store
+                .translate_alias(ResourceType::Item, &Id::from("healthfeather"))
+                .unwrap(),
+            Some(Id::from("healthwing"))
+        );
+
+        // Condition alias
+        assert_eq!(
+            store
+                .translate_alias(ResourceType::Condition, &Id::from("burn"))
+                .unwrap(),
+            Some(Id::from("brn"))
+        );
+        assert_eq!(
+            store
+                .translate_alias(ResourceType::Condition, &Id::from("badpoison"))
+                .unwrap(),
+            Some(Id::from("tox"))
+        );
+
+        // Prove partition isolation: move "burn" does NOT resolve to condition alias "brn"
+        assert_eq!(
+            store
+                .translate_alias(ResourceType::Move, &Id::from("burn"))
+                .unwrap(),
+            None
+        );
     }
 }

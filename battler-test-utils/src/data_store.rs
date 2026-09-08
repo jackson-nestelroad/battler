@@ -13,6 +13,7 @@ use battler::{
     Id,
     ItemData,
     MoveData,
+    ResourceType,
     SpeciesData,
     TypeChart,
 };
@@ -80,8 +81,8 @@ impl DataStore for TestDataStore {
         self.local.get_type_chart()
     }
 
-    fn translate_alias(&self, id: &Id) -> Result<Option<Id>> {
-        self.local.translate_alias(id)
+    fn translate_alias(&self, resource_type: ResourceType, id: &Id) -> Result<Option<Id>> {
+        self.local.translate_alias(resource_type, id)
     }
 
     fn get_ability(&self, id: &Id) -> Result<Option<AbilityData>> {

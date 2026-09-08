@@ -3,6 +3,7 @@ use battler_data::{
     ConditionData,
     DataStore,
     Id,
+    ResourceType,
 };
 
 use crate::{
@@ -22,6 +23,8 @@ pub struct ConditionLookup<'d> {
 }
 
 impl<'d> ResourceLookup<'d, ConditionData> for ConditionLookup<'d> {
+    const RESOURCE_TYPE: ResourceType = ResourceType::Condition;
+
     fn new(data: &'d dyn DataStore) -> Self {
         Self { data }
     }

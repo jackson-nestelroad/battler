@@ -260,4 +260,3 @@ where
     };
     producer.publish_log(log_pattern, log_event, options).await
 }
-
