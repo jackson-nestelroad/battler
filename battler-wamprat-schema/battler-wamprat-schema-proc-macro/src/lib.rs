@@ -234,7 +234,17 @@ pub fn derive_wamp_schema(input: proc_macro::TokenStream) -> proc_macro::TokenSt
             Attribute::Rpc(rpc) => {
                 let variant_ident = &variant.ident;
                 let name = variant_to_function_name(&variant_ident.to_string());
-                let name = Ident::new(&name, variant.span);
+                const RUST_KEYWORDS: &[&str] = &[
+                    "as", "break", "const", "continue", "crate", "else", "enum", "extern", "false", "fn",
+                    "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub",
+                    "ref", "return", "self", "Self", "static", "struct", "super", "trait", "true",
+                    "type", "unsafe", "use", "where", "while", "async", "await", "dyn",
+                ];
+                let name = if RUST_KEYWORDS.contains(&name.as_str()) {
+                    Ident::new_raw(&name, variant.span)
+                } else {
+                    Ident::new(&name, variant.span)
+                };
                 let input = &rpc.input;
                 let output = &rpc.output;
                 let error = &rpc.error;

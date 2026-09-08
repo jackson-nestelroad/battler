@@ -1,0 +1,25 @@
+[package]
+name = "battler-data-service"
+version = "0.1.0"
+edition = "2024"
+description = "Service for querying Pokémon game data in Rust."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "data"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-data-service"
+
+[dependencies]
+anyhow = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+battler-data = { workspace = true }
+battler-data-service-schema = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
+battler-test-utils = { path = "../battler-test-utils" }

@@ -1,0 +1,33 @@
+[package]
+name = "battler-data-service-producer"
+version = "0.1.0"
+edition = "2024"
+description = "WAMP producer implementation for battler-data-service."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "data"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-data-service-producer"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+futures-util = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+
+battler-data = { workspace = true }
+battler-data-service = { workspace = true }
+battler-data-service-schema = { workspace = true }
+battler-wamp = { workspace = true }
+battler-wamp-values = { workspace = true }
+battler-wamprat = { workspace = true }
+battler-wamprat-schema = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
+
+battler-data-service-client = { workspace = true }
+battler-local-data = { workspace = true }
+battler-test-utils = { path = "../battler-test-utils" }
+battler-wamp-uri = { workspace = true }

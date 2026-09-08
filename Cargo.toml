@@ -9,6 +9,10 @@ members = [
     "battler-choice/battler-choice-wasm",
     "battler-client",
     "battler-data",
+    "battler-data-service",
+    "battler-data-service/battler-data-service-schema",
+    "battler-data-service-client",
+    "battler-data-service-producer",
     "battler-local-data",
     "battler-multiplayer-client",
     "battler-multiplayer-service",
@@ -115,6 +119,10 @@ syn = { version = "2.0", features = ["full"] }
 battler = { version = "0.9", path = "battler", default-features = false }
 battler-choice = { version = "0.3", path = "battler-choice", default-features = false }
 battler-data = { version = "0.3", path = "battler-data", default-features = false }
+battler-data-service = { version = "0.1", path = "battler-data-service" }
+battler-data-service-client = { version = "0.1", path = "battler-data-service-client" }
+battler-data-service-producer = { version = "0.1", path = "battler-data-service-producer" }
+battler-data-service-schema = { version = "0.1", path = "battler-data-service/battler-data-service-schema" }
 battler-local-data = { version = "0.1", path = "battler-local-data" }
 battler-prng = { version = "0.3", path = "battler-prng", default-features = false, features = ["alloc"] }
 battler-wamp = { version = "0.5", path = "battler-wamp" }

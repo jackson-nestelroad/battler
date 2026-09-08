@@ -1,0 +1,141 @@
+use std::collections::HashMap;
+
+use battler_data::{
+    AbilityData,
+    ConditionData,
+    ItemData,
+    MoveData,
+    SpeciesData,
+};
+use battler_wamp_values::{
+    WampDictionary,
+    WampList,
+};
+use battler_wamprat_message::WampApplicationMessage;
+use battler_wamprat_schema::WampSchema;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+mod error;
+pub use error::BattlerDataServiceError;
+
+/// Options for querying a resource.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, WampDictionary)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct ResourceOptions {
+    /// Whether to include raw fxlang code. Defaults to false.
+    #[battler_wamp_values(default)]
+    #[serde(default)]
+    pub include_fxlang: bool,
+}
+
+/// Arguments for querying a single resource.
+#[derive(Debug, Default, Clone, PartialEq, Eq, WampList)]
+pub struct ResourceInputArgs {
+    /// Query string (name or ID).
+    pub query: String,
+    /// Options for querying the resource.
+    #[battler_wamp_values(default)]
+    pub options: ResourceOptions,
+}
+
+/// Input for querying a single resource.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct ResourceInput(#[arguments] pub ResourceInputArgs);
+
+/// Arguments for single resource data output.
+#[derive(Debug, Default, Clone, WampList)]
+pub struct ResourceOutputArgs {
+    /// JSON-serialized resource data.
+    pub data_json: String,
+}
+
+/// Output for querying a single resource.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct ResourceOutput(#[arguments] pub ResourceOutputArgs);
+
+/// Arguments for batch resource lookup.
+#[derive(Debug, Default, Clone, WampList)]
+pub struct BatchInputArgs {
+    /// JSON-serialized [`BatchQuery`].
+    pub query_json: String,
+}
+
+/// Input for batch resource lookup.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct BatchInput(#[arguments] pub BatchInputArgs);
+
+/// Arguments for batch resource lookup output.
+#[derive(Debug, Default, Clone, WampList)]
+pub struct BatchOutputArgs {
+    /// JSON-serialized [`BatchResult`].
+    pub result_json: String,
+}
+
+/// Output for batch resource lookup.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct BatchOutput(#[arguments] pub BatchOutputArgs);
+
+/// Query for batch resource lookup.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct BatchQuery {
+    #[serde(default)]
+    pub moves: Vec<String>,
+    #[serde(default)]
+    pub abilities: Vec<String>,
+    #[serde(default)]
+    pub items: Vec<String>,
+    #[serde(default)]
+    pub conditions: Vec<String>,
+    #[serde(default)]
+    pub species: Vec<String>,
+    #[serde(default)]
+    pub options: ResourceOptions,
+}
+
+/// Result of a batch resource lookup.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct BatchResult {
+    #[serde(default)]
+    pub moves: HashMap<String, Option<MoveData>>,
+    #[serde(default)]
+    pub abilities: HashMap<String, Option<AbilityData>>,
+    #[serde(default)]
+    pub items: HashMap<String, Option<ItemData>>,
+    #[serde(default)]
+    pub conditions: HashMap<String, Option<ConditionData>>,
+    #[serde(default)]
+    pub species: HashMap<String, Option<SpeciesData>>,
+}
+
+/// Service for querying game data from the `battler` data store.
+#[derive(Debug, Clone, WampSchema)]
+#[realm("com.battler")]
+pub enum BattlerDataService {
+    /// Queries move data by name or ID.
+    #[rpc(uri = "com.battler.data_service.move", input = ResourceInput, output = ResourceOutput)]
+    Move,
+
+    /// Queries ability data by name or ID.
+    #[rpc(uri = "com.battler.data_service.ability", input = ResourceInput, output = ResourceOutput)]
+    Ability,
+
+    /// Queries item data by name or ID.
+    #[rpc(uri = "com.battler.data_service.item", input = ResourceInput, output = ResourceOutput)]
+    Item,
+
+    /// Queries condition data by name or ID.
+    #[rpc(uri = "com.battler.data_service.condition", input = ResourceInput, output = ResourceOutput)]
+    Condition,
+
+    /// Queries species data by name or ID.
+    #[rpc(uri = "com.battler.data_service.species", input = ResourceInput, output = ResourceOutput)]
+    Species,
+
+    /// Batch queries multiple resources in a single RPC round-trip.
+    #[rpc(uri = "com.battler.data_service.batch", input = BatchInput, output = BatchOutput)]
+    Batch,
+}

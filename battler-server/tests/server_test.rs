@@ -24,6 +24,12 @@ use battler::{
     SideData,
     TeamData,
 };
+use battler_data_service_client::{
+    BattlerDataServiceClient,
+    ResourceOptions,
+    battler_data_service_client_over_wamp_consumer,
+};
+use battler_data_service_schema::BatchQuery;
 use battler_multiplayer_service::{
     BattlerMultiplayerServiceClient,
     ProposedBattleOptions,
@@ -100,6 +106,31 @@ where
     connection.reconnect_delay = Duration::from_secs(3600);
     connection.max_consecutive_failures = 1;
     let consumer = battler_service_schema::BattlerService::consumer(
+        battler_wamprat_schema::PeerConfig {
+            connection,
+            auth_methods: Vec::from_iter([battler_wamp::peer::SupportedAuthMethod::Undisputed {
+                id: name.to_owned(),
+                role: "user".to_owned(),
+            }]),
+        },
+        peer,
+    )?;
+    consumer.wait_until_ready().await?;
+    Ok(consumer)
+}
+
+async fn start_data_consumer<S>(
+    name: &str,
+    url: &str,
+    peer: Peer<S>,
+) -> Result<battler_data_service_schema::BattlerDataServiceConsumer<S>>
+where
+    S: Send + 'static,
+{
+    let mut connection = PeerConnectionConfig::new(PeerConnectionType::Remote(url.to_owned()));
+    connection.reconnect_delay = Duration::from_secs(3600);
+    connection.max_consecutive_failures = 1;
+    let consumer = battler_data_service_schema::BattlerDataService::consumer(
         battler_wamprat_schema::PeerConfig {
             connection,
             auth_methods: Vec::from_iter([battler_wamp::peer::SupportedAuthMethod::Undisputed {
@@ -938,4 +969,75 @@ async fn test_server_stress_concurrent_live_battles_and_timers() -> Result<()> {
 
     handle.shutdown().await.unwrap();
     Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_server_data_service_queries() {
+    let mut data_dir = "../battle-data/data".to_owned();
+    if !std::path::Path::new(&data_dir).is_dir() {
+        data_dir = "battle-data/data".to_owned();
+    }
+
+    let handle = start_server(ServerConfig {
+        address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+        port: 0,
+        data_dir,
+        realm_name: "battler".to_owned(),
+        realm_uri: "com.battler".to_owned(),
+    })
+    .await
+    .unwrap();
+
+    let port = handle.router_handle.local_addr().port();
+    let url = format!("ws://127.0.0.1:{port}");
+
+    let peer = create_peer("data_user").unwrap();
+    let consumer = start_data_consumer("data_user", &url, peer).await.unwrap();
+    let client = battler_data_service_client_over_wamp_consumer(Arc::new(consumer));
+
+    // Single query sanitized
+    let move_data = client
+        .get_move("fly", ResourceOptions::default())
+        .await
+        .unwrap();
+    assert_eq!(move_data.name, "Fly");
+    assert_eq!(move_data.effect, serde_json::Value::Null);
+
+    // Single query with fxlang
+    let move_data_fx = client
+        .get_move("fly", ResourceOptions {
+            include_fxlang: true,
+        })
+        .await
+        .unwrap();
+    assert_ne!(move_data_fx.effect, serde_json::Value::Null);
+
+    // Single query not found
+    assert_matches::assert_matches!(
+        client
+            .get_move("nonexistent_move", ResourceOptions::default())
+            .await,
+        Err(_)
+    );
+
+    // Batch query
+    let batch = client
+        .batch(BatchQuery {
+            moves: vec!["Tackle".to_owned()],
+            abilities: vec!["Intimidate".to_owned()],
+            items: vec!["Leftovers".to_owned()],
+            conditions: vec!["Sandstorm".to_owned()],
+            species: vec!["Pikachu".to_owned()],
+            options: ResourceOptions::default(),
+        })
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(batch.moves.get("Tackle"), Some(Some(_)));
+    assert_matches::assert_matches!(batch.abilities.get("Intimidate"), Some(Some(_)));
+    assert_matches::assert_matches!(batch.items.get("Leftovers"), Some(Some(_)));
+    assert_matches::assert_matches!(batch.conditions.get("Sandstorm"), Some(Some(_)));
+    assert_matches::assert_matches!(batch.species.get("Pikachu"), Some(Some(_)));
+
+    handle.shutdown().await.unwrap();
 }
