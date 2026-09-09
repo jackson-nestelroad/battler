@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import PokemonTooltipCard from "./PokemonTooltipCard";
+import MonTooltipCard from "./MonTooltipCard";
+import styles from "./MonTooltipCard.module.scss";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 
 function createMockMon(overrides: Partial<MonTooltipViewModel> = {}): MonTooltipViewModel {
@@ -32,7 +33,7 @@ function createMockMon(overrides: Partial<MonTooltipViewModel> = {}): MonTooltip
   };
 }
 
-describe("PokemonTooltipCard", () => {
+describe("MonTooltipCard", () => {
   describe("Terastallization display", () => {
     it("renders Tera type as primary and base types as secondary when Terastallized", () => {
       const mon = createMockMon({
@@ -41,7 +42,7 @@ describe("PokemonTooltipCard", () => {
         isTerastallized: true,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       // Primary type is Water
       expect(html).toContain("Water");
@@ -60,7 +61,7 @@ describe("PokemonTooltipCard", () => {
         isTerastallized: true,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("Stellar");
       expect(html).toContain("Terastallized");
@@ -76,7 +77,7 @@ describe("PokemonTooltipCard", () => {
         isTerastallized: false,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("Fire");
       expect(html).toContain("Flying");
@@ -93,7 +94,7 @@ describe("PokemonTooltipCard", () => {
         isTerastallized: false,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("Fire");
       expect(html).toContain("Flying");
@@ -110,7 +111,7 @@ describe("PokemonTooltipCard", () => {
         conditions: ["Dynamax"],
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       // Ensure "Dynamax" appears exactly once in the rendered HTML
       const matches = html.match(/Dynamax/g);
@@ -124,7 +125,7 @@ describe("PokemonTooltipCard", () => {
         conditions: [],
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       const matches = html.match(/Dynamax/g);
       expect(matches).not.toBeNull();
@@ -139,7 +140,7 @@ describe("PokemonTooltipCard", () => {
         originalSpecies: "Ditto",
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("Transformed (Ditto)");
     });
@@ -152,7 +153,7 @@ describe("PokemonTooltipCard", () => {
         originalSpecies: null,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("Transformed");
     });
@@ -164,7 +165,7 @@ describe("PokemonTooltipCard", () => {
         isDynamaxed: true,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("+2 Atk");
       expect(html).toContain("Taunt");
@@ -185,7 +186,7 @@ describe("PokemonTooltipCard", () => {
         isFainted: false,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("100%");
       expect(html).not.toContain("FNT");
@@ -203,10 +204,35 @@ describe("PokemonTooltipCard", () => {
         isFainted: true,
       });
 
-      const html = renderToStaticMarkup(<PokemonTooltipCard data={mon} />);
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
 
       expect(html).toContain("0/120 (0%)");
       expect(html).toContain("FNT");
+    });
+  });
+
+  describe("Item trait tooltip handling", () => {
+    it("renders regular held item with tooltip trigger", () => {
+      const mon = createMockMon({ item: "Leftovers" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).toContain("Leftovers");
+      expect(html).toContain("role=\"button\"");
+    });
+
+    it("renders 'None (was Liechi Berry)' with tooltip trigger targeting Liechi Berry", () => {
+      const mon = createMockMon({ item: "None (was Liechi Berry)" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).toContain("None (was ");
+      expect(html).toContain("Liechi Berry</span>)");
+    });
+
+    it("renders 'None' without tooltip trigger", () => {
+      const mon = createMockMon({ item: "None" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).toContain("None");
+      expect(html).not.toContain("None (was");
+      // Trait value is plain "None" without a button role on it
+      expect(html).toContain(`<span class="${styles.traitValue}">None</span>`);
     });
   });
 });

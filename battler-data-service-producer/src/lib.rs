@@ -64,6 +64,9 @@ where
     builder.register_species(handlers::SpeciesHandler {
         service: service.clone(),
     })?;
+    builder.register_resource(handlers::ResourceHandler {
+        service: service.clone(),
+    })?;
     builder.register_batch(handlers::BatchHandler {
         service: service.clone(),
     })?;

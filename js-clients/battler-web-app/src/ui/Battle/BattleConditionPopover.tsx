@@ -5,6 +5,7 @@ import {
   type FormattedCondition,
   extractAllBattleConditions,
 } from "../../utils/conditionData";
+import DataTooltipTrigger from "../Common/Tooltip/DataTooltipTrigger";
 import styles from "./BattleConditionPopover.module.scss";
 
 export type ConditionTab = "field" | "player" | "foe";
@@ -54,9 +55,16 @@ const BattleConditionPopover = forwardRef<HTMLDivElement, BattleConditionPopover
     const renderConditionBadges = (conditionList: FormattedCondition[]) => (
       <div className={styles.badgeList}>
         {conditionList.map((c) => (
-          <span key={c.id} className={styles.conditionBadge}>
-            {c.displayText}
-          </span>
+          <DataTooltipTrigger
+            key={c.id}
+            resourceType="condition"
+            name={c.displayText}
+            showUnderline={false}
+          >
+            <span className={styles.conditionBadge}>
+              {c.displayText}
+            </span>
+          </DataTooltipTrigger>
         ))}
       </div>
     );
@@ -97,7 +105,9 @@ const BattleConditionPopover = forwardRef<HTMLDivElement, BattleConditionPopover
               <div className={styles.traitRow}>
                 <span className={styles.traitLabel}>Weather:</span>
                 {fieldData.weather ? (
-                  <span className={styles.traitValue}>{fieldData.weather}</span>
+                  <DataTooltipTrigger resourceType="condition" name={fieldData.weather}>
+                    <span className={styles.traitValue}>{fieldData.weather}</span>
+                  </DataTooltipTrigger>
                 ) : (
                   <span className={styles.traitNone}>Clear</span>
                 )}
@@ -105,7 +115,9 @@ const BattleConditionPopover = forwardRef<HTMLDivElement, BattleConditionPopover
               <div className={styles.traitRow}>
                 <span className={styles.traitLabel}>Terrain:</span>
                 {fieldData.terrain ? (
-                  <span className={styles.traitValue}>{fieldData.terrain}</span>
+                  <DataTooltipTrigger resourceType="condition" name={fieldData.terrain}>
+                    <span className={styles.traitValue}>{fieldData.terrain}</span>
+                  </DataTooltipTrigger>
                 ) : (
                   <span className={styles.traitNone}>None</span>
                 )}
@@ -133,10 +145,17 @@ const BattleConditionPopover = forwardRef<HTMLDivElement, BattleConditionPopover
                 {currentSideData.slotConditions.length > 0 ? (
                   <div className={styles.badgeList}>
                     {currentSideData.slotConditions.map((s) => (
-                      <span key={`${s.slotIndex}-${s.id}`} className={styles.conditionBadge}>
-                        <span className={styles.slotTag}>{s.slotLabel}:</span>
-                        <span>{s.displayText}</span>
-                      </span>
+                      <DataTooltipTrigger
+                        key={`${s.slotIndex}-${s.id}`}
+                        resourceType="condition"
+                        name={s.displayText}
+                        showUnderline={false}
+                      >
+                        <span className={styles.conditionBadge}>
+                          <span className={styles.slotTag}>{s.slotLabel}:</span>
+                          <span>{s.displayText}</span>
+                        </span>
+                      </DataTooltipTrigger>
                     ))}
                   </div>
                 ) : (

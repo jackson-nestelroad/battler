@@ -50,33 +50,52 @@ export function calculateFloatingCoords(
   if (placement === "top" || placement === "bottom") {
     // Center horizontally on target
     left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-    // Clamp to viewport
-    left = Math.max(padding, Math.min(left, viewportWidth - tooltipWidth - padding));
 
-    if (placement === "bottom") {
-      top = targetRect.bottom + gap;
-      if (top + tooltipHeight > viewportHeight - padding) {
-        const topCandidate = targetRect.top - tooltipHeight - gap;
-        if (topCandidate >= padding) {
-          top = topCandidate;
-          placement = "top";
-        } else {
-          top = Math.max(padding, viewportHeight - tooltipHeight - padding);
-        }
-      }
-    } else {
-      top = targetRect.top - tooltipHeight - gap;
-      // If clipping off top edge, place below target
-      if (top < padding) {
+    const spaceAbove = targetRect.top - gap - padding;
+    const spaceBelow = viewportHeight - targetRect.bottom - gap - padding;
+
+    if (placement === "top") {
+      if (spaceAbove >= tooltipHeight) {
+        top = targetRect.top - tooltipHeight - gap;
+      } else if (spaceBelow >= tooltipHeight) {
+        top = targetRect.bottom + gap;
+        placement = "bottom";
+      } else if (spaceAbove >= spaceBelow) {
+        top = targetRect.top - tooltipHeight - gap;
+      } else {
         top = targetRect.bottom + gap;
         placement = "bottom";
       }
-
-      // If also clipping bottom, clamp within screen
-      if (top + tooltipHeight > viewportHeight - padding) {
-        top = Math.max(padding, viewportHeight - tooltipHeight - padding);
+    } else {
+      if (spaceBelow >= tooltipHeight) {
+        top = targetRect.bottom + gap;
+      } else if (spaceAbove >= tooltipHeight) {
+        top = targetRect.top - tooltipHeight - gap;
+        placement = "top";
+      } else if (spaceBelow >= spaceAbove) {
+        top = targetRect.bottom + gap;
+      } else {
+        top = targetRect.top - tooltipHeight - gap;
+        placement = "top";
       }
     }
+  }
+
+  // Strict boundary enforcement:
+  // Tooltip must NEVER go below the bottom of the viewport or above the top
+  if (top + tooltipHeight > viewportHeight - padding) {
+    top = Math.max(padding, viewportHeight - tooltipHeight - padding);
+  }
+  if (top < padding) {
+    top = padding;
+  }
+
+  // Tooltip must NEVER go off the right or left of the viewport
+  if (left + tooltipWidth > viewportWidth - padding) {
+    left = Math.max(padding, viewportWidth - tooltipWidth - padding);
+  }
+  if (left < padding) {
+    left = padding;
   }
 
   return { top, left, placement };

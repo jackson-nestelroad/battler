@@ -150,3 +150,69 @@ fn batch_query_with_partial_matches() {
     assert_matches::assert_matches!(result.conditions.get("sandstorm"), Some(Some(_)));
     assert_matches::assert_matches!(result.species.get("pikachu"), Some(Some(_)));
 }
+
+#[test]
+fn resolves_generic_resource_with_fallback_priority() {
+    let service = BattlerDataService::new(static_local_data_store());
+
+    // Toxic Spikes: Not a standalone condition, resolves to Move
+    let toxic_spikes = service
+        .get_resource(
+            "Toxic Spikes",
+            battler_data_service::ResourceLookupOptions::default(),
+        )
+        .unwrap();
+    assert_matches::assert_matches!(toxic_spikes, Some(battler_data_service::ResourceData::Move(data)) => {
+        assert_eq!(data.name, "Toxic Spikes");
+    });
+
+    // Sandstorm: Defaults to Condition because Condition comes before Move in default priority
+    let sandstorm = service
+        .get_resource(
+            "sandstorm",
+            battler_data_service::ResourceLookupOptions::default(),
+        )
+        .unwrap();
+    assert_matches::assert_matches!(sandstorm, Some(battler_data_service::ResourceData::Condition(data)) => {
+        assert_eq!(data.name, "Sandstorm");
+    });
+
+    // Sandstorm with Move priority first
+    let sandstorm_move = service
+        .get_resource(
+            "sandstorm",
+            battler_data_service::ResourceLookupOptions {
+                priority: vec![
+                    battler_data_service::SchemaResourceType::Move,
+                    battler_data_service::SchemaResourceType::Condition,
+                ],
+                include_fxlang: false,
+            },
+        )
+        .unwrap();
+    assert_matches::assert_matches!(sandstorm_move, Some(battler_data_service::ResourceData::Move(data)) => {
+        assert_eq!(data.name, "Sandstorm");
+    });
+
+    // Moody: Ability
+    let moody = service
+        .get_resource(
+            "Moody",
+            battler_data_service::ResourceLookupOptions::default(),
+        )
+        .unwrap();
+    assert_matches::assert_matches!(moody, Some(battler_data_service::ResourceData::Ability(data)) => {
+        assert_eq!(data.name, "Moody");
+    });
+
+    // Leftovers: Item
+    let leftovers = service
+        .get_resource(
+            "Leftovers",
+            battler_data_service::ResourceLookupOptions::default(),
+        )
+        .unwrap();
+    assert_matches::assert_matches!(leftovers, Some(battler_data_service::ResourceData::Item(data)) => {
+        assert_eq!(data.name, "Leftovers");
+    });
+}

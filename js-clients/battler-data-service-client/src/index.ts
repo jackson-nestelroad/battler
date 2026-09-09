@@ -1,6 +1,12 @@
 import autobahn from "autobahn";
 import { WampSessionProvider, getWampResultString, safeJsonStringify } from "battler-wamp-client";
-import { BatchQuery, BatchResult, ResourceOptions } from "./bindings/index.js";
+import {
+  BatchQuery,
+  BatchResult,
+  ResourceData,
+  ResourceLookupOptions,
+  ResourceOptions,
+} from "./bindings/index.js";
 
 export * from "./bindings/index.js";
 export * from "battler-types";
@@ -63,6 +69,19 @@ export class BattlerDataServiceClient {
     ]);
     const json = getWampResultString(res);
     if (!json) throw new Error(`Failed to get species response string for "${query}"`);
+    return JSON.parse(json);
+  }
+
+  async getResource(
+    query: string,
+    options?: Partial<ResourceLookupOptions>,
+  ): Promise<ResourceData> {
+    const res = await this.session.call<unknown>("com.battler.data_service.resource", [
+      query,
+      options ?? {},
+    ]);
+    const json = getWampResultString(res);
+    if (!json) throw new Error(`Failed to get resource response string for "${query}"`);
     return JSON.parse(json);
   }
 

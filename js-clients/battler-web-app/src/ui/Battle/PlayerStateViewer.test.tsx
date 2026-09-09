@@ -14,7 +14,7 @@ describe("PlayerStateViewer", () => {
     expect(htmlEmpty).toContain("None");
   });
 
-  it("renders sides, players, active conditions, and Pokémon roster", () => {
+  it("renders sides, players, active conditions, and Mon roster", () => {
     const mockState = {
       field: {
         sides: [
@@ -120,7 +120,7 @@ describe("PlayerStateViewer", () => {
     expect(html).not.toContain("@Bob");
     expect(html).toContain("You"); // Alice has You badge
 
-    // Verify Pokémon
+    // Verify Mon
     expect(html).toContain("Pikachu");
     expect(html).toContain("Charizard");
     expect(html).toContain("Gengar");
@@ -440,7 +440,7 @@ describe("PlayerStateViewer", () => {
 
     const html = renderToStaticMarkup(<PlayerStateViewer battleState={pickThreeState} />);
 
-    // All 6 Pokémon are rendered in the roster
+    // All 6 Mons are rendered in the roster
     expect(html).toContain("Pikachu");
     expect(html).toContain("Charmander");
     expect(html).toContain("Squirtle");
@@ -572,7 +572,7 @@ describe("PlayerStateViewer", () => {
       />,
     );
 
-    // All 6 Pokémon are rendered in the roster
+    // All 6 Mons are rendered in the roster
     expect(html).toContain("Zarude");
     expect(html).toContain("Great Tusk");
     expect(html).toContain("Cresselia");

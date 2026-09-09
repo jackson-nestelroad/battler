@@ -1,0 +1,119 @@
+.card {
+  width: 20rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  box-shadow: 0 var(--spacing-s) var(--spacing-xl) var(--bg-overlay);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  backdrop-filter: blur(var(--spacing-s));
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.name {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.categoryPhysical {
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.categorySpecial {
+  background-color: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.categoryStatus {
+  background-color: var(--color-secondary-bg);
+  border-color: var(--color-secondary-border);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.traitsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+}
+
+.traitRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.traitLabel {
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 5.5rem;
+}
+
+.traitValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.flagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xxs);
+}
+
+.flagBadge {
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--color-secondary-bg);
+  color: var(--text-secondary);
+  font-weight: 500;
+}

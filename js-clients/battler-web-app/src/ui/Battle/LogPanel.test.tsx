@@ -1,5 +1,7 @@
+import { LogCategory } from "battler-log-formatter";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { FormattedLogDisplayItem } from "../../utils/logFormatter";
 import LogPanel from "./LogPanel";
 
 describe("LogPanel", () => {
@@ -17,5 +19,76 @@ describe("LogPanel", () => {
     expect(html).toContain("Players");
     expect(html).toContain("Engine");
     expect(html).not.toContain("JSON");
+  });
+
+  it("renders move names with DataTooltipTrigger in log messages", () => {
+    const moveLog: FormattedLogDisplayItem = {
+      kind: "message",
+      category: LogCategory.Primary,
+      message: {
+        category: LogCategory.Primary,
+        tokens: [
+          { type: "variable", value: "MON" },
+          { type: "text", value: " used " },
+          { type: "variable", value: "MOVE" },
+          { type: "text", value: "!" },
+        ],
+        context: {
+          MON: "Metagross",
+          MOVE: "Heart Stamp",
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[moveLog]} />,
+    );
+
+    expect(html).toContain("Heart Stamp");
+    expect(html).toContain('role="button"');
+  });
+
+  it("renders split triggers for ability notices with mon and ability", () => {
+    const abilityNotice: FormattedLogDisplayItem = {
+      kind: "notice",
+      notice: {
+        type: "ability",
+        name: "Intimidate",
+        mon: "The opposing Gyarados's",
+        monRef: { Active: { name: "Gyarados", player: "p2", side: 1, position: 0 } },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[abilityNotice]} />,
+    );
+
+    expect(html).toContain("[");
+    expect(html).toContain("The opposing Gyarados");
+    expect(html).toContain("Intimidate");
+    expect(html).toContain("]");
+    expect(html).toContain('role="button"');
+  });
+
+  it("renders split triggers for item notices with mon and item", () => {
+    const itemNotice: FormattedLogDisplayItem = {
+      kind: "notice",
+      notice: {
+        type: "item",
+        name: "Leftovers",
+        mon: "Snorlax's",
+        monRef: { Active: { name: "Snorlax", player: "p1", side: 0, position: 0 } },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[itemNotice]} />,
+    );
+
+    expect(html).toContain("[");
+    expect(html).toContain("Snorlax");
+    expect(html).toContain("Leftovers");
+    expect(html).toContain("]");
+    expect(html).toContain('role="button"');
   });
 });

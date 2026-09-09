@@ -198,8 +198,9 @@
   word-break: break-word;
 }
 
+.tokenHoverTrigger,
 .monHoverTrigger {
-  cursor: help;
+  cursor: pointer;
   text-decoration: underline dotted var(--text-muted);
   text-underline-offset: var(--spacing-xxs);
   transition: var(--transition-fast);

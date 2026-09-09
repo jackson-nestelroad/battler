@@ -76,6 +76,8 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
+  align-self: flex-start;
+  width: fit-content;
 }
 
 .levelBadge {
@@ -328,7 +330,13 @@
   gap: var(--spacing-xs);
 }
 
+.moveTrigger {
+  display: flex;
+  width: 100%;
+}
+
 .moveSlot {
+  width: 100%;
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-xs);

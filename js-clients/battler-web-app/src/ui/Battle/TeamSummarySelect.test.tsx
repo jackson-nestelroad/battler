@@ -74,7 +74,7 @@ describe("TeamSummary select request handling", () => {
     expect(html).toMatch(/Quaxly[\s\S]*?FNT[\s\S]*?0\/115/);
   });
 
-  it("triggers onSelect callback when clicking a fainted Pokémon card", () => {
+  it("triggers onSelect callback when clicking a fainted Mon card", () => {
     let selectedPos = -1;
     let selectedSlots = -1;
 

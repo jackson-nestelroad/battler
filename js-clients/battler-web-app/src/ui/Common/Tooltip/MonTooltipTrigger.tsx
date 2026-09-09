@@ -7,7 +7,7 @@ import {
   publicMonStateToTooltip,
 } from "../../../utils/monTooltipModel";
 import FloatingTooltip from "./FloatingTooltip";
-import PokemonTooltipCard from "./PokemonTooltipCard";
+import MonTooltipCard from "./MonTooltipCard";
 
 function useInteractiveTooltip(viewModel: unknown) {
   const [isOpen, setIsOpen] = useState(false);
@@ -123,7 +123,7 @@ export default function MonTooltipTrigger({
         onMouseLeave={handleTooltipMouseLeave}
         preferredPlacement={preferredPlacement}
       >
-        <PokemonTooltipCard data={viewModel} />
+        <MonTooltipCard data={viewModel} />
       </FloatingTooltip>
     </>
   );

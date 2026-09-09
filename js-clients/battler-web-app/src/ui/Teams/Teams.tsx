@@ -126,11 +126,11 @@ export default function Teams() {
       try {
         const parsed = JSON.parse(jsonText);
         if (!Array.isArray(parsed)) {
-          throw new Error("JSON must be an array of Pokémon.");
+          throw new Error("JSON must be an array of Mons.");
         }
         for (const mon of parsed) {
           if (!mon || typeof mon !== "object" || !mon.species) {
-            throw new Error("Each Pokémon must have a species defined.");
+            throw new Error("Each Mon must have a species defined.");
           }
         }
         const showdownText = exportToShowdown(parsed as MonData[]);
@@ -144,7 +144,7 @@ export default function Teams() {
       try {
         const parsed = parseShowdown(jsonText);
         if (parsed.length === 0) {
-          throw new Error("No Pokémon found in Showdown text.");
+          throw new Error("No Mons found in Showdown text.");
         }
         const jsonStr = JSON.stringify(parsed, null, 2);
         setJsonText(jsonStr);
@@ -172,18 +172,18 @@ export default function Teams() {
       try {
         const jsonParsed = JSON.parse(jsonText);
         if (!Array.isArray(jsonParsed)) {
-          setErrorMsg("Team data must be a JSON array of Pokémon objects.");
+          setErrorMsg("Team data must be a JSON array of Mon objects.");
           return;
         }
         if (jsonParsed.length === 0) {
-          setErrorMsg("Team must contain at least one Pokémon.");
+          setErrorMsg("Team must contain at least one Mon.");
           return;
         }
         // Schema validation
         for (let i = 0; i < jsonParsed.length; i++) {
           const mon = jsonParsed[i];
           if (!mon || typeof mon !== "object") {
-            setErrorMsg(`Index ${i}: Pokémon data must be a JSON object.`);
+            setErrorMsg(`Index ${i}: Mon data must be a JSON object.`);
             return;
           }
           if (typeof mon.species !== "string" || !mon.species.trim()) {
@@ -216,7 +216,7 @@ export default function Teams() {
       try {
         parsed = parseShowdown(jsonText);
         if (parsed.length === 0) {
-          setErrorMsg("Showdown text must contain at least one Pokémon.");
+          setErrorMsg("Showdown text must contain at least one Mon.");
           return;
         }
       } catch (err) {

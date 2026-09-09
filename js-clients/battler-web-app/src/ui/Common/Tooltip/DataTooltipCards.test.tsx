@@ -1,0 +1,296 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
+import { describe, expect, it } from "vitest";
+import AbilityTooltipCard from "./AbilityTooltipCard";
+import ConditionTooltipCard from "./ConditionTooltipCard";
+import ItemTooltipCard from "./ItemTooltipCard";
+import MoveTooltipCard from "./MoveTooltipCard";
+import SpeciesTooltipCard from "./SpeciesTooltipCard";
+
+describe("Data Tooltip Cards", () => {
+  describe("MoveTooltipCard", () => {
+    const mockMove: MoveData = {
+      name: "Thunderbolt",
+      category: "Special",
+      primary_type: "Electric",
+      base_power: 90,
+      accuracy: 100,
+      pp: 15,
+      priority: 0,
+      target: "Normal",
+      flags: ["Protect", "Mirror"],
+      damage: null,
+      no_pp_boosts: false,
+      ohko_type: null,
+      user_switch: null,
+      self_destruct: null,
+      recoil: null,
+      drain_percent: null,
+      force_stab: false,
+      hit_effect: null,
+      user_effect: null,
+      user_effect_chance: null,
+      secondary_effects: [
+        {
+          chance: "1/10",
+          apply_once: false,
+          target: {
+            boosts: null,
+            heal_percent: null,
+            status: "par",
+            volatile_status: null,
+            side_condition: null,
+            slot_condition: null,
+            weather: null,
+            pseudo_weather: null,
+            terrain: null,
+            force_switch: false,
+          },
+          user: null,
+          source_effect: null,
+          effect: null,
+        },
+      ],
+      override_offensive_mon: null,
+      override_offensive_stat: null,
+      override_defensive_mon: null,
+      override_defensive_stat: null,
+      crit_ratio: 1,
+      ignore_accuracy: false,
+      ignore_defensive: false,
+      ignore_evasion: false,
+      ignore_offensive: false,
+      multiaccuracy: false,
+      multihit: null,
+      will_crit: false,
+      advanced_targeting: {
+        no_random_target: false,
+        tracks_target: false,
+        smart_target: false,
+      },
+      z_move: null,
+      max_move: null,
+      effect: null,
+      condition: null,
+    };
+
+    it("renders move properties correctly", () => {
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockMove} />);
+      expect(html).toContain("Thunderbolt");
+      expect(html).toContain("Move");
+      expect(html).toContain("Special");
+      expect(html).toContain("90");
+      expect(html).toContain("100%");
+      expect(html).toContain("15 (max 24)");
+      expect(html).toContain("Normal");
+      expect(html).toContain("Protect");
+      // Priority 0 is omitted
+      expect(html).not.toContain("Priority:");
+    });
+
+    it("renders status move with dash for base power, exempt accuracy, and signed priority", () => {
+      const mockStatusMove: MoveData = {
+        ...mockMove,
+        name: "Baby-Doll Eyes",
+        category: "Status",
+        primary_type: "Fairy",
+        base_power: 0,
+        accuracy: "exempt",
+        pp: 30,
+        priority: 1,
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockStatusMove} />);
+      expect(html).toContain("Baby-Doll Eyes");
+      expect(html).toContain("Status");
+      expect(html).toContain("—"); // base power and accuracy
+      expect(html).toContain("30 (max 48)");
+      expect(html).toContain("Priority:");
+      expect(html).toContain("+1");
+    });
+  });
+
+  describe("AbilityTooltipCard", () => {
+    const mockAbility: AbilityData = {
+      name: "Levitate",
+      flags: ["Breakable"],
+      effect: null,
+      condition: null,
+    };
+
+    it("renders ability name and flags", () => {
+      const html = renderToStaticMarkup(<AbilityTooltipCard data={mockAbility} />);
+      expect(html).toContain("Levitate");
+      expect(html).toContain("Ability");
+      expect(html).toContain("Breakable");
+    });
+  });
+
+  describe("ItemTooltipCard", () => {
+    const mockItem: ItemData = {
+      name: "Leftovers",
+      target: null,
+      input: null,
+      special_data: {
+        fling: {
+          power: 10,
+          use_item: true,
+          hit_effect: null,
+        },
+        natural_gift: null,
+        mega_evolution: null,
+        z_crystal: null,
+        ultra_burst: null,
+        judgment: null,
+        techno_blast: null,
+        multi_attack: null,
+      },
+      force_forme: null,
+      flags: ["Battle"],
+      effect: null,
+      condition: null,
+    };
+
+    it("renders item name and flags, omitting target even when present", () => {
+      const targetedItem: ItemData = {
+        ...mockItem,
+        name: "Potion",
+        target: "Active",
+      };
+      const html = renderToStaticMarkup(<ItemTooltipCard data={targetedItem} />);
+      expect(html).toContain("Potion");
+      expect(html).toContain("Item");
+      expect(html).toContain("Battle");
+      expect(html).not.toContain("Target:");
+      expect(html).not.toContain("Active");
+    });
+  });
+
+  describe("ConditionTooltipCard", () => {
+    const mockCondition: ConditionData = {
+      name: "Rain",
+      condition_type: "Weather",
+      no_copy: true,
+      condition: null,
+    };
+
+    it("renders condition details correctly", () => {
+      const html = renderToStaticMarkup(<ConditionTooltipCard data={mockCondition} />);
+      expect(html).toContain("Rain");
+      expect(html).toContain("Weather");
+      expect(html).toContain("No copy");
+    });
+  });
+
+  describe("SpeciesTooltipCard", () => {
+    const mockSpecies: SpeciesData = {
+      name: "Garchomp",
+      base_species: "Garchomp",
+      forme: null,
+      class: "Mach Pokémon",
+      color: "Blue",
+      primary_type: "Dragon",
+      secondary_type: "Ground",
+      abilities: ["Sand Veil"],
+      hidden_ability: "Rough Skin",
+      gender_ratio: 127,
+      catch_rate: 45,
+      can_hatch: true,
+      egg_groups: ["Monster", "Dragon"],
+      hatch_time: 40,
+      height: 19,
+      weight: 950,
+      base_exp_yield: 270,
+      leveling_rate: "Slow",
+      ev_yield: { hp: 0, atk: 3, def: 0, spa: 0, spd: 0, spe: 0 },
+      base_friendship: 50,
+      max_hp: null,
+      base_stats: { hp: 108, atk: 130, def: 95, spa: 80, spd: 85, spe: 102 },
+      prevo: "Gabite",
+      evos: [],
+      evolution_data: null,
+      base_forme: null,
+      formes: [],
+      cosmetic_formes: [],
+      battle_only_forme: false,
+      required_moves: [],
+      required_items: [],
+      changes_from: null,
+      gigantamax_move: null,
+      events: {},
+      learnset: {},
+      effect: null,
+      flags: ["SubLegendary"],
+    };
+
+    it("renders species details, class subtitle as Mon, dual types, base stats table, BST, unified abilities with HA, gender split bar, and egg groups", () => {
+      const html = renderToStaticMarkup(<SpeciesTooltipCard data={mockSpecies} />);
+      expect(html).toContain("Garchomp");
+      expect(html).toContain("Mach Mon");
+      expect(html).not.toContain("Mach Pokémon");
+      expect(html).toContain("Dragon");
+      expect(html).toContain("Ground");
+      expect(html).toContain("Base Stats");
+      expect(html).toContain("108");
+      expect(html).toContain("130");
+      expect(html).toContain("600"); // BST total
+      expect(html).toContain("Sand Veil");
+      expect(html).toContain("Rough Skin");
+      expect(html).toContain("/");
+      expect(html).toContain("(H)");
+      expect(html).toMatch(/role="button"[^>]*><span>Sand Veil<\/span>/);
+      expect(html).toMatch(/role="button"[^>]*><span>Rough Skin<\/span>/);
+      expect(html).toContain("50%");
+      expect(html).toContain("♂");
+      expect(html).toContain("♀");
+      expect(html).toContain("role=\"meter\"");
+      expect(html).toContain("Monster, Dragon");
+      expect(html).toContain("95.0 kg");
+      expect(html).toContain("SubLegendary");
+    });
+
+    it("formats class without Pokémon suffix into Descriptor Mon (e.g. Tricky Fox -> Tricky Fox Mon)", () => {
+      const zorua: SpeciesData = {
+        ...mockSpecies,
+        name: "Zorua",
+        class: "Tricky Fox",
+      };
+      const html = renderToStaticMarkup(<SpeciesTooltipCard data={zorua} />);
+      expect(html).toContain("Tricky Fox Mon");
+    });
+
+    it("renders max_hp override in base stats when specified", () => {
+      const shedinja: SpeciesData = {
+        ...mockSpecies,
+        name: "Shedinja",
+        class: "Shed Pokémon",
+        max_hp: 1,
+        base_stats: { hp: 1, atk: 90, def: 45, spa: 30, spd: 30, spe: 40 },
+      };
+      const html = renderToStaticMarkup(<SpeciesTooltipCard data={shedinja} />);
+      expect(html).toContain("Shed Mon");
+      expect(html).toContain("1 (max 1)");
+    });
+
+    it("renders genderless, male-only, and female-only gender ratios correctly", () => {
+      const genderlessHtml = renderToStaticMarkup(
+        <SpeciesTooltipCard data={{ ...mockSpecies, gender_ratio: 255 }} />,
+      );
+      expect(genderlessHtml).toContain("Genderless");
+      expect(genderlessHtml).not.toContain("role=\"meter\"");
+
+      const maleOnlyHtml = renderToStaticMarkup(
+        <SpeciesTooltipCard data={{ ...mockSpecies, gender_ratio: 0 }} />,
+      );
+      expect(maleOnlyHtml).toContain("100%");
+      expect(maleOnlyHtml).toContain("♂");
+      expect(maleOnlyHtml).not.toContain("♀");
+
+      const femaleOnlyHtml = renderToStaticMarkup(
+        <SpeciesTooltipCard data={{ ...mockSpecies, gender_ratio: 254 }} />,
+      );
+      expect(femaleOnlyHtml).toContain("100%");
+      expect(femaleOnlyHtml).toContain("♀");
+      expect(femaleOnlyHtml).not.toContain("♂");
+    });
+  });
+});

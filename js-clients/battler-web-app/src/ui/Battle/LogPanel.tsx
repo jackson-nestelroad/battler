@@ -7,6 +7,7 @@ import type { FormattedLogDisplayItem, LogDividerType } from "../../utils/logFor
 import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 import { useFormattedLogs } from "../../hooks/useFormattedLogs";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
+import DataTooltipTrigger, { type DataResourceType } from "../Common/Tooltip/DataTooltipTrigger";
 import EngineLogViewer from "./EngineLogViewer";
 import PlayerStateViewer from "./PlayerStateViewer";
 
@@ -59,11 +60,32 @@ function renderLogDivider(
   return <div key={index} className={styles.residualDivider} aria-hidden="true" />;
 }
 
+function getResourceTypeForTokenKey(tokenKey?: string): DataResourceType | null {
+  if (!tokenKey) return null;
+  const upper = tokenKey.toUpperCase();
+  if (
+    upper === "MOVE" ||
+    upper === "FORGOT" ||
+    upper.endsWith("_MOVE") ||
+    upper.endsWith("MOVE")
+  ) {
+    return "move";
+  }
+  if (upper === "ABILITY" || upper.endsWith("_ABILITY") || upper.endsWith("ABILITY")) {
+    return "ability";
+  }
+  if (upper === "ITEM" || upper.endsWith("_ITEM") || upper.endsWith("ITEM")) {
+    return "item";
+  }
+  return null;
+}
+
 function renderTokenValue(
   ctxVal: ContextValue | undefined,
   battleState: BattleState | null | undefined,
   key: string | number,
   rules?: string[] | null,
+  tokenKey?: string,
 ) {
   if (ctxVal == null) return null;
 
@@ -82,7 +104,7 @@ function renderTokenValue(
         rules={rules}
         preferredPlacement="left"
       >
-        <span className={styles.monHoverTrigger}>{text}</span>
+        <span className={styles.tokenHoverTrigger}>{text}</span>
       </MonTooltipTrigger>
     );
   }
@@ -92,7 +114,7 @@ function renderTokenValue(
       <Fragment key={key}>
         {ctxVal.map((item, idx) => (
           <Fragment key={idx}>
-            {renderTokenValue(item, battleState, `${key}-${idx}`, rules)}
+            {renderTokenValue(item, battleState, `${key}-${idx}`, rules, tokenKey)}
             {idx < ctxVal.length - 1 ? ", " : ""}
           </Fragment>
         ))}
@@ -100,7 +122,23 @@ function renderTokenValue(
     );
   }
 
-  return <Fragment key={key}>{formatContextValue(ctxVal)}</Fragment>;
+  const text = formatContextValue(ctxVal);
+  const resourceType = getResourceTypeForTokenKey(tokenKey);
+  if (resourceType && typeof text === "string" && text.trim()) {
+    return (
+      <DataTooltipTrigger
+        key={key}
+        resourceType={resourceType}
+        name={text.trim()}
+        preferredPlacement="left"
+        showUnderline={false}
+      >
+        <span className={styles.tokenHoverTrigger}>{text}</span>
+      </DataTooltipTrigger>
+    );
+  }
+
+  return <Fragment key={key}>{text}</Fragment>;
 }
 
 export default function LogPanel({
@@ -192,6 +230,44 @@ export default function LogPanel({
               if (item.kind === "notice") {
                 const noticeType = item.notice.type.toLowerCase();
                 const noticeClass = `${styles.noticeLine} ${styles[`${noticeType}Notice`] || ""}`;
+                const notice = item.notice;
+
+                if (noticeType === "ability" || noticeType === "item") {
+                  return (
+                    <div key={index} className={noticeClass}>
+                      <span className={styles.text}>
+                        {"["}
+                        {notice.mon && (
+                          <>
+                            {notice.monRef ? (
+                              <MonTooltipTrigger
+                                monRef={notice.monRef}
+                                battleState={battleState}
+                                rules={rules}
+                                preferredPlacement="left"
+                              >
+                                <span className={styles.tokenHoverTrigger}>{notice.mon}</span>
+                              </MonTooltipTrigger>
+                            ) : (
+                              notice.mon
+                            )}
+                            {" "}
+                          </>
+                        )}
+                        <DataTooltipTrigger
+                          resourceType={noticeType}
+                          name={notice.name}
+                          preferredPlacement="left"
+                          showUnderline={false}
+                        >
+                          <span className={styles.tokenHoverTrigger}>{notice.name}</span>
+                        </DataTooltipTrigger>
+                        {"]"}
+                      </span>
+                    </div>
+                  );
+                }
+
                 const noticeText = formatNoticeText(item.notice);
 
                 return (
@@ -204,7 +280,7 @@ export default function LogPanel({
                           rules={rules}
                           preferredPlacement="left"
                         >
-                          <span className={styles.monHoverTrigger}>{noticeText}</span>
+                          <span className={styles.tokenHoverTrigger}>{noticeText}</span>
                         </MonTooltipTrigger>
                       ) : (
                         noticeText
@@ -225,7 +301,7 @@ export default function LogPanel({
                       }
                       const ctxVal = message.context[token.value];
                       if (ctxVal === undefined) return <Fragment key={i}>{`{{${token.value}}}`}</Fragment>;
-                      return renderTokenValue(ctxVal, battleState, i, rules);
+                      return renderTokenValue(ctxVal, battleState, i, rules, token.value);
                     })}
                   </span>
                 </div>

@@ -131,6 +131,8 @@ export default function MoveSelector({
                 typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}
                 badgeText={badgeText}
                 badgeClassName={badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge}
+                infoResourceType="move"
+                infoResourceName={moveToRender.name}
               />
             );
           });

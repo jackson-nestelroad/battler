@@ -16,9 +16,14 @@ pub use battler_data_service_schema::{
     BatchQuery,
     BatchResult,
     BattlerDataServiceConsumer,
+    ResourceData,
     ResourceInput,
     ResourceInputArgs,
+    ResourceLookupInput,
+    ResourceLookupInputArgs,
+    ResourceLookupOptions,
     ResourceOptions,
+    ResourceType,
 };
 use battler_wamprat::peer::CallOptions;
 
@@ -35,6 +40,12 @@ pub trait BattlerDataServiceClient: Send + Sync {
     async fn get_condition(&self, query: &str, options: ResourceOptions) -> Result<ConditionData>;
     /// Queries species data by name or ID.
     async fn get_species(&self, query: &str, options: ResourceOptions) -> Result<SpeciesData>;
+    /// Queries a resource across multiple resource types by name or ID.
+    async fn get_resource(
+        &self,
+        query: &str,
+        options: ResourceLookupOptions,
+    ) -> Result<ResourceData>;
     /// Queries multiple resources in a single batch request.
     async fn batch(&self, query: BatchQuery) -> Result<BatchResult>;
 }
@@ -79,6 +90,16 @@ impl BattlerDataServiceClient for DirectBattlerDataServiceClient {
 
     async fn get_species(&self, query: &str, options: ResourceOptions) -> Result<SpeciesData> {
         self.service.get_species(query, options)?.ok_or_else(|| {
+            battler_data_service_schema::BattlerDataServiceError::NotFound(query.to_owned()).into()
+        })
+    }
+
+    async fn get_resource(
+        &self,
+        query: &str,
+        options: ResourceLookupOptions,
+    ) -> Result<ResourceData> {
+        self.service.get_resource(query, options)?.ok_or_else(|| {
             battler_data_service_schema::BattlerDataServiceError::NotFound(query.to_owned()).into()
         })
     }
@@ -188,6 +209,26 @@ where
             .consumer
             .species(
                 ResourceInput(ResourceInputArgs {
+                    query: query.to_owned(),
+                    options,
+                }),
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        Ok(serde_json::from_str(&output.0.data_json)?)
+    }
+
+    async fn get_resource(
+        &self,
+        query: &str,
+        options: ResourceLookupOptions,
+    ) -> Result<ResourceData> {
+        let output = self
+            .consumer
+            .resource(
+                ResourceLookupInput(ResourceLookupInputArgs {
                     query: query.to_owned(),
                     options,
                 }),

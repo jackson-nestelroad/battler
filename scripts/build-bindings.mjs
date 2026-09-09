@@ -121,6 +121,7 @@ fs.copyFileSync(
 copyPattern(
   path.resolve(rootDir, "battler-data-service/battler-data-service-schema/bindings"),
   dataServiceClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
 );
 
 // 5. Post-process to fix relative ESM import extensions & rewrite cross-package dependencies

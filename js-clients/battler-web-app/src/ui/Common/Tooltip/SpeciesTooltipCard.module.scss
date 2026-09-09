@@ -1,0 +1,196 @@
+.card {
+  width: 20rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  box-shadow: 0 var(--spacing-s) var(--spacing-xl) var(--bg-overlay);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  backdrop-filter: blur(var(--spacing-s));
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.name {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  text-align: center;
+
+  th {
+    padding: var(--spacing-xxs) var(--spacing-xxs);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: var(--font-size-xxs);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: var(--spacing-xxs) var(--spacing-xxs);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+}
+
+.bstVal {
+  color: var(--color-info);
+  font-weight: 700;
+}
+
+.traitsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+}
+
+.traitRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.traitLabel {
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 5.5rem;
+  flex-shrink: 0;
+}
+
+.traitValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.haTag {
+  color: var(--text-muted);
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+}
+
+.separator {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin: 0 var(--spacing-xs);
+  user-select: none;
+}
+
+.genderContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-top: var(--spacing-xxs);
+}
+
+.genderSplitWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  width: 8.5rem;
+  max-width: 100%;
+}
+
+.genderBar {
+  display: flex;
+  width: 100%;
+  height: 0.375rem;
+  border-radius: var(--border-radius-pill);
+  overflow: hidden;
+  background-color: var(--color-secondary-bg);
+  align-items: stretch;
+}
+
+.genderBarMale {
+  background-color: var(--color-type-water);
+  height: 100%;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.genderBarFemale {
+  background-color: var(--color-type-psychic);
+  height: 100%;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.genderRatioLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.genderMaleLabel {
+  color: var(--color-type-water);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  line-height: 1;
+}
+
+.genderFemaleLabel {
+  color: var(--color-type-psychic);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  line-height: 1;
+  margin-left: auto;
+}
+
+.genderSymbol {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  vertical-align: -0.05em;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.flagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xxs);
+}
+
+.flagBadge {
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--color-secondary-bg);
+  color: var(--text-secondary);
+  font-weight: 500;
+}

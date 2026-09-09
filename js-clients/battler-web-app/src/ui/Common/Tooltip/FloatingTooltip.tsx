@@ -1,5 +1,6 @@
 import {
   type ReactNode,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -54,7 +55,7 @@ export default function FloatingTooltip({
     }
   }, [isOpen, preferredPlacement]);
 
-  useLayoutEffect(() => {
+  const updatePosition = useCallback(() => {
     if (!isOpen || !targetRect || !tooltipRef.current) return;
 
     const tooltipEl = tooltipRef.current;
@@ -70,6 +71,38 @@ export default function FloatingTooltip({
       ),
     );
   }, [isOpen, targetRect, preferredPlacement]);
+
+  // Recalculate immediately when props or children change
+  useLayoutEffect(() => {
+    updatePosition();
+  }, [updatePosition, children]);
+
+  // Observe element resizing (e.g. async card content loading) and window resize/scroll
+  useEffect(() => {
+    if (!isOpen || !tooltipRef.current) return;
+    const el = tooltipRef.current;
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updatePosition();
+      });
+      resizeObserver.observe(el);
+    }
+
+    const handleWindowChange = () => {
+      updatePosition();
+    };
+
+    window.addEventListener("resize", handleWindowChange);
+    window.addEventListener("scroll", handleWindowChange, true);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", handleWindowChange);
+      window.removeEventListener("scroll", handleWindowChange, true);
+    };
+  }, [isOpen, updatePosition]);
 
   if (!mounted || typeof document === "undefined") return null;
 

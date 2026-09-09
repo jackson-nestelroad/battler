@@ -220,5 +220,17 @@ async fn queries_move_ability_item_condition_species_over_wamp() {
     assert_matches::assert_matches!(batch.conditions.get("Rain"), Some(Some(_)));
     assert_matches::assert_matches!(batch.species.get("Charizard"), Some(Some(_)));
 
+    // Generic resource lookup (e.g. Toxic Spikes -> Move)
+    let toxic_spikes = client
+        .get_resource(
+            "Toxic Spikes",
+            battler_data_service_schema::ResourceLookupOptions::default(),
+        )
+        .await
+        .unwrap();
+    assert_matches::assert_matches!(toxic_spikes, battler_data_service_schema::ResourceData::Move(data) => {
+        assert_eq!(data.name, "Toxic Spikes");
+    });
+
     context.teardown().await;
 }

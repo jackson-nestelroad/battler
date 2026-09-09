@@ -95,6 +95,39 @@ describe("calculateFloatingCoords", () => {
     expect(coords.placement).toBe("bottom");
     expect(coords.top).toBe(100 + 8); // 108
   });
+
+  it("never allows tooltip to extend below bottom of viewport", () => {
+    const target = createMockRect({
+      left: 400,
+      right: 500,
+      top: 550,
+      bottom: 600,
+      width: 100,
+      height: 50,
+    });
+
+    // Tooltip height is 350px in a 650px high viewport
+    const coords = calculateFloatingCoords(target, 300, 350, "bottom", 1000, 650);
+    // Even if preferred was bottom, it should flip or clamp so top + height <= 650 - 12
+    expect(coords.top + 350).toBeLessThanOrEqual(650 - 12);
+    expect(coords.top).toBeGreaterThanOrEqual(12);
+  });
+
+  it("places above target when target is near bottom of viewport and room allows", () => {
+    const target = createMockRect({
+      left: 200,
+      right: 400,
+      top: 500,
+      bottom: 550,
+      width: 200,
+      height: 50,
+    });
+
+    const coords = calculateFloatingCoords(target, 320, 320, "top", 1024, 768);
+    expect(coords.placement).toBe("top");
+    expect(coords.top).toBe(500 - 320 - 8); // 172
+    expect(coords.top + 320).toBeLessThanOrEqual(768 - 12);
+  });
 });
 
 describe("FloatingTooltip", () => {

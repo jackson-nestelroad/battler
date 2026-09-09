@@ -12,6 +12,7 @@ import {
   fetchCondition,
   fetchItem,
   fetchMove,
+  fetchSpecies,
 } from "./useDataStore";
 
 describe("useDataStore", () => {
@@ -47,6 +48,8 @@ describe("useDataStore", () => {
     getAbility: vi.fn(),
     getItem: vi.fn(),
     getCondition: vi.fn(),
+    getSpecies: vi.fn(),
+    getResource: vi.fn(),
   };
 
   beforeEach(() => {
@@ -134,6 +137,81 @@ describe("useDataStore", () => {
       const cached = await fetchCondition("Rain");
       expect(cached).toEqual(mockCondition);
       expect(mockClient.getCondition).toHaveBeenCalledTimes(1);
+    });
+
+    it("fetches and caches species", async () => {
+      const mockSpecies = {
+        name: "Pikachu",
+        primary_type: "Electric",
+      };
+      mockClient.getSpecies.mockResolvedValueOnce(mockSpecies);
+      const res = await fetchSpecies("Pikachu");
+      expect(res).toEqual(mockSpecies);
+
+      const cached = await fetchSpecies("Pikachu");
+      expect(cached).toEqual(mockSpecies);
+      expect(mockClient.getSpecies).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("fetchGenericResource", () => {
+    it("fetches and caches generic resource", async () => {
+      const mockResolved = {
+        type: "move" as const,
+        data: mockMove,
+      };
+      mockClient.getResource.mockResolvedValueOnce(mockResolved);
+
+      const { fetchGenericResource } = await import("./useDataStore");
+      const res = await fetchGenericResource("Toxic Spikes", {
+        priority: ["condition", "move", "ability", "item"],
+      });
+      expect(res).toEqual(mockResolved);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      // Cached call
+      const cached = await fetchGenericResource("Toxic Spikes", {
+        priority: ["condition", "move", "ability", "item"],
+      });
+      expect(cached).toEqual(mockResolved);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+    });
+
+    it("cross-populates typed cache when generic resource resolves", async () => {
+      const mockResolved = {
+        type: "move" as const,
+        data: mockMove,
+      };
+      mockClient.getResource.mockResolvedValueOnce(mockResolved);
+
+      const { fetchGenericResource } = await import("./useDataStore");
+      await fetchGenericResource("Reflect", {
+        priority: ["condition", "move", "ability", "item"],
+      });
+
+      // Now fetchMove should hit cache without calling getMove
+      const move1 = await fetchMove("Reflect");
+      expect(move1).toEqual(mockMove);
+      expect(mockClient.getMove).not.toHaveBeenCalled();
+
+      // Canonical name and normalized toId should also hit cache
+      const move2 = await fetchMove("reflect");
+      expect(move2).toEqual(mockMove);
+      expect(mockClient.getMove).not.toHaveBeenCalled();
+    });
+
+    it("uses typed cache for generic resource lookup when priority is a single type", async () => {
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      await fetchMove("Thunderbolt");
+      expect(mockClient.getMove).toHaveBeenCalledTimes(1);
+
+      const { fetchGenericResource } = await import("./useDataStore");
+      const res = await fetchGenericResource("thunderbolt", {
+        priority: ["move"],
+      });
+
+      expect(res).toEqual({ type: "move", data: mockMove });
+      expect(mockClient.getResource).not.toHaveBeenCalled();
     });
   });
 

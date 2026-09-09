@@ -5,9 +5,10 @@ import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
 import StatusBadge from "../StatusBadge";
 import TypeBadge from "../TypeBadge";
-import styles from "./PokemonTooltipCard.module.scss";
+import DataTooltipTrigger from "./DataTooltipTrigger";
+import styles from "./MonTooltipCard.module.scss";
 
-interface PokemonTooltipCardProps {
+interface MonTooltipCardProps {
   data: MonTooltipViewModel;
 }
 
@@ -34,7 +35,13 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
     <header className={styles.header}>
       <div className={styles.headerTop}>
         <div className={styles.identity}>
-          <span className={styles.monName}>{displayName}</span>
+          {species ? (
+            <DataTooltipTrigger resourceType="species" name={species}>
+              <span className={styles.monName}>{displayName}</span>
+            </DataTooltipTrigger>
+          ) : (
+            <span className={styles.monName}>{displayName}</span>
+          )}
           {level != null && (
             <span className={styles.levelBadge}>L{level}</span>
           )}
@@ -49,7 +56,11 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
         {ownerLabel && <span className={styles.ownerBadge}>{ownerLabel}</span>}
       </div>
 
-      <span className={styles.speciesSubtitle}>{species}</span>
+      {species && (
+        <DataTooltipTrigger resourceType="species" name={species}>
+          <span className={styles.speciesSubtitle}>{species}</span>
+        </DataTooltipTrigger>
+      )}
 
       {/* Types and Tera state */}
       <div className="flex-col gap-xxs">
@@ -100,7 +111,35 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
   );
 }
 
-export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
+function renderItemContent(itemStr?: string | null) {
+  if (!itemStr || !itemStr.trim() || itemStr === "???") {
+    return <span className={styles.traitUnknown}>???</span>;
+  }
+  const trimmed = itemStr.trim();
+  if (trimmed === "None") {
+    return <span className={styles.traitValue}>None</span>;
+  }
+  const wasMatch = trimmed.match(/^None \(was (.+)\)$/);
+  if (wasMatch) {
+    const previousItemName = wasMatch[1];
+    return (
+      <span className={styles.traitValue}>
+        None (was{" "}
+        <DataTooltipTrigger resourceType="item" name={previousItemName}>
+          {previousItemName}
+        </DataTooltipTrigger>
+        )
+      </span>
+    );
+  }
+  return (
+    <DataTooltipTrigger resourceType="item" name={trimmed}>
+      <span className={styles.traitValue}>{trimmed}</span>
+    </DataTooltipTrigger>
+  );
+}
+
+export default function MonTooltipCard({ data }: MonTooltipCardProps) {
   const [activeTab, setActiveTab] = useState<"battle" | "summary">("battle");
 
   // Switch between live battle view and base summary view without battler-state
@@ -159,7 +198,7 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       {/* Health & Status bar */}
       <section className={styles.healthSection}>
         <div className={styles.healthMeta}>
-          <StatusBadge status={current.status} isFainted={isFainted} />
+          <StatusBadge status={current.status} isFainted={isFainted} interactive={true} />
           <span className={styles.hpText}>
             {current.maxHp != null
               ? `${Math.max(0, hp)}/${maxHp} (${hpPct}%)`
@@ -215,15 +254,25 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
           )}
           {conditions.map((condition) => {
             const isDynamax = condition.toLowerCase() === "dynamax";
-            return (
+            const badge = (
               <span
-                key={condition}
                 className={`${styles.modifierBadge} ${
                   isDynamax ? styles.dynamaxBadge : styles.conditionBadge
                 }`}
               >
                 {condition}
               </span>
+            );
+            if (isDynamax) return <span key={condition}>{badge}</span>;
+            return (
+              <DataTooltipTrigger
+                key={condition}
+                resourceType="condition"
+                name={condition}
+                showUnderline={false}
+              >
+                {badge}
+              </DataTooltipTrigger>
             );
           })}
         </section>
@@ -233,20 +282,18 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
       <section className={styles.traitsGrid}>
         <div className={styles.traitRow}>
           <span className={styles.traitLabel}>Ability:</span>
-          {current.ability?.trim() ? (
-            <span className={styles.traitValue}>{current.ability}</span>
+          {current.ability?.trim() && current.ability !== "???" && current.ability !== "None" ? (
+            <DataTooltipTrigger resourceType="ability" name={current.ability}>
+              <span className={styles.traitValue}>{current.ability}</span>
+            </DataTooltipTrigger>
           ) : (
-            <span className={styles.traitUnknown}>???</span>
+            <span className={styles.traitUnknown}>{current.ability || "???"}</span>
           )}
         </div>
 
         <div className={styles.traitRow}>
           <span className={styles.traitLabel}>Item:</span>
-          {current.item?.trim() ? (
-            <span className={styles.traitValue}>{current.item}</span>
-          ) : (
-            <span className={styles.traitUnknown}>???</span>
-          )}
+          {renderItemContent(current.item)}
         </div>
 
         {current.ball && (
@@ -330,22 +377,30 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
               const metaText = metaParts.join(" | ");
 
               return (
-                <div
+                <DataTooltipTrigger
                   key={move.name ? `${move.name}-${idx}` : idx}
-                  className={`${styles.moveSlot} type-border ${
-                    move.disabled ? styles.moveDisabled : ""
-                  }`}
-                  style={{ "--type-color": typeColor } as CSSProperties}
+                  resourceType="move"
+                  name={move.name}
+                  as="div"
+                  className={styles.moveTrigger}
+                  showUnderline={false}
                 >
-                  <span className={styles.moveName} title={move.name}>
-                    {move.name}
-                  </span>
-                  {metaText && (
-                    <span className={styles.moveMeta}>
-                      {metaText}
+                  <div
+                    className={`${styles.moveSlot} type-border ${
+                      move.disabled ? styles.moveDisabled : ""
+                    }`}
+                    style={{ "--type-color": typeColor } as CSSProperties}
+                  >
+                    <span className={styles.moveName} title={move.name}>
+                      {move.name}
                     </span>
-                  )}
-                </div>
+                    {metaText && (
+                      <span className={styles.moveMeta}>
+                        {metaText}
+                      </span>
+                    )}
+                  </div>
+                </DataTooltipTrigger>
               );
             })}
           </div>
@@ -400,3 +455,5 @@ export default function PokemonTooltipCard({ data }: PokemonTooltipCardProps) {
     </div>
   );
 }
+
+export { MonTooltipCard as PokemonTooltipCard };

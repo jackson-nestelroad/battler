@@ -632,7 +632,7 @@ function getUiMonInfo(uiMon: UiMon): { name: string; player: string; side?: numb
 
 /**
  * Resolves a UiMon into a MonBattleAppearanceReference against a BattleState.
- * Identifies the Pokémon by its player and name, then checks if it is currently
+ * Identifies the Mon by its player and name, then checks if it is currently
  * active on the field or inactive/fainted.
  */
 export function resolveBattleMonRef(

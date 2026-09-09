@@ -13,7 +13,7 @@ export interface MonLike {
 }
 
 /**
- * Returns the display name for a Pokémon (custom nickname or species fallback).
+ * Returns the display name for a Mon (custom nickname or species fallback).
  */
 export function getMonDisplayName(mon?: MonLike | null): string {
   if (!mon) return "";
@@ -21,7 +21,7 @@ export function getMonDisplayName(mon?: MonLike | null): string {
 }
 
 /**
- * Returns the 0-indexed team position for a Pokémon with safe fallbacks.
+ * Returns the 0-indexed team position for a Mon with safe fallbacks.
  */
 export function getMonTeamPosition(mon?: MonLike | null, fallbackIndex: number = 0): number {
   if (!mon) return fallbackIndex;
@@ -31,7 +31,7 @@ export function getMonTeamPosition(mon?: MonLike | null, fallbackIndex: number =
 }
 
 /**
- * Finds a Pokémon in the player's party by its active field position (if any).
+ * Finds a Mon in the player's party by its active field position (if any).
  */
 export function getMonByActivePosition(
   playerData: { mons?: MonLike[] } | null | undefined,
@@ -42,7 +42,7 @@ export function getMonByActivePosition(
 }
 
 /**
- * Finds a Pokémon in the player's party by its team index.
+ * Finds a Mon in the player's party by its team index.
  */
 export function getMonByTeamPosition(
   playerData: { mons?: MonLike[] } | null | undefined,
@@ -97,7 +97,7 @@ export function getActiveSlotPosition(
 }
 
 /**
- * Resolves the target Pokémon for a specific slot index in a turn, switch, or select request.
+ * Resolves the target Mon for a specific slot index in a turn, switch, or select request.
  * Returns the active Mon for turn requests, mid-turn switches (e.g. U-turn), and select requests (e.g. Revival Blessing),
  * or null for faint switches where the field slot is empty.
  */
@@ -158,7 +158,7 @@ export function canSlotShift(
 }
 
 /**
- * Resolves the display name of an active Pokémon, falling back through the state and a default string.
+ * Resolves the display name of an active Mon, falling back through the state and a default string.
  */
 export function resolveActiveMonName(
   playerData: PlayerBattleData | null | undefined,
@@ -176,7 +176,7 @@ export function resolveActiveMonName(
 }
 
 /**
- * Calculates the number of healthy, non-active Pokémon in the player's party
+ * Calculates the number of healthy, non-active Mons in the player's party
  * that haven't already been selected to switch in.
  */
 export function getAvailableBenchCount(
@@ -240,7 +240,7 @@ export function getAvailableMoves(
 }
 
 /**
- * Formats a fallback name for a Pokémon based on its slot index.
+ * Formats a fallback name for a Mon based on its slot index.
  */
 export function getSlotMonName(mon: MonLike | null | undefined, slotIndex: number): string {
   return getMonDisplayName(mon) || `Mon #${slotIndex + 1}`;
@@ -252,7 +252,7 @@ export interface StatusDisplayInfo {
 }
 
 /**
- * Normalizes Pokémon status strings (whether from engine request IDs like "psn"
+ * Normalizes Mon status strings (whether from engine request IDs like "psn"
  * or battle log condition names like "Poison") into standard 3-letter badge codes and labels.
  */
 export function formatStatusBadge(status?: string | null): StatusDisplayInfo | null {

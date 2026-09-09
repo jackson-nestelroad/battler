@@ -162,6 +162,34 @@
     gap: var(--spacing-xs);
   }
 
+  .moveHeaderRight {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex-shrink: 0;
+  }
+
+  .infoBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: var(--border-radius-round);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    color: var(--text-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: var(--transition-fast);
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: var(--color-primary);
+      background-color: var(--color-primary-bg);
+    }
+  }
+
   .moveName {
     font-size: var(--font-size-s);
     font-weight: 700;

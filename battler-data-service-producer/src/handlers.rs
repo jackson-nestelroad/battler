@@ -182,6 +182,42 @@ impl battler_wamprat::procedure::TypedProcedure for SpeciesHandler {
     }
 }
 
+pub struct ResourceHandler {
+    pub service: Arc<BattlerDataService<'static>>,
+}
+
+impl battler_data_service_schema::ResourceProcedure for ResourceHandler {}
+
+impl battler_wamprat::procedure::TypedProcedure for ResourceHandler {
+    type Input = battler_data_service_schema::ResourceLookupInput;
+    type Output = battler_data_service_schema::ResourceOutput;
+    type Error = anyhow::Error;
+
+    async fn invoke(
+        &self,
+        _: battler_wamprat::procedure::Invocation,
+        input: Self::Input,
+    ) -> Result<Self::Output, Self::Error> {
+        let data = self
+            .service
+            .get_resource(&input.0.query, input.0.options)?
+            .ok_or_else(|| {
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+            })?;
+        let data_json = serde_json::to_string(&data)?;
+        Ok(battler_data_service_schema::ResourceOutput(
+            battler_data_service_schema::ResourceOutputArgs { data_json },
+        ))
+    }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: false,
+            ..Default::default()
+        }
+    }
+}
+
 pub struct BatchHandler {
     pub service: Arc<BattlerDataService<'static>>,
 }
