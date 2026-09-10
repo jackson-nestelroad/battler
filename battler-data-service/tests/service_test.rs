@@ -177,23 +177,6 @@ fn resolves_generic_resource_with_fallback_priority() {
         assert_eq!(data.name, "Sandstorm");
     });
 
-    // Sandstorm with Move priority first
-    let sandstorm_move = service
-        .get_resource(
-            "sandstorm",
-            battler_data_service::ResourceLookupOptions {
-                priority: vec![
-                    battler_data_service::SchemaResourceType::Move,
-                    battler_data_service::SchemaResourceType::Condition,
-                ],
-                include_fxlang: false,
-            },
-        )
-        .unwrap();
-    assert_matches::assert_matches!(sandstorm_move, Some(battler_data_service::ResourceData::Move(data)) => {
-        assert_eq!(data.name, "Sandstorm");
-    });
-
     // Moody: Ability
     let moody = service
         .get_resource(

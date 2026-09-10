@@ -165,16 +165,12 @@ describe("useDataStore", () => {
       };
       mockClient.getResource.mockResolvedValueOnce(mockResolved);
 
-      const res = await fetchGenericResource("Toxic Spikes", {
-        priority: ["condition", "move", "ability", "item"],
-      });
+      const res = await fetchGenericResource("Toxic Spikes");
       expect(res).toEqual(mockResolved);
       expect(mockClient.getResource).toHaveBeenCalledTimes(1);
 
       // Cached call
-      const cached = await fetchGenericResource("Toxic Spikes", {
-        priority: ["condition", "move", "ability", "item"],
-      });
+      const cached = await fetchGenericResource("Toxic Spikes");
       expect(cached).toEqual(mockResolved);
       expect(mockClient.getResource).toHaveBeenCalledTimes(1);
     });
@@ -186,9 +182,7 @@ describe("useDataStore", () => {
       };
       mockClient.getResource.mockResolvedValueOnce(mockResolved);
 
-      await fetchGenericResource("Reflect", {
-        priority: ["condition", "move", "ability", "item"],
-      });
+      await fetchGenericResource("Reflect");
 
       // Now fetchMove should hit cache without calling getMove
       const move1 = await fetchMove("Reflect");
@@ -201,48 +195,15 @@ describe("useDataStore", () => {
       expect(mockClient.getMove).not.toHaveBeenCalled();
     });
 
-    it("uses typed cache for generic resource lookup when priority is a single type", async () => {
+    it("uses typed cache for generic resource lookup without calling getResource", async () => {
       mockClient.getMove.mockResolvedValueOnce(mockMove);
       await fetchMove("Thunderbolt");
       expect(mockClient.getMove).toHaveBeenCalledTimes(1);
 
-      const res = await fetchGenericResource("thunderbolt", {
-        priority: ["move"],
-      });
+      const res = await fetchGenericResource("thunderbolt");
 
       expect(res).toEqual({ type: "move", data: mockMove });
       expect(mockClient.getResource).not.toHaveBeenCalled();
-    });
-
-    it("uses typed cache for multi-priority generic resource lookup without calling getResource", async () => {
-      mockClient.getMove.mockResolvedValueOnce(mockMove);
-      await fetchMove("Thunderbolt");
-      expect(mockClient.getMove).toHaveBeenCalledTimes(1);
-
-      const res = await fetchGenericResource("Thunderbolt", {
-        priority: ["condition", "move", "ability", "item"],
-      });
-
-      expect(res).toEqual({ type: "move", data: mockMove });
-      expect(mockClient.getResource).not.toHaveBeenCalled();
-    });
-
-    it("respects priority order in cached multi-priority lookups", async () => {
-      // Suppose an item and an ability share the same query name
-      mockClient.getAbility.mockResolvedValueOnce(mockAbility);
-      mockClient.getItem.mockResolvedValueOnce(mockItem);
-      await fetchAbility("Shared");
-      await fetchItem("Shared");
-
-      const resItemFirst = await fetchGenericResource("Shared", {
-        priority: ["item", "ability"],
-      });
-      expect(resItemFirst?.type).toBe("item");
-
-      const resAbilityFirst = await fetchGenericResource("Shared", {
-        priority: ["ability", "item"],
-      });
-      expect(resAbilityFirst?.type).toBe("ability");
     });
 
     it("returns stable object references across multiple getCachedGenericResource calls", async () => {
@@ -295,21 +256,6 @@ describe("useDataStore", () => {
       expect(mockClient.getResource).toHaveBeenCalledTimes(1);
     });
 
-    it("accepts an array of ResourceType as priority shorthand", async () => {
-      const mockResolved = {
-        type: "item" as const,
-        data: mockItem,
-      };
-      mockClient.getResource.mockResolvedValueOnce(mockResolved);
-
-      const res = await fetchGenericResource("Leftovers", ["item", "ability"]);
-      expect(res).toEqual(mockResolved);
-      expect(mockClient.getResource).toHaveBeenCalledWith("Leftovers", {
-        priority: ["item", "ability"],
-        include_fxlang: undefined,
-      });
-    });
-
     it("bypasses typed cache when include_fxlang is true", async () => {
       mockClient.getMove.mockResolvedValueOnce(mockMove);
       await fetchMove("Thunderbolt");
@@ -333,7 +279,6 @@ describe("useDataStore", () => {
       });
       expect(res).toEqual(fxResolved);
       expect(mockClient.getResource).toHaveBeenCalledWith("Thunderbolt", {
-        priority: undefined,
         include_fxlang: true,
       });
     });
@@ -358,29 +303,19 @@ describe("useDataStore", () => {
         data: fxData,
       });
       const withFx = await fetchGenericResource("Thunderbolt", {
-        priority: ["condition", "move", "ability", "item"],
         include_fxlang: true,
       });
       expect(withFx?.data).toEqual(fxData);
       expect(mockClient.getResource).toHaveBeenCalledTimes(2);
 
-      // 3. Subsequent fxlang lookup with the same options hits cache immediately
+      // 3. Subsequent fxlang lookup hits cache immediately
       const fxAgain = await fetchGenericResource("Thunderbolt", {
-        priority: ["condition", "move", "ability", "item"],
         include_fxlang: true,
       });
       expect(fxAgain?.data).toEqual(fxData);
       expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
 
-      // 4. Subsequent fxlang lookup with different priority also hits cache!
-      const fxDifferentPriority = await fetchGenericResource("Thunderbolt", {
-        priority: ["move"],
-        include_fxlang: true,
-      });
-      expect(fxDifferentPriority?.data).toEqual(fxData);
-      expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
-
-      // 5. Subsequent non-fx lookup also gets the enriched data from cache
+      // 4. Subsequent non-fx lookup also gets the enriched data from cache
       const nonFxAgain = await fetchGenericResource("Thunderbolt");
       expect(nonFxAgain?.data).toEqual(fxData);
       expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
@@ -447,24 +382,11 @@ describe("useDataStore", () => {
   });
 
   describe("getGenericResourceCacheKey", () => {
-    it("builds consistent keys for empty, single, and multi-priority options", () => {
+    it("builds consistent normalized keys for resource queries", () => {
       expect(getGenericResourceCacheKey("")).toBe("");
-      expect(getGenericResourceCacheKey("Toxic Spikes")).toBe("resource:Toxic Spikes:");
-      expect(getGenericResourceCacheKey("Toxic Spikes", { priority: ["condition", "move"] })).toBe(
-        "resource:Toxic Spikes:condition,move",
-      );
-      expect(getGenericResourceCacheKey("Toxic Spikes", ["condition", "move"])).toBe(
-        "resource:Toxic Spikes:condition,move",
-      );
-    });
-
-    it("uses unified keys regardless of include_fxlang", () => {
-      expect(
-        getGenericResourceCacheKey("Rain", {
-          priority: ["condition"],
-          include_fxlang: true,
-        }),
-      ).toBe("resource:Rain:condition");
+      expect(getGenericResourceCacheKey("Toxic Spikes")).toBe("resource:toxicspikes");
+      expect(getGenericResourceCacheKey("rain")).toBe("resource:rain");
+      expect(getGenericResourceCacheKey("Rain-Dance")).toBe("resource:raindance");
     });
   });
 });

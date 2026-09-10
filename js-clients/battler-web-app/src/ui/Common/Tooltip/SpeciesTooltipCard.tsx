@@ -6,10 +6,10 @@ import {
   parseGenderRatio,
 } from "../../../utils/dataTooltipFormatting";
 import TypeBadge from "../TypeBadge";
-import { useFxLangModal } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
 import DataTooltipTrigger from "./DataTooltipTrigger";
 import styles from "./SpeciesTooltipCard.module.scss";
+import TooltipEffectButton from "./TooltipEffectButton";
 import TooltipFlagsSection from "./TooltipFlagsSection";
 
 export interface SpeciesTooltipCardProps {
@@ -17,7 +17,6 @@ export interface SpeciesTooltipCardProps {
 }
 
 export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
-  const { openFxLangModal } = useFxLangModal();
   const monClass = formatSpeciesClass(data.class);
 
   const genderRatio = parseGenderRatio(data.gender_ratio ?? 255);
@@ -42,16 +41,7 @@ export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
       <header className={cardStyles.header}>
         <div className="flex-row justify-between align-center">
           <span className={cardStyles.name}>{data.name}</span>
-          <button
-            type="button"
-            className={cardStyles.effectBtn}
-            onClick={(e) => {
-              e.stopPropagation();
-              openFxLangModal({ type: "species", name: data.name });
-            }}
-          >
-            Effect
-          </button>
+          <TooltipEffectButton type="species" name={data.name} />
         </div>
         <span className={cardStyles.subtitle}>{monClass}</span>
         <div className="flex-row align-center gap-xs">

@@ -181,7 +181,7 @@ describe("FxLangModal", () => {
     }
   });
 
-  it("renders modal structure with category and TypeBadge for moves", () => {
+  it("renders modal structure with header and tabs for moves", () => {
     vi.mocked(dataStore.useGenericResource).mockReturnValue({
       data: {
         type: "move",
@@ -273,7 +273,7 @@ describe("FxLangModal", () => {
     });
   });
 
-  it("renders Species class and stats traits for species", () => {
+  it("renders species name and class subtitle for species", () => {
     vi.mocked(dataStore.useGenericResource).mockReturnValue({
       data: {
         type: "species",
@@ -506,13 +506,7 @@ describe("FxLangModal", () => {
         onClose: () => {},
       });
 
-      expect(capturedOptions?.priority).toEqual([
-        "condition",
-        "move",
-        "ability",
-        "item",
-        "species",
-      ]);
+      expect(capturedOptions).toEqual({ include_fxlang: true });
 
       const { headerStr } = getModalElements(portal);
       expect(headerStr).toContain("No Retreat");
@@ -593,6 +587,36 @@ describe("FxLangModal", () => {
       const { contentStr } = getModalElements(portal);
       expect(contentStr).toContain("spinner");
       expect(contentStr).toContain("Loading...");
+    });
+  });
+
+  it("escapes HTML special characters in unhighlighted fallback code", () => {
+    vi.mocked(dataStore.useGenericResource).mockReturnValue({
+      data: {
+        type: "move",
+        data: {
+          name: "Test Move",
+          effect: {
+            callbacks: {
+              custom: ["val < 10 && val > 0"],
+            },
+          },
+        },
+      } as unknown as dataStore.ResourceData,
+      loading: false,
+    });
+
+    renderWithMockedReactInternals(() => {
+      const portal = FxLangModal({
+        target: { type: "move", name: "Test Move" },
+        onClose: () => {},
+      });
+
+      const { content, contentStr } = getModalElements(portal);
+      expect(contentStr).toContain("val < 10 && val > 0");
+      const codeViewer = content.props.children as { props: Record<string, unknown> };
+      expect(codeViewer.props.dangerouslySetInnerHTML).toBeUndefined();
+      expect(codeViewer.props.children).toBeDefined();
     });
   });
 });

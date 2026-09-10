@@ -11,7 +11,6 @@ import {
 } from "react";
 import type { ResourceData } from "battler-data-service-client";
 import {
-  type GenericResourceLookupOptions,
   type ResourceType,
   useGenericResource,
   useResourceData,
@@ -105,18 +104,8 @@ function TypedResourceContent({
   return renderResourceCard({ type, data } as ResourceData, name);
 }
 
-const CONDITION_PRIORITY = {
-  priority: ["condition", "move", "ability", "item"] as const,
-};
-
-function GenericResourceContent({
-  name,
-  options,
-}: {
-  name: string;
-  options?: GenericResourceLookupOptions;
-}) {
-  const { data, loading } = useGenericResource(name, options);
+function GenericResourceContent({ name }: { name: string }) {
+  const { data, loading } = useGenericResource(name);
   if (loading) return <LoadingCard />;
   if (!data) return <EmptyCard name={name} />;
   return renderResourceCard(data, name);
@@ -129,10 +118,7 @@ function ResourceContent({
   resourceType: DataResourceType;
   name: string;
 }) {
-  if (resourceType === "condition") {
-    return <GenericResourceContent name={name} options={CONDITION_PRIORITY} />;
-  }
-  if (resourceType === "resource") {
+  if (resourceType === "condition" || resourceType === "resource") {
     return <GenericResourceContent name={name} />;
   }
   return <TypedResourceContent type={resourceType} name={name} />;

@@ -1,0 +1,60 @@
+// Segmented control tab bar and buttons
+@mixin segmented-tabs {
+  .tabBar {
+    display: flex;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xs);
+    padding: var(--spacing-xxs);
+    gap: var(--spacing-xxs);
+  }
+
+  .tabBtn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: var(--border-radius-xs);
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    font-size: var(--font-size-xxs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      color: var(--text-muted);
+      background-color: transparent;
+      box-shadow: none;
+
+      &:hover {
+        color: var(--text-muted);
+      }
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none !important;
+    }
+
+    &[aria-selected="true"]:not(:disabled) {
+      background-color: var(--bg-card);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: var(--spacing-xxs);
+    }
+  }
+}

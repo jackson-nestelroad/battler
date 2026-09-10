@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { ResourceType } from "../../../hooks/useDataStore";
-import { useFxLangModal } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
+import TooltipEffectButton from "./TooltipEffectButton";
 import TooltipFlagsSection from "./TooltipFlagsSection";
 
 export interface SimpleDataTooltipCardProps {
@@ -19,25 +19,12 @@ export default function SimpleDataTooltipCard({
   flags,
   children,
 }: SimpleDataTooltipCardProps) {
-  const { openFxLangModal } = useFxLangModal();
-
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardCompact}`}>
       <header className={cardStyles.header}>
         <div className="flex-row justify-between align-center">
           <span className={cardStyles.name}>{name}</span>
-          {resourceType && (
-            <button
-              type="button"
-              className={cardStyles.effectBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                openFxLangModal({ type: resourceType, name });
-              }}
-            >
-              Effect
-            </button>
-          )}
+          {resourceType && <TooltipEffectButton type={resourceType} name={name} />}
         </div>
         <span className={cardStyles.subtitle}>{subtitle}</span>
       </header>

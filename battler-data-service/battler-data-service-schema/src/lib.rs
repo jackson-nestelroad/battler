@@ -66,14 +66,9 @@ impl WampDeserialize for ResourceType {
 }
 
 /// Options for querying a generic resource across multiple types.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, WampDictionary)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, WampDictionary)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
 pub struct ResourceLookupOptions {
-    /// Priority order of resource types to search.
-    /// Defaults to: [Condition, Move, Ability, Item, Species]
-    #[battler_wamp_values(default)]
-    #[serde(default)]
-    pub priority: Vec<ResourceType>,
     /// Whether to include raw fxlang code. Defaults to false.
     #[battler_wamp_values(default)]
     #[serde(default)]

@@ -143,50 +143,24 @@ impl<'d> BattlerDataService<'d> {
         query: &str,
         options: ResourceLookupOptions,
     ) -> Result<Option<ResourceData>> {
-        let priority = if options.priority.is_empty() {
-            vec![
-                SchemaResourceType::Condition,
-                SchemaResourceType::Move,
-                SchemaResourceType::Ability,
-                SchemaResourceType::Item,
-                SchemaResourceType::Species,
-            ]
-        } else {
-            options.priority
-        };
-
         let resource_options = ResourceOptions {
             include_fxlang: options.include_fxlang,
         };
 
-        for resource_type in priority {
-            match resource_type {
-                SchemaResourceType::Condition => {
-                    if let Some(data) = self.get_condition(query, resource_options)? {
-                        return Ok(Some(ResourceData::Condition(data)));
-                    }
-                }
-                SchemaResourceType::Move => {
-                    if let Some(data) = self.get_move(query, resource_options)? {
-                        return Ok(Some(ResourceData::Move(data)));
-                    }
-                }
-                SchemaResourceType::Ability => {
-                    if let Some(data) = self.get_ability(query, resource_options)? {
-                        return Ok(Some(ResourceData::Ability(data)));
-                    }
-                }
-                SchemaResourceType::Item => {
-                    if let Some(data) = self.get_item(query, resource_options)? {
-                        return Ok(Some(ResourceData::Item(data)));
-                    }
-                }
-                SchemaResourceType::Species => {
-                    if let Some(data) = self.get_species(query, resource_options)? {
-                        return Ok(Some(ResourceData::Species(data)));
-                    }
-                }
-            }
+        if let Some(data) = self.get_condition(query, resource_options)? {
+            return Ok(Some(ResourceData::Condition(data)));
+        }
+        if let Some(data) = self.get_move(query, resource_options)? {
+            return Ok(Some(ResourceData::Move(data)));
+        }
+        if let Some(data) = self.get_ability(query, resource_options)? {
+            return Ok(Some(ResourceData::Ability(data)));
+        }
+        if let Some(data) = self.get_item(query, resource_options)? {
+            return Ok(Some(ResourceData::Item(data)));
+        }
+        if let Some(data) = self.get_species(query, resource_options)? {
+            return Ok(Some(ResourceData::Species(data)));
         }
 
         Ok(None)

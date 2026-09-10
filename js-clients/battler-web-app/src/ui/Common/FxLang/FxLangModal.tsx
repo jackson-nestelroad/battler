@@ -22,36 +22,18 @@ export interface FxLangModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_RESOURCE_SEARCH_ORDER: readonly ResourceType[] = [
-  "condition",
-  "move",
-  "ability",
-  "item",
-  "species",
-];
-
 export default function FxLangModal({ target, onClose }: FxLangModalProps) {
+  const { type, name, displayName: targetDisplayName, tab: targetTab } = target;
   const [currentTarget, setCurrentTarget] = useState<FxLangModalTarget>(target);
   const [history, setHistory] = useState<FxLangModalTarget[]>([]);
 
   // Sync state if target prop changes
   useEffect(() => {
-    setCurrentTarget(target);
+    setCurrentTarget({ type, name, displayName: targetDisplayName, tab: targetTab });
     setHistory([]);
-  }, [target.type, target.name, target.tab]);
-
-  const priority = useMemo<readonly ResourceType[]>(() => {
-    if (currentTarget.type === "condition") {
-      return DEFAULT_RESOURCE_SEARCH_ORDER;
-    }
-    return [
-      currentTarget.type,
-      ...DEFAULT_RESOURCE_SEARCH_ORDER.filter((t) => t !== currentTarget.type),
-    ];
-  }, [currentTarget.type]);
+  }, [type, name, targetDisplayName, targetTab]);
 
   const { data: resourceData, loading } = useGenericResource(currentTarget.name, {
-    priority,
     include_fxlang: true,
   });
 
@@ -318,6 +300,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
           <button
             type="button"
             aria-label="Close"
+            title="Close"
             className={styles.closeBtn}
             onClick={onClose}
           >
@@ -333,17 +316,25 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
             </div>
           ) : !activeCode ? (
             <div className={styles.emptyState}>None</div>
+          ) : highlightedHtml ? (
+            <div
+              className={styles.codeContainer}
+              onClick={handleCodeClick}
+              onKeyDown={handleCodeKeyDown}
+              dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+            />
           ) : (
             <div
               className={styles.codeContainer}
               onClick={handleCodeClick}
               onKeyDown={handleCodeKeyDown}
-              dangerouslySetInnerHTML={{
-                __html:
-                  highlightedHtml ||
-                  `<pre class="shiki"><code><span class="line">${activeCode}</span></code></pre>`,
-              }}
-            />
+            >
+              <pre className="shiki">
+                <code>
+                  <span className="line">{activeCode}</span>
+                </code>
+              </pre>
+            </div>
           )}
         </div>
       </div>
