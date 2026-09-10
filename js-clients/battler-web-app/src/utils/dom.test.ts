@@ -49,7 +49,12 @@ describe("dom utils", () => {
       expect(isTargetInsideModal({} as unknown as EventTarget)).toBe(false);
     });
 
-    it("returns true when target or ancestor has role='dialog' or aria-modal='true'", () => {
+    it("returns true when target or ancestor has dialog element, role='dialog' or aria-modal='true'", () => {
+      const nativeDialogChild = {
+        closest: (selector: string) => (selector.includes("dialog") ? {} : null),
+      };
+      expect(isTargetInsideModal(nativeDialogChild as unknown as EventTarget)).toBe(true);
+
       const dialogChild = {
         closest: (selector: string) => (selector.includes('[role="dialog"]') ? {} : null),
       };

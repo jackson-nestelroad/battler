@@ -27,13 +27,7 @@ import MoveTooltipCard from "./MoveTooltipCard";
 import SpeciesTooltipCard from "./SpeciesTooltipCard";
 import { TooltipParentContext, useTooltipChildTracker } from "./TooltipContext";
 
-export type DataResourceType =
-  | "move"
-  | "ability"
-  | "item"
-  | "condition"
-  | "species"
-  | "resource";
+export type DataResourceType = ResourceType | "resource";
 
 export interface DataTooltipTriggerProps {
   resourceType: DataResourceType;

@@ -92,3 +92,13 @@ export function formatDeciMetric(value?: number | null, unit: string = ""): stri
   const converted = (value / 10).toFixed(1);
   return unit ? `${converted} ${unit}` : converted;
 }
+
+/**
+ * Safely extracts the canonical name from a raw resource data object.
+ */
+export function extractResourceName(data: unknown): string | undefined {
+  if (data && typeof data === "object" && "name" in data && typeof data.name === "string" && data.name) {
+    return data.name;
+  }
+  return undefined;
+}

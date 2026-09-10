@@ -76,29 +76,6 @@
   color: var(--text-secondary);
 }
 
-.effectBtn {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-xs);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  line-height: 1.2;
-
-  &:hover {
-    color: var(--color-primary);
-    border-color: var(--color-primary-border);
-    background-color: var(--bg-card);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: var(--spacing-xxs);
-  }
-}
 
 .traitsGrid {
   display: flex;

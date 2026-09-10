@@ -24,7 +24,10 @@ async function getHighlighterInstance(): Promise<HighlighterCore> {
         ],
         engine: createOnigurumaEngine(import("shiki/wasm")),
       });
-    })();
+    })().catch((err) => {
+      highlighterPromise = null;
+      throw err;
+    });
   }
   return highlighterPromise;
 }

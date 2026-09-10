@@ -25,7 +25,13 @@ export default function FxLangModalProvider({ children }: FxLangModalProviderPro
   return (
     <FxLangModalContext.Provider value={contextValue}>
       {children}
-      {target && <FxLangModal target={target} onClose={closeFxLangModal} />}
+      {target && (
+        <FxLangModal
+          key={`${target.type}:${target.name}`}
+          target={target}
+          onClose={closeFxLangModal}
+        />
+      )}
     </FxLangModalContext.Provider>
   );
 }

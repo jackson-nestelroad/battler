@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
 import { type ResourceType, useGenericResource } from "../../../hooks/useDataStore";
-import { formatSpeciesClass } from "../../../utils/dataTooltipFormatting";
+import {
+  extractResourceName,
+  formatSpeciesClass,
+} from "../../../utils/dataTooltipFormatting";
 import { toElement } from "../../../utils/dom";
 import {
   extractFxlangData,
@@ -29,7 +32,17 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
 
   // Sync state if target prop changes
   useEffect(() => {
-    setCurrentTarget({ type, name, displayName: targetDisplayName, tab: targetTab });
+    setCurrentTarget((prev) => {
+      if (
+        prev.type === type &&
+        prev.name === name &&
+        prev.displayName === targetDisplayName &&
+        prev.tab === targetTab
+      ) {
+        return prev;
+      }
+      return { type, name, displayName: targetDisplayName, tab: targetTab };
+    });
     setHistory([]);
   }, [type, name, targetDisplayName, targetTab]);
 
@@ -44,10 +57,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
 
   const displayName =
-    (resourceData?.data &&
-      "name" in resourceData.data &&
-      typeof resourceData.data.name === "string" &&
-      resourceData.data.name) ||
+    extractResourceName(resourceData?.data) ||
     currentTarget.displayName ||
     currentTarget.name;
 
@@ -164,8 +174,8 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
   // Run syntax highlighting whenever active code changes
   useEffect(() => {
     let active = true;
+    setHighlightedHtml("");
     if (!activeCode) {
-      setHighlightedHtml("");
       return;
     }
 
@@ -331,7 +341,11 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
             >
               <pre className="shiki">
                 <code>
-                  <span className="line">{activeCode}</span>
+                  {activeCode.split("\n").map((line, idx) => (
+                    <span key={idx} className="line">
+                      {line}
+                    </span>
+                  ))}
                 </code>
               </pre>
             </div>

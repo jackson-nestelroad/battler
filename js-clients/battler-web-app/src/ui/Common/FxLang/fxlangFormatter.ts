@@ -2,7 +2,7 @@ import type { ItemData, MoveData } from "battler-types";
 import type { ResourceType } from "../../../hooks/useDataStore";
 
 function isPrimitive(v: unknown): boolean {
-  return v === null || typeof v === "boolean" || typeof v === "number" || typeof v === "string";
+  return typeof v === "boolean" || typeof v === "number" || typeof v === "string";
 }
 
 /**
@@ -68,7 +68,6 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
       const allShortPrimitivesNoSpace = value.every(
         (v) =>
           isPrimitive(v) &&
-          typeof v !== "object" &&
           !String(v).includes(" ") &&
           String(v).length <= 20,
       );

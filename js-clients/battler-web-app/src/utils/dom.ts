@@ -24,6 +24,6 @@ export function toElement(target: EventTarget | null): Element | null {
  */
 export function isTargetInsideModal(target: EventTarget | null): boolean {
   const element = toElement(target);
-  return Boolean(element?.closest?.('[role="dialog"], [aria-modal="true"]'));
+  return Boolean(element?.closest?.('dialog, [role="dialog"], [aria-modal="true"]'));
 }
 

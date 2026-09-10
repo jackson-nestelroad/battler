@@ -9,10 +9,10 @@ import type {
   SpeciesData,
 } from "battler-data-service-client";
 import { connectionManager } from "../core/wamp";
-import { toId } from "../utils/dataTooltipFormatting";
+import { extractResourceName, toId } from "../utils/dataTooltipFormatting";
 
 export type { ResourceData, ResourceType };
-export { toId };
+export { extractResourceName, toId };
 
 export interface ResourceMap {
   move: MoveData;
@@ -25,13 +25,6 @@ export interface ResourceMap {
 const cache = new Map<string, unknown>();
 const pending = new Map<string, Promise<unknown>>();
 const fxCached = new Set<string>();
-
-function extractResourceName(data: unknown): string | undefined {
-  if (data && typeof data === "object" && "name" in data && typeof data.name === "string" && data.name) {
-    return data.name;
-  }
-  return undefined;
-}
 
 function getResourceAliases(query: string, data?: unknown): string[] {
   const aliases = new Set<string>();

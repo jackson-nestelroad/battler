@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  extractResourceName,
   formatAccuracy,
   formatBasePower,
   formatDeciMetric,
@@ -195,6 +196,23 @@ describe("dataTooltipFormatting", () => {
       expect(formatDeciMetric(undefined, "m")).toBeNull();
       expect(formatDeciMetric(0, "kg")).toBeNull();
       expect(formatDeciMetric(-10, "kg")).toBeNull();
+    });
+  });
+
+  describe("extractResourceName", () => {
+    it("extracts name property when present and non-empty string", () => {
+      expect(extractResourceName({ name: "Thunderbolt" })).toBe("Thunderbolt");
+      expect(extractResourceName({ name: "Rain", type: "weather" })).toBe("Rain");
+    });
+
+    it("returns undefined for null, undefined, non-objects, or missing name", () => {
+      expect(extractResourceName(null)).toBeUndefined();
+      expect(extractResourceName(undefined)).toBeUndefined();
+      expect(extractResourceName("Thunderbolt")).toBeUndefined();
+      expect(extractResourceName(123)).toBeUndefined();
+      expect(extractResourceName({})).toBeUndefined();
+      expect(extractResourceName({ name: "" })).toBeUndefined();
+      expect(extractResourceName({ name: 123 })).toBeUndefined();
     });
   });
 });
