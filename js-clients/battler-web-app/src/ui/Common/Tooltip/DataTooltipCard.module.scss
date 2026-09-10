@@ -144,33 +144,6 @@
   font-weight: 500;
 }
 
-.categoryBadge {
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: var(--font-size-xxs);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  border-radius: var(--border-radius-xs);
-  border: 1px solid transparent;
-
-  &.categoryPhysical {
-    background-color: var(--color-danger-bg);
-    border-color: var(--color-danger-border);
-    color: var(--color-danger);
-  }
-
-  &.categorySpecial {
-    background-color: var(--color-info-bg);
-    border-color: var(--color-info-border);
-    color: var(--color-info);
-  }
-
-  &.categoryStatus {
-    background-color: var(--color-secondary-bg);
-    border-color: var(--color-secondary-border);
-    color: var(--text-secondary);
-  }
-}
-
 .loadingCard,
 .emptyCard {
   align-items: center;

@@ -169,6 +169,19 @@
   --color-type-none-light: #64748b;
   --color-type-none-dark: #334155;
 
+  /* Move Category Color Tokens */
+  --color-category-physical: #e55239;
+  --color-category-physical-light: #f17f6c;
+  --color-category-physical-dark: #b8331d;
+
+  --color-category-special: #2068dc;
+  --color-category-special-light: #5d92e8;
+  --color-category-special-dark: #124cb1;
+
+  --color-category-status: #797f8c;
+  --color-category-status-light: #9ea3ad;
+  --color-category-status-dark: #585d69;
+
   /* Battle Mechanic Badge Tokens */
   --color-badge-tera-bg: rgba(168, 85, 247, 0.2);
   --color-badge-tera-border: #c084fc;
@@ -256,6 +269,8 @@
   --mobile-header-height: 3.25rem;
   --type-badge-width-md: 5.75rem;
   --type-badge-width-sm: 5.125rem;
+  --category-badge-width-md: 5.75rem;
+  --category-badge-width-sm: 5.25rem;
   --type-badge-tera-width-md: 5.75rem;
   --type-badge-tera-width-sm: 5.125rem;
   --type-badge-tera-height-md: 1.25rem; /* 20px */
@@ -266,6 +281,8 @@
   --type-icon-size-sm: 0.875rem;
   --type-icon-size-tera-md: 0.9375rem; /* 15px */
   --type-icon-size-tera-sm: 0.75rem; /* 12px */
+  --category-icon-size-md: var(--type-icon-size-md);
+  --category-icon-size-sm: var(--type-icon-size-sm);
 
   /* Tera Silhouette Clip Offsets */
   --tera-clip-horn-offset: 0.1875rem; /* 3px */
@@ -293,6 +310,8 @@
     --type-icon-size-tera-sm: 0.7rem;
     --type-badge-tera-width-md: 5.25rem;
     --type-badge-tera-width-sm: 4.5rem;
+    --category-badge-width-md: 5.25rem;
+    --category-badge-width-sm: 4.65rem;
   }
 }
 

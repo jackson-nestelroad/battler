@@ -81,6 +81,8 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Thunderbolt");
       expect(html).toContain("Move");
       expect(html).toContain("Special");
+      expect(html).toContain('data-category="special"');
+      expect(html).toContain('src="/assets/categories/special.png"');
       expect(html).toContain("90");
       expect(html).toContain("100%");
       expect(html).toContain("15 (max 24)");
@@ -105,6 +107,8 @@ describe("Data Tooltip Cards", () => {
       const html = renderToStaticMarkup(<MoveTooltipCard data={mockStatusMove} />);
       expect(html).toContain("Baby-Doll Eyes");
       expect(html).toContain("Status");
+      expect(html).toContain('data-category="status"');
+      expect(html).toContain('src="/assets/categories/status.png"');
       expect(html).toContain("—"); // base power and accuracy
       expect(html).toContain("30 (max 48)");
       expect(html).toContain("Priority:");

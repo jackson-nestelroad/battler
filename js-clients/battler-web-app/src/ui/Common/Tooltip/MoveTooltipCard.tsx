@@ -5,6 +5,7 @@ import {
   formatPp,
   formatPriority,
 } from "../../../utils/dataTooltipFormatting";
+import CategoryBadge from "../CategoryBadge";
 import TypeBadge from "../TypeBadge";
 import cardStyles from "./DataTooltipCard.module.scss";
 import TooltipEffectButton from "./TooltipEffectButton";
@@ -20,8 +21,6 @@ export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
   const ppStr = formatPp(data.pp, data.no_pp_boosts);
   const priorityStr = formatPriority(data.priority);
 
-  const categoryClass = `${cardStyles.categoryBadge} ${cardStyles[`category${data.category}`] || cardStyles.categoryStatus}`;
-
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
       <header className={cardStyles.header}>
@@ -31,7 +30,7 @@ export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
         </div>
         <span className={cardStyles.subtitle}>Move</span>
         <div className="flex-row align-center gap-xs">
-          <span className={categoryClass}>{data.category}</span>
+          <CategoryBadge category={data.category} size="sm" />
           <TypeBadge type={data.primary_type} size="sm" />
         </div>
       </header>

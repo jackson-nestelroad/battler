@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import IconBadge from "./IconBadge";
 import styles from "./TypeBadge.module.scss";
 
 export interface TypeBadgeProps {
@@ -20,7 +20,9 @@ export default function TypeBadge({
 }: TypeBadgeProps) {
   const normalizedType = type.trim().toLowerCase();
   const typeKey = normalizedType === "???" ? "unknown" : normalizedType;
-  const badgeClasses = [
+  const baseUrl = import.meta.env?.BASE_URL ?? "/";
+
+  const typeClasses = [
     styles.typeBadge,
     size === "sm" ? styles.typeBadgeSm : styles.typeBadgeMd,
     variant === "tera" && styles.typeBadgeTera,
@@ -29,18 +31,22 @@ export default function TypeBadge({
   ]
     .filter(Boolean)
     .join(" ");
-  const baseUrl = import.meta.env?.BASE_URL ?? "/";
 
   return (
-    <span
-      className={badgeClasses}
-      style={
-        {
-          background: `var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`,
-        } as CSSProperties
-      }
-      data-type={typeKey}
-      data-variant={variant}
+    <IconBadge
+      label={type}
+      iconSrc={`${baseUrl}assets/types/${typeKey}.png`}
+      background={`var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`}
+      size={size}
+      showIcon={showIcon}
+      fixedWidth={fixedWidth}
+      className={typeClasses}
+      iconClassName={styles.typeIcon}
+      textClassName={styles.typeText}
+      dataAttributes={{
+        "data-type": typeKey,
+        "data-variant": variant,
+      }}
     >
       {variant === "tera" && (
         <>
@@ -72,16 +78,6 @@ export default function TypeBadge({
           </svg>
         </>
       )}
-      {showIcon && (
-        <img
-          src={`${baseUrl}assets/types/${typeKey}.png`}
-          alt=""
-          className={styles.typeIcon}
-          aria-hidden="true"
-          draggable={false}
-        />
-      )}
-      <span className={styles.typeText}>{type}</span>
-    </span>
+    </IconBadge>
   );
 }
