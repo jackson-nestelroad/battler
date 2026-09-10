@@ -106,7 +106,9 @@ impl ts_rs::TS for ZMoveData {
     type WithoutGenerics = Self;
 
     fn decl() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("type ZMoveData = {\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n};")
+        alloc::borrow::ToOwned::to_owned(
+            "type ZMoveData = {\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n};",
+        )
     }
 
     fn decl_concrete() -> alloc::string::String {
@@ -118,11 +120,15 @@ impl ts_rs::TS for ZMoveData {
     }
 
     fn inline() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("{\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n}")
+        alloc::borrow::ToOwned::to_owned(
+            "{\n    base_power: number;\n    boosts?: BoostTable;\n    effect?: string;\n}",
+        )
     }
 
     fn inline_flattened() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("base_power: number;\n    boosts?: BoostTable;\n    effect?: string;")
+        alloc::borrow::ToOwned::to_owned(
+            "base_power: number;\n    boosts?: BoostTable;\n    effect?: string;",
+        )
     }
 
     fn output_path() -> Option<&'static std::path::Path> {

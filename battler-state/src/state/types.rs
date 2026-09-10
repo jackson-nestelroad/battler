@@ -585,10 +585,20 @@ impl Mon {
 
     pub(crate) fn faint(&mut self) {
         self.fainted = true;
+        for battle_appearance in &mut self.battle_appearances {
+            battle_appearance.record_status("fnt".to_owned().into(), Ambiguity::Precise);
+            if let Some((_, max)) = battle_appearance.primary().health.known().copied() {
+                battle_appearance
+                    .record_health(DiscoveryRequired::Known((0, max)), Ambiguity::Precise);
+            }
+        }
     }
 
     pub(crate) fn revive(&mut self) {
         self.fainted = false;
+        for battle_appearance in &mut self.battle_appearances {
+            battle_appearance.record_status(String::default().into(), Ambiguity::Precise);
+        }
     }
 
     pub(crate) fn push_battle_appearance(&mut self) -> usize {
@@ -743,11 +753,11 @@ impl Side {
         self.active.get(position).cloned().flatten()
     }
 
-    pub(crate) fn mon_index_is_active(&self, index: usize) -> bool {
+    pub(crate) fn mon_index_is_active(&self, player: &str, index: usize) -> bool {
         self.active.iter().any(|active| {
             active
                 .as_ref()
-                .is_some_and(|active| active.mon_index == index)
+                .is_some_and(|active| active.player == player && active.mon_index == index)
         })
     }
 
@@ -800,7 +810,7 @@ impl Side {
                 mon.brought
                     && mon.physical_appearance.matches(&physical_appearance)
                     && (player_has_seen_all_mons
-                        || (!mon.fainted && !self.mon_index_is_active(*mon_index)))
+                        || (!mon.fainted && !self.mon_index_is_active(player_id, *mon_index)))
             })
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
@@ -1024,7 +1034,7 @@ impl Side {
             }
 
             // Cannot merge into an active Mon.
-            if self.mon_index_is_active(mon_index) {
+            if self.mon_index_is_active(player_id, mon_index) {
                 continue;
             }
 
@@ -1039,7 +1049,7 @@ impl Side {
                         && other_mon
                             .physical_appearance
                             .matches(&mon.physical_appearance)
-                        && !self.mon_index_is_active(*i)
+                        && !self.mon_index_is_active(player_id, *i)
                 })
                 .map(|(i, mon)| (i, mon.fainted))
                 .collect::<Vec<_>>();

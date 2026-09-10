@@ -163,15 +163,15 @@ function renderStateMonRow(
   let hpText = "100%";
 
   if (!isUnbrought) {
-    if (health) {
+    if (isFainted) {
+      hp = 0;
+      maxHp = 100;
+      hpText = "0%";
+    } else if (health) {
       const pct = computeHpPercentage(health[0], health[1]);
       hp = pct;
       maxHp = 100;
       hpText = `${pct}%`;
-    } else if (isFainted) {
-      hp = 0;
-      maxHp = 100;
-      hpText = "0%";
     }
   }
 
@@ -183,7 +183,7 @@ function renderStateMonRow(
       hp={hp}
       maxHp={maxHp}
       hpText={hpText}
-      status={isUnbrought ? null : status}
+      status={isUnbrought ? null : isFainted ? "fnt" : status}
       active={isUnbrought ? false : isActive}
       isUnbrought={isUnbrought}
       appearanceRef={monRef}

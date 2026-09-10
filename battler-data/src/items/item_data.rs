@@ -107,7 +107,9 @@ impl ts_rs::TS for ZCrystalData {
     type WithoutGenerics = Self;
 
     fn decl() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("type ZCrystalData = {\n    into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;\n};")
+        alloc::borrow::ToOwned::to_owned(
+            "type ZCrystalData = {\n    into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;\n};",
+        )
     }
 
     fn decl_concrete() -> alloc::string::String {
@@ -119,11 +121,15 @@ impl ts_rs::TS for ZCrystalData {
     }
 
     fn inline() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("{\n    into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;\n}")
+        alloc::borrow::ToOwned::to_owned(
+            "{\n    into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;\n}",
+        )
     }
 
     fn inline_flattened() -> alloc::string::String {
-        alloc::borrow::ToOwned::to_owned("into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;")
+        alloc::borrow::ToOwned::to_owned(
+            "into: string;\n    users?: Array<string>;\n    from?: string;\n    type?: Type;",
+        )
     }
 
     fn output_path() -> Option<&'static std::path::Path> {

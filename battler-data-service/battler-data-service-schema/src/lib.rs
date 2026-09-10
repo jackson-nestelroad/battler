@@ -1,5 +1,4 @@
 use ahash::HashMap;
-
 use battler_data::{
     AbilityData,
     ConditionData,
@@ -60,7 +59,9 @@ impl WampDeserialize for ResourceType {
             "ability" => Ok(Self::Ability),
             "item" => Ok(Self::Item),
             "species" => Ok(Self::Species),
-            _ => Err(WampDeserializeError::new(format!("invalid resource type: {s}"))),
+            _ => Err(WampDeserializeError::new(format!(
+                "invalid resource type: {s}"
+            ))),
         }
     }
 }
@@ -184,16 +185,25 @@ pub struct BatchResult {
     #[cfg_attr(feature = "typescript", ts(type = "Record<string, MoveData | null>"))]
     pub moves: HashMap<String, Option<MoveData>>,
     #[serde(default)]
-    #[cfg_attr(feature = "typescript", ts(type = "Record<string, AbilityData | null>"))]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Record<string, AbilityData | null>")
+    )]
     pub abilities: HashMap<String, Option<AbilityData>>,
     #[serde(default)]
     #[cfg_attr(feature = "typescript", ts(type = "Record<string, ItemData | null>"))]
     pub items: HashMap<String, Option<ItemData>>,
     #[serde(default)]
-    #[cfg_attr(feature = "typescript", ts(type = "Record<string, ConditionData | null>"))]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Record<string, ConditionData | null>")
+    )]
     pub conditions: HashMap<String, Option<ConditionData>>,
     #[serde(default)]
-    #[cfg_attr(feature = "typescript", ts(type = "Record<string, SpeciesData | null>"))]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Record<string, SpeciesData | null>")
+    )]
     pub species: HashMap<String, Option<SpeciesData>>,
 }
 

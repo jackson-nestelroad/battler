@@ -3988,4 +3988,60 @@ mod state_test {
             ]
         );
     }
+
+    #[test]
+    fn multi_battle_mon_index_does_not_conflict_across_teammates() {
+        let log = Log::new(&[
+            "info|battletype:Multi",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength:2",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:0|position:1",
+            "player|id:player-3|name:Player 3|side:1|position:0",
+            "player|id:player-4|name:Player 4|side:1|position:1",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:2",
+            "teamsize|player:player-3|size:2",
+            "teamsize|player:player-4|size:2",
+            "mon|player:player-1|species:Squirtle|level:5|gender:M",
+            "mon|player:player-1|species:Pikachu|level:5|gender:M",
+            "mon|player:player-2|species:Bulbasaur|level:5|gender:M",
+            "mon|player:player-2|species:Charmander|level:5|gender:M",
+            "battlestart",
+            // player-1 switches in Squirtle (mon_index: 0)
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+            // player-2 switches in Bulbasaur (mon_index: 0)
+            "switch|player:player-2|position:2|name:Bulbasaur|health:100/100|species:Bulbasaur|level:5|gender:M",
+            "turn|turn:1",
+            // player-1 switches out Squirtle to Pikachu (mon_index: 1)
+            "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:M",
+            "turn|turn:2",
+            // player-2's Bulbasaur is STILL ACTIVE at mon_index: 0.
+            // player-1 now switches back to Squirtle (mon_index: 0).
+            // It should NOT create a new Mon entry for player-1.
+            "switch|player:player-1|position:1|name:Squirtle|health:100/100|species:Squirtle|level:5|gender:M",
+        ])
+        .unwrap();
+
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+        let p1 = state.field.sides[0].players.get("player-1").unwrap();
+        assert_eq!(p1.mons.len(), 2);
+        assert_eq!(p1.mons[0].physical_appearance.species, "Squirtle");
+        assert_eq!(p1.mons[1].physical_appearance.species, "Pikachu");
+    }
+
+    #[test]
+    fn faint_without_damage_log_sets_health_to_zero_and_status_to_fnt() {
+        let state = setup_singles_battle(&[
+            // Mon faints directly without a damage|health:0 log (e.g. Healing Wish, Lunar Dance)
+            "faint|mon:Squirtle,player-1,1",
+        ]);
+        let sq = squirtle_ref();
+        let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
+        assert!(sq_mon.fainted);
+        assert_eq!(state_selectors::mon_health(&state, &sq).unwrap(), Some((0, 100)));
+        assert_eq!(state_selectors::mon_status(&state, &sq).unwrap(), Some("fnt"));
+    }
 }
+

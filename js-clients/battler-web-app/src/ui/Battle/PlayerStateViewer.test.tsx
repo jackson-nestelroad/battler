@@ -597,5 +597,55 @@ describe("PlayerStateViewer", () => {
     // Ash has You badge
     expect(html).toContain("You");
   });
+
+  it("renders fainted Mon with 0% HP and FNT status even if battle appearance health is non-zero", () => {
+    const mockState = {
+      field: {
+        sides: [
+          {
+            id: 0,
+            name: "Side 1",
+            conditions: {},
+            players: {
+              "player-1": {
+                id: "player-1",
+                name: "Alice",
+                team_size: 1,
+                mons: [
+                  {
+                    physical_appearance: { name: "Ninetales", species: "Ninetales", gender: "U" },
+                    fainted: true,
+                    brought: true,
+                    volatile_data: { types: [] },
+                    battle_appearances: [
+                      {
+                        inactive: {
+                          health: { known: [335, 335] },
+                          status: { known: "" },
+                          ability: { known: "" },
+                          item: { known: "" },
+                          terastallization: { known: null },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    } as unknown as BattleState;
+
+    const html = renderToStaticMarkup(
+      <PlayerStateViewer battleState={mockState} />,
+    );
+
+    expect(html).toContain("Ninetales");
+    expect(html).toContain("0%");
+    expect(html).toContain("FNT");
+    expect(html).not.toContain("100%");
+  });
 });
+
 

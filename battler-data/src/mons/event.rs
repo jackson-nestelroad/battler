@@ -35,7 +35,9 @@ pub struct EventData {
     #[serde(default)]
     #[cfg_attr(
         feature = "typescript",
-        ts(type = "Partial<Record<\"hp\" | \"atk\" | \"def\" | \"spa\" | \"spd\" | \"spe\", number>>")
+        ts(
+            type = "Partial<Record<\"hp\" | \"atk\" | \"def\" | \"spa\" | \"spd\" | \"spe\", number>>"
+        )
     )]
     pub ivs: PartialStatTable,
     /// Does the Mon have its hidden ability?
