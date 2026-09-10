@@ -366,6 +366,55 @@ describe("useDataStore", () => {
       expect(res?.data.name).toBe("Thunder Wave");
       expect(mockClient.getResource).toHaveBeenCalledTimes(1);
     });
+
+    it("satisfies concurrent non-fx request from in-flight fxlang request without duplicate RPC", async () => {
+      let resolvePromise: (data: any) => void;
+      mockClient.getResource.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        }),
+      );
+
+      // Start rich fxlang request
+      const pFx = fetchGenericResource("Thunderbolt", { include_fxlang: true });
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      // Concurrent non-fx request should piggyback on the in-flight fx request
+      const pNonFx = fetchGenericResource("Thunderbolt");
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      const fxData = {
+        type: "move" as const,
+        data: { ...mockMove, effect: { ast: "enriched" } },
+      };
+      resolvePromise!(fxData);
+
+      const [resFx, resNonFx] = await Promise.all([pFx, pNonFx]);
+      expect(resFx).toEqual(fxData);
+      expect(resNonFx).toEqual(fxData);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+    });
+
+    it("prevents typed fetch from downgrading cached fxlang data", async () => {
+      const fxData = {
+        type: "move" as const,
+        data: { ...mockMove, effect: { ast: "enriched" } },
+      };
+      mockClient.getResource.mockResolvedValueOnce(fxData);
+      await fetchGenericResource("Thunderbolt", { include_fxlang: true });
+
+      // If typed fetch occurs with stripped data (e.g. mockMove without effect AST)
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      const moveRes = await fetchMove("Thunderbolt");
+
+      // Returns the cached rich data
+      expect(moveRes).toEqual(fxData.data);
+      expect(mockClient.getMove).not.toHaveBeenCalled();
+
+      // Generic cache retains fxlang AST
+      const genericRes = getCachedGenericResource("Thunderbolt", { include_fxlang: true });
+      expect(genericRes?.data).toEqual(fxData.data);
+    });
   });
 
   describe("clearDataStoreCache", () => {

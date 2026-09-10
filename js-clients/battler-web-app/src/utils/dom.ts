@@ -26,4 +26,3 @@ export function isTargetInsideModal(target: EventTarget | null): boolean {
   const element = toElement(target);
   return Boolean(element?.closest?.('dialog, [role="dialog"], [aria-modal="true"]'));
 }
-

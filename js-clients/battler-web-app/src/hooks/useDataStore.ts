@@ -12,7 +12,7 @@ import { connectionManager } from "../core/wamp";
 import { extractResourceName, toId } from "../utils/dataTooltipFormatting";
 
 export type { ResourceData, ResourceType };
-export { extractResourceName, toId };
+export { toId };
 
 export interface ResourceMap {
   move: MoveData;
@@ -59,8 +59,23 @@ function isFxCached(type: ResourceType, query: string, name?: string): boolean {
   return false;
 }
 
-function cacheTypedResource(type: ResourceType, query: string, data: unknown): void {
+function hasFxAstCached(type: ResourceType, query: string, name?: string): boolean {
+  if (type === "species") return false;
+  return isFxCached(type, query, name);
+}
+
+function cacheTypedResource(
+  type: ResourceType,
+  query: string,
+  data: unknown,
+  isFx = false,
+): void {
   if (!data || typeof data !== "object") return;
+  const name = extractResourceName(data);
+  if (!isFx && hasFxAstCached(type, query, name)) {
+    // Do not downgrade rich fxlang data to stripped data
+    return;
+  }
   for (const alias of getResourceAliases(query, data)) {
     cache.set(`${type}:${alias}`, data);
   }
@@ -205,6 +220,11 @@ export async function fetchGenericResource(
   const pendingKey = `${key}${options?.include_fxlang ? ":fx" : ""}`;
   if (pending.has(pendingKey)) return pending.get(pendingKey) as Promise<ResourceData | null>;
 
+  // If a request WITH fxlang is already in flight, it satisfies lightweight requests too
+  if (!options?.include_fxlang && pending.has(`${key}:fx`)) {
+    return pending.get(`${key}:fx`) as Promise<ResourceData | null>;
+  }
+
   const client = connectionManager.dataServiceClient;
   if (!client) return null;
 
@@ -215,16 +235,19 @@ export async function fetchGenericResource(
         options ? { include_fxlang: options.include_fxlang } : undefined,
       );
       if (data) {
-        cache.set(key, data);
         const dataName = extractResourceName(data.data);
-        if (dataName && dataName !== query) {
-          cache.set(getGenericResourceCacheKey(dataName), data);
+        const alreadyFx = hasFxAstCached(data.type, query, dataName);
+        if (!alreadyFx || options?.include_fxlang) {
+          cache.set(key, data);
+          if (dataName && dataName !== query) {
+            cache.set(getGenericResourceCacheKey(dataName), data);
+          }
+          cacheTypedResource(data.type, query, data.data, Boolean(options?.include_fxlang));
         }
 
         if (options?.include_fxlang) {
           markFxCached(data.type, query, data.data);
         }
-        cacheTypedResource(data.type, query, data.data);
       }
       return data;
     } catch {

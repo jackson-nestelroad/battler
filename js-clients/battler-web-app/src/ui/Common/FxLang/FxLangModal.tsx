@@ -53,7 +53,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
   const resolvedType = resourceData?.type || currentTarget.type;
   const isMove = resolvedType === "move";
   const isItem = resolvedType === "item";
-  const [activeTab, setActiveTab] = useState<InspectorTab>("fxlang");
+  const [activeTab, setActiveTab] = useState<InspectorTab>(currentTarget.tab || "fxlang");
   const [highlightedHtml, setHighlightedHtml] = useState<string>("");
 
   const displayName =
@@ -318,7 +318,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
           </button>
         </header>
 
-        <div className={styles.content}>
+        <div className={styles.content} role="tabpanel" aria-label="Effect code">
           {loading ? (
             <div className={styles.loadingState}>
               <div className="spinner" />

@@ -32,8 +32,6 @@ describe("TooltipEffectButton", () => {
     const openFxLangModal = vi.fn();
     const closeFxLangModal = vi.fn();
 
-
-
     // Call the inner component directly with mock context
     let capturedButton: React.ReactElement | null = null;
     function Wrapper() {
