@@ -1,11 +1,12 @@
 import type { SpeciesData } from "battler-types";
-import { Fragment } from "react";
+import { Fragment, useContext } from "react";
 import {
   formatDeciMetric,
   formatSpeciesClass,
   parseGenderRatio,
 } from "../../../utils/dataTooltipFormatting";
 import TypeBadge from "../TypeBadge";
+import { FxLangModalContext } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
 import DataTooltipTrigger from "./DataTooltipTrigger";
 import styles from "./SpeciesTooltipCard.module.scss";
@@ -16,6 +17,7 @@ export interface SpeciesTooltipCardProps {
 }
 
 export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
+  const fxModal = useContext(FxLangModalContext);
   const monClass = formatSpeciesClass(data.class);
 
   const genderRatio = parseGenderRatio(data.gender_ratio ?? 255);
@@ -38,7 +40,19 @@ export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
       <header className={cardStyles.header}>
-        <span className={cardStyles.name}>{data.name}</span>
+        <div className="flex-row justify-between align-center">
+          <span className={cardStyles.name}>{data.name}</span>
+          <button
+            type="button"
+            className={cardStyles.effectBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              fxModal?.openFxLangModal({ type: "species", name: data.name });
+            }}
+          >
+            Effect
+          </button>
+        </div>
         <span className={cardStyles.subtitle}>{monClass}</span>
         <div className="flex-row align-center gap-xs">
           <TypeBadge type={data.primary_type} size="sm" />

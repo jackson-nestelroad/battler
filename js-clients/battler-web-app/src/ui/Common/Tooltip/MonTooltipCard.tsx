@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, useState } from "react";
+import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
@@ -285,18 +285,6 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
           )}
           {conditions.map((condition) => {
             const isDynamax = condition.toLowerCase() === "dynamax";
-            const badge = (
-              <span
-                className={`${styles.modifierBadge} ${
-                  isDynamax ? styles.dynamaxBadge : styles.conditionBadge
-                }`}
-              >
-                {condition}
-              </span>
-            );
-            if (isDynamax) {
-              return <Fragment key={condition}>{badge}</Fragment>;
-            }
             return (
               <DataTooltipTrigger
                 key={condition}
@@ -304,7 +292,13 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
                 name={condition}
                 showUnderline={false}
               >
-                {badge}
+                <span
+                  className={`${styles.modifierBadge} ${
+                    isDynamax ? styles.dynamaxBadge : styles.conditionBadge
+                  }`}
+                >
+                  {condition}
+                </span>
               </DataTooltipTrigger>
             );
           })}

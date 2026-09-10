@@ -11,7 +11,7 @@ import type {
 import { connectionManager } from "../core/wamp";
 import { toId } from "../utils/dataTooltipFormatting";
 
-export type { ResourceType };
+export type { ResourceData, ResourceType };
 export { toId };
 
 export interface ResourceMap {
@@ -24,27 +24,38 @@ export interface ResourceMap {
 
 const cache = new Map<string, unknown>();
 const pending = new Map<string, Promise<unknown>>();
+const fxCached = new Set<string>();
+
+function getResourceAliases(query: string, data?: unknown): string[] {
+  const aliases = [query];
+  const queryId = toId(query);
+  if (queryId && queryId !== query) aliases.push(queryId);
+  if (data && typeof data === "object" && "name" in data && typeof data.name === "string") {
+    if (data.name !== query) aliases.push(data.name);
+    const nameId = toId(data.name);
+    if (nameId && nameId !== queryId && nameId !== query) aliases.push(nameId);
+  }
+  return aliases;
+}
+
+function markFxCached(type: ResourceType, query: string, data: unknown): void {
+  for (const alias of getResourceAliases(query, data)) {
+    fxCached.add(`${type}:${alias}`);
+  }
+}
+
+function isFxCached(type: ResourceType, query: string): boolean {
+  if (type === "species") return true;
+  if (fxCached.has(`${type}:${query}`)) return true;
+  const queryId = toId(query);
+  if (queryId && fxCached.has(`${type}:${queryId}`)) return true;
+  return false;
+}
 
 function cacheTypedResource(type: ResourceType, query: string, data: unknown): void {
   if (!data || typeof data !== "object") return;
-  const name = "name" in data && typeof data.name === "string" ? data.name : undefined;
-
-  // 1. Raw query string
-  cache.set(`${type}:${query}`, data);
-
-  // 2. Normalized query ID
-  const queryId = toId(query);
-  if (queryId) {
-    cache.set(`${type}:${queryId}`, data);
-  }
-
-  // 3. Canonical name and normalized name ID
-  if (name) {
-    cache.set(`${type}:${name}`, data);
-    const nameId = toId(name);
-    if (nameId) {
-      cache.set(`${type}:${nameId}`, data);
-    }
+  for (const alias of getResourceAliases(query, data)) {
+    cache.set(`${type}:${alias}`, data);
   }
 }
 
@@ -66,6 +77,7 @@ export function getCachedResource<T extends ResourceType>(
 export function clearDataStoreCache(): void {
   cache.clear();
   pending.clear();
+  fxCached.clear();
 }
 
 export async function fetchResource<T extends ResourceType>(
@@ -154,8 +166,7 @@ export function getGenericResourceCacheKey(
   const opts = normalizeGenericResourceOptions(options);
   const priorityKey =
     opts?.priority && opts.priority.length > 0 ? opts.priority.join(",") : "";
-  const fxKey = opts?.include_fxlang ? ":fx" : "";
-  return `resource:${query}:${priorityKey}${fxKey}`;
+  return `resource:${query}:${priorityKey}`;
 }
 
 export function getCachedGenericResource(
@@ -165,29 +176,35 @@ export function getCachedGenericResource(
   if (!query) return undefined;
   const opts = normalizeGenericResourceOptions(optionsOrPriority);
   const key = getGenericResourceCacheKey(query, opts);
-  const direct = cache.get(key);
-  if (direct !== undefined) return direct as ResourceData;
-
   const queryId = toId(query);
   const idKey = queryId ? getGenericResourceCacheKey(queryId, opts) : "";
-  if (idKey) {
-    const idDirect = cache.get(idKey);
-    if (idDirect !== undefined) return idDirect as ResourceData;
+
+  // 1. Direct key match (by raw query or normalized ID)
+  for (const k of [key, idKey]) {
+    if (!k) continue;
+    const direct = cache.get(k) as ResourceData | undefined;
+    if (direct !== undefined) {
+      if (!opts?.include_fxlang || isFxCached(direct.type, query)) {
+        return direct;
+      }
+    }
   }
 
-  if (!opts?.include_fxlang) {
-    const searchTypes =
-      opts?.priority && opts.priority.length > 0
-        ? opts.priority
-        : DEFAULT_RESOURCE_PRIORITY;
-    for (const type of searchTypes) {
-      const item = getCachedResource(type, query);
-      if (item !== undefined) {
-        const data = { type, data: item } as ResourceData;
-        cache.set(key, data);
-        if (idKey && idKey !== key) cache.set(idKey, data);
-        return data;
+  // 2. Typed cache fallback
+  const searchTypes =
+    opts?.priority && opts.priority.length > 0
+      ? opts.priority
+      : DEFAULT_RESOURCE_PRIORITY;
+  for (const type of searchTypes) {
+    const item = getCachedResource(type, query);
+    if (item !== undefined) {
+      if (opts?.include_fxlang && !isFxCached(type, query)) {
+        continue;
       }
+      const data = { type, data: item } as ResourceData;
+      cache.set(key, data);
+      if (idKey && idKey !== key) cache.set(idKey, data);
+      return data;
     }
   }
   return undefined;
@@ -206,8 +223,15 @@ export async function fetchGenericResource(
   const queryId = toId(query);
   const idKey = queryId ? getGenericResourceCacheKey(queryId, options) : "";
 
-  if (pending.has(key)) return pending.get(key) as Promise<ResourceData | null>;
-  if (idKey && pending.has(idKey)) return pending.get(idKey) as Promise<ResourceData | null>;
+  // Separate pending keys for fxlang so in-flight lightweight requests don't satisfy fxlang requests
+  const fxSuffix = options?.include_fxlang ? ":fx" : "";
+  const pendingKey = `${key}${fxSuffix}`;
+  const pendingIdKey = idKey ? `${idKey}${fxSuffix}` : "";
+
+  if (pending.has(pendingKey)) return pending.get(pendingKey) as Promise<ResourceData | null>;
+  if (pendingIdKey && pending.has(pendingIdKey)) {
+    return pending.get(pendingIdKey) as Promise<ResourceData | null>;
+  }
 
   const client = connectionManager.dataServiceClient;
   if (!client) return null;
@@ -224,21 +248,32 @@ export async function fetchGenericResource(
           : undefined,
       );
       if (data) {
-        cache.set(key, data);
-        if (idKey && idKey !== key) cache.set(idKey, data);
+        // Upgrade all relevant generic cache keys (both specified priority and default)
+        const keysToCache = [key, getGenericResourceCacheKey(query)];
+        if (queryId) {
+          if (idKey) keysToCache.push(idKey);
+          keysToCache.push(getGenericResourceCacheKey(queryId));
+        }
+        for (const k of keysToCache) {
+          cache.set(k, data);
+        }
+
+        if (options?.include_fxlang) {
+          markFxCached(data.type, query, data.data);
+        }
         cacheTypedResource(data.type, query, data.data);
       }
       return data;
     } catch {
       return null;
     } finally {
-      pending.delete(key);
-      if (idKey) pending.delete(idKey);
+      pending.delete(pendingKey);
+      if (pendingIdKey) pending.delete(pendingIdKey);
     }
   })();
 
-  pending.set(key, promise);
-  if (idKey && idKey !== key) pending.set(idKey, promise);
+  pending.set(pendingKey, promise);
+  if (pendingIdKey && pendingIdKey !== pendingKey) pending.set(pendingIdKey, promise);
   return promise;
 }
 

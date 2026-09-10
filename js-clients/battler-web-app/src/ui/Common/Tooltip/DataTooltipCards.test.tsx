@@ -86,6 +86,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("15 (max 24)");
       expect(html).toContain("Normal");
       expect(html).toContain("Protect");
+      expect(html).toContain("Effect");
       // Priority 0 is omitted
       expect(html).not.toContain("Priority:");
     });
@@ -137,6 +138,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Levitate");
       expect(html).toContain("Ability");
       expect(html).toContain("Breakable");
+      expect(html).toContain("Effect");
     });
   });
 
@@ -175,6 +177,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Potion");
       expect(html).toContain("Item");
       expect(html).toContain("Battle");
+      expect(html).toContain("Effect");
       expect(html).not.toContain("Target:");
       expect(html).not.toContain("Active");
     });
@@ -193,6 +196,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Rain");
       expect(html).toContain("Weather");
       expect(html).toContain("No copy");
+      expect(html).toContain("Effect");
     });
   });
 
@@ -263,6 +267,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Monster, Dragon");
       expect(html).toContain("95.0 kg");
       expect(html).toContain("SubLegendary");
+      expect(html).toContain("Effect");
     });
 
     it("formats class without Pokémon suffix into Descriptor Mon (e.g. Tricky Fox -> Tricky Fox Mon)", () => {

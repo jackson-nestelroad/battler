@@ -10,6 +10,7 @@ export default function ItemTooltipCard({ data }: ItemTooltipCardProps) {
     <SimpleDataTooltipCard
       name={data.name}
       subtitle="Item"
+      resourceType="item"
       flags={data.flags}
     />
   );

@@ -182,6 +182,10 @@ fn default_crit_ratio() -> Option<u8> {
     Some(1)
 }
 
+fn is_default_crit_ratio(crit_ratio: &Option<u8>) -> bool {
+    matches!(crit_ratio, Some(1))
+}
+
 /// Data for advanced move targeting.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -290,7 +294,10 @@ pub struct MoveData {
     pub override_defensive_stat: Option<Stat>,
 
     /// Critical hit ratio.
-    #[serde(default = "default_crit_ratio")]
+    #[serde(
+        default = "default_crit_ratio",
+        skip_serializing_if = "is_default_crit_ratio"
+    )]
     pub crit_ratio: Option<u8>,
     /// Ignore accuracy modifiers?
     #[serde(default)]

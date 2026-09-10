@@ -8,7 +8,11 @@ export interface ConditionTooltipCardProps {
 
 export default function ConditionTooltipCard({ data }: ConditionTooltipCardProps) {
   return (
-    <SimpleDataTooltipCard name={data.name} subtitle={data.condition_type}>
+    <SimpleDataTooltipCard
+      name={data.name}
+      subtitle={data.condition_type}
+      resourceType="condition"
+    >
       {data.no_copy && (
         <section className={cardStyles.traitsGrid}>
           <div className={cardStyles.traitRow}>

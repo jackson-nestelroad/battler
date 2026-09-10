@@ -114,6 +114,11 @@ export default function BattleConditionsBar({
       const target = e.target as Node | null;
       if (!target) return;
 
+      // Ignore clicks inside active dialog overlays / modals (e.g. FxLangModal)
+      if (target instanceof Element && target.closest?.('[role="dialog"], [aria-modal="true"]')) {
+        return;
+      }
+
       if (
         containerRef.current?.contains(target) ||
         popoverRef.current?.contains(target)

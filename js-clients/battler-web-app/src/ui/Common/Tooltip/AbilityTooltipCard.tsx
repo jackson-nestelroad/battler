@@ -10,6 +10,7 @@ export default function AbilityTooltipCard({ data }: AbilityTooltipCardProps) {
     <SimpleDataTooltipCard
       name={data.name}
       subtitle="Ability"
+      resourceType="ability"
       flags={data.flags}
     />
   );

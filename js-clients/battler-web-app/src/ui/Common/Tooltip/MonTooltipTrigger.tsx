@@ -106,6 +106,11 @@ function useInteractiveTooltip(
       if (!target) return;
       if (triggerRef?.current?.contains(target)) return;
 
+      // Ignore clicks inside active dialog overlays / modals (e.g. FxLangModal)
+      if (target instanceof Element && target.closest?.('[role="dialog"], [aria-modal="true"]')) {
+        return;
+      }
+
       if (contentRef?.current?.contains(target)) {
         if (isTargetInChild && !isTargetInChild(target)) {
           closeChild?.();

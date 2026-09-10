@@ -9,6 +9,7 @@ import Lobby from "./ui/Lobby/Lobby";
 import ReplaysHome from "./ui/Replays/ReplaysHome";
 import Sidebar from "./ui/Sidebar/Sidebar";
 import Teams from "./ui/Teams/Teams";
+import FxLangModalProvider from "./ui/Common/FxLang/FxLangModalProvider";
 import { BREAKPOINT_TABLET_PX } from "./utils/constants";
 
 import styles from "./App.module.scss";
@@ -41,45 +42,47 @@ export default function App() {
   }
 
   return (
-    <div className={styles.appContainer}>
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    <FxLangModalProvider>
+      <div className={styles.appContainer}>
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      {!isCollapsed && <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />}
+        {!isCollapsed && <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />}
 
-      <main className={styles.mainContent}>
-        {!isOnline && (
-          <div className="alert alert-warning">
-            <span className="alert-message">Offline mode</span>
+        <main className={styles.mainContent}>
+          {!isOnline && (
+            <div className="alert alert-warning">
+              <span className="alert-message">Offline mode</span>
+            </div>
+          )}
+
+          <header className={styles.mobileTopBar}>
+            <button className={styles.menuTrigger} onClick={() => setIsCollapsed(false)}>
+              ☰
+            </button>
+            <span className={styles.viewTitle}>
+              {currentView === "lobby" && "Lobby"}
+              {currentView === "teams" && "Teams"}
+              {(currentView === "battle" || currentView === "proposal") && "Battles"}
+              {currentView === "replays" && "Replays"}
+            </span>
+          </header>
+
+          <div className={styles.viewWrapper}>
+            {currentView === "lobby" && (
+              <ConnectionRequired>
+                <Lobby />
+              </ConnectionRequired>
+            )}
+            {currentView === "teams" && <Teams />}
+            {(currentView === "battle" || currentView === "proposal") && (
+              <ConnectionRequired bypass={isReplay}>
+                <BattleScreen />
+              </ConnectionRequired>
+            )}
+            {currentView === "replays" && <ReplaysHome />}
           </div>
-        )}
-
-        <header className={styles.mobileTopBar}>
-          <button className={styles.menuTrigger} onClick={() => setIsCollapsed(false)}>
-            ☰
-          </button>
-          <span className={styles.viewTitle}>
-            {currentView === "lobby" && "Lobby"}
-            {currentView === "teams" && "Teams"}
-            {(currentView === "battle" || currentView === "proposal") && "Battles"}
-            {currentView === "replays" && "Replays"}
-          </span>
-        </header>
-
-        <div className={styles.viewWrapper}>
-          {currentView === "lobby" && (
-            <ConnectionRequired>
-              <Lobby />
-            </ConnectionRequired>
-          )}
-          {currentView === "teams" && <Teams />}
-          {(currentView === "battle" || currentView === "proposal") && (
-            <ConnectionRequired bypass={isReplay}>
-              <BattleScreen />
-            </ConnectionRequired>
-          )}
-          {currentView === "replays" && <ReplaysHome />}
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </FxLangModalProvider>
   );
 }

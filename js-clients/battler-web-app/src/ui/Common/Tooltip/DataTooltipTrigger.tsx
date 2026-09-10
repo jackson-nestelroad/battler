@@ -193,6 +193,11 @@ export default function DataTooltipTrigger({
       if (!target) return;
       if (triggerRef.current?.contains(target)) return;
 
+      // Ignore clicks inside active dialog overlays / modals (e.g. FxLangModal)
+      if (target instanceof Element && target.closest?.('[role="dialog"], [aria-modal="true"]')) {
+        return;
+      }
+
       // If clicked inside our own content (the parent card):
       if (contentRef.current?.contains(target)) {
         // If clicked on parent surface rather than an active child tooltip, dismiss open child

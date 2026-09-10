@@ -51,11 +51,23 @@
     color: var(--text-primary);
   }
 
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    color: var(--text-muted);
+    background-color: transparent;
+    box-shadow: none;
+
+    &:hover {
+      color: var(--text-muted);
+    }
+  }
+
   &:focus:not(:focus-visible) {
     outline: none !important;
   }
 
-  &[aria-selected="true"] {
+  &[aria-selected="true"]:not(:disabled) {
     background-color: var(--bg-card);
     color: var(--color-primary);
     box-shadow: var(--shadow-sm);
@@ -111,6 +123,25 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+.effectBtn {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  line-height: 1.2;
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary-border);
+    background-color: var(--bg-card);
+  }
 }
 
 .traitsGrid {

@@ -337,6 +337,68 @@ describe("useDataStore", () => {
         include_fxlang: true,
       });
     });
+
+    it("upgrades cached entry when looking up fxlang and does not re-fetch later", async () => {
+      // 1. Initial lookup without fxlang (e.g. tooltip hover)
+      mockClient.getResource.mockResolvedValueOnce({
+        type: "move" as const,
+        data: mockMove,
+      });
+      const initial = await fetchGenericResource("Thunderbolt");
+      expect(initial?.data).toEqual(mockMove);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      // 2. Later looking up with fxlang (e.g. FxLangModal opening)
+      const fxData = {
+        ...mockMove,
+        effect: { ast: "test_ast" },
+      };
+      mockClient.getResource.mockResolvedValueOnce({
+        type: "move" as const,
+        data: fxData,
+      });
+      const withFx = await fetchGenericResource("Thunderbolt", {
+        priority: ["condition", "move", "ability", "item"],
+        include_fxlang: true,
+      });
+      expect(withFx?.data).toEqual(fxData);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(2);
+
+      // 3. Subsequent fxlang lookup with the same options hits cache immediately
+      const fxAgain = await fetchGenericResource("Thunderbolt", {
+        priority: ["condition", "move", "ability", "item"],
+        include_fxlang: true,
+      });
+      expect(fxAgain?.data).toEqual(fxData);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
+
+      // 4. Subsequent fxlang lookup with different priority also hits cache!
+      const fxDifferentPriority = await fetchGenericResource("Thunderbolt", {
+        priority: ["move"],
+        include_fxlang: true,
+      });
+      expect(fxDifferentPriority?.data).toEqual(fxData);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
+
+      // 5. Subsequent non-fx lookup also gets the enriched data from cache
+      const nonFxAgain = await fetchGenericResource("Thunderbolt");
+      expect(nonFxAgain?.data).toEqual(fxData);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(2); // No new network call!
+    });
+
+    it("satisfies fxlang lookups immediately for species from cache", async () => {
+      const mockSpecies = { name: "Pikachu", primary_type: "Electric" };
+      mockClient.getSpecies.mockResolvedValueOnce(mockSpecies);
+      await fetchSpecies("Pikachu");
+      expect(mockClient.getSpecies).toHaveBeenCalledTimes(1);
+
+      // Species has no fxlang AST bytecode, so cached species satisfies include_fxlang
+      const res = await fetchGenericResource("Pikachu", {
+        include_fxlang: true,
+      });
+      expect(res).toEqual({ type: "species", data: mockSpecies });
+      expect(mockClient.getResource).not.toHaveBeenCalled();
+    });
   });
 
   describe("clearDataStoreCache", () => {
@@ -364,13 +426,13 @@ describe("useDataStore", () => {
       );
     });
 
-    it("appends :fx when include_fxlang is true", () => {
+    it("uses unified keys regardless of include_fxlang", () => {
       expect(
         getGenericResourceCacheKey("Rain", {
           priority: ["condition"],
           include_fxlang: true,
         }),
-      ).toBe("resource:Rain:condition:fx");
+      ).toBe("resource:Rain:condition");
     });
   });
 });

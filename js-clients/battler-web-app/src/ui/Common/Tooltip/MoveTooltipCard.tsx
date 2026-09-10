@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import type { MoveData } from "battler-types";
 import {
   formatAccuracy,
@@ -6,6 +7,7 @@ import {
   formatPriority,
 } from "../../../utils/dataTooltipFormatting";
 import TypeBadge from "../TypeBadge";
+import { FxLangModalContext } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
 import TooltipFlagsSection from "./TooltipFlagsSection";
 
@@ -14,6 +16,7 @@ export interface MoveTooltipCardProps {
 }
 
 export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
+  const fxModal = useContext(FxLangModalContext);
   const basePowerStr = formatBasePower(data.base_power);
   const accuracyStr = formatAccuracy(data.accuracy);
   const ppStr = formatPp(data.pp, data.no_pp_boosts);
@@ -24,7 +27,19 @@ export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
       <header className={cardStyles.header}>
-        <span className={cardStyles.name}>{data.name}</span>
+        <div className="flex-row justify-between align-center">
+          <span className={cardStyles.name}>{data.name}</span>
+          <button
+            type="button"
+            className={cardStyles.effectBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              fxModal?.openFxLangModal({ type: "move", name: data.name });
+            }}
+          >
+            Effect
+          </button>
+        </div>
         <span className={cardStyles.subtitle}>Move</span>
         <div className="flex-row align-center gap-xs">
           <span className={categoryClass}>{data.category}</span>
