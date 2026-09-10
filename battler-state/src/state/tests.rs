@@ -4040,8 +4040,13 @@ mod state_test {
         let sq = squirtle_ref();
         let sq_mon = state.field.mon_by_reference_or_else(&sq).unwrap();
         assert!(sq_mon.fainted);
-        assert_eq!(state_selectors::mon_health(&state, &sq).unwrap(), Some((0, 100)));
-        assert_eq!(state_selectors::mon_status(&state, &sq).unwrap(), Some("fnt"));
+        assert_eq!(
+            state_selectors::mon_health(&state, &sq).unwrap(),
+            Some((0, 100))
+        );
+        assert_eq!(
+            state_selectors::mon_status(&state, &sq).unwrap(),
+            Some("fnt")
+        );
     }
 }
-
