@@ -1,5 +1,4 @@
 .card {
-  width: 20rem;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-m);
@@ -10,6 +9,16 @@
   flex-direction: column;
   gap: var(--spacing-s);
   backdrop-filter: blur(var(--spacing-s));
+}
+
+.cardFixed {
+  width: 20rem;
+}
+
+.cardCompact {
+  min-width: 12rem;
+  max-width: 18rem;
+  width: max-content;
 }
 
 .tabBar {
@@ -68,6 +77,12 @@
   }
 }
 
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
 .headerTitle {
   font-size: var(--font-size-m);
   font-weight: 700;
@@ -76,7 +91,7 @@
   padding-bottom: var(--spacing-xs);
 }
 
-.body {
+.scrollBody {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-s);
@@ -85,36 +100,66 @@
   font-size: var(--font-size-xs);
 }
 
+.name {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.traitsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+}
+
 .traitRow {
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-s);
+  gap: var(--spacing-xs);
 }
 
 .traitLabel {
   color: var(--text-muted);
   font-weight: 500;
-  min-width: 4.5rem;
+  min-width: 5.5rem;
   flex-shrink: 0;
 }
 
 .traitValue {
   color: var(--text-primary);
   font-weight: 600;
+  word-break: break-word;
 }
 
-.traitNone {
+.traitEmpty {
   color: var(--text-muted);
   font-style: italic;
 }
 
-.badgeList {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 1;
-  min-width: 0;
+.sectionTitle {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.flagBadge {
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--color-secondary-bg);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .conditionBadge {
@@ -134,4 +179,44 @@
 .slotTag {
   opacity: 0.75;
   font-weight: 500;
+}
+
+.categoryBadge {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid transparent;
+
+  &.categoryPhysical {
+    background-color: var(--color-danger-bg);
+    border-color: var(--color-danger-border);
+    color: var(--color-danger);
+  }
+
+  &.categorySpecial {
+    background-color: var(--color-info-bg);
+    border-color: var(--color-info-border);
+    color: var(--color-info);
+  }
+
+  &.categoryStatus {
+    background-color: var(--color-secondary-bg);
+    border-color: var(--color-secondary-border);
+    color: var(--text-secondary);
+  }
+}
+
+.loadingCard,
+.emptyCard {
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-style: italic;
 }

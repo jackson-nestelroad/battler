@@ -1,54 +1,3 @@
-.card {
-  width: 20rem;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-m);
-  padding: var(--spacing-m);
-  box-shadow: 0 var(--spacing-s) var(--spacing-xl) var(--bg-overlay);
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-s);
-  backdrop-filter: blur(var(--spacing-s));
-}
-
-.tabBar {
-  display: flex;
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-xs);
-  padding: var(--spacing-xxs);
-  gap: var(--spacing-xxs);
-}
-
-.tabBtn {
-  flex: 1;
-  background: none;
-  border: none;
-  border-radius: var(--border-radius-xs);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition-fast);
-
-  &:hover {
-    color: var(--text-primary);
-  }
-
-  &.tabBtnActive {
-    background-color: var(--bg-card);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-sm);
-  }
-}
-
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xxs);
-}
 
 .headerTop {
   display: flex;
@@ -113,7 +62,6 @@
   white-space: nowrap;
 }
 
-
 /* Special battle mechanic badge (Active Terastallization) */
 .specialBadge {
   font-size: var(--font-size-xxs);
@@ -170,7 +118,6 @@
 .teraPillLabel {
   color: var(--color-badge-tera-text);
 }
-
 
 .healthSection {
   display: flex;
@@ -269,36 +216,6 @@
   color: var(--color-badge-transformed-text);
 }
 
-.traitsGrid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xxs);
-  font-size: var(--font-size-xs);
-}
-
-.traitRow {
-  display: flex;
-  align-items: baseline;
-  gap: var(--spacing-xs);
-}
-
-.traitLabel {
-  color: var(--text-muted);
-  font-weight: 500;
-  min-width: 3.5rem;
-}
-
-.traitValue {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.traitUnknown {
-  color: var(--text-muted);
-  font-style: italic;
-  font-weight: normal;
-}
-
 .natureModifierPlus {
   color: var(--color-success);
   margin-left: var(--spacing-xs);
@@ -313,15 +230,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
-}
-
-/* Unified section title for moves and stats */
-.sectionTitle {
-  font-size: var(--font-size-xxs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
 }
 
 .movesGrid {

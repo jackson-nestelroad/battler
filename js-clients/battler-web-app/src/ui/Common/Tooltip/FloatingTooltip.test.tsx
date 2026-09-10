@@ -1,7 +1,8 @@
+import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import FloatingTooltip from "./FloatingTooltip";
-import { calculateFloatingCoords } from "../../../utils/floatingCoords";
+import { calculateFloatingCoords, getElementRect } from "../../../utils/floatingCoords";
 
 function createMockRect(rect: Partial<DOMRect>): DOMRect {
   return {
@@ -138,5 +139,104 @@ describe("FloatingTooltip", () => {
       </FloatingTooltip>,
     );
     expect(html).toBe("");
+  });
+
+  it("isolates bubble events while avoiding capture-phase interference with children", () => {
+    const originalDocument = globalThis.document;
+    const internals = (
+      React as unknown as {
+        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
+      }
+    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+    const prevH = internals.H;
+
+    try {
+      internals.H = {
+        useState: (init: unknown) => [
+          typeof init === "boolean"
+            ? true
+            : { top: 100, left: 100, placement: "top" },
+          () => {},
+        ],
+        useRef: (init: unknown) => ({ current: init }),
+        useCallback: (fn: unknown) => fn,
+        useEffect: () => {},
+        useLayoutEffect: () => {},
+      };
+      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+
+      const portal = FloatingTooltip({
+        isOpen: true,
+        children: <button id="inner-tab">Tab 1</button>,
+      });
+
+      expect(portal).toBeDefined();
+      const portalContainer = (
+        portal as unknown as { children: { props: Record<string, any> } }
+      ).children;
+      expect(portalContainer.props.className).toContain("floatingPortal");
+
+      // Verify capture-phase handlers are NOT present (avoid blocking interactive children)
+      expect(portalContainer.props.onClickCapture).toBeUndefined();
+      expect(portalContainer.props.onMouseDownCapture).toBeUndefined();
+      expect(portalContainer.props.onPointerDownCapture).toBeUndefined();
+
+      // Verify pointerdown and mousedown are NOT intercepted (allows parent/outside click tracking)
+      expect(portalContainer.props.onMouseDown).toBeUndefined();
+      expect(portalContainer.props.onPointerDown).toBeUndefined();
+
+      // Verify onClick stopPropagation is called on bubble phase to protect parent ActionButton
+      const stopPropagationClick = vi.fn();
+      portalContainer.props.onClick({ stopPropagation: stopPropagationClick });
+      expect(stopPropagationClick).toHaveBeenCalledTimes(1);
+    } finally {
+      internals.H = prevH;
+      globalThis.document = originalDocument;
+    }
+  });
+});
+
+describe("getElementRect", () => {
+  it("returns element bounding rect when dimensions are non-zero", () => {
+    const mockEl = {
+      getBoundingClientRect: () =>
+        createMockRect({ left: 50, top: 100, width: 200, height: 40 }),
+      firstElementChild: null,
+    } as unknown as HTMLElement;
+
+    const rect = getElementRect(mockEl);
+    expect(rect.width).toBe(200);
+    expect(rect.height).toBe(40);
+    expect(rect.left).toBe(50);
+  });
+
+  it("falls back to firstElementChild bounding rect when container is 0x0", () => {
+    const childEl = {
+      getBoundingClientRect: () =>
+        createMockRect({ left: 60, top: 110, width: 180, height: 36 }),
+    };
+
+    const containerEl = {
+      getBoundingClientRect: () =>
+        createMockRect({ left: 0, top: 0, width: 0, height: 0 }),
+      firstElementChild: childEl,
+    } as unknown as HTMLElement;
+
+    const rect = getElementRect(containerEl);
+    expect(rect.width).toBe(180);
+    expect(rect.height).toBe(36);
+    expect(rect.left).toBe(60);
+  });
+
+  it("returns 0x0 rect when element has 0 dimensions and no firstElementChild", () => {
+    const emptyEl = {
+      getBoundingClientRect: () =>
+        createMockRect({ left: 0, top: 0, width: 0, height: 0 }),
+      firstElementChild: null,
+    } as unknown as HTMLElement;
+
+    const rect = getElementRect(emptyEl);
+    expect(rect.width).toBe(0);
+    expect(rect.height).toBe(0);
   });
 });

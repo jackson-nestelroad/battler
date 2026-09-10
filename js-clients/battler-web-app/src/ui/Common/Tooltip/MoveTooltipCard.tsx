@@ -1,83 +1,63 @@
 import type { MoveData } from "battler-types";
-import { formatAccuracy, formatMoveTarget } from "../../../utils/dataTooltipFormatting";
+import {
+  formatAccuracy,
+  formatBasePower,
+  formatPp,
+  formatPriority,
+} from "../../../utils/dataTooltipFormatting";
 import TypeBadge from "../TypeBadge";
-import styles from "./MoveTooltipCard.module.scss";
+import cardStyles from "./DataTooltipCard.module.scss";
+import TooltipFlagsSection from "./TooltipFlagsSection";
 
-interface MoveTooltipCardProps {
+export interface MoveTooltipCardProps {
   data: MoveData;
 }
 
 export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
-  const flags = (data.flags || []).slice().sort();
-
-  const basePowerStr = data.base_power && data.base_power > 0 ? String(data.base_power) : "—";
+  const basePowerStr = formatBasePower(data.base_power);
   const accuracyStr = formatAccuracy(data.accuracy);
+  const ppStr = formatPp(data.pp, data.no_pp_boosts);
+  const priorityStr = formatPriority(data.priority);
 
-  const maxPp = data.no_pp_boosts ? data.pp : Math.floor(data.pp * 1.6);
-  const ppStr = data.pp ? `${data.pp} (max ${maxPp})` : "—";
-
-  const priorityStr =
-    data.priority > 0
-      ? `+${data.priority}`
-      : data.priority < 0
-        ? `${data.priority}`
-        : null;
-
-  const categoryClass =
-    data.category === "Physical"
-      ? styles.categoryPhysical
-      : data.category === "Special"
-        ? styles.categorySpecial
-        : styles.categoryStatus;
+  const categoryClass = `${cardStyles.categoryBadge} ${cardStyles[`category${data.category}`] || cardStyles.categoryStatus}`;
 
   return (
-    <article className={styles.card}>
-      <header className={styles.header}>
-        <span className={styles.name}>{data.name}</span>
-        <span className={styles.subtitle}>Move</span>
+    <article className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
+      <header className={cardStyles.header}>
+        <span className={cardStyles.name}>{data.name}</span>
+        <span className={cardStyles.subtitle}>Move</span>
         <div className="flex-row align-center gap-xs">
           <span className={categoryClass}>{data.category}</span>
           <TypeBadge type={data.primary_type} size="sm" />
         </div>
       </header>
 
-      <section className={styles.traitsGrid}>
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>Base Power:</span>
-          <span className={styles.traitValue}>{basePowerStr}</span>
+      <section className={cardStyles.traitsGrid}>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>Base Power:</span>
+          <span className={cardStyles.traitValue}>{basePowerStr}</span>
         </div>
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>Accuracy:</span>
-          <span className={styles.traitValue}>{accuracyStr}</span>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>Accuracy:</span>
+          <span className={cardStyles.traitValue}>{accuracyStr}</span>
         </div>
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>PP:</span>
-          <span className={styles.traitValue}>{ppStr}</span>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>PP:</span>
+          <span className={cardStyles.traitValue}>{ppStr}</span>
         </div>
         {priorityStr && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Priority:</span>
-            <span className={styles.traitValue}>{priorityStr}</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Priority:</span>
+            <span className={cardStyles.traitValue}>{priorityStr}</span>
           </div>
         )}
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>Target:</span>
-          <span className={styles.traitValue}>{formatMoveTarget(data.target)}</span>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>Target:</span>
+          <span className={cardStyles.traitValue}>{data.target}</span>
         </div>
       </section>
 
-      {flags.length > 0 && (
-        <section className="flex-col gap-xxs">
-          <span className={styles.sectionTitle}>Flags</span>
-          <div className={styles.flagsList}>
-            {flags.map((flag) => (
-              <span key={flag} className={styles.flagBadge}>
-                {flag}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      <TooltipFlagsSection flags={data.flags} />
     </article>
   );
 }

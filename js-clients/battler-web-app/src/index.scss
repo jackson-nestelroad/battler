@@ -801,6 +801,12 @@ a.badge-primary,
   display: inline-block;
 }
 
+.spinner-sm {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: var(--spacing-xxs);
+}
+
 .spin-icon {
   display: inline-block;
   animation: spinnerSpin 1s linear infinite;
@@ -911,6 +917,9 @@ a.badge-primary,
 }
 .flex-wrap {
   flex-wrap: wrap;
+}
+.min-w-0 {
+  min-width: 0;
 }
 .text-center {
   text-align: center !important;

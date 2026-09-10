@@ -67,21 +67,19 @@ function createMockBattleState(overrides: Partial<BattleState> = {}): BattleStat
 }
 
 describe("conditionData", () => {
-  it("formats condition item with layer tracking", () => {
+  it("formats condition item", () => {
     const spikesItem = formatCondition("Spikes", {
       since_turn: 2,
       data: { layers: "2" },
     });
     expect(spikesItem.name).toBe("Spikes");
-    expect(spikesItem.layers).toBe(2);
-    expect(spikesItem.displayText).toBe("Spikes (2 layers)");
+    expect(spikesItem.displayText).toBe("Spikes");
 
     const simpleItem = formatCondition("Stealth Rock", {
       since_turn: 1,
       data: {},
     });
     expect(simpleItem.name).toBe("Stealth Rock");
-    expect(simpleItem.layers).toBeUndefined();
     expect(simpleItem.displayText).toBe("Stealth Rock");
   });
 
@@ -206,7 +204,7 @@ describe("conditionData", () => {
 
     const side1 = extractSideConditions(mockState, 1, "Foe Side");
     expect(side1.conditions).toHaveLength(1);
-    expect(side1.conditions[0].displayText).toBe("Spikes (2 layers)");
+    expect(side1.conditions[0].displayText).toBe("Spikes");
     expect(side1.allCount).toBe(1);
   });
 

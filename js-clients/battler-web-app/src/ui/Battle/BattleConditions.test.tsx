@@ -121,7 +121,7 @@ describe("BattleConditions", () => {
       expect(html).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
     });
 
-    it("renders Foe Side tab with layers information", () => {
+    it("renders Foe Side tab with conditions", () => {
       const state = createMockBattleState();
       const html = renderToStaticMarkup(
         <BattleConditionPopover
@@ -133,7 +133,7 @@ describe("BattleConditions", () => {
       );
 
       expect(html).toContain("Foe Side Conditions");
-      expect(html).toContain("Spikes (2 layers)");
+      expect(html).toContain("Spikes");
       expect(html).toContain("None"); // slot conditions is empty
       // Check NO emojis in rendered markup
       expect(html).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
@@ -241,6 +241,22 @@ describe("BattleConditions", () => {
       expect(html).toContain("Field:");
       expect(html).toContain("Player 1");
       expect(html).toContain("Rival");
+    });
+
+    it("renders interactive DataTooltipTriggers for condition items inside popover", () => {
+      const state = createMockBattleState();
+      const html = renderToStaticMarkup(
+        <BattleConditionPopover
+          battleState={state}
+          playerId="p1"
+          activeTab="field"
+          onTabChange={() => {}}
+        />,
+      );
+
+      expect(html).toContain('aria-haspopup="dialog"');
+      expect(html).toContain("Rain");
+      expect(html).toContain("Electric Terrain");
     });
   });
 });

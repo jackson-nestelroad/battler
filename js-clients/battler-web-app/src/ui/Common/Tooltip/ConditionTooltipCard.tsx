@@ -1,26 +1,22 @@
 import type { ConditionData } from "battler-types";
-import styles from "./ConditionTooltipCard.module.scss";
+import cardStyles from "./DataTooltipCard.module.scss";
+import SimpleDataTooltipCard from "./SimpleDataTooltipCard";
 
-interface ConditionTooltipCardProps {
+export interface ConditionTooltipCardProps {
   data: ConditionData;
 }
 
 export default function ConditionTooltipCard({ data }: ConditionTooltipCardProps) {
   return (
-    <article className={styles.card}>
-      <header className={styles.header}>
-        <span className={styles.name}>{data.name}</span>
-        <span className={styles.subtitle}>{data.condition_type}</span>
-      </header>
-
+    <SimpleDataTooltipCard name={data.name} subtitle={data.condition_type}>
       {data.no_copy && (
-        <section className={styles.traitsGrid}>
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Baton Pass:</span>
-            <span className={styles.traitValue}>No copy</span>
+        <section className={cardStyles.traitsGrid}>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Baton Pass:</span>
+            <span className={cardStyles.traitValue}>No copy</span>
           </div>
         </section>
       )}
-    </article>
+    </SimpleDataTooltipCard>
   );
 }

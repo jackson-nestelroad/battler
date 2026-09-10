@@ -1,29 +1,31 @@
 import {
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
-  createContext,
-  useCallback,
   useContext,
   useEffect,
-  useMemo,
+  useId,
   useRef,
   useState,
 } from "react";
+import type { ResourceData } from "battler-data-service-client";
 import {
-  useAbilityData,
+  type GenericResourceLookupOptions,
+  type ResourceType,
   useGenericResource,
-  useItemData,
-  useMoveData,
-  useSpeciesData,
+  useResourceData,
 } from "../../../hooks/useDataStore";
+import { getElementRect } from "../../../utils/floatingCoords";
 import AbilityTooltipCard from "./AbilityTooltipCard";
 import ConditionTooltipCard from "./ConditionTooltipCard";
+import cardStyles from "./DataTooltipCard.module.scss";
 import styles from "./DataTooltipTrigger.module.scss";
 import FloatingTooltip from "./FloatingTooltip";
 import ItemTooltipCard from "./ItemTooltipCard";
 import MoveTooltipCard from "./MoveTooltipCard";
 import SpeciesTooltipCard from "./SpeciesTooltipCard";
+import { TooltipParentContext, useTooltipChildTracker } from "./TooltipContext";
 
 export type DataResourceType =
   | "move"
@@ -42,12 +44,18 @@ export interface DataTooltipTriggerProps {
   as?: "span" | "div" | "button";
   preferredPlacement?: "top" | "bottom" | "left" | "right";
   showUnderline?: boolean;
-  onClick?: (e: ReactMouseEvent<HTMLElement>) => void;
+  ariaLabel?: string;
+  title?: string;
+  onClick?: (e: ReactMouseEvent<HTMLElement> | ReactKeyboardEvent<HTMLElement>) => void;
 }
 
 function LoadingCard() {
   return (
-    <div className={styles.loadingCard}>
+    <div
+      className={`${cardStyles.card} ${cardStyles.cardFixed} ${cardStyles.loadingCard}`}
+      role="status"
+      aria-live="polite"
+    >
       <span className="spinner spinner-sm" />
       <span>Loading...</span>
     </div>
@@ -56,59 +64,17 @@ function LoadingCard() {
 
 function EmptyCard({ name }: { name: string }) {
   return (
-    <div className={styles.emptyCard}>
-      <span className={styles.emptyText}>No data available for "{name}"</span>
+    <div
+      className={`${cardStyles.card} ${cardStyles.cardFixed} ${cardStyles.emptyCard}`}
+      role="status"
+      aria-live="polite"
+    >
+      <span className={cardStyles.emptyText}>No data available for "{name}"</span>
     </div>
   );
 }
 
-function MoveContent({ name }: { name: string }) {
-  const { data, loading } = useMoveData(name);
-  if (loading) return <LoadingCard />;
-  if (!data) return <EmptyCard name={name} />;
-  return <MoveTooltipCard data={data} />;
-}
-
-function AbilityContent({ name }: { name: string }) {
-  const { data, loading } = useAbilityData(name);
-  if (loading) return <LoadingCard />;
-  if (!data) return <EmptyCard name={name} />;
-  return <AbilityTooltipCard data={data} />;
-}
-
-function ItemContent({ name }: { name: string }) {
-  const { data, loading } = useItemData(name);
-  if (loading) return <LoadingCard />;
-  if (!data) return <EmptyCard name={name} />;
-  return <ItemTooltipCard data={data} />;
-}
-
-const CONDITION_PRIORITY = {
-  priority: ["condition", "move", "ability", "item"] as const,
-};
-
-function ConditionContent({ name }: { name: string }) {
-  const { data, loading } = useGenericResource(name, CONDITION_PRIORITY);
-  if (loading) return <LoadingCard />;
-  if (!data) return <EmptyCard name={name} />;
-  switch (data.type) {
-    case "move":
-      return <MoveTooltipCard data={data.data} />;
-    case "ability":
-      return <AbilityTooltipCard data={data.data} />;
-    case "item":
-      return <ItemTooltipCard data={data.data} />;
-    case "condition":
-      return <ConditionTooltipCard data={data.data} />;
-    default:
-      return <EmptyCard name={name} />;
-  }
-}
-
-function GenericResourceContent({ name }: { name: string }) {
-  const { data, loading } = useGenericResource(name);
-  if (loading) return <LoadingCard />;
-  if (!data) return <EmptyCard name={name} />;
+function renderResourceCard(data: ResourceData, fallbackName: string) {
   switch (data.type) {
     case "move":
       return <MoveTooltipCard data={data.data} />;
@@ -121,15 +87,38 @@ function GenericResourceContent({ name }: { name: string }) {
     case "species":
       return <SpeciesTooltipCard data={data.data} />;
     default:
-      return <EmptyCard name={name} />;
+      return <EmptyCard name={fallbackName} />;
   }
 }
 
-function SpeciesContent({ name }: { name: string }) {
-  const { data, loading } = useSpeciesData(name);
+function TypedResourceContent({
+  type,
+  name,
+}: {
+  type: ResourceType;
+  name: string;
+}) {
+  const { data, loading } = useResourceData(type, name);
   if (loading) return <LoadingCard />;
   if (!data) return <EmptyCard name={name} />;
-  return <SpeciesTooltipCard data={data} />;
+  return renderResourceCard({ type, data } as ResourceData, name);
+}
+
+const CONDITION_PRIORITY = {
+  priority: ["condition", "move", "ability", "item"] as const,
+};
+
+function GenericResourceContent({
+  name,
+  options,
+}: {
+  name: string;
+  options?: GenericResourceLookupOptions;
+}) {
+  const { data, loading } = useGenericResource(name, options);
+  if (loading) return <LoadingCard />;
+  if (!data) return <EmptyCard name={name} />;
+  return renderResourceCard(data, name);
 }
 
 function ResourceContent({
@@ -139,27 +128,14 @@ function ResourceContent({
   resourceType: DataResourceType;
   name: string;
 }) {
-  switch (resourceType) {
-    case "move":
-      return <MoveContent name={name} />;
-    case "ability":
-      return <AbilityContent name={name} />;
-    case "item":
-      return <ItemContent name={name} />;
-    case "condition":
-      return <ConditionContent name={name} />;
-    case "species":
-      return <SpeciesContent name={name} />;
-    case "resource":
-      return <GenericResourceContent name={name} />;
+  if (resourceType === "condition") {
+    return <GenericResourceContent name={name} options={CONDITION_PRIORITY} />;
   }
+  if (resourceType === "resource") {
+    return <GenericResourceContent name={name} />;
+  }
+  return <TypedResourceContent type={resourceType} name={name} />;
 }
-
-interface TooltipParentContextValue {
-  registerChildContent: (el: HTMLElement) => () => void;
-}
-
-const TooltipParentContext = createContext<TooltipParentContextValue | null>(null);
 
 export default function DataTooltipTrigger({
   resourceType,
@@ -170,38 +146,42 @@ export default function DataTooltipTrigger({
   as = "span",
   preferredPlacement = "top",
   showUnderline = true,
+  ariaLabel,
+  title,
   onClick,
 }: DataTooltipTriggerProps) {
+  const triggerId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const parentContext = useContext(TooltipParentContext);
-  const childContentEls = useRef<Set<HTMLElement>>(new Set());
-
-  const registerChildContent = useCallback(
-    (el: HTMLElement) => {
-      childContentEls.current.add(el);
-      const unregisterFromParent = parentContext?.registerChildContent(el);
-      return () => {
-        childContentEls.current.delete(el);
-        unregisterFromParent?.();
-      };
-    },
-    [parentContext],
-  );
-
-  const contextValue = useMemo(
-    () => ({ registerChildContent }),
-    [registerChildContent],
-  );
+  const { openChildCount, isTargetInChild, closeChild, contextValue } =
+    useTooltipChildTracker(parentContext);
 
   useEffect(() => {
-    if (isOpen && contentRef.current && parentContext) {
-      return parentContext.registerChildContent(contentRef.current);
+    if (!isOpen) return;
+    const unregisterContent =
+      contentRef.current && parentContext?.registerChildContent
+        ? parentContext.registerChildContent(contentRef.current)
+        : undefined;
+    const unregisterOpen = parentContext?.registerChildOpen?.();
+    const unregisterActiveChild = parentContext?.openChild?.(triggerId, () => {
+      setIsOpen(false);
+    });
+    return () => {
+      unregisterContent?.();
+      unregisterOpen?.();
+      unregisterActiveChild?.();
+    };
+  }, [isOpen, parentContext, triggerId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      closeChild();
     }
-  }, [isOpen, parentContext]);
+  }, [isOpen, closeChild]);
 
   const cleanName = name?.trim();
 
@@ -212,15 +192,30 @@ export default function DataTooltipTrigger({
       const target = e.target as Node | null;
       if (!target) return;
       if (triggerRef.current?.contains(target)) return;
-      if (contentRef.current?.contains(target)) return;
-      for (const childEl of childContentEls.current) {
-        if (childEl.contains(target)) return;
+
+      // If clicked inside our own content (the parent card):
+      if (contentRef.current?.contains(target)) {
+        // If clicked on parent surface rather than an active child tooltip, dismiss open child
+        if (!isTargetInChild(target)) {
+          closeChild();
+        }
+        return;
       }
+
+      // If clicked inside an open child tooltip portal, stay open
+      if (isTargetInChild(target)) return;
+
+      // Clicked outside both our content and any children
+      closeChild();
       setIsOpen(false);
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (openChildCount > 0) {
+          closeChild();
+          return;
+        }
         setIsOpen(false);
       }
     };
@@ -231,42 +226,44 @@ export default function DataTooltipTrigger({
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, isTargetInChild, openChildCount, closeChild]);
 
   if (!cleanName) {
     const Component = as;
     return (
-      <Component className={className} style={style}>
+      <Component
+        type={as === "button" ? "button" : undefined}
+        className={className}
+        style={style}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        title={title}
+      >
         {children}
       </Component>
     );
   }
+
+  const toggleTooltip = (target: HTMLElement) => {
+    setTargetRect(getElementRect(target));
+    setIsOpen((prev) => !prev);
+  };
 
   const handleClick = (e: ReactMouseEvent<HTMLElement>) => {
     onClick?.(e);
     if (e.defaultPrevented) return;
 
     e.stopPropagation();
-    const el = e.currentTarget;
-    let rect = el.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0 && el.firstElementChild) {
-      rect = (el.firstElementChild as HTMLElement).getBoundingClientRect();
-    }
-    setTargetRect(rect);
-    setIsOpen((prev) => !prev);
+    toggleTooltip(e.currentTarget);
   };
 
-  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+  const handleTriggerKeyDown = (e: ReactKeyboardEvent<HTMLElement>) => {
     if (as !== "button" && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       e.stopPropagation();
-      const el = e.currentTarget;
-      let rect = el.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0 && el.firstElementChild) {
-        rect = (el.firstElementChild as HTMLElement).getBoundingClientRect();
-      }
-      setTargetRect(rect);
-      setIsOpen((prev) => !prev);
+      onClick?.(e);
+      if (e.defaultPrevented) return;
+      toggleTooltip(e.currentTarget);
     }
   };
 
@@ -283,15 +280,30 @@ export default function DataTooltipTrigger({
     .join(" ");
 
   const Component = as;
+  const sharedAriaProps = {
+    "aria-label": ariaLabel,
+    title,
+    "aria-haspopup": "dialog" as const,
+    "aria-expanded": isOpen,
+  };
+
   const elementProps =
     as === "button"
-      ? { type: "button" as const }
-      : { role: "button", tabIndex: 0, onKeyDown: handleTriggerKeyDown };
+      ? {
+          type: "button" as const,
+          ...sharedAriaProps,
+        }
+      : {
+          role: "button",
+          tabIndex: 0,
+          onKeyDown: handleTriggerKeyDown,
+          ...sharedAriaProps,
+        };
 
   return (
     <>
       <Component
-        ref={triggerRef as any}
+        ref={triggerRef as React.Ref<never>}
         className={triggerClasses}
         style={style}
         onClick={handleClick}
@@ -303,13 +315,13 @@ export default function DataTooltipTrigger({
       <FloatingTooltip
         isOpen={isOpen}
         targetRect={targetRect}
+        targetRef={triggerRef}
+        containerRef={contentRef}
         preferredPlacement={preferredPlacement}
       >
-        <div ref={contentRef}>
-          <TooltipParentContext.Provider value={contextValue}>
-            <ResourceContent resourceType={resourceType} name={cleanName} />
-          </TooltipParentContext.Provider>
-        </div>
+        <TooltipParentContext.Provider value={contextValue}>
+          <ResourceContent resourceType={resourceType} name={cleanName} />
+        </TooltipParentContext.Provider>
       </FloatingTooltip>
     </>
   );

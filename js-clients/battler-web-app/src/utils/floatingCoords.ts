@@ -4,6 +4,18 @@ export interface FloatingCoordsResult {
   placement: "top" | "bottom" | "left" | "right";
 }
 
+/**
+ * Safely resolves the bounding client rect of an element, falling back to its
+ * first child element if the container has 0 width and 0 height (e.g. inline wrappers).
+ */
+export function getElementRect(el: HTMLElement): DOMRect {
+  let rect = el.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0 && el.firstElementChild) {
+    rect = (el.firstElementChild as HTMLElement).getBoundingClientRect();
+  }
+  return rect;
+}
+
 export function calculateFloatingCoords(
   targetRect: DOMRect,
   tooltipWidth: number,
@@ -55,30 +67,17 @@ export function calculateFloatingCoords(
     const spaceBelow = viewportHeight - targetRect.bottom - gap - padding;
 
     if (placement === "top") {
-      if (spaceAbove >= tooltipHeight) {
-        top = targetRect.top - tooltipHeight - gap;
-      } else if (spaceBelow >= tooltipHeight) {
-        top = targetRect.bottom + gap;
-        placement = "bottom";
-      } else if (spaceAbove >= spaceBelow) {
-        top = targetRect.top - tooltipHeight - gap;
-      } else {
-        top = targetRect.bottom + gap;
-        placement = "bottom";
-      }
+      placement =
+        spaceAbove >= tooltipHeight || spaceAbove >= spaceBelow ? "top" : "bottom";
     } else {
-      if (spaceBelow >= tooltipHeight) {
-        top = targetRect.bottom + gap;
-      } else if (spaceAbove >= tooltipHeight) {
-        top = targetRect.top - tooltipHeight - gap;
-        placement = "top";
-      } else if (spaceBelow >= spaceAbove) {
-        top = targetRect.bottom + gap;
-      } else {
-        top = targetRect.top - tooltipHeight - gap;
-        placement = "top";
-      }
+      placement =
+        spaceBelow >= tooltipHeight || spaceBelow >= spaceAbove ? "bottom" : "top";
     }
+
+    top =
+      placement === "top"
+        ? targetRect.top - tooltipHeight - gap
+        : targetRect.bottom + gap;
   }
 
   // Strict boundary enforcement:

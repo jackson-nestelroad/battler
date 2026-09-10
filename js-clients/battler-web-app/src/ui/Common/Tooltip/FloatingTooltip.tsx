@@ -1,5 +1,6 @@
 import {
   type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -9,13 +10,19 @@ import {
 import { createPortal } from "react-dom";
 import {
   calculateFloatingCoords,
+  getElementRect,
   type FloatingCoordsResult,
 } from "../../../utils/floatingCoords";
 import styles from "./FloatingTooltip.module.scss";
 
-interface FloatingTooltipProps {
+export interface FloatingTooltipProps {
   isOpen: boolean;
-  targetRect: DOMRect | null;
+  targetRect?: DOMRect | null;
+  targetRef?: RefObject<HTMLElement | null> | { current: HTMLElement | null };
+  containerRef?:
+    | RefObject<HTMLDivElement | null>
+    | { current: HTMLDivElement | null }
+    | ((node: HTMLDivElement | null) => void);
   children: ReactNode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -31,7 +38,9 @@ const BRIDGE_CLASSES: Record<FloatingCoordsResult["placement"], string> = {
 
 export default function FloatingTooltip({
   isOpen,
-  targetRect,
+  targetRect = null,
+  targetRef,
+  containerRef,
   children,
   onMouseEnter,
   onMouseLeave,
@@ -56,7 +65,16 @@ export default function FloatingTooltip({
   }, [isOpen, preferredPlacement]);
 
   const updatePosition = useCallback(() => {
-    if (!isOpen || !targetRect || !tooltipRef.current) return;
+    if (!isOpen || !tooltipRef.current) return;
+
+    let rect = targetRect;
+    if (targetRef?.current) {
+      const liveRect = getElementRect(targetRef.current);
+      if (liveRect.width !== 0 || liveRect.height !== 0) {
+        rect = liveRect;
+      }
+    }
+    if (!rect) return;
 
     const tooltipEl = tooltipRef.current;
     const tooltipWidth = tooltipEl.offsetWidth;
@@ -64,13 +82,13 @@ export default function FloatingTooltip({
 
     setCoords(
       calculateFloatingCoords(
-        targetRect,
+        rect,
         tooltipWidth,
         tooltipHeight,
         preferredPlacement,
       ),
     );
-  }, [isOpen, targetRect, preferredPlacement]);
+  }, [isOpen, targetRect, targetRef, preferredPlacement]);
 
   // Recalculate immediately when props or children change
   useLayoutEffect(() => {
@@ -113,7 +131,14 @@ export default function FloatingTooltip({
 
   return createPortal(
     <div
-      ref={tooltipRef}
+      ref={(node) => {
+        tooltipRef.current = node;
+        if (typeof containerRef === "function") {
+          containerRef(node);
+        } else if (containerRef) {
+          (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }
+      }}
       className={`${styles.floatingPortal} ${placementClass} ${isOpen && isPositioned ? styles.visible : styles.hidden}`}
       style={{
         top: `${coords.top}px`,
@@ -121,6 +146,7 @@ export default function FloatingTooltip({
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={(e) => e.stopPropagation()}
     >
       {children}
     </div>,

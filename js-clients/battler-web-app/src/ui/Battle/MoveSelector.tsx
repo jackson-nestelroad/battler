@@ -5,7 +5,7 @@ import { getAvailableMoves } from "../../utils/monHelpers";
 import ActionButton from "./ActionButton";
 import styles from "./ActionPanel.module.scss";
 
-interface MoveSelectorProps {
+export interface MoveSelectorProps {
   activeReq: {
     moves: MonMoveSlotData[];
     z_moves?: (MonMoveSlotData | null)[];
@@ -44,6 +44,11 @@ export default function MoveSelector({
   const hasModifiers = CHOICE_MODIFIER_KEYS.some(
     (key) => !!activeReq[CHOICE_MODIFIER_CONFIGS[key].requestFlag],
   );
+
+  const availableMoves = getAvailableMoves(activeReq, {
+    zmove: modifiers.zmove,
+    dyna: isMaxMoveActive,
+  });
 
   return (
     <div className="flex-col gap-s">
@@ -94,49 +99,44 @@ export default function MoveSelector({
       )}
 
       <div className={styles.movesGrid}>
-        {(() => {
-          const availableMoves = getAvailableMoves(activeReq, { zmove: modifiers.zmove, dyna: isMaxMoveActive });
-          
-          return activeReq.moves.map((baseMove, index) => {
-            const modifierMove = availableMoves[index];
-            const moveToRender = modifierMove || baseMove;
-            let badgeText: string | null = null;
-            let isZMoveDisabled = false;
+        {activeReq.moves.map((baseMove, index) => {
+          const modifierMove = availableMoves[index];
+          const moveToRender: MonMoveSlotData = modifierMove || baseMove;
+          let badgeText: string | null = null;
+          let isZMoveDisabled = false;
 
-            if (modifiers.zmove) {
-              if (modifierMove) {
-                badgeText = "Z-Move";
-              } else {
-                isZMoveDisabled = true;
-              }
-            } else if (isMaxMoveActive && modifierMove) {
-              badgeText = "Max Move";
+          if (modifiers.zmove) {
+            if (modifierMove) {
+              badgeText = "Z-Move";
+            } else {
+              isZMoveDisabled = true;
             }
+          } else if (isMaxMoveActive && modifierMove) {
+            badgeText = "Max Move";
+          }
 
-            const isMoveDisabled =
-              isZMoveDisabled || baseMove.disabled || moveToRender.disabled;
+          const isMoveDisabled =
+            isZMoveDisabled || baseMove.disabled || moveToRender.disabled;
 
-            const subtitle =
-              baseMove.max_pp > 0
-                ? `${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`
-                : moveToRender.type;
+          const subtitle =
+            baseMove.max_pp > 0
+              ? `${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`
+              : moveToRender.type;
 
-            return (
-              <ActionButton
-                key={baseMove.id || index}
-                title={moveToRender.name}
-                subtitle={subtitle}
-                onClick={() => onSelectMove(moveToRender!, index)}
-                disabled={isMoveDisabled || isLoading}
-                typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}
-                badgeText={badgeText}
-                badgeClassName={badgeText === "Z-Move" ? styles.zmoveBadge : styles.maxMoveBadge}
-                infoResourceType="move"
-                infoResourceName={moveToRender.name}
-              />
-            );
-          });
-        })()}
+          return (
+            <ActionButton
+              key={baseMove.id || index}
+              title={moveToRender.name}
+              subtitle={subtitle}
+              onClick={() => onSelectMove(moveToRender, index)}
+              disabled={isMoveDisabled || isLoading}
+              typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}
+              badgeText={badgeText}
+              infoResourceType="move"
+              infoResourceName={moveToRender.name}
+            />
+          );
+        })}
       </div>
       {canShift && onShift && (
         <ActionButton

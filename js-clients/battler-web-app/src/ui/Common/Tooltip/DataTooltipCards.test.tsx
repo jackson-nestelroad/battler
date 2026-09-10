@@ -5,7 +5,9 @@ import AbilityTooltipCard from "./AbilityTooltipCard";
 import ConditionTooltipCard from "./ConditionTooltipCard";
 import ItemTooltipCard from "./ItemTooltipCard";
 import MoveTooltipCard from "./MoveTooltipCard";
+import SimpleDataTooltipCard from "./SimpleDataTooltipCard";
 import SpeciesTooltipCard from "./SpeciesTooltipCard";
+import TooltipFlagsSection from "./TooltipFlagsSection";
 
 describe("Data Tooltip Cards", () => {
   describe("MoveTooltipCard", () => {
@@ -106,6 +108,19 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("30 (max 48)");
       expect(html).toContain("Priority:");
       expect(html).toContain("+1");
+    });
+
+    it("renders unboostable move PP without redundant max suffix", () => {
+      const unboostableMove: MoveData = {
+        ...mockMove,
+        name: "Revival Blessing",
+        pp: 1,
+        no_pp_boosts: true,
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={unboostableMove} />);
+      expect(html).toContain("Revival Blessing");
+      expect(html).toContain(">1<");
+      expect(html).not.toContain("1 (max 1)");
     });
   });
 
@@ -243,6 +258,8 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("♂");
       expect(html).toContain("♀");
       expect(html).toContain("role=\"meter\"");
+      expect(html).toContain("aria-valuemin=\"0\"");
+      expect(html).toContain("aria-valuemax=\"100\"");
       expect(html).toContain("Monster, Dragon");
       expect(html).toContain("95.0 kg");
       expect(html).toContain("SubLegendary");
@@ -291,6 +308,67 @@ describe("Data Tooltip Cards", () => {
       expect(femaleOnlyHtml).toContain("100%");
       expect(femaleOnlyHtml).toContain("♀");
       expect(femaleOnlyHtml).not.toContain("♂");
+    });
+
+    it("deduplicates redundant abilities in species abilities array", () => {
+      const dupeSpecies: SpeciesData = {
+        ...mockSpecies,
+        abilities: ["Levitate", "Levitate"],
+        hidden_ability: null,
+      };
+      const html = renderToStaticMarkup(<SpeciesTooltipCard data={dupeSpecies} />);
+      const matches = html.match(/Levitate/g);
+      // "Levitate" appears once inside the single trigger
+      expect(matches).not.toBeNull();
+      expect(matches!.length).toBe(1);
+    });
+  });
+
+  describe("SimpleDataTooltipCard", () => {
+    it("renders name, subtitle, and sorted flags", () => {
+      const html = renderToStaticMarkup(
+        <SimpleDataTooltipCard
+          name="Intimidate"
+          subtitle="Ability"
+          flags={["Breakable"]}
+        />,
+      );
+      expect(html).toContain("Intimidate");
+      expect(html).toContain("Ability");
+      expect(html).toContain("Breakable");
+    });
+
+    it("omits flags section when no flags provided", () => {
+      const html = renderToStaticMarkup(
+        <SimpleDataTooltipCard name="None" subtitle="Item" flags={[]} />,
+      );
+      expect(html).toContain("None");
+      expect(html).toContain("Item");
+      expect(html).not.toContain("Flags");
+    });
+  });
+
+  describe("TooltipFlagsSection", () => {
+    it("renders sorted flag badges when flags are provided", () => {
+      const html = renderToStaticMarkup(
+        <TooltipFlagsSection flags={["Protect", "Contact", "Mirror"]} />,
+      );
+      expect(html).toContain("Flags");
+      expect(html).toContain("Contact");
+      expect(html).toContain("Mirror");
+      expect(html).toContain("Protect");
+      // Verify alphabetical order in output
+      const contactIdx = html.indexOf("Contact");
+      const mirrorIdx = html.indexOf("Mirror");
+      const protectIdx = html.indexOf("Protect");
+      expect(contactIdx).toBeLessThan(mirrorIdx);
+      expect(mirrorIdx).toBeLessThan(protectIdx);
+    });
+
+    it("returns null / empty markup when flags is null, undefined, or empty", () => {
+      expect(renderToStaticMarkup(<TooltipFlagsSection flags={null} />)).toBe("");
+      expect(renderToStaticMarkup(<TooltipFlagsSection flags={undefined} />)).toBe("");
+      expect(renderToStaticMarkup(<TooltipFlagsSection flags={[]} />)).toBe("");
     });
   });
 });

@@ -10,9 +10,12 @@ import {
   clearDataStoreCache,
   fetchAbility,
   fetchCondition,
+  fetchGenericResource,
   fetchItem,
   fetchMove,
   fetchSpecies,
+  getCachedGenericResource,
+  getGenericResourceCacheKey,
 } from "./useDataStore";
 
 describe("useDataStore", () => {
@@ -162,7 +165,6 @@ describe("useDataStore", () => {
       };
       mockClient.getResource.mockResolvedValueOnce(mockResolved);
 
-      const { fetchGenericResource } = await import("./useDataStore");
       const res = await fetchGenericResource("Toxic Spikes", {
         priority: ["condition", "move", "ability", "item"],
       });
@@ -184,7 +186,6 @@ describe("useDataStore", () => {
       };
       mockClient.getResource.mockResolvedValueOnce(mockResolved);
 
-      const { fetchGenericResource } = await import("./useDataStore");
       await fetchGenericResource("Reflect", {
         priority: ["condition", "move", "ability", "item"],
       });
@@ -205,13 +206,136 @@ describe("useDataStore", () => {
       await fetchMove("Thunderbolt");
       expect(mockClient.getMove).toHaveBeenCalledTimes(1);
 
-      const { fetchGenericResource } = await import("./useDataStore");
       const res = await fetchGenericResource("thunderbolt", {
         priority: ["move"],
       });
 
       expect(res).toEqual({ type: "move", data: mockMove });
       expect(mockClient.getResource).not.toHaveBeenCalled();
+    });
+
+    it("uses typed cache for multi-priority generic resource lookup without calling getResource", async () => {
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      await fetchMove("Thunderbolt");
+      expect(mockClient.getMove).toHaveBeenCalledTimes(1);
+
+      const res = await fetchGenericResource("Thunderbolt", {
+        priority: ["condition", "move", "ability", "item"],
+      });
+
+      expect(res).toEqual({ type: "move", data: mockMove });
+      expect(mockClient.getResource).not.toHaveBeenCalled();
+    });
+
+    it("respects priority order in cached multi-priority lookups", async () => {
+      // Suppose an item and an ability share the same query name
+      mockClient.getAbility.mockResolvedValueOnce(mockAbility);
+      mockClient.getItem.mockResolvedValueOnce(mockItem);
+      await fetchAbility("Shared");
+      await fetchItem("Shared");
+
+      const resItemFirst = await fetchGenericResource("Shared", {
+        priority: ["item", "ability"],
+      });
+      expect(resItemFirst?.type).toBe("item");
+
+      const resAbilityFirst = await fetchGenericResource("Shared", {
+        priority: ["ability", "item"],
+      });
+      expect(resAbilityFirst?.type).toBe("ability");
+    });
+
+    it("returns stable object references across multiple getCachedGenericResource calls", async () => {
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      await fetchMove("Thunderbolt");
+
+      const ref1 = getCachedGenericResource("Thunderbolt");
+      const ref2 = getCachedGenericResource("Thunderbolt");
+
+      expect(ref1).toBeDefined();
+      expect(ref1).toBe(ref2);
+    });
+
+    it("populates normalized ID cache key on getCachedGenericResource for instant lookup", async () => {
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      await fetchMove("Thunder Wave");
+
+      // First query with original name
+      const resName = getCachedGenericResource("Thunder Wave");
+      expect(resName?.data.name).toBe("Thunderbolt");
+
+      // Subsequent query with normalized ID directly hits cache without calling getResource
+      const resId = getCachedGenericResource("thunderwave");
+      expect(resId?.data.name).toBe("Thunderbolt");
+      expect(mockClient.getResource).not.toHaveBeenCalled();
+    });
+
+    it("deduplicates simultaneous in-flight requests across query name and ID", async () => {
+      let resolvePromise: (data: any) => void;
+      mockClient.getResource.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolvePromise = resolve;
+        }),
+      );
+
+      const p1 = fetchGenericResource("Thunder Wave");
+      const p2 = fetchGenericResource("thunderwave");
+
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      const mockWave = {
+        type: "move" as const,
+        data: { ...mockMove, name: "Thunder Wave" },
+      };
+      resolvePromise!(mockWave);
+
+      const [r1, r2] = await Promise.all([p1, p2]);
+      expect(r1).toEqual(mockWave);
+      expect(r2).toEqual(mockWave);
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+    });
+
+    it("accepts an array of ResourceType as priority shorthand", async () => {
+      const mockResolved = {
+        type: "item" as const,
+        data: mockItem,
+      };
+      mockClient.getResource.mockResolvedValueOnce(mockResolved);
+
+      const res = await fetchGenericResource("Leftovers", ["item", "ability"]);
+      expect(res).toEqual(mockResolved);
+      expect(mockClient.getResource).toHaveBeenCalledWith("Leftovers", {
+        priority: ["item", "ability"],
+        include_fxlang: undefined,
+      });
+    });
+
+    it("bypasses typed cache when include_fxlang is true", async () => {
+      mockClient.getMove.mockResolvedValueOnce(mockMove);
+      await fetchMove("Thunderbolt");
+      expect(mockClient.getMove).toHaveBeenCalledTimes(1);
+
+      // getCachedGenericResource should return undefined when include_fxlang is requested
+      const cached = getCachedGenericResource("Thunderbolt", {
+        include_fxlang: true,
+      });
+      expect(cached).toBeUndefined();
+
+      // fetchGenericResource should call getResource with include_fxlang
+      const fxResolved = {
+        type: "move" as const,
+        data: { ...mockMove, fxlang: "effects" },
+      };
+      mockClient.getResource.mockResolvedValueOnce(fxResolved);
+
+      const res = await fetchGenericResource("Thunderbolt", {
+        include_fxlang: true,
+      });
+      expect(res).toEqual(fxResolved);
+      expect(mockClient.getResource).toHaveBeenCalledWith("Thunderbolt", {
+        priority: undefined,
+        include_fxlang: true,
+      });
     });
   });
 
@@ -225,6 +349,28 @@ describe("useDataStore", () => {
 
       await fetchMove("Thunderbolt");
       expect(mockClient.getMove).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("getGenericResourceCacheKey", () => {
+    it("builds consistent keys for empty, single, and multi-priority options", () => {
+      expect(getGenericResourceCacheKey("")).toBe("");
+      expect(getGenericResourceCacheKey("Toxic Spikes")).toBe("resource:Toxic Spikes:");
+      expect(getGenericResourceCacheKey("Toxic Spikes", { priority: ["condition", "move"] })).toBe(
+        "resource:Toxic Spikes:condition,move",
+      );
+      expect(getGenericResourceCacheKey("Toxic Spikes", ["condition", "move"])).toBe(
+        "resource:Toxic Spikes:condition,move",
+      );
+    });
+
+    it("appends :fx when include_fxlang is true", () => {
+      expect(
+        getGenericResourceCacheKey("Rain", {
+          priority: ["condition"],
+          include_fxlang: true,
+        }),
+      ).toBe("resource:Rain:condition:fx");
     });
   });
 });

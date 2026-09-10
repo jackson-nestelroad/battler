@@ -1,4 +1,4 @@
-import type { BattleState, UiLogEntry } from "battler-state";
+import type { BattleState, UiLogEntry, UiMon } from "battler-state";
 import type { PlayerBattleData } from "battler-types";
 import { useEffect, useRef, useState, Fragment } from "react";
 import Tabs from "../Common/Tabs";
@@ -63,19 +63,25 @@ function renderLogDivider(
 function getResourceTypeForTokenKey(tokenKey?: string): DataResourceType | null {
   if (!tokenKey) return null;
   const upper = tokenKey.toUpperCase();
-  if (
-    upper === "MOVE" ||
-    upper === "FORGOT" ||
-    upper.endsWith("_MOVE") ||
-    upper.endsWith("MOVE")
-  ) {
+  if (upper === "FORGOT" || upper.endsWith("MOVE")) {
     return "move";
   }
-  if (upper === "ABILITY" || upper.endsWith("_ABILITY") || upper.endsWith("ABILITY")) {
+  if (upper.endsWith("ABILITY")) {
     return "ability";
   }
-  if (upper === "ITEM" || upper.endsWith("_ITEM") || upper.endsWith("ITEM")) {
+  if (upper.endsWith("ITEM")) {
     return "item";
+  }
+  if (upper.endsWith("SPECIES")) {
+    return "species";
+  }
+  if (
+    upper.endsWith("CONDITION") ||
+    upper.endsWith("STATUS") ||
+    upper === "WEATHER" ||
+    upper === "TERRAIN"
+  ) {
+    return "condition";
   }
   return null;
 }
@@ -89,24 +95,27 @@ function renderTokenValue(
 ) {
   if (ctxVal == null) return null;
 
-  if (
-    typeof ctxVal === "object" &&
-    !Array.isArray(ctxVal) &&
-    "monRef" in ctxVal &&
-    ctxVal.monRef
-  ) {
-    const text = formatContextValue(ctxVal);
-    return (
-      <MonTooltipTrigger
-        key={key}
-        monRef={ctxVal.monRef}
-        battleState={battleState}
-        rules={rules}
-        preferredPlacement="left"
-      >
-        <span className={styles.tokenHoverTrigger}>{text}</span>
-      </MonTooltipTrigger>
-    );
+  if (typeof ctxVal === "object" && !Array.isArray(ctxVal)) {
+    const monRef =
+      "monRef" in ctxVal && ctxVal.monRef
+        ? ctxVal.monRef
+        : "Active" in ctxVal
+          ? (ctxVal as UiMon)
+          : undefined;
+    if (monRef) {
+      const text = formatContextValue(ctxVal);
+      return (
+        <MonTooltipTrigger
+          key={key}
+          monRef={monRef}
+          battleState={battleState}
+          rules={rules}
+          preferredPlacement="left"
+        >
+          <span className={styles.tokenHoverTrigger}>{text}</span>
+        </MonTooltipTrigger>
+      );
+    }
   }
 
   if (Array.isArray(ctxVal)) {

@@ -91,4 +91,86 @@ describe("LogPanel", () => {
     expect(html).toContain("]");
     expect(html).toContain('role="button"');
   });
+
+  it("renders weather and terrain tokens with DataTooltipTrigger in log messages", () => {
+    const weatherLog: FormattedLogDisplayItem = {
+      kind: "message",
+      category: LogCategory.Primary,
+      message: {
+        category: LogCategory.Primary,
+        tokens: [
+          { type: "text", value: "The sunlight turned harsh! (" },
+          { type: "variable", value: "WEATHER" },
+          { type: "text", value: ")" },
+        ],
+        context: {
+          WEATHER: "Sunny Day",
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[weatherLog]} />,
+    );
+
+    expect(html).toContain("Sunny Day");
+    expect(html).toContain('role="button"');
+  });
+
+  it("renders species tokens with DataTooltipTrigger in log messages", () => {
+    const speciesLog: FormattedLogDisplayItem = {
+      kind: "message",
+      category: LogCategory.Primary,
+      message: {
+        category: LogCategory.Primary,
+        tokens: [
+          { type: "variable", value: "MON" },
+          { type: "text", value: " transformed into " },
+          { type: "variable", value: "SPECIES" },
+          { type: "text", value: "!" },
+        ],
+        context: {
+          MON: "Ditto",
+          SPECIES: "Mew",
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[speciesLog]} />,
+    );
+
+    expect(html).toContain("Mew");
+    expect(html).toContain('role="button"');
+  });
+
+  it("renders Mon hover trigger when context variable contains monRef", () => {
+    const monLog: FormattedLogDisplayItem = {
+      kind: "message",
+      category: LogCategory.Primary,
+      message: {
+        category: LogCategory.Primary,
+        tokens: [
+          { type: "variable", value: "MON" },
+          { type: "text", value: " used " },
+          { type: "variable", value: "MOVE" },
+          { type: "text", value: "!" },
+        ],
+        context: {
+          MON: {
+            text: "Gyarados",
+            monRef: { Active: { side: 1, position: 0, name: "Gyarados", player: "p2" } },
+          },
+          MOVE: "Waterfall",
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <LogPanel visibleLogs={[monLog]} />,
+    );
+
+    expect(html).toContain("Gyarados");
+    expect(html).toContain("Waterfall");
+  });
 });

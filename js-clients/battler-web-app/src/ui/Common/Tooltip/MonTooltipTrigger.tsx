@@ -1,58 +1,148 @@
 import type { BattleState, MonBattleAppearanceReference, UiMon } from "battler-state";
 import type { MonBattleData } from "battler-types";
-import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type FocusEvent,
+  type MouseEvent,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   appearanceRefToTooltip,
   monBattleDataToTooltip,
   publicMonStateToTooltip,
 } from "../../../utils/monTooltipModel";
+import { getElementRect } from "../../../utils/floatingCoords";
 import FloatingTooltip from "./FloatingTooltip";
 import MonTooltipCard from "./MonTooltipCard";
+import { TooltipParentContext, useTooltipChildTracker } from "./TooltipContext";
 
-function useInteractiveTooltip(viewModel: unknown) {
+function useInteractiveTooltip(
+  openChildCount: number,
+  closeChild?: () => void,
+  isTargetInChild?: (target: Node) => boolean,
+  triggerRef?: React.RefObject<HTMLElement | null>,
+  contentRef?: React.RefObject<HTMLDivElement | null>,
+) {
   const [isOpen, setIsOpen] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHoveringRef = useRef(false);
+  const openChildCountRef = useRef(openChildCount);
+  openChildCountRef.current = openChildCount;
 
-  const clearCloseTimer = () => {
+  const clearCloseTimer = useCallback(() => {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
-  };
+  }, []);
 
   const handleMouseEnter = (e: MouseEvent<HTMLElement>) => {
-    if (!viewModel) return;
+    isHoveringRef.current = true;
     clearCloseTimer();
-    const el = e.currentTarget;
-    let rect = el.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0 && el.firstElementChild) {
-      rect = (el.firstElementChild as HTMLElement).getBoundingClientRect();
-    }
-    setTargetRect(rect);
+    setTargetRect(getElementRect(e.currentTarget));
     setIsOpen(true);
   };
 
-  const scheduleClose = () => {
+  const handleFocus = (e: FocusEvent<HTMLElement>) => {
+    isHoveringRef.current = true;
+    clearCloseTimer();
+    setTargetRect(getElementRect(e.currentTarget));
+    setIsOpen(true);
+  };
+
+  const scheduleClose = useCallback(() => {
+    isHoveringRef.current = false;
     clearCloseTimer();
     closeTimerRef.current = setTimeout(() => {
+      if (openChildCountRef.current > 0) return;
+      closeChild?.();
       setIsOpen(false);
     }, 40);
+  }, [clearCloseTimer, closeChild]);
+
+  const handleBlur = () => {
+    scheduleClose();
   };
+
+  const handleTooltipMouseEnter = () => {
+    isHoveringRef.current = true;
+    clearCloseTimer();
+  };
+
+  const handleTooltipMouseLeave = () => {
+    isHoveringRef.current = false;
+    scheduleClose();
+  };
+
+  useEffect(() => {
+    if (openChildCount === 0 && !isHoveringRef.current && isOpen) {
+      scheduleClose();
+    }
+  }, [openChildCount, isOpen, scheduleClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (openChildCountRef.current > 0) {
+          closeChild?.();
+          return;
+        }
+        clearCloseTimer();
+        setIsOpen(false);
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (triggerRef?.current?.contains(target)) return;
+
+      if (contentRef?.current?.contains(target)) {
+        if (isTargetInChild && !isTargetInChild(target)) {
+          closeChild?.();
+        }
+        return;
+      }
+
+      if (isTargetInChild?.(target)) return;
+
+      closeChild?.();
+      clearCloseTimer();
+      setIsOpen(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen, clearCloseTimer, closeChild, isTargetInChild, contentRef, triggerRef]);
 
   useEffect(() => {
     return () => {
       clearCloseTimer();
     };
-  }, []);
+  }, [clearCloseTimer]);
 
   return {
     isOpen,
     targetRect,
     handleMouseEnter,
     handleMouseLeave: scheduleClose,
-    handleTooltipMouseEnter: clearCloseTimer,
-    handleTooltipMouseLeave: scheduleClose,
+    handleFocus,
+    handleBlur,
+    handleTooltipMouseEnter,
+    handleTooltipMouseLeave,
   };
 }
 
@@ -79,6 +169,14 @@ export default function MonTooltipTrigger({
   as = "span",
   preferredPlacement = "top",
 }: MonTooltipTriggerProps) {
+  const triggerId = useId();
+  const parentContext = useContext(TooltipParentContext);
+  const { openChildCount, isTargetInChild, closeChild, contextValue } =
+    useTooltipChildTracker(parentContext);
+
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
   const viewModel = useMemo(() => {
     if (mon) {
       return monBattleDataToTooltip(mon, battleState, rules);
@@ -97,9 +195,34 @@ export default function MonTooltipTrigger({
     targetRect,
     handleMouseEnter,
     handleMouseLeave,
+    handleFocus,
+    handleBlur,
     handleTooltipMouseEnter,
     handleTooltipMouseLeave,
-  } = useInteractiveTooltip(viewModel);
+  } = useInteractiveTooltip(
+    openChildCount,
+    closeChild,
+    isTargetInChild,
+    triggerRef,
+    contentRef,
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const unregisterContent =
+      contentRef.current && parentContext?.registerChildContent
+        ? parentContext.registerChildContent(contentRef.current)
+        : undefined;
+    const unregisterOpen = parentContext?.registerChildOpen?.();
+    const unregisterActiveChild = parentContext?.openChild?.(triggerId, () => {
+      closeChild();
+    });
+    return () => {
+      unregisterContent?.();
+      unregisterOpen?.();
+      unregisterActiveChild?.();
+    };
+  }, [isOpen, parentContext, triggerId, closeChild]);
 
   const Component = as;
 
@@ -110,20 +233,27 @@ export default function MonTooltipTrigger({
   return (
     <>
       <Component
+        ref={triggerRef as React.Ref<never>}
         className={className}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         {children}
       </Component>
       <FloatingTooltip
         isOpen={isOpen}
         targetRect={targetRect}
+        targetRef={triggerRef}
+        containerRef={contentRef}
         onMouseEnter={handleTooltipMouseEnter}
         onMouseLeave={handleTooltipMouseLeave}
         preferredPlacement={preferredPlacement}
       >
-        <MonTooltipCard data={viewModel} />
+        <TooltipParentContext.Provider value={contextValue}>
+          <MonTooltipCard data={viewModel} />
+        </TooltipParentContext.Provider>
       </FloatingTooltip>
     </>
   );

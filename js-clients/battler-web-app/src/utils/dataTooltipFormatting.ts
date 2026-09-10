@@ -1,16 +1,19 @@
-import type {
-  Accuracy,
-  Fraction,
-  HitEffect,
-  MoveFlag,
-  MoveTarget,
-  MultihitType,
-  RecoilData,
-  SecondaryEffectData,
-} from "battler-types";
+import type { Accuracy } from "battler-types";
 
 /**
- * Format base accuracy directly as reported by the datastore.
+ * Normalizes an arbitrary string into a lowercased alphanumeric identifier.
+ */
+export const toId = (str: string): string => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * Formats base power directly, showing an em dash for 0 or omitted power (status/variable moves).
+ */
+export function formatBasePower(basePower?: number | null): string {
+  return basePower && basePower > 0 ? String(basePower) : "—";
+}
+
+/**
+ * Formats base accuracy directly as reported by the datastore.
  */
 export function formatAccuracy(accuracy?: Accuracy | null): string {
   if (typeof accuracy === "number") {
@@ -20,172 +23,72 @@ export function formatAccuracy(accuracy?: Accuracy | null): string {
 }
 
 /**
- * Returns MoveTarget as-is directly from the datastore.
+ * Formats move PP including max PP calculation when boosts apply.
  */
-export function formatMoveTarget(target: MoveTarget): string {
-  return target;
+export function formatPp(pp?: number | null, noPpBoosts?: boolean): string {
+  if (!pp) return "—";
+  if (noPpBoosts) return String(pp);
+  const maxPp = Math.floor(pp * 1.6);
+  return maxPp === pp ? String(pp) : `${pp} (max ${maxPp})`;
 }
 
 /**
- * Formats a Fraction string/number to a readable percentage or fraction string.
+ * Formats move priority as a signed string (e.g. "+1", "-1") or null if zero/omitted.
  */
-export function formatFraction(fraction?: Fraction | null): string {
-  if (fraction == null) return "";
-  if (typeof fraction === "number") {
-    return `${Math.round(fraction * 100)}%`;
-  }
-  if (typeof fraction === "string") {
-    if (fraction.endsWith("%")) return fraction;
-    if (fraction.includes("/")) {
-      const parts = fraction.split("/").map((p) => Number.parseFloat(p));
-      if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1]) && parts[1] !== 0) {
-        return `${Math.round((parts[0] / parts[1]) * 100)}%`;
-      }
-    }
-    const parsed = Number.parseFloat(fraction);
-    if (!Number.isNaN(parsed)) {
-      return `${Math.round(parsed * 100)}%`;
-    }
-    return fraction;
-  }
-  return String(fraction);
+export function formatPriority(priority?: number | null): string | null {
+  if (!priority) return null;
+  return priority > 0 ? `+${priority}` : `${priority}`;
 }
 
 /**
- * Formats multihit count directly.
+ * Formats a species classification string, replacing "Pokémon" with "Mon".
  */
-export function formatMultihit(multihit?: MultihitType | null): string | null {
-  if (multihit == null) return null;
-  if (typeof multihit === "number") {
-    return `Hits ${multihit}`;
-  }
-  if (Array.isArray(multihit) && multihit.length === 2) {
-    return `Hits ${multihit[0]}–${multihit[1]}`;
-  }
-  return null;
+export function formatSpeciesClass(rawClass?: string | null): string {
+  if (!rawClass) return "Mon";
+  const cleaned = rawClass.replace(/\s*Pok[eé]mon/gi, "").trim();
+  if (!cleaned) return "Mon";
+  if (cleaned.toLowerCase().endsWith("mon")) return cleaned;
+  return `${cleaned} Mon`;
+}
+
+export interface GenderRatioDisplay {
+  type: "genderless" | "male-only" | "female-only" | "split";
+  malePercent?: number;
+  femalePercent?: number;
 }
 
 /**
- * Formats recoil data directly.
+ * Parses gender ratio value into display type and percentage breakdown.
  */
-export function formatRecoil(recoil?: RecoilData | null): string | null {
-  if (!recoil) return null;
-  if (recoil.struggle) {
-    return "25% struggle recoil";
+export function parseGenderRatio(ratio?: number | null): GenderRatioDisplay {
+  if (ratio == null || ratio === 255 || ratio < 0) {
+    return { type: "genderless" };
   }
-  const pct = formatFraction(recoil.percent);
-  return pct ? `${pct} recoil` : "Recoil";
+  if (ratio === 0) {
+    return { type: "male-only", malePercent: 100, femalePercent: 0 };
+  }
+  if (ratio === 254) {
+    return { type: "female-only", malePercent: 0, femalePercent: 100 };
+  }
+  let femalePercent: number;
+  if (ratio === 31) femalePercent = 12.5;
+  else if (ratio === 63) femalePercent = 25;
+  else if (ratio === 127) femalePercent = 50;
+  else if (ratio === 191) femalePercent = 75;
+  else if (ratio === 223) femalePercent = 87.5;
+  else {
+    femalePercent = Math.round((ratio / 252) * 1000) / 10;
+  }
+  const malePercent = Math.round((100 - femalePercent) * 10) / 10;
+  return { type: "split", malePercent, femalePercent };
 }
 
 /**
- * Formats drain percentage directly.
+ * Formats a tenths-based metric integer (e.g. hectograms for weight or decimeters for height)
+ * into a decimal string with unit, or null if omitted or non-positive.
  */
-export function formatDrain(drain?: Fraction | null): string | null {
-  if (!drain) return null;
-  const pct = formatFraction(drain);
-  return pct ? `Recovers ${pct}` : null;
-}
-
-/**
- * Returns move flags as-is directly from datastore, sorted for consistency.
- */
-export function formatMoveFlags(flags?: Iterable<MoveFlag> | null): string[] {
-  if (!flags) return [];
-  return Array.from(flags).sort();
-}
-
-/**
- * Formats stat boost table into concise, direct strings grouped by stage.
- * E.g. "+1 Atk, Def, SpA, SpD, Spe (user)" or "-1 Spe (target)"
- */
-export function formatBoosts(boosts?: HitEffect["boosts"] | null, targetLabel?: string): string[] {
-  if (!boosts) return [];
-  const entries: [string, number | undefined][] = [
-    ["Atk", boosts.atk],
-    ["Def", boosts.def],
-    ["SpA", boosts.spa],
-    ["SpD", boosts.spd],
-    ["Spe", boosts.spe],
-    ["Acc", boosts.acc],
-    ["Eva", boosts.eva],
-  ];
-
-  const stageMap = new Map<number, string[]>();
-  for (const [stat, val] of entries) {
-    if (typeof val === "number" && val !== 0) {
-      const list = stageMap.get(val) || [];
-      list.push(stat);
-      stageMap.set(val, list);
-    }
-  }
-
-  const result: string[] = [];
-  for (const [stage, stats] of stageMap.entries()) {
-    const sign = stage > 0 ? `+${stage}` : `${stage}`;
-    const targetSuffix = targetLabel ? ` (${targetLabel})` : "";
-    result.push(`${sign} ${stats.join(", ")}${targetSuffix}`);
-  }
-  return result;
-}
-
-/**
- * Formats a HitEffect into direct, concise descriptions.
- */
-export function formatHitEffect(effect: HitEffect | null, targetLabel?: string): string[] {
-  if (!effect) return [];
-  const lines: string[] = [];
-  const targetSuffix = targetLabel ? ` (${targetLabel})` : "";
-
-  if (effect.status) {
-    lines.push(`${effect.status}${targetSuffix}`);
-  }
-  if (effect.volatile_status) {
-    lines.push(`${effect.volatile_status}${targetSuffix}`);
-  }
-  if (effect.boosts) {
-    lines.push(...formatBoosts(effect.boosts, targetLabel));
-  }
-  if (effect.force_switch) {
-    lines.push(`Forces switch${targetSuffix}`);
-  }
-  if (effect.heal_percent) {
-    lines.push(`Heals ${formatFraction(effect.heal_percent)}${targetSuffix}`);
-  }
-  if (effect.weather) {
-    lines.push(`Weather: ${effect.weather}`);
-  }
-  if (effect.terrain) {
-    lines.push(`Terrain: ${effect.terrain}`);
-  }
-  if (effect.side_condition) {
-    lines.push(`Side condition: ${effect.side_condition}`);
-  }
-  if (effect.slot_condition) {
-    lines.push(`Slot condition: ${effect.slot_condition}`);
-  }
-
-  return lines;
-}
-
-/**
- * Formats a secondary effect directly.
- */
-export function formatSecondaryEffect(sec: SecondaryEffectData): string | null {
-  const parts: string[] = [];
-  if (sec.target) {
-    parts.push(...formatHitEffect(sec.target, "target"));
-  }
-  if (sec.user) {
-    parts.push(...formatHitEffect(sec.user, "user"));
-  }
-  if (parts.length === 0) return null;
-
-  const effectDesc = parts.join(", ");
-  if (sec.chance != null) {
-    const chancePct = formatFraction(sec.chance);
-    if (chancePct && chancePct !== "100%") {
-      return `${chancePct}: ${effectDesc}`;
-    }
-  }
-  return effectDesc;
+export function formatDeciMetric(value?: number | null, unit: string = ""): string | null {
+  if (value == null || value <= 0) return null;
+  const converted = (value / 10).toFixed(1);
+  return unit ? `${converted} ${unit}` : converted;
 }

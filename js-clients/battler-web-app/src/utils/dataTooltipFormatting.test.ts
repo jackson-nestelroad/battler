@@ -1,17 +1,43 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAccuracy,
-  formatDrain,
-  formatFraction,
-  formatHitEffect,
-  formatMoveFlags,
-  formatMoveTarget,
-  formatMultihit,
-  formatRecoil,
-  formatSecondaryEffect,
+  formatBasePower,
+  formatDeciMetric,
+  formatPp,
+  formatPriority,
+  formatSpeciesClass,
+  parseGenderRatio,
+  toId,
 } from "./dataTooltipFormatting";
 
 describe("dataTooltipFormatting", () => {
+  describe("toId", () => {
+    it("normalizes mixed case and spaces to lowercase alphanumeric", () => {
+      expect(toId("Thunder Wave")).toBe("thunderwave");
+      expect(toId("U-turn")).toBe("uturn");
+      expect(toId("Zoroark-Hisui")).toBe("zoroarkhisui");
+      expect(toId("10,000,000 Volt Volt")).toBe("10000000voltvolt");
+    });
+
+    it("handles empty strings", () => {
+      expect(toId("")).toBe("");
+      expect(toId("!@#$%^&*()")).toBe("");
+    });
+  });
+
+  describe("formatBasePower", () => {
+    it("formats positive base power as string", () => {
+      expect(formatBasePower(90)).toBe("90");
+      expect(formatBasePower(120)).toBe("120");
+    });
+
+    it("returns em dash for zero, negative, or omitted base power", () => {
+      expect(formatBasePower(0)).toBe("—");
+      expect(formatBasePower(-1)).toBe("—");
+      expect(formatBasePower(null)).toBe("—");
+      expect(formatBasePower(undefined)).toBe("—");
+    });
+  });
   describe("formatAccuracy", () => {
     it("formats numeric accuracy", () => {
       expect(formatAccuracy(100)).toBe("100%");
@@ -20,155 +46,155 @@ describe("dataTooltipFormatting", () => {
 
     it("formats exempt / bypass accuracy as em dash", () => {
       expect(formatAccuracy("exempt")).toBe("—");
+      expect(formatAccuracy(null)).toBe("—");
+      expect(formatAccuracy(undefined)).toBe("—");
     });
   });
 
-  describe("formatMoveTarget", () => {
-    it("formats various targets properly", () => {
-      expect(formatMoveTarget("Normal")).toBe("Normal");
-      expect(formatMoveTarget("AdjacentFoe")).toBe("AdjacentFoe");
-      expect(formatMoveTarget("User")).toBe("User");
-      expect(formatMoveTarget("AllAdjacentFoes")).toBe("AllAdjacentFoes");
-      expect(formatMoveTarget("Field")).toBe("Field");
+  describe("formatPp", () => {
+    it("formats normal move PP with maximum boosted value", () => {
+      expect(formatPp(15)).toBe("15 (max 24)");
+      expect(formatPp(10)).toBe("10 (max 16)");
+      expect(formatPp(5)).toBe("5 (max 8)");
+    });
+
+    it("formats boost-exempt move PP without redundant max suffix", () => {
+      expect(formatPp(1, true)).toBe("1");
+      expect(formatPp(5, true)).toBe("5");
+    });
+
+    it("omits redundant max suffix when calculated max equals base PP", () => {
+      expect(formatPp(1)).toBe("1");
+    });
+
+    it("returns em dash for empty or zero PP", () => {
+      expect(formatPp(0)).toBe("—");
+      expect(formatPp(null)).toBe("—");
+      expect(formatPp(undefined)).toBe("—");
     });
   });
 
-  describe("formatFraction", () => {
-    it("formats numbers to percentages", () => {
-      expect(formatFraction(0.5)).toBe("50%");
-      expect(formatFraction(1)).toBe("100%");
-      expect(formatFraction(0.333)).toBe("33%");
+  describe("formatPriority", () => {
+    it("formats positive priority with leading plus", () => {
+      expect(formatPriority(1)).toBe("+1");
+      expect(formatPriority(3)).toBe("+3");
     });
 
-    it("formats strings and fractional strings", () => {
-      expect(formatFraction("1/2")).toBe("50%");
-      expect(formatFraction("1/3")).toBe("33%");
-      expect(formatFraction("75%")).toBe("75%");
-      expect(formatFraction(null)).toBe("");
+    it("formats negative priority with negative sign", () => {
+      expect(formatPriority(-1)).toBe("-1");
+      expect(formatPriority(-6)).toBe("-6");
     });
-  });
 
-  describe("formatMultihit", () => {
-    it("formats single number or ranges", () => {
-      expect(formatMultihit(null)).toBeNull();
-      expect(formatMultihit(2)).toBe("Hits 2");
-      expect(formatMultihit([2, 5])).toBe("Hits 2–5");
+    it("returns null for priority 0, null, or undefined to omit from display", () => {
+      expect(formatPriority(0)).toBeNull();
+      expect(formatPriority(null)).toBeNull();
+      expect(formatPriority(undefined)).toBeNull();
     });
   });
 
-  describe("formatRecoil", () => {
-    it("formats struggle recoil", () => {
-      expect(formatRecoil({ base: "Damage", percent: "1/4", struggle: true })).toBe(
-        "25% struggle recoil",
-      );
+  describe("formatSpeciesClass", () => {
+    it("replaces Pokémon with Mon in species class", () => {
+      expect(formatSpeciesClass("Mach Pokémon")).toBe("Mach Mon");
+      expect(formatSpeciesClass("Flame Pokémon")).toBe("Flame Mon");
+      expect(formatSpeciesClass("Tiny Turtle Pokémon")).toBe("Tiny Turtle Mon");
     });
 
-    it("formats regular recoil", () => {
-      expect(formatRecoil({ base: "Damage", percent: "1/3", struggle: false })).toBe(
-        "33% recoil",
-      );
+    it("appends Mon when species class lacks Mon suffix", () => {
+      expect(formatSpeciesClass("Tricky Fox")).toBe("Tricky Fox Mon");
+      expect(formatSpeciesClass("Disaster")).toBe("Disaster Mon");
     });
-  });
 
-  describe("formatDrain", () => {
-    it("formats drain percentages", () => {
-      expect(formatDrain(null)).toBeNull();
-      expect(formatDrain("1/2")).toBe("Recovers 50%");
+    it("preserves classes already ending in Mon", () => {
+      expect(formatSpeciesClass("Mach Mon")).toBe("Mach Mon");
     });
-  });
 
-  describe("formatMoveFlags", () => {
-    it("alphabetizes raw flags", () => {
-      expect(formatMoveFlags(["Protect", "Punch", "Contact"])).toEqual([
-        "Contact",
-        "Protect",
-        "Punch",
-      ]);
+    it("returns default 'Mon' for empty or null raw class", () => {
+      expect(formatSpeciesClass(null)).toBe("Mon");
+      expect(formatSpeciesClass(undefined)).toBe("Mon");
+      expect(formatSpeciesClass("")).toBe("Mon");
+      expect(formatSpeciesClass("Pokémon")).toBe("Mon");
     });
   });
 
-  describe("formatHitEffect", () => {
-    it("formats status and stat boosts directly", () => {
-      const effect = {
-        boosts: {
-          atk: -1,
-          def: 0,
-          spa: 0,
-          spd: 0,
-          spe: 2,
-          acc: 0,
-          eva: 0,
-        },
-        heal_percent: null,
-        status: "brn",
-        volatile_status: null,
-        side_condition: null,
-        slot_condition: null,
-        weather: null,
-        pseudo_weather: null,
-        terrain: null,
-        force_switch: false,
-      };
-      const lines = formatHitEffect(effect, "target");
-      expect(lines).toContain("brn (target)");
-      expect(lines).toContain("-1 Atk (target)");
-      expect(lines).toContain("+2 Spe (target)");
+  describe("parseGenderRatio", () => {
+    it("returns genderless for ratio 255, negative, null, or undefined", () => {
+      expect(parseGenderRatio(255)).toEqual({ type: "genderless" });
+      expect(parseGenderRatio(-1)).toEqual({ type: "genderless" });
+      expect(parseGenderRatio(null)).toEqual({ type: "genderless" });
+      expect(parseGenderRatio(undefined)).toEqual({ type: "genderless" });
+    });
+
+    it("returns male-only for ratio 0", () => {
+      expect(parseGenderRatio(0)).toEqual({
+        type: "male-only",
+        malePercent: 100,
+        femalePercent: 0,
+      });
+    });
+
+    it("returns female-only for ratio 254", () => {
+      expect(parseGenderRatio(254)).toEqual({
+        type: "female-only",
+        malePercent: 0,
+        femalePercent: 100,
+      });
+    });
+
+    it("returns 50/50 split for ratio 127", () => {
+      expect(parseGenderRatio(127)).toEqual({
+        type: "split",
+        malePercent: 50,
+        femalePercent: 50,
+      });
+    });
+
+    it("returns standard split ratios for 31, 63, 191, and 223", () => {
+      expect(parseGenderRatio(31)).toEqual({
+        type: "split",
+        malePercent: 87.5,
+        femalePercent: 12.5,
+      });
+      expect(parseGenderRatio(63)).toEqual({
+        type: "split",
+        malePercent: 75,
+        femalePercent: 25,
+      });
+      expect(parseGenderRatio(191)).toEqual({
+        type: "split",
+        malePercent: 25,
+        femalePercent: 75,
+      });
+      expect(parseGenderRatio(223)).toEqual({
+        type: "split",
+        malePercent: 12.5,
+        femalePercent: 87.5,
+      });
+    });
+
+    it("calculates proportional percentages for custom ratios", () => {
+      const custom = parseGenderRatio(100);
+      expect(custom.type).toBe("split");
+      expect(custom.femalePercent).toBe(39.7);
+      expect(custom.malePercent).toBe(60.3);
     });
   });
 
-  describe("formatSecondaryEffect", () => {
-    it("formats secondary effect with chance", () => {
-      const sec = {
-        chance: "1/10",
-        apply_once: false,
-        target: {
-          boosts: null,
-          heal_percent: null,
-          status: "par",
-          volatile_status: null,
-          side_condition: null,
-          slot_condition: null,
-          weather: null,
-          pseudo_weather: null,
-          terrain: null,
-          force_switch: false,
-        },
-        user: null,
-        source_effect: null,
-        effect: null,
-      };
-      expect(formatSecondaryEffect(sec)).toBe("10%: par (target)");
+  describe("formatDeciMetric", () => {
+    it("converts tenths-based value to single-decimal metric string with unit", () => {
+      expect(formatDeciMetric(950, "kg")).toBe("95.0 kg");
+      expect(formatDeciMetric(19, "m")).toBe("1.9 m");
+      expect(formatDeciMetric(5, "kg")).toBe("0.5 kg");
     });
 
-    it("formats all-stat omniboost compactly", () => {
-      const omni = {
-        chance: null,
-        apply_once: true,
-        target: null,
-        user: {
-          boosts: {
-            atk: 1,
-            def: 1,
-            spa: 1,
-            spd: 1,
-            spe: 1,
-            acc: 0,
-            eva: 0,
-          },
-          heal_percent: null,
-          status: null,
-          volatile_status: null,
-          side_condition: null,
-          slot_condition: null,
-          weather: null,
-          pseudo_weather: null,
-          terrain: null,
-          force_switch: false,
-        },
-        source_effect: null,
-        effect: null,
-      };
-      expect(formatSecondaryEffect(omni)).toBe("+1 Atk, Def, SpA, SpD, Spe (user)");
+    it("formats without unit when unit is empty", () => {
+      expect(formatDeciMetric(123)).toBe("12.3");
+    });
+
+    it("returns null for null, undefined, zero, or negative values", () => {
+      expect(formatDeciMetric(null, "kg")).toBeNull();
+      expect(formatDeciMetric(undefined, "m")).toBeNull();
+      expect(formatDeciMetric(0, "kg")).toBeNull();
+      expect(formatDeciMetric(-10, "kg")).toBeNull();
     });
   });
 });

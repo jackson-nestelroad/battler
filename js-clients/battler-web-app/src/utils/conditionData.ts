@@ -1,10 +1,10 @@
 import type { BattleState, ConditionData } from "battler-state";
 import { stateSelectors } from "battler-state";
+import { toId } from "./dataTooltipFormatting";
 
 export interface FormattedCondition {
   id: string;
   name: string;
-  layers?: number;
   displayText: string;
 }
 
@@ -43,28 +43,11 @@ export interface BattleConditionsViewModel extends SideLabelsInfo {
   foeData: FormattedSideConditions;
 }
 
-function normalizeKey(str: string): string {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-export function formatCondition(name: string, data?: ConditionData | null): FormattedCondition {
-  let layers: number | undefined;
-  let displayText = name;
-
-  const rawLayers = data?.data?.layers;
-  if (rawLayers) {
-    const parsed = parseInt(rawLayers, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      layers = parsed;
-      displayText = `${name} (${parsed} layer${parsed === 1 ? "" : "s"})`;
-    }
-  }
-
+export function formatCondition(name: string, _data?: ConditionData | null): FormattedCondition {
   return {
-    id: normalizeKey(name),
+    id: toId(name),
     name,
-    layers,
-    displayText,
+    displayText: name,
   };
 }
 
@@ -87,11 +70,11 @@ export function extractFieldConditions(battleState?: BattleState | null): Format
   const otherConditions: FormattedCondition[] = [];
 
   const rawConditions = battleState.field.conditions || {};
-  for (const [name, condData] of Object.entries(rawConditions)) {
+  for (const name of Object.keys(rawConditions)) {
     if (name.endsWith("Terrain")) {
       terrain = name;
     } else {
-      otherConditions.push(formatCondition(name, condData));
+      otherConditions.push(formatCondition(name));
     }
   }
 
@@ -125,8 +108,8 @@ export function extractSlotConditions(
   if (!side?.slot_conditions) return [];
 
   return side.slot_conditions.flatMap((slotMap, slotIdx) =>
-    Object.entries(slotMap || {}).map(([name, condData]) => ({
-      ...formatCondition(name, condData),
+    Object.entries(slotMap || {}).map(([name]) => ({
+      ...formatCondition(name),
       slotIndex: slotIdx,
       slotLabel: `Slot ${slotIdx + 1}`,
     })),
@@ -149,8 +132,8 @@ export function extractSideConditions(
     };
   }
 
-  const conditions = Object.entries(side.conditions || {}).map(([name, condData]) =>
-    formatCondition(name, condData),
+  const conditions = Object.keys(side.conditions || {}).map((name) =>
+    formatCondition(name),
   );
 
   const slotConditions = extractSlotConditions(battleState, sideIndex);

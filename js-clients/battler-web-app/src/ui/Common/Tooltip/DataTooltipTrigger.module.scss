@@ -31,24 +31,3 @@
   }
 }
 
-.loadingCard,
-.emptyCard {
-  width: 20rem;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-m);
-  padding: var(--spacing-m);
-  box-shadow: 0 var(--spacing-s) var(--spacing-xl) var(--bg-overlay);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-s);
-  font-size: var(--font-size-xs);
-  backdrop-filter: blur(var(--spacing-s));
-}
-
-.emptyText {
-  color: var(--text-muted);
-  font-style: italic;
-}

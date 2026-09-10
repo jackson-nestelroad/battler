@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import MonTooltipCard from "./MonTooltipCard";
-import styles from "./MonTooltipCard.module.scss";
+import cardStyles from "./DataTooltipCard.module.scss";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 
 function createMockMon(overrides: Partial<MonTooltipViewModel> = {}): MonTooltipViewModel {
@@ -232,7 +232,31 @@ describe("MonTooltipCard", () => {
       expect(html).toContain("None");
       expect(html).not.toContain("None (was");
       // Trait value is plain "None" without a button role on it
-      expect(html).toContain(`<span class="${styles.traitValue}">None</span>`);
+      expect(html).toContain(`<span class="${cardStyles.traitValue}">None</span>`);
+    });
+  });
+
+  describe("WAI-ARIA Tabpanel semantics", () => {
+    it("renders role=tabpanel linked with aria-labelledby and id when base summary is present", () => {
+      const mon = createMockMon({
+        baseSummary: createMockMon({ species: "Charizard" }),
+      });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).toContain('role="tablist"');
+      expect(html).toContain('id="mon-tab-battle"');
+      expect(html).toContain('aria-controls="mon-panel-battle"');
+      expect(html).toContain('id="mon-tab-summary"');
+      expect(html).toContain('aria-controls="mon-panel-summary"');
+      expect(html).toContain('role="tabpanel"');
+      expect(html).toContain('id="mon-panel-battle"');
+      expect(html).toContain('aria-labelledby="mon-tab-battle"');
+    });
+
+    it("omits role=tabpanel when summary tab is not present", () => {
+      const mon = createMockMon({ baseSummary: null });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).not.toContain('role="tablist"');
+      expect(html).not.toContain('role="tabpanel"');
     });
   });
 });

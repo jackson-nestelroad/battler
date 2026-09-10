@@ -1,14 +1,15 @@
-import { type CSSProperties, useState } from "react";
+import { Fragment, type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
 import ExpBar from "../ExpBar";
 import HpBar from "../HpBar";
 import StatusBadge from "../StatusBadge";
 import TypeBadge from "../TypeBadge";
+import cardStyles from "./DataTooltipCard.module.scss";
 import DataTooltipTrigger from "./DataTooltipTrigger";
 import styles from "./MonTooltipCard.module.scss";
 
-interface MonTooltipCardProps {
+export interface MonTooltipCardProps {
   data: MonTooltipViewModel;
 }
 
@@ -29,19 +30,13 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
   const isFemale = genderLower === "f" || genderLower === "female";
   const displayName = name || species;
 
-  const isTerastallizedActive = Boolean(isTerastallized && teraType);
+  const activeTeraType = isTerastallized && teraType ? teraType : null;
 
   return (
-    <header className={styles.header}>
+    <header className={cardStyles.header}>
       <div className={styles.headerTop}>
         <div className={styles.identity}>
-          {species ? (
-            <DataTooltipTrigger resourceType="species" name={species}>
-              <span className={styles.monName}>{displayName}</span>
-            </DataTooltipTrigger>
-          ) : (
-            <span className={styles.monName}>{displayName}</span>
-          )}
+          <span className={styles.monName}>{displayName}</span>
           {level != null && (
             <span className={styles.levelBadge}>L{level}</span>
           )}
@@ -64,11 +59,11 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
 
       {/* Types and Tera state */}
       <div className="flex-col gap-xxs">
-        {isTerastallizedActive ? (
+        {activeTeraType ? (
           <>
             {/* Active Tera Type */}
             <div className="flex-row align-center gap-xs flex-wrap">
-              <TypeBadge type={teraType!} size="md" variant="tera" />
+              <TypeBadge type={activeTeraType} size="md" variant="tera" />
               <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
                 Terastallized
               </span>
@@ -111,19 +106,34 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
   );
 }
 
+function renderAbilityContent(abilityStr?: string | null) {
+  if (!abilityStr || !abilityStr.trim() || abilityStr === "???") {
+    return <span className={cardStyles.traitEmpty}>???</span>;
+  }
+  const trimmed = abilityStr.trim();
+  if (trimmed === "None") {
+    return <span className={cardStyles.traitValue}>None</span>;
+  }
+  return (
+    <DataTooltipTrigger resourceType="ability" name={trimmed}>
+      <span className={cardStyles.traitValue}>{trimmed}</span>
+    </DataTooltipTrigger>
+  );
+}
+
 function renderItemContent(itemStr?: string | null) {
   if (!itemStr || !itemStr.trim() || itemStr === "???") {
-    return <span className={styles.traitUnknown}>???</span>;
+    return <span className={cardStyles.traitEmpty}>???</span>;
   }
   const trimmed = itemStr.trim();
   if (trimmed === "None") {
-    return <span className={styles.traitValue}>None</span>;
+    return <span className={cardStyles.traitValue}>None</span>;
   }
   const wasMatch = trimmed.match(/^None \(was (.+)\)$/);
   if (wasMatch) {
     const previousItemName = wasMatch[1];
     return (
-      <span className={styles.traitValue}>
+      <span className={cardStyles.traitValue}>
         None (was{" "}
         <DataTooltipTrigger resourceType="item" name={previousItemName}>
           {previousItemName}
@@ -134,7 +144,7 @@ function renderItemContent(itemStr?: string | null) {
   }
   return (
     <DataTooltipTrigger resourceType="item" name={trimmed}>
-      <span className={styles.traitValue}>{trimmed}</span>
+      <span className={cardStyles.traitValue}>{trimmed}</span>
     </DataTooltipTrigger>
   );
 }
@@ -171,29 +181,50 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
     Boolean(current.isTransformed);
 
   return (
-    <div className={styles.card}>
+    <div className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
       {/* Tab bar switcher for your Mons when base summary is available */}
       {hasSummaryTab && (
-        <nav className={styles.tabBar} aria-label="Mon details views">
+        <div className={cardStyles.tabBar} role="tablist" aria-label="Mon details views">
           <button
+            key="battle"
+            id="mon-tab-battle"
             type="button"
-            className={`${styles.tabBtn} ${activeTab === "battle" ? styles.tabBtnActive : ""}`}
+            role="tab"
+            aria-selected={activeTab === "battle"}
+            aria-controls="mon-panel-battle"
+            className={cardStyles.tabBtn}
             onClick={() => setActiveTab("battle")}
           >
             Battle
           </button>
           <button
+            key="summary"
+            id="mon-tab-summary"
             type="button"
-            className={`${styles.tabBtn} ${activeTab === "summary" ? styles.tabBtnActive : ""}`}
+            role="tab"
+            aria-selected={activeTab === "summary"}
+            aria-controls="mon-panel-summary"
+            className={cardStyles.tabBtn}
             onClick={() => setActiveTab("summary")}
           >
             Summary
           </button>
-        </nav>
+        </div>
       )}
 
-      {/* Header */}
-      <TooltipHeader data={current} />
+      {/* Tab Content Panel */}
+      <div
+        className="flex-col gap-s"
+        {...(hasSummaryTab
+          ? {
+              role: "tabpanel",
+              id: `mon-panel-${activeTab}`,
+              "aria-labelledby": `mon-tab-${activeTab}`,
+            }
+          : {})}
+      >
+        {/* Header */}
+        <TooltipHeader data={current} />
 
       {/* Health & Status bar */}
       <section className={styles.healthSection}>
@@ -263,7 +294,9 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
                 {condition}
               </span>
             );
-            if (isDynamax) return <span key={condition}>{badge}</span>;
+            if (isDynamax) {
+              return <Fragment key={condition}>{badge}</Fragment>;
+            }
             return (
               <DataTooltipTrigger
                 key={condition}
@@ -279,41 +312,35 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
       )}
 
       {/* Traits: Ability, Item, Weight, Nature, Hidden Power, Friendship */}
-      <section className={styles.traitsGrid}>
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>Ability:</span>
-          {current.ability?.trim() && current.ability !== "???" && current.ability !== "None" ? (
-            <DataTooltipTrigger resourceType="ability" name={current.ability}>
-              <span className={styles.traitValue}>{current.ability}</span>
-            </DataTooltipTrigger>
-          ) : (
-            <span className={styles.traitUnknown}>{current.ability || "???"}</span>
-          )}
+      <section className={cardStyles.traitsGrid}>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>Ability:</span>
+          {renderAbilityContent(current.ability)}
         </div>
 
-        <div className={styles.traitRow}>
-          <span className={styles.traitLabel}>Item:</span>
+        <div className={cardStyles.traitRow}>
+          <span className={cardStyles.traitLabel}>Item:</span>
           {renderItemContent(current.item)}
         </div>
 
         {current.ball && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Ball:</span>
-            <span className={styles.traitValue}>{formatBallName(current.ball)}</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Ball:</span>
+            <span className={cardStyles.traitValue}>{formatBallName(current.ball)}</span>
           </div>
         )}
 
         {current.weightKg != null && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Weight:</span>
-            <span className={styles.traitValue}>{current.weightKg} kg</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Weight:</span>
+            <span className={cardStyles.traitValue}>{current.weightKg} kg</span>
           </div>
         )}
 
         {current.nature && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Nature:</span>
-            <span className={styles.traitValue}>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Nature:</span>
+            <span className={cardStyles.traitValue}>
               {current.nature}
               {current.natureModifiers?.plus && current.natureModifiers?.minus && (
                 <>
@@ -330,23 +357,23 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
         )}
 
         {current.hiddenPowerType && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Hidden Power:</span>
-            <span className={styles.traitValue}>{current.hiddenPowerType}</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Hidden Power:</span>
+            <span className={cardStyles.traitValue}>{current.hiddenPowerType}</span>
           </div>
         )}
 
         {current.friendship != null && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Friendship:</span>
-            <span className={styles.traitValue}>{current.friendship}</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Friendship:</span>
+            <span className={cardStyles.traitValue}>{current.friendship}</span>
           </div>
         )}
 
         {current.moves.length === 0 && (
-          <div className={styles.traitRow}>
-            <span className={styles.traitLabel}>Moves:</span>
-            <span className={styles.traitUnknown}>???</span>
+          <div className={cardStyles.traitRow}>
+            <span className={cardStyles.traitLabel}>Moves:</span>
+            <span className={cardStyles.traitEmpty}>???</span>
           </div>
         )}
       </section>
@@ -354,7 +381,7 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
       {/* Moveset Grid (only renders when moves are known) */}
       {current.moves.length > 0 && (
         <section className={styles.movesSection}>
-          <span className={styles.sectionTitle}>
+          <span className={cardStyles.sectionTitle}>
             Moves
           </span>
           <div className={styles.movesGrid}>
@@ -410,7 +437,7 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
       {/* Stats Table */}
       {current.stats && current.stats.length > 0 && (
         <section className={styles.statsSection}>
-          <span className={styles.sectionTitle}>
+          <span className={cardStyles.sectionTitle}>
             Stats
           </span>
           <table className={styles.statsTable}>
@@ -452,8 +479,7 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
           </table>
         </section>
       )}
+      </div>
     </div>
   );
 }
-
-export { MonTooltipCard as PokemonTooltipCard };

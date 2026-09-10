@@ -35,7 +35,6 @@
   margin-bottom: 0; // scrollArea handles padding natively
 }
 
-
 .collapseToggle {
   display: none; /* Hidden on desktop */
   background: transparent;
@@ -186,7 +185,6 @@
   }
 }
 
-
 .indicator {
   color: var(--color-primary);
   font-weight: bold;
@@ -198,16 +196,15 @@
   word-break: break-word;
 }
 
-.tokenHoverTrigger,
-.monHoverTrigger {
+.tokenHoverTrigger {
   cursor: pointer;
+  color: inherit;
   text-decoration: underline dotted var(--text-muted);
   text-underline-offset: var(--spacing-xxs);
-  transition: var(--transition-fast);
+  transition: text-decoration-color var(--transition-fast);
 
   &:hover {
-    color: var(--color-primary);
-    text-decoration-color: var(--color-primary);
+    color: inherit;
+    text-decoration-color: var(--text-secondary);
   }
 }
-
