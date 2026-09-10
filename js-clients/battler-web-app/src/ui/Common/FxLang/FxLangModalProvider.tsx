@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import FxLangModal from "./FxLangModal";
 import { FxLangModalContext, type FxLangModalTarget } from "./FxLangModalContext";
 
@@ -17,8 +17,13 @@ export default function FxLangModalProvider({ children }: FxLangModalProviderPro
     setTarget(null);
   }, []);
 
+  const contextValue = useMemo(
+    () => ({ openFxLangModal, closeFxLangModal }),
+    [openFxLangModal, closeFxLangModal],
+  );
+
   return (
-    <FxLangModalContext.Provider value={{ openFxLangModal, closeFxLangModal }}>
+    <FxLangModalContext.Provider value={contextValue}>
       {children}
       {target && <FxLangModal target={target} onClose={closeFxLangModal} />}
     </FxLangModalContext.Provider>

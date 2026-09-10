@@ -35,6 +35,21 @@ describe("fxlangFormatter", () => {
         },
       });
     });
+
+    it("strips 0 boosts when using singular boost field", () => {
+      const input = {
+        boost: {
+          atk: 1,
+          def: 0,
+        },
+      };
+
+      expect(cleanJsonData(input)).toEqual({
+        boost: {
+          atk: 1,
+        },
+      });
+    });
   });
 
   describe("formatCompactJson", () => {
@@ -97,7 +112,6 @@ describe("fxlangFormatter", () => {
     it("linkifies HitEffect condition fields as condition resource delegates", () => {
       const fields = [
         ['"volatile_status": "flinch"', "flinch"],
-        ['"voltile_status": "flinch"', "flinch"],
         ['"side_condition": "stealthrock"', "stealthrock"],
         ['"slot_condition": "wish"', "wish"],
         ['"weather": "raindance"', "raindance"],
@@ -271,6 +285,28 @@ describe("fxlangFormatter", () => {
       } as unknown as ItemData;
 
       expect(extractItemSpecial(mockItem)).toBeUndefined();
+    });
+
+    it("extracts forme changes and player usage mechanics", () => {
+      const mockPlate = {
+        name: "Flame Plate",
+        force_forme: "Arceus-Fire",
+      } as unknown as ItemData;
+
+      expect(extractItemSpecial(mockPlate)).toEqual({
+        force_forme: "Arceus-Fire",
+      });
+
+      const mockPotion = {
+        name: "Potion",
+        target: "Party",
+        input: "Move",
+      } as unknown as ItemData;
+
+      expect(extractItemSpecial(mockPotion)).toEqual({
+        target: "Party",
+        input: "Move",
+      });
     });
   });
 });

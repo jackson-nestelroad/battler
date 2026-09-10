@@ -1,6 +1,6 @@
-import { useContext, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { ResourceType } from "../../../hooks/useDataStore";
-import { FxLangModalContext } from "../FxLang/FxLangModalContext";
+import { useFxLangModal } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
 import TooltipFlagsSection from "./TooltipFlagsSection";
 
@@ -19,7 +19,7 @@ export default function SimpleDataTooltipCard({
   flags,
   children,
 }: SimpleDataTooltipCardProps) {
-  const fxModal = useContext(FxLangModalContext);
+  const { openFxLangModal } = useFxLangModal();
 
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardCompact}`}>
@@ -32,7 +32,7 @@ export default function SimpleDataTooltipCard({
               className={cardStyles.effectBtn}
               onClick={(e) => {
                 e.stopPropagation();
-                fxModal?.openFxLangModal({ type: resourceType, name });
+                openFxLangModal({ type: resourceType, name });
               }}
             >
               Effect

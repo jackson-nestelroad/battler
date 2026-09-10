@@ -96,6 +96,7 @@ To keep the application layout modern, clean, and responsive, all user-facing te
 
 - All back/lobby navigation buttons must use the `← ` arrow prefix followed by a single-word target destination:
   - _Examples:_ `← Back`, `← Lobby`
+  - _Exception:_ Compact modal and inspector headers may use the icon-only `←` glyph provided they include accessible `title` and `aria-label` attributes describing the destination.
 
 ### D. Unified Empty State Text
 

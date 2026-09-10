@@ -1,11 +1,13 @@
 import { createContext, useContext } from "react";
 import type { ResourceType } from "../../../hooks/useDataStore";
 
+export type InspectorTab = "fxlang" | "effects" | "special";
+
 export interface FxLangModalTarget {
   type: ResourceType;
   name: string;
   displayName?: string;
-  tab?: "fxlang" | "effects" | "special";
+  tab?: InspectorTab;
 }
 
 export interface FxLangModalContextValue {
@@ -13,12 +15,13 @@ export interface FxLangModalContextValue {
   closeFxLangModal: () => void;
 }
 
-export const FxLangModalContext = createContext<FxLangModalContextValue | null>(null);
+const defaultContextValue: FxLangModalContextValue = {
+  openFxLangModal: () => {},
+  closeFxLangModal: () => {},
+};
+
+export const FxLangModalContext = createContext<FxLangModalContextValue>(defaultContextValue);
 
 export function useFxLangModal(): FxLangModalContextValue {
-  const context = useContext(FxLangModalContext);
-  if (!context) {
-    throw new Error("useFxLangModal must be used within a FxLangModalProvider");
-  }
-  return context;
+  return useContext(FxLangModalContext);
 }

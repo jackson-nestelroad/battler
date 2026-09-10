@@ -1,4 +1,5 @@
 import type { ItemData, MoveData } from "battler-types";
+import type { ResourceType } from "../../../hooks/useDataStore";
 
 function isPrimitive(v: unknown): boolean {
   return v === null || typeof v === "boolean" || typeof v === "number" || typeof v === "string";
@@ -16,7 +17,7 @@ export function cleanJsonData(val: unknown): unknown {
   if (typeof val === "object") {
     const res: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
-      if (k === "boosts" && typeof v === "object" && v !== null) {
+      if ((k === "boosts" || k === "boost") && typeof v === "object" && v !== null) {
         const activeBoosts: Record<string, number> = {};
         for (const [stat, b] of Object.entries(v as Record<string, number>)) {
           if (b !== 0) activeBoosts[stat] = b;
@@ -60,7 +61,7 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
     if (value.length === 1) {
       const inner = formatCompactJson(value[0], indent, 0);
       if (!inner.includes("\n") && inner.length <= 80) {
-        return "[" + inner + "]";
+        return `[${inner}]`;
       }
     } else {
       // Multiple items: only collapse if ALL items are short primitive identifiers without spaces (e.g. short flags)
@@ -72,7 +73,7 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
           String(v).length <= 20,
       );
       if (allShortPrimitivesNoSpace) {
-        const singleLine = "[" + value.map((v) => formatCompactJson(v, indent, 0)).join(", ") + "]";
+        const singleLine = `[${value.map((v) => formatCompactJson(v, indent, 0)).join(", ")}]`;
         if (singleLine.length <= 50 && !singleLine.includes("\n")) {
           return singleLine;
         }
@@ -82,7 +83,7 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
     const items = value.map(
       (v) => nextSpaces + formatCompactJson(v, indent, currentIndent + indent),
     );
-    return "[\n" + items.join(",\n") + "\n" + spaces + "]";
+    return `[\n${items.join(",\n")}\n${spaces}]`;
   }
 
   if (typeof value === "object") {
@@ -93,7 +94,7 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
     if (entries.length === 1) {
       const [k, v] = entries[0];
       if (isPrimitive(v)) {
-        const singleLine = "{ " + JSON.stringify(k) + ": " + formatCompactJson(v, indent, 0) + " }";
+        const singleLine = `{ ${JSON.stringify(k)}: ${formatCompactJson(v, indent, 0)} }`;
         if (singleLine.length <= 50) {
           return singleLine;
         }
@@ -102,9 +103,9 @@ export function formatCompactJson(value: unknown, indent = 2, currentIndent = 0)
 
     const lines = entries.map(([k, v]) => {
       const formattedVal = formatCompactJson(v, indent, currentIndent + indent);
-      return nextSpaces + JSON.stringify(k) + ": " + formattedVal;
+      return `${nextSpaces}${JSON.stringify(k)}: ${formattedVal}`;
     });
-    return "{\n" + lines.join(",\n") + "\n" + spaces + "}";
+    return `{\n${lines.join(",\n")}\n${spaces}}`;
   }
 
   return JSON.stringify(value);
@@ -123,9 +124,9 @@ export function linkifyDelegates(html: string): string {
   });
 
   // 2. HitEffect condition fields pointing to condition resources:
-  // status, volatile_status, voltile_status, side_condition, slot_condition, weather, pseudo_weather, terrain
+  // status, volatile_status, side_condition, slot_condition, weather, pseudo_weather, terrain
   const HIT_EFFECT_FIELD_REGEX =
-    /"(status|volatile_status|voltile_status|side_condition|slot_condition|weather|pseudo_weather|terrain)"(\s*(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*)"([a-zA-Z0-9_-]+)"/g;
+    /"(status|volatile_status|side_condition|slot_condition|weather|pseudo_weather|terrain)"(\s*(?:<[^>]+>\s*)*:\s*(?:<[^>]+>\s*)*)"([a-zA-Z0-9_-]+)"/g;
 
   result = result.replace(HIT_EFFECT_FIELD_REGEX, (_, field, middle, name) => {
     return `"${field}"${middle}"<span role="button" tabindex="0" class="fxlang-delegate-link" data-delegate-prefix="condition" data-delegate-name="${name}" title="View definition of condition:${name}">${name}</span>"`;
@@ -141,7 +142,7 @@ export function linkifyDelegates(html: string): string {
 export function resolveDelegateTarget(
   prefix: string,
   name: string,
-): { type: "condition" | "ability" | "item" | "move" | "species"; name: string } {
+): { type: ResourceType; name: string } {
   const lower = prefix.toLowerCase();
   if (lower.startsWith("ability")) return { type: "ability", name };
   if (lower.startsWith("move")) return { type: "move", name };
@@ -162,9 +163,6 @@ export function extractFxlangData(data: unknown): Record<string, unknown> | unde
   }
   if (res.condition && typeof res.condition === "object" && Object.keys(res.condition).length > 0) {
     fx.condition = res.condition;
-  }
-  if (Object.keys(fx).length === 0 && res.effect != null) {
-    fx.effect = res.effect;
   }
   return Object.keys(fx).length > 0 ? (cleanJsonData(fx) as Record<string, unknown>) : undefined;
 }
@@ -214,10 +212,21 @@ export function extractMoveEffects(move: MoveData): Record<string, unknown> | un
 }
 
 /**
- * Extracts and cleans special item data.
+ * Extracts and cleans special item data, including special effects, forme changes, and player usage mechanics.
  */
 export function extractItemSpecial(item: ItemData): Record<string, unknown> | undefined {
-  if (!item.special_data || typeof item.special_data !== "object") return undefined;
-  const cleaned = cleanJsonData(item.special_data) as Record<string, unknown> | undefined;
-  return cleaned && Object.keys(cleaned).length > 0 ? { special_data: cleaned } : undefined;
+  const result: Record<string, unknown> = {};
+
+  if (item.force_forme) result.force_forme = item.force_forme;
+  if (item.target) result.target = item.target;
+  if (item.input) result.input = item.input;
+
+  if (item.special_data && typeof item.special_data === "object") {
+    const cleaned = cleanJsonData(item.special_data) as Record<string, unknown> | undefined;
+    if (cleaned && Object.keys(cleaned).length > 0) {
+      result.special_data = cleaned;
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }

@@ -11,6 +11,127 @@ vi.mock("../../../hooks/useDataStore", () => ({
   useGenericResource: vi.fn(),
 }));
 
+function renderWithMockedReactInternals<T>(
+  fn: () => T,
+  options?: {
+    internals?: Record<string, unknown>;
+    window?: Partial<Window & typeof globalThis>;
+  },
+): T {
+  const originalDocument = globalThis.document;
+  const originalWindow = globalThis.window;
+  const internals = (
+    React as unknown as {
+      __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
+    }
+  ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+  const prevH = internals.H;
+
+  try {
+    internals.H = {
+      useState: (init: unknown) => [init, () => {}],
+      useRef: (init: unknown) => ({ current: init }),
+      useCallback: (fn: unknown) => fn,
+      useEffect: () => {},
+      useMemo: (fn: () => unknown) => fn(),
+      ...options?.internals,
+    };
+    if (options?.window) {
+      globalThis.window = {
+        ...originalWindow,
+        ...options.window,
+      } as unknown as Window & typeof globalThis;
+    }
+    globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+    return fn();
+  } finally {
+    internals.H = prevH;
+    globalThis.document = originalDocument;
+    globalThis.window = originalWindow;
+  }
+}
+
+interface ModalPortalStructure {
+  children: {
+    props: {
+      className: string;
+      onPointerDown?: (e: unknown) => void;
+      children: {
+        props: {
+          onPointerDown?: (e: unknown) => void;
+          children: Array<{
+            props: {
+              children?: any;
+              [key: string]: any;
+            };
+          }>;
+        };
+      };
+    };
+  };
+}
+
+function getModalElements(portal: unknown) {
+  const portalTyped = portal as unknown as ModalPortalStructure;
+  const backdrop = portalTyped.children;
+  const modal = backdrop.props.children;
+  const header = modal.props.children[0];
+  const content = modal.props.children[1];
+  return {
+    backdrop,
+    modal,
+    header,
+    content,
+    headerStr: JSON.stringify(header),
+    contentStr: JSON.stringify(content),
+  };
+}
+
+function createInteractiveStateTracker(initial: {
+  target: { type: string; name: string; displayName?: string; tab?: string };
+  history?: Array<{ type: string; name: string; displayName?: string; tab?: string }>;
+  tab?: string;
+}) {
+  let currentTargetState: any = initial.target;
+  let historyState: any[] = initial.history || [];
+  let activeTabState: any = initial.tab || "fxlang";
+
+  const useStateMock = (init: unknown) => {
+    if (typeof init === "object" && init !== null && "type" in (init as any)) {
+      return [
+        currentTargetState,
+        (updater: any) => {
+          currentTargetState = typeof updater === "function" ? updater(currentTargetState) : updater;
+        },
+      ];
+    }
+    if (Array.isArray(init)) {
+      return [
+        historyState,
+        (updater: any) => {
+          historyState = typeof updater === "function" ? updater(historyState) : updater;
+        },
+      ];
+    }
+    if (init === "fxlang" || init === "effects" || init === "special") {
+      return [
+        activeTabState,
+        (updater: any) => {
+          activeTabState = typeof updater === "function" ? updater(activeTabState) : updater;
+        },
+      ];
+    }
+    return [init, () => {}];
+  };
+
+  return {
+    useStateMock,
+    getCurrentTarget: () => currentTargetState,
+    getHistory: () => historyState,
+    getActiveTab: () => activeTabState,
+  };
+}
+
 describe("highlightFxlangJson", () => {
   it("highlights formatted json and applies fxlang injection tokens", async () => {
     const jsonStr = JSON.stringify(
@@ -78,60 +199,21 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
         target: { type: "move", name: "Thunderbolt" },
         onClose: () => {},
       });
 
       expect(portal).toBeDefined();
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            className: string;
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      const backdrop = portalAny.children;
+      const { backdrop, headerStr } = getModalElements(portal);
       expect(backdrop.props.className).toContain("backdrop");
-
-      const header = backdrop.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
       expect(headerStr).toContain("Thunderbolt");
       expect(headerStr).toContain("Move");
-      expect(headerStr).toContain("fxlang");
-      expect(headerStr).toContain("effects");
-      // No awkward lowercase move chip
+      expect(headerStr).toContain("FxLang");
+      expect(headerStr).toContain("Effects");
       expect(headerStr).not.toContain('"badge"');
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+    });
   });
 
   it("renders Ability subtitle and None empty state for empty abilities", () => {
@@ -148,136 +230,29 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
         target: { type: "ability", name: "Pickpocket" },
         onClose: () => {},
       });
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
+      const { headerStr, contentStr } = getModalElements(portal);
       expect(headerStr).toContain("Pickpocket");
       expect(headerStr).toContain("Ability");
-      // Move-specific tabbar should be omitted
-      expect(headerStr).not.toContain("Move effect views");
-
-      // Verify empty state is "None"
-      const body = portalAny.children.props.children.props.children[1];
-      const bodyStr = JSON.stringify(body);
-      expect(bodyStr).toContain("None");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+      expect(contentStr).toContain("None");
+    });
   });
 
-  it("renders Item tabs (fxlang, special_data) for items", () => {
+  it("renders Item subtitle and special tab for items with special_data", () => {
     vi.mocked(dataStore.useGenericResource).mockReturnValue({
       data: {
         type: "item",
         data: {
-          name: "Normalium Z",
+          name: "Choice Band",
           flags: [],
-          effect: {},
           special_data: {
-            z_crystal: { type: "Normal", into: "Breakneck Blitz" },
-            judgment: { type: "Normal" },
-          },
-        },
-      } as unknown as dataStore.ResourceData,
-      loading: false,
-    });
-
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
-      const portal = FxLangModal({
-        target: { type: "item", name: "Normalium Z" },
-        onClose: () => {},
-      });
-
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
-      expect(headerStr).toContain("Normalium Z");
-      expect(headerStr).toContain("Item");
-      expect(headerStr).toContain("fxlang");
-      expect(headerStr).toContain("special");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
-  });
-
-  it("renders Species class subtitle and handles species fxlang", () => {
-    vi.mocked(dataStore.useGenericResource).mockReturnValue({
-      data: {
-        type: "species",
-        data: {
-          name: "Xerneas",
-          class: "Life",
-          effect: {
-            callbacks: {
-              on_switch_in: ["run_event_on_mon_species: Update"],
+            boosts: {
+              atk: 1,
             },
           },
         },
@@ -285,51 +260,44 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
-        target: { type: "species", name: "Xerneas" },
+        target: { type: "item", name: "Choice Band" },
         onClose: () => {},
       });
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
+      const { headerStr } = getModalElements(portal);
+      expect(headerStr).toContain("Choice Band");
+      expect(headerStr).toContain("Item");
+      expect(headerStr).toContain("Special");
+    });
+  });
 
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
-      expect(headerStr).toContain("Xerneas");
-      expect(headerStr).toContain("Life Mon");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+  it("renders Species class and stats traits for species", () => {
+    vi.mocked(dataStore.useGenericResource).mockReturnValue({
+      data: {
+        type: "species",
+        data: {
+          name: "Mewtwo",
+          primary_type: "Psychic",
+          class: "Legendary",
+          base_stats: { hp: 106, atk: 110, def: 90, spa: 154, spd: 90, spe: 130 },
+          flags: [],
+        },
+      } as unknown as dataStore.ResourceData,
+      loading: false,
+    });
+
+    renderWithMockedReactInternals(() => {
+      const portal = FxLangModal({
+        target: { type: "species", name: "Mewtwo" },
+        onClose: () => {},
+      });
+
+      const { headerStr } = getModalElements(portal);
+      expect(headerStr).toContain("Mewtwo");
+      expect(headerStr).toContain("Legendary Mon");
+    });
   });
 
   it("stops pointerdown and keydown Escape propagation to protect background tooltips", () => {
@@ -341,15 +309,6 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const originalWindow = globalThis.window;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
     let keydownListener: ((e: KeyboardEvent) => void) | null = null;
     let captureMode = false;
     const mockAddEventListener = vi.fn((event, fn, useCapture) => {
@@ -359,71 +318,57 @@ describe("FxLangModal", () => {
       }
     });
     const mockRemoveEventListener = vi.fn();
-    globalThis.window = {
-      addEventListener: mockAddEventListener,
-      removeEventListener: mockRemoveEventListener,
-    } as unknown as Window & typeof globalThis;
+    const effectFns: (() => void)[] = [];
 
-    try {
-      const effectFns: (() => void)[] = [];
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: (fn: () => void) => { effectFns.push(fn); },
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+    renderWithMockedReactInternals(
+      () => {
+        const onClose = vi.fn();
+        const portal = FxLangModal({
+          target: { type: "move", name: "Thunderbolt" },
+          onClose,
+        });
 
-      const onClose = vi.fn();
-      const portal = FxLangModal({
-        target: { type: "move", name: "Thunderbolt" },
-        onClose,
-      });
+        const { backdrop, modal } = getModalElements(portal);
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            onPointerDown: (e: { stopPropagation: () => void }) => void;
-            children: {
-              props: {
-                onPointerDown: (e: { stopPropagation: () => void }) => void;
-              };
-            };
-          };
-        };
-      };
+        // 1. Verify backdrop stops pointerdown
+        const backdropStopPropagation = vi.fn();
+        backdrop.props.onPointerDown?.({ stopPropagation: backdropStopPropagation });
+        expect(backdropStopPropagation).toHaveBeenCalledTimes(1);
 
-      // 1. Verify backdrop stops pointerdown
-      const backdropStopPropagation = vi.fn();
-      portalAny.children.props.onPointerDown({ stopPropagation: backdropStopPropagation });
-      expect(backdropStopPropagation).toHaveBeenCalledTimes(1);
+        // 2. Verify modal container stops pointerdown
+        const modalStopPropagation = vi.fn();
+        modal.props.onPointerDown?.({ stopPropagation: modalStopPropagation });
+        expect(modalStopPropagation).toHaveBeenCalledTimes(1);
 
-      // 2. Verify modal container stops pointerdown
-      const modalStopPropagation = vi.fn();
-      portalAny.children.props.children.props.onPointerDown({ stopPropagation: modalStopPropagation });
-      expect(modalStopPropagation).toHaveBeenCalledTimes(1);
+        // 3. Trigger effects and verify Escape key is captured with stopPropagation
+        for (const fn of effectFns) fn();
+        expect(keydownListener).toBeDefined();
+        expect(captureMode).toBe(true);
 
-      // 3. Trigger effects and verify Escape key is captured with stopPropagation
-      for (const fn of effectFns) fn();
-      expect(keydownListener).toBeDefined();
-      expect(captureMode).toBe(true);
-
-      const escapeStopPropagation = vi.fn();
-      keydownListener!({ key: "Escape", stopPropagation: escapeStopPropagation } as unknown as KeyboardEvent);
-      expect(escapeStopPropagation).toHaveBeenCalledTimes(1);
-      expect(onClose).toHaveBeenCalledTimes(1);
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-      globalThis.window = originalWindow;
-    }
+        const escapeStopPropagation = vi.fn();
+        keydownListener!({ key: "Escape", stopPropagation: escapeStopPropagation } as unknown as KeyboardEvent);
+        expect(escapeStopPropagation).toHaveBeenCalledTimes(1);
+        expect(onClose).toHaveBeenCalledTimes(1);
+      },
+      {
+        internals: {
+          useEffect: (fn: () => void) => {
+            effectFns.push(fn);
+          },
+        },
+        window: {
+          addEventListener: mockAddEventListener,
+          removeEventListener: mockRemoveEventListener,
+        },
+      },
+    );
   });
 
   it("navigates to condition delegate on click and preserves previous tab on back", () => {
-    let currentTargetState: any = { type: "move", name: "Fake Out" };
-    let historyState: any[] = [];
-    let activeTabState = "effects";
+    const tracker = createInteractiveStateTracker({
+      target: { type: "move", name: "Fake Out" },
+      tab: "effects",
+    });
 
     vi.mocked(dataStore.useGenericResource).mockReturnValue({
       data: {
@@ -436,100 +381,104 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
+    renderWithMockedReactInternals(
+      () => {
+        const portal = FxLangModal({
+          target: { type: "move", name: "Fake Out" },
+          onClose: () => {},
+        });
 
-    try {
-      internals.H = {
-        useState: (init: unknown) => {
-          if (typeof init === "object" && init !== null && "type" in (init as any)) {
-            return [currentTargetState, (updater: any) => {
-              currentTargetState = typeof updater === "function" ? updater(currentTargetState) : updater;
-            }];
-          }
-          if (Array.isArray(init)) {
-            return [historyState, (updater: any) => {
-              historyState = typeof updater === "function" ? updater(historyState) : updater;
-            }];
-          }
-          if (init === "fxlang" || init === "effects") {
-            return [activeTabState, (updater: any) => {
-              activeTabState = typeof updater === "function" ? updater(activeTabState) : updater;
-            }];
-          }
-          return [init, () => {}];
-        },
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+        const { content } = getModalElements(portal);
+        const codeViewer = content.props.children as { props: Record<string, unknown> };
+        expect(codeViewer.props.onClick).toBeDefined();
 
-      const portal = FxLangModal({
-        target: { type: "move", name: "Fake Out" },
-        onClose: () => {},
-      });
-
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
+        // Simulate clicking on a condition delegate span element
+        const mockDelegateElement = {
+          closest: (selector: string) => {
+            if (selector === "[data-delegate-prefix]") {
+              return {
+                getAttribute: (attr: string) => {
+                  if (attr === "data-delegate-prefix") return "condition";
+                  if (attr === "data-delegate-name") return "flinch";
+                  return null;
+                },
               };
-            };
-          };
+            }
+            return null;
+          },
         };
-      };
 
-      // Find the code viewer container with onClick handler
-      const content = portalAny.children.props.children.props.children[1];
-      const codeViewer = content.props.children as { props: Record<string, unknown> };
-      expect(codeViewer.props.onClick).toBeDefined();
+        const stopPropagation = vi.fn();
+        const preventDefault = vi.fn();
+        (codeViewer.props.onClick as any)({
+          target: mockDelegateElement,
+          stopPropagation,
+          preventDefault,
+        });
 
-      // Simulate clicking on a condition delegate span element
-      const mockDelegateElement = {
-        closest: (selector: string) => {
-          if (selector === "[data-delegate-prefix]") {
-            return {
-              getAttribute: (attr: string) => {
-                if (attr === "data-delegate-prefix") return "condition";
-                if (attr === "data-delegate-name") return "flinch";
-                return null;
-              },
-            };
-          }
-          return null;
+        expect(stopPropagation).toHaveBeenCalled();
+        expect(preventDefault).toHaveBeenCalled();
+        expect(tracker.getCurrentTarget()).toEqual({ type: "condition", name: "flinch" });
+        expect(tracker.getHistory().length).toBe(1);
+        expect(tracker.getHistory()[0].name).toBe("Fake Out");
+        expect(tracker.getHistory()[0].tab).toBe("effects");
+        expect(tracker.getActiveTab()).toBe("fxlang");
+      },
+      {
+        internals: {
+          useState: tracker.useStateMock,
         },
-      };
+      },
+    );
+  });
 
-      const stopPropagation = vi.fn();
-      const preventDefault = vi.fn();
-      (codeViewer.props.onClick as any)({
-        target: mockDelegateElement,
-        stopPropagation,
-        preventDefault,
-      });
+  it("navigates back when clicking the back button in history", () => {
+    vi.mocked(dataStore.useGenericResource).mockReturnValue({
+      data: {
+        type: "condition",
+        data: {
+          name: "Flinch",
+          condition_type: "Volatile",
+        },
+      } as unknown as dataStore.ResourceData,
+      loading: false,
+    });
 
-      expect(stopPropagation).toHaveBeenCalled();
-      expect(preventDefault).toHaveBeenCalled();
-      expect(currentTargetState).toEqual({ type: "condition", name: "flinch" });
-      expect(historyState.length).toBe(1);
-      expect(historyState[0].name).toBe("Fake Out");
-      expect(historyState[0].tab).toBe("effects");
-      expect(activeTabState).toBe("fxlang");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+    const tracker = createInteractiveStateTracker({
+      target: { type: "condition", name: "flinch" },
+      history: [{ type: "move", name: "Fake Out", displayName: "Fake Out", tab: "effects" }],
+      tab: "fxlang",
+    });
+
+    renderWithMockedReactInternals(
+      () => {
+        const portal = FxLangModal({
+          target: { type: "move", name: "Fake Out" },
+          onClose: () => {},
+        });
+
+        const { header } = getModalElements(portal);
+        const headerLeft = header.props.children[0];
+        const backBtn = headerLeft.props.children[0];
+        expect(backBtn.props.onClick).toBeDefined();
+
+        backBtn.props.onClick();
+
+        expect(tracker.getHistory().length).toBe(0);
+        expect(tracker.getCurrentTarget()).toEqual({
+          type: "move",
+          name: "Fake Out",
+          displayName: "Fake Out",
+          tab: "effects",
+        });
+        expect(tracker.getActiveTab()).toBe("effects");
+      },
+      {
+        internals: {
+          useState: tracker.useStateMock,
+        },
+      },
+    );
   });
 
   it("resolves cross-type move condition when targeted as condition (e.g. noretreat)", () => {
@@ -551,44 +500,12 @@ describe("FxLangModal", () => {
       };
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
         target: { type: "condition", name: "noretreat" },
         onClose: () => {},
       });
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      // Priority includes condition followed by move, ability, item, species
       expect(capturedOptions?.priority).toEqual([
         "condition",
         "move",
@@ -597,16 +514,12 @@ describe("FxLangModal", () => {
         "species",
       ]);
 
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
+      const { headerStr } = getModalElements(portal);
       expect(headerStr).toContain("No Retreat");
       expect(headerStr).toContain("Move");
-      expect(headerStr).toContain("fxlang");
-      expect(headerStr).toContain("effects");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+      expect(headerStr).toContain("FxLang");
+      expect(headerStr).toContain("Effects");
+    });
   });
 
   it("disables empty tabs with explanatory titles when a tab lacks content", () => {
@@ -625,51 +538,16 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
         target: { type: "move", name: "Tackle" },
         onClose: () => {},
       });
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
+      const { headerStr } = getModalElements(portal);
       expect(headerStr).toContain('"disabled":true');
       expect(headerStr).toContain("No fxlang callbacks defined");
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+    });
   });
 
   it("disables both tabs when both are empty (e.g. Horn Attack with no fxlang or effects)", () => {
@@ -687,53 +565,35 @@ describe("FxLangModal", () => {
       loading: false,
     });
 
-    const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
-    try {
-      internals.H = {
-        useState: (init: unknown) => [init, () => {}],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useMemo: (fn: () => unknown) => fn(),
-      };
-      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
-
+    renderWithMockedReactInternals(() => {
       const portal = FxLangModal({
         target: { type: "move", name: "Horn Attack" },
         onClose: () => {},
       });
 
-      const portalAny = portal as unknown as {
-        children: {
-          props: {
-            children: {
-              props: {
-                children: Array<{
-                  props: Record<string, unknown>;
-                }>;
-              };
-            };
-          };
-        };
-      };
-
-      const header = portalAny.children.props.children.props.children[0];
-      const headerStr = JSON.stringify(header);
+      const { headerStr } = getModalElements(portal);
       expect(headerStr).toContain("No fxlang callbacks defined");
       expect(headerStr).toContain("No structured effects defined");
-      // Neither tab should be selected
       expect(headerStr).not.toContain('"aria-selected":true');
-    } finally {
-      internals.H = prevH;
-      globalThis.document = originalDocument;
-    }
+    });
+  });
+
+  it("renders Loading... text alongside spinner when loading", () => {
+    vi.mocked(dataStore.useGenericResource).mockReturnValue({
+      data: null,
+      loading: true,
+    });
+
+    renderWithMockedReactInternals(() => {
+      const portal = FxLangModal({
+        target: { type: "move", name: "Thunderbolt" },
+        onClose: () => {},
+      });
+
+      const { contentStr } = getModalElements(portal);
+      expect(contentStr).toContain("spinner");
+      expect(contentStr).toContain("Loading...");
+    });
   });
 });
 

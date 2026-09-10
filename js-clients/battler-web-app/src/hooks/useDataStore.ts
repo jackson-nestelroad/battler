@@ -26,16 +26,27 @@ const cache = new Map<string, unknown>();
 const pending = new Map<string, Promise<unknown>>();
 const fxCached = new Set<string>();
 
-function getResourceAliases(query: string, data?: unknown): string[] {
-  const aliases = [query];
-  const queryId = toId(query);
-  if (queryId && queryId !== query) aliases.push(queryId);
-  if (data && typeof data === "object" && "name" in data && typeof data.name === "string") {
-    if (data.name !== query) aliases.push(data.name);
-    const nameId = toId(data.name);
-    if (nameId && nameId !== queryId && nameId !== query) aliases.push(nameId);
+function extractResourceName(data: unknown): string | undefined {
+  if (data && typeof data === "object" && "name" in data && typeof data.name === "string" && data.name) {
+    return data.name;
   }
-  return aliases;
+  return undefined;
+}
+
+function getResourceAliases(query: string, data?: unknown): string[] {
+  const aliases = new Set<string>();
+  if (query) {
+    aliases.add(query);
+    const queryId = toId(query);
+    if (queryId) aliases.add(queryId);
+  }
+  const name = extractResourceName(data);
+  if (name) {
+    aliases.add(name);
+    const nameId = toId(name);
+    if (nameId) aliases.add(nameId);
+  }
+  return Array.from(aliases);
 }
 
 function markFxCached(type: ResourceType, query: string, data: unknown): void {
@@ -44,11 +55,14 @@ function markFxCached(type: ResourceType, query: string, data: unknown): void {
   }
 }
 
-function isFxCached(type: ResourceType, query: string): boolean {
+function isFxCached(type: ResourceType, query: string, name?: string): boolean {
   if (type === "species") return true;
-  if (fxCached.has(`${type}:${query}`)) return true;
-  const queryId = toId(query);
-  if (queryId && fxCached.has(`${type}:${queryId}`)) return true;
+  for (const q of [query, name]) {
+    if (!q) continue;
+    if (fxCached.has(`${type}:${q}`)) return true;
+    const queryId = toId(q);
+    if (queryId && fxCached.has(`${type}:${queryId}`)) return true;
+  }
   return false;
 }
 
@@ -184,7 +198,8 @@ export function getCachedGenericResource(
     if (!k) continue;
     const direct = cache.get(k) as ResourceData | undefined;
     if (direct !== undefined) {
-      if (!opts?.include_fxlang || isFxCached(direct.type, query)) {
+      const dataName = extractResourceName(direct.data);
+      if (!opts?.include_fxlang || isFxCached(direct.type, query, dataName)) {
         return direct;
       }
     }
@@ -198,7 +213,8 @@ export function getCachedGenericResource(
   for (const type of searchTypes) {
     const item = getCachedResource(type, query);
     if (item !== undefined) {
-      if (opts?.include_fxlang && !isFxCached(type, query)) {
+      const itemName = extractResourceName(item);
+      if (opts?.include_fxlang && !isFxCached(type, query, itemName)) {
         continue;
       }
       const data = { type, data: item } as ResourceData;
@@ -254,6 +270,16 @@ export async function fetchGenericResource(
           if (idKey) keysToCache.push(idKey);
           keysToCache.push(getGenericResourceCacheKey(queryId));
         }
+        const dataName = extractResourceName(data.data);
+        if (dataName && dataName !== query) {
+          keysToCache.push(getGenericResourceCacheKey(dataName, options));
+          keysToCache.push(getGenericResourceCacheKey(dataName));
+          const nameId = toId(dataName);
+          if (nameId && nameId !== queryId) {
+            keysToCache.push(getGenericResourceCacheKey(nameId, options));
+            keysToCache.push(getGenericResourceCacheKey(nameId));
+          }
+        }
         for (const k of keysToCache) {
           cache.set(k, data);
         }
@@ -302,10 +328,15 @@ function useAsyncCacheEntry<T>(
     if (!key || getCachedRef.current() !== undefined) return;
 
     let active = true;
-    fetcherRef.current().then((res) => {
-      if (!active) return;
-      setFetchedData({ key, data: res });
-    });
+    fetcherRef.current()
+      .then((res) => {
+        if (!active) return;
+        setFetchedData({ key, data: res });
+      })
+      .catch(() => {
+        if (!active) return;
+        setFetchedData({ key, data: null });
+      });
 
     return () => {
       active = false;
@@ -321,9 +352,10 @@ export function useGenericResource(
 ): { data: ResourceData | null; loading: boolean } {
   const options = normalizeGenericResourceOptions(optionsOrPriority);
   const key = query ? getGenericResourceCacheKey(query, options) : "";
+  const hookKey = query ? `${key}${options?.include_fxlang ? ":fx" : ""}` : "";
 
   return useAsyncCacheEntry(
-    key,
+    hookKey,
     () => (query ? getCachedGenericResource(query, options) : undefined),
     () => (query ? fetchGenericResource(query, options) : Promise.resolve(null)),
   );

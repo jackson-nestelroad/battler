@@ -1,12 +1,12 @@
 import type { SpeciesData } from "battler-types";
-import { Fragment, useContext } from "react";
+import { Fragment } from "react";
 import {
   formatDeciMetric,
   formatSpeciesClass,
   parseGenderRatio,
 } from "../../../utils/dataTooltipFormatting";
 import TypeBadge from "../TypeBadge";
-import { FxLangModalContext } from "../FxLang/FxLangModalContext";
+import { useFxLangModal } from "../FxLang/FxLangModalContext";
 import cardStyles from "./DataTooltipCard.module.scss";
 import DataTooltipTrigger from "./DataTooltipTrigger";
 import styles from "./SpeciesTooltipCard.module.scss";
@@ -17,7 +17,7 @@ export interface SpeciesTooltipCardProps {
 }
 
 export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
-  const fxModal = useContext(FxLangModalContext);
+  const { openFxLangModal } = useFxLangModal();
   const monClass = formatSpeciesClass(data.class);
 
   const genderRatio = parseGenderRatio(data.gender_ratio ?? 255);
@@ -47,7 +47,7 @@ export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
             className={cardStyles.effectBtn}
             onClick={(e) => {
               e.stopPropagation();
-              fxModal?.openFxLangModal({ type: "species", name: data.name });
+              openFxLangModal({ type: "species", name: data.name });
             }}
           >
             Effect

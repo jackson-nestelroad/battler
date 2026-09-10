@@ -399,6 +399,38 @@ describe("useDataStore", () => {
       expect(res).toEqual({ type: "species", data: mockSpecies });
       expect(mockClient.getResource).not.toHaveBeenCalled();
     });
+
+    it("returns undefined from getCachedGenericResource when fxlang is requested but only non-fx data is cached", async () => {
+      mockClient.getResource.mockResolvedValueOnce({
+        type: "move" as const,
+        data: mockMove,
+      });
+      await fetchGenericResource("Thunderbolt");
+
+      // Non-fx request hits cache
+      expect(getCachedGenericResource("Thunderbolt")).toBeDefined();
+
+      // Fx request does not consider non-fx data as satisfying fx requirement
+      expect(
+        getCachedGenericResource("Thunderbolt", { include_fxlang: true }),
+      ).toBeUndefined();
+    });
+
+    it("populates canonical name and normalized ID cache keys when query differs from canonical name", async () => {
+      mockClient.getResource.mockResolvedValueOnce({
+        type: "move" as const,
+        data: { ...mockMove, name: "Thunder Wave" },
+      });
+
+      // Query using lowercase id
+      await fetchGenericResource("thunderwave");
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+
+      // Querying with canonical display name "Thunder Wave" should hit cache immediately
+      const res = await fetchGenericResource("Thunder Wave");
+      expect(res?.data.name).toBe("Thunder Wave");
+      expect(mockClient.getResource).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("clearDataStoreCache", () => {

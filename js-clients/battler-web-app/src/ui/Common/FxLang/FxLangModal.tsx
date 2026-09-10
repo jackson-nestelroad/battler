@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
 import { type ResourceType, useGenericResource } from "../../../hooks/useDataStore";
 import { formatSpeciesClass } from "../../../utils/dataTooltipFormatting";
-import cardStyles from "../Tooltip/DataTooltipCard.module.scss";
+import { toElement } from "../../../utils/dom";
 import {
   extractFxlangData,
   extractItemSpecial,
@@ -15,14 +15,12 @@ import {
 import { highlightFxlangJson } from "./fxlangHighlighter";
 import styles from "./FxLangModal.module.scss";
 
-import type { FxLangModalTarget } from "./FxLangModalContext";
+import type { FxLangModalTarget, InspectorTab } from "./FxLangModalContext";
 
 export interface FxLangModalProps {
   target: FxLangModalTarget;
   onClose: () => void;
 }
-
-type InspectorTab = "fxlang" | "effects" | "special";
 
 const DEFAULT_RESOURCE_SEARCH_ORDER: readonly ResourceType[] = [
   "condition",
@@ -40,7 +38,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
   useEffect(() => {
     setCurrentTarget(target);
     setHistory([]);
-  }, [target]);
+  }, [target.type, target.name, target.tab]);
 
   const priority = useMemo<readonly ResourceType[]>(() => {
     if (currentTarget.type === "condition") {
@@ -135,42 +133,44 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
     };
   }, [resourceData, isMove, isItem]);
 
+  const secondaryTab = useMemo(() => {
+    if (isMove) {
+      return {
+        id: "effects" as const,
+        label: "Effects",
+        hasData: hasEffects,
+        disabledTitle: "No structured effects defined",
+      };
+    }
+    if (isItem) {
+      return {
+        id: "special" as const,
+        label: "Special",
+        hasData: hasSpecialData,
+        disabledTitle: "No special item data",
+      };
+    }
+    return null;
+  }, [isMove, isItem, hasEffects, hasSpecialData]);
+
   // Set smart default tab once loaded
   useEffect(() => {
     if (!loading) {
-      if (isMove) {
-        if (currentTarget.tab === "effects" && hasEffects) {
-          setActiveTab("effects");
+      if (secondaryTab) {
+        if (currentTarget.tab === secondaryTab.id && secondaryTab.hasData) {
+          setActiveTab(secondaryTab.id);
           return;
         }
         if (currentTarget.tab === "fxlang" && hasFxlang) {
           setActiveTab("fxlang");
           return;
         }
-        if (!hasFxlang && hasEffects) {
-          setActiveTab("effects");
-        } else {
-          setActiveTab("fxlang");
-        }
-      } else if (isItem) {
-        if (currentTarget.tab === "special" && hasSpecialData) {
-          setActiveTab("special");
-          return;
-        }
-        if (currentTarget.tab === "fxlang" && hasFxlang) {
-          setActiveTab("fxlang");
-          return;
-        }
-        if (!hasFxlang && hasSpecialData) {
-          setActiveTab("special");
-        } else {
-          setActiveTab("fxlang");
-        }
+        setActiveTab(!hasFxlang && secondaryTab.hasData ? secondaryTab.id : "fxlang");
       } else if (currentTarget.tab) {
         setActiveTab(currentTarget.tab);
       }
     }
-  }, [isMove, isItem, loading, hasFxlang, hasEffects, hasSpecialData, currentTarget.tab]);
+  }, [secondaryTab, loading, hasFxlang, currentTarget.tab]);
 
   const activeCode =
     isMove && activeTab === "effects"
@@ -205,7 +205,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
   }, [activeCode]);
 
   const navigateDelegateFromElement = (target: EventTarget | null) => {
-    const el = (target as HTMLElement | null)?.closest("[data-delegate-prefix]");
+    const el = toElement(target)?.closest?.("[data-delegate-prefix]");
     if (!el) return false;
     const prefix = el.getAttribute("data-delegate-prefix");
     const name = el.getAttribute("data-delegate-name");
@@ -266,7 +266,7 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
         onPointerDown={(e) => e.stopPropagation()}
       >
         <header className={styles.modalHeader}>
-          <div className="flex-row align-center gap-s">
+          <div className="flex-row align-center gap-s min-w-0">
             {history.length > 0 && (
               <button
                 type="button"
@@ -281,59 +281,36 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
             <h2 id="fxlang-modal-title" className={styles.title}>
               {displayName}
             </h2>
-            <span className={cardStyles.subtitle}>{subtitle}</span>
+            <span className={styles.subtitle}>{subtitle}</span>
           </div>
 
-          {isMove && (
-            <div className={cardStyles.tabBar} role="tablist" aria-label="Move effect views">
+          {secondaryTab && (
+            <div
+              className={styles.tabBar}
+              role="tablist"
+              aria-label={`${isMove ? "Move" : "Item"} effect views`}
+            >
               <button
                 type="button"
                 role="tab"
                 aria-selected={hasFxlang && activeTab === "fxlang"}
                 disabled={!hasFxlang}
                 title={hasFxlang ? undefined : "No fxlang callbacks defined"}
-                className={cardStyles.tabBtn}
+                className={styles.tabBtn}
                 onClick={() => setActiveTab("fxlang")}
               >
-                fxlang
+                FxLang
               </button>
               <button
                 type="button"
                 role="tab"
-                aria-selected={hasEffects && activeTab === "effects"}
-                disabled={!hasEffects}
-                title={hasEffects ? undefined : "No structured effects defined"}
-                className={cardStyles.tabBtn}
-                onClick={() => setActiveTab("effects")}
+                aria-selected={secondaryTab.hasData && activeTab === secondaryTab.id}
+                disabled={!secondaryTab.hasData}
+                title={secondaryTab.hasData ? undefined : secondaryTab.disabledTitle}
+                className={styles.tabBtn}
+                onClick={() => setActiveTab(secondaryTab.id)}
               >
-                effects
-              </button>
-            </div>
-          )}
-
-          {isItem && (
-            <div className={cardStyles.tabBar} role="tablist" aria-label="Item effect views">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={hasFxlang && activeTab === "fxlang"}
-                disabled={!hasFxlang}
-                title={hasFxlang ? undefined : "No fxlang callbacks defined"}
-                className={cardStyles.tabBtn}
-                onClick={() => setActiveTab("fxlang")}
-              >
-                fxlang
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={hasSpecialData && activeTab === "special"}
-                disabled={!hasSpecialData}
-                title={hasSpecialData ? undefined : "No special item data"}
-                className={cardStyles.tabBtn}
-                onClick={() => setActiveTab("special")}
-              >
-                special
+                {secondaryTab.label}
               </button>
             </div>
           )}
@@ -350,8 +327,9 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
 
         <div className={styles.content}>
           {loading ? (
-            <div className="flex-col align-center justify-center gap-s py-xl">
+            <div className={styles.loadingState}>
               <div className="spinner" />
+              <p className="text-secondary">Loading...</p>
             </div>
           ) : !activeCode ? (
             <div className={styles.emptyState}>None</div>

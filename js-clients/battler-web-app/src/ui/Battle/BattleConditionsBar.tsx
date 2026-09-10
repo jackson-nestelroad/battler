@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { extractAllBattleConditions } from "../../utils/conditionData";
+import { isTargetInsideModal } from "../../utils/dom";
 import FloatingTooltip from "../Common/Tooltip/FloatingTooltip";
 import { TooltipParentContext, useTooltipChildTracker } from "../Common/Tooltip/TooltipContext";
 import BattleConditionPopover, { type ConditionTab } from "./BattleConditionPopover";
@@ -115,7 +116,7 @@ export default function BattleConditionsBar({
       if (!target) return;
 
       // Ignore clicks inside active dialog overlays / modals (e.g. FxLangModal)
-      if (target instanceof Element && target.closest?.('[role="dialog"], [aria-modal="true"]')) {
+      if (isTargetInsideModal(target)) {
         return;
       }
 

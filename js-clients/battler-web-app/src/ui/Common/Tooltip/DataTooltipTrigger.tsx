@@ -17,6 +17,7 @@ import {
   useResourceData,
 } from "../../../hooks/useDataStore";
 import { getElementRect } from "../../../utils/floatingCoords";
+import { isTargetInsideModal } from "../../../utils/dom";
 import AbilityTooltipCard from "./AbilityTooltipCard";
 import ConditionTooltipCard from "./ConditionTooltipCard";
 import cardStyles from "./DataTooltipCard.module.scss";
@@ -194,7 +195,7 @@ export default function DataTooltipTrigger({
       if (triggerRef.current?.contains(target)) return;
 
       // Ignore clicks inside active dialog overlays / modals (e.g. FxLangModal)
-      if (target instanceof Element && target.closest?.('[role="dialog"], [aria-modal="true"]')) {
+      if (isTargetInsideModal(target)) {
         return;
       }
 

@@ -30,6 +30,7 @@
   padding: var(--spacing-s) var(--spacing-m);
   border-bottom: 1px solid var(--border-color);
   gap: var(--spacing-m);
+  min-width: 0;
 }
 
 .title {
@@ -37,26 +38,78 @@
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.closeBtn {
+.subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.tabBar {
+  display: flex;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xs);
+  padding: var(--spacing-xxs);
+  gap: var(--spacing-xxs);
+}
+
+.tabBtn {
+  flex: 1;
   background: none;
   border: none;
-  color: var(--text-secondary);
-  font-size: var(--font-size-m);
-  cursor: pointer;
-  padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
   transition: var(--transition-fast);
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
 
   &:hover {
     color: var(--text-primary);
-    background-color: var(--bg-input);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    color: var(--text-muted);
+    background-color: transparent;
+    box-shadow: none;
+
+    &:hover {
+      color: var(--text-muted);
+    }
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+
+  &[aria-selected="true"]:not(:disabled) {
+    background-color: var(--bg-card);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: var(--spacing-xxs);
   }
 }
 
-.backBtn {
+.backBtn,
+.closeBtn {
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -74,6 +127,11 @@
     color: var(--text-primary);
     background-color: var(--bg-input);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: var(--spacing-xxs);
+  }
 }
 
 .content {
@@ -81,6 +139,15 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.loadingState {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-s);
 }
 
 .emptyState {
@@ -123,7 +190,7 @@
     &::before {
       content: counter(line);
       display: inline-block;
-      width: 1.5rem;
+      min-width: 1.75rem;
       text-align: right;
       margin-right: var(--spacing-xs);
       color: var(--text-muted);

@@ -1,22 +1,28 @@
+import type { HighlighterCore, LanguageRegistration } from "shiki";
 import fxlangGrammar from "../../../../../../fxlang-ext/syntaxes/fxlang-injection.tmLanguage.json";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let highlighterPromise: Promise<any> | null = null;
+let highlighterPromise: Promise<HighlighterCore> | null = null;
 
-async function getHighlighterInstance() {
+async function getHighlighterInstance(): Promise<HighlighterCore> {
   if (!highlighterPromise) {
     highlighterPromise = (async () => {
-      const { createHighlighter } = await import("shiki");
-      return createHighlighter({
-        themes: ["dark-plus"],
+      const [{ createHighlighterCore }, { createOnigurumaEngine }, darkPlus, json] =
+        await Promise.all([
+          import("shiki/core"),
+          import("shiki/engine/oniguruma"),
+          import("shiki/themes/dark-plus.mjs"),
+          import("shiki/langs/json.mjs"),
+        ]);
+      return createHighlighterCore({
+        themes: [darkPlus.default],
         langs: [
-          "json",
+          json.default,
           {
-            ...(fxlangGrammar as Record<string, unknown>),
+            ...(fxlangGrammar as unknown as LanguageRegistration),
             injectTo: ["source.json"],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
+          },
         ],
+        engine: createOnigurumaEngine(import("shiki/wasm")),
       });
     })();
   }
@@ -34,3 +40,4 @@ export async function highlightFxlangJson(jsonCode: string): Promise<string> {
     theme: "dark-plus",
   });
 }
+
