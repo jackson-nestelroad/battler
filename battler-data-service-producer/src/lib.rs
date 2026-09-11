@@ -30,8 +30,8 @@ pub async fn run_data_service_producer<'d, S>(
 where
     S: Send + 'static,
 {
-    // SAFETY: The `BattlerDataService` instance, which borrows `data` and `descriptions`, is dropped at the end of
-    // this function.
+    // SAFETY: The `BattlerDataService` instance, which borrows `data` and `descriptions`, is
+    // dropped at the end of this function.
     let data = unsafe { std::mem::transmute::<&'d dyn DataStore, &'static dyn DataStore>(data) };
     let descriptions = unsafe {
         std::mem::transmute::<
@@ -79,6 +79,9 @@ where
         service: service.clone(),
     })?;
     builder.register_batch(handlers::BatchHandler {
+        service: service.clone(),
+    })?;
+    builder.register_type_chart(handlers::TypeChartHandler {
         service: service.clone(),
     })?;
 

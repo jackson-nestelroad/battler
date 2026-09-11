@@ -1,0 +1,333 @@
+@use "../../styles/breakpoints" as *;
+
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.gridWrapper {
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-xs);
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 2px;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  margin: 0 auto;
+}
+
+.thCorner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  background-color: var(--bg-card);
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-xs);
+  width: var(--type-chart-cell-size);
+  min-width: var(--type-chart-cell-size);
+  height: var(--type-chart-cell-size);
+  vertical-align: middle;
+}
+
+.cornerHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--spacing-xxs);
+  user-select: none;
+  padding: var(--spacing-xxs);
+}
+
+.cornerAxisDef {
+  font-size: var(--font-size-xxs);
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.cornerAxisAtk {
+  font-size: var(--font-size-xxs);
+  font-weight: 800;
+  color: var(--text-muted);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.cornerResetBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background-color: var(--color-danger-bg);
+  border: none;
+  border-radius: var(--border-radius-xs);
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+
+  * {
+    cursor: pointer;
+  }
+
+  &:hover {
+    background-color: var(--color-danger);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-danger) !important;
+    outline-offset: -1px !important;
+  }
+}
+
+.resetIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  display: block;
+}
+
+.thDefender {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--bg-card);
+  padding: 0;
+  width: var(--type-chart-cell-size);
+  min-width: var(--type-chart-cell-size);
+  max-width: var(--type-chart-cell-size);
+  height: var(--type-chart-cell-size);
+  vertical-align: middle;
+  cursor: pointer;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+
+  &.colHovered {
+    z-index: 3;
+    filter: brightness(1.2);
+  }
+}
+
+.thAttacker {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--bg-card);
+  padding: 0;
+  width: var(--type-chart-cell-size);
+  min-width: var(--type-chart-cell-size);
+  max-width: var(--type-chart-cell-size);
+  height: var(--type-chart-cell-size);
+  vertical-align: middle;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+
+  &.rowHovered {
+    z-index: 3;
+    filter: brightness(1.2);
+  }
+}
+
+.tdCell {
+  width: var(--type-chart-cell-size);
+  min-width: var(--type-chart-cell-size);
+  max-width: var(--type-chart-cell-size);
+  height: var(--type-chart-cell-size);
+  padding: 0;
+  vertical-align: middle;
+  border-radius: var(--border-radius-xs);
+  transition: background-color var(--transition-fast), outline var(--transition-fast);
+  cursor: default;
+  background-color: transparent;
+
+  &.rowHovered:not(.multSuper):not(.multQuad):not(.multResist):not(.multQuadResist):not(.multImmune) {
+    background-color: var(--bg-subtle-hover);
+  }
+
+  &.colHovered:not(.multSuper):not(.multQuad):not(.multResist):not(.multQuadResist):not(.multImmune) {
+    background-color: var(--bg-subtle-hover);
+  }
+
+  &.cellHovered {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -1px;
+    z-index: 1;
+  }
+}
+
+.cellNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 800;
+  font-size: var(--font-size-s);
+  line-height: 1;
+  user-select: none;
+}
+
+.cellFraction {
+  font-size: var(--font-size-m);
+  font-weight: 800;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Multiplier Solid Background Styles */
+.multQuad {
+  background-color: var(--type-chart-mult-quad-bg);
+  color: var(--type-chart-mult-quad-text);
+}
+
+.multSuper {
+  background-color: var(--type-chart-mult-super-bg);
+  color: var(--type-chart-mult-super-text);
+}
+
+.multResist {
+  background-color: var(--type-chart-mult-resist-bg);
+  color: var(--type-chart-mult-resist-text);
+}
+
+.multQuadResist {
+  background-color: var(--type-chart-mult-quad-resist-bg);
+  color: var(--type-chart-mult-quad-resist-text);
+}
+
+.multImmune {
+  background-color: var(--type-chart-mult-immune-bg);
+  color: var(--type-chart-mult-immune-text);
+  border: 1px solid var(--type-chart-mult-immune-border);
+}
+
+.multNeutral {
+  /* Blank 1x cell */
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  gap: var(--spacing-s);
+}
+
+.typeHeaderBtn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-xs);
+  transition: filter var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
+  margin: 0 auto;
+  width: var(--type-chart-cell-size);
+  height: var(--type-chart-cell-size);
+
+  * {
+    cursor: pointer;
+  }
+
+  &:hover {
+    filter: brightness(1.15);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+
+  &:focus-visible {
+    outline: none !important;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--color-white);
+      border-radius: var(--border-radius-xs);
+      box-shadow: inset 0 0 0 1px var(--border-color);
+      pointer-events: none;
+      box-sizing: border-box;
+      z-index: 2;
+    }
+  }
+}
+
+.selectedDefenderBtn {
+  opacity: 1;
+  filter: none;
+
+  &:hover {
+    filter: brightness(1.2);
+  }
+}
+
+.headerFaded {
+  opacity: 0.35;
+  filter: grayscale(0.35);
+  transition: opacity var(--transition-fast), filter var(--transition-fast);
+
+  &:hover {
+    opacity: 0.9;
+    filter: none;
+  }
+}
+
+.cellCombined {
+  width: auto;
+  max-width: none;
+}
+
+.cellFaded {
+  opacity: 0.15;
+  filter: grayscale(0.6);
+  transition: opacity var(--transition-fast), filter var(--transition-fast);
+
+  &:hover {
+    opacity: 0.8;
+    filter: none;
+  }
+}
+
+.neutralNumber {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+
+

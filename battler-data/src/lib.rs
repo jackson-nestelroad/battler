@@ -79,5 +79,6 @@ mod typescript_tests {
         AdvancedTargeting::export().unwrap();
         MoveData::export().unwrap();
         Fraction::<u8>::export().unwrap();
+        TypeChart::export().unwrap();
     }
 }

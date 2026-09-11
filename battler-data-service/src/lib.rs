@@ -8,6 +8,7 @@ use battler_data::{
     MoveData,
     ResourceType,
     SpeciesData,
+    TypeChart,
 };
 pub use battler_data_service_schema::{
     BatchQuery,
@@ -235,5 +236,10 @@ impl<'d> BattlerDataService<'d> {
             result.descriptions.insert(s, desc);
         }
         Ok(result)
+    }
+
+    /// Queries the full type chart.
+    pub fn get_type_chart(&self) -> Result<TypeChart> {
+        self.data.get_type_chart()
     }
 }

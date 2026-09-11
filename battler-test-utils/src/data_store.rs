@@ -53,8 +53,7 @@ pub fn local_description_store() -> LocalDescriptionStore {
 
 /// A static [`LocalDescriptionStore`], created from the environment.
 pub fn static_local_description_store() -> &'static LocalDescriptionStore {
-    static DESC_STORE: LazyLock<LocalDescriptionStore> =
-        LazyLock::new(local_description_store);
+    static DESC_STORE: LazyLock<LocalDescriptionStore> = LazyLock::new(local_description_store);
     &DESC_STORE
 }
 

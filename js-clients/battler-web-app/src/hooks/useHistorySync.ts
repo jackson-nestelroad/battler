@@ -21,6 +21,7 @@ export function useHistorySync() {
   const dispatch = useAppDispatch();
   const currentView = useAppSelector((state) => state.battles.currentView);
   const activeBattleId = useAppSelector((state) => state.battles.activeBattleId);
+  const activeResource = useAppSelector((state) => state.battles.activeResource);
   const battles = useAppSelector((state) => state.battles.battles);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
   const connection = useAppSelector((state) => state.connection);
@@ -60,6 +61,7 @@ export function useHistorySync() {
 
       let view: ActiveView = "lobby";
       let activeId: string | null = null;
+      let resource: string | null = null;
 
       if (path.startsWith("/battle/")) {
         view = "battle";
@@ -79,9 +81,15 @@ export function useHistorySync() {
         activeId = path.slice(10) || null;
       } else if (path === "/teams") {
         view = "teams";
+      } else if (path === "/resources/type-chart" || path === "/type-chart") {
+        view = "resources";
+        resource = "type-chart";
+      } else if (path === "/resources") {
+        view = "resources";
+        resource = null;
       }
 
-      dispatch(selectBattle({ view, battleId: activeId }));
+      dispatch(selectBattle({ view, battleId: activeId, resource }));
 
       setTimeout(() => {
         isHandlingPopState.current = false;
@@ -139,10 +147,12 @@ export function useHistorySync() {
       } else {
         targetPath = `/battle/${activeBattleId}`;
       }
+    } else if (currentView === "resources") {
+      targetPath = activeResource ? `/resources/${activeResource}` : "/resources";
     }
 
     if (getCleanPathname() !== targetPath) {
       pushPath(targetPath);
     }
-  }, [currentView, activeBattleId, battles]);
+  }, [currentView, activeResource, activeBattleId, battles]);
 }

@@ -33,7 +33,7 @@ export default function MoveTooltipCard({ data, description }: MoveTooltipCardPr
         <span className={cardStyles.subtitle}>Move</span>
         <div className="flex-row align-center gap-xs">
           <CategoryBadge category={data.category} size="sm" />
-          <TypeBadge type={data.primary_type} size="sm" />
+          <TypeBadge type={data.primary_type} size="sm" interactive />
         </div>
       </header>
 

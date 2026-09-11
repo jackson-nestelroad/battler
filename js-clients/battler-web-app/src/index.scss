@@ -283,6 +283,24 @@
   --type-icon-size-tera-sm: 0.75rem; /* 12px */
   --category-icon-size-md: var(--type-icon-size-md);
   --category-icon-size-sm: var(--type-icon-size-sm);
+  --type-badge-square-size-md: 2rem;
+  --type-badge-square-size-sm: 1.875rem;
+  --type-square-icon-size-md: 1.5rem;
+  --type-square-icon-size-sm: 1.375rem;
+  --type-chart-cell-size: 2rem;
+
+  /* Type Chart Multiplier Colors */
+  --type-chart-mult-quad-bg: #4ade80;
+  --type-chart-mult-quad-text: #052e16;
+  --type-chart-mult-super-bg: #15803d;
+  --type-chart-mult-super-text: #ffffff;
+  --type-chart-mult-resist-bg: #dc2626;
+  --type-chart-mult-resist-text: #ffffff;
+  --type-chart-mult-quad-resist-bg: #7f1d1d;
+  --type-chart-mult-quad-resist-text: #ffffff;
+  --type-chart-mult-immune-bg: #1e293b;
+  --type-chart-mult-immune-text: #f8fafc;
+  --type-chart-mult-immune-border: #334155;
 
   /* Tera Silhouette Clip Offsets */
   --tera-clip-horn-offset: 0.1875rem; /* 3px */
@@ -312,6 +330,11 @@
     --type-badge-tera-width-sm: 4.5rem;
     --category-badge-width-md: 5.25rem;
     --category-badge-width-sm: 4.65rem;
+    --type-badge-square-size-md: 1.75rem;
+    --type-badge-square-size-sm: 1.625rem;
+    --type-square-icon-size-md: 1.375rem;
+    --type-square-icon-size-sm: 1.25rem;
+    --type-chart-cell-size: 1.75rem;
   }
 }
 

@@ -199,3 +199,11 @@ fn resolves_generic_resource_with_fallback_priority() {
         assert_eq!(data.name, "Leftovers");
     });
 }
+
+#[test]
+fn gets_type_chart() {
+    let service = BattlerDataService::new(static_local_data_store());
+    let chart = service.get_type_chart().unwrap();
+    assert!(!chart.types.is_empty());
+    assert!(chart.types.contains_key(&battler_data::Type::Fire));
+}

@@ -1,3 +1,4 @@
+import DataTooltipTrigger from "./Tooltip/DataTooltipTrigger";
 import IconBadge from "./IconBadge";
 import styles from "./TypeBadge.module.scss";
 
@@ -7,6 +8,8 @@ export interface TypeBadgeProps {
   variant?: "standard" | "tera";
   showIcon?: boolean;
   fixedWidth?: boolean;
+  square?: boolean;
+  interactive?: boolean;
   className?: string;
 }
 
@@ -16,11 +19,53 @@ export default function TypeBadge({
   variant = "standard",
   showIcon = true,
   fixedWidth = true,
+  square = false,
+  interactive = false,
   className,
 }: TypeBadgeProps) {
   const normalizedType = type.trim().toLowerCase();
   const typeKey = normalizedType === "???" ? "unknown" : normalizedType;
   const baseUrl = import.meta.env?.BASE_URL ?? "/";
+
+  if (square) {
+    const squareClasses = [
+      styles.typeSquare,
+      size === "sm" ? styles.typeSquareSm : styles.typeSquareMd,
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const squareElement = (
+      <span
+        className={squareClasses}
+        style={{
+          background: `var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`,
+        }}
+        title={type}
+        aria-label={type}
+        data-type={typeKey}
+      >
+        <img
+          src={`${baseUrl}assets/types/${typeKey}.png`}
+          alt=""
+          aria-hidden="true"
+          className={styles.typeSquareIcon}
+          draggable={false}
+        />
+      </span>
+    );
+
+    if (interactive) {
+      return (
+        <DataTooltipTrigger resourceType="type" name={type} showUnderline={false}>
+          {squareElement}
+        </DataTooltipTrigger>
+      );
+    }
+
+    return squareElement;
+  }
 
   const typeClasses = [
     styles.typeBadge,
@@ -32,7 +77,7 @@ export default function TypeBadge({
     .filter(Boolean)
     .join(" ");
 
-  return (
+  const badge = (
     <IconBadge
       label={type}
       iconSrc={`${baseUrl}assets/types/${typeKey}.png`}
@@ -80,4 +125,14 @@ export default function TypeBadge({
       )}
     </IconBadge>
   );
+
+  if (interactive) {
+    return (
+      <DataTooltipTrigger resourceType="type" name={type} showUnderline={false}>
+        {badge}
+      </DataTooltipTrigger>
+    );
+  }
+
+  return badge;
 }

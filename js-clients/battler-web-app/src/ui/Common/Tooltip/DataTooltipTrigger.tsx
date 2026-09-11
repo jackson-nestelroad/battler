@@ -25,9 +25,10 @@ import FloatingTooltip from "./FloatingTooltip";
 import ItemTooltipCard from "./ItemTooltipCard";
 import MoveTooltipCard from "./MoveTooltipCard";
 import SpeciesTooltipCard from "./SpeciesTooltipCard";
+import TypeTooltipCard from "./TypeTooltipCard";
 import { TooltipParentContext, useTooltipChildTracker } from "./TooltipContext";
 
-export type DataResourceType = ResourceType | "resource";
+export type DataResourceType = ResourceType | "resource" | "type";
 
 export interface DataTooltipTriggerProps {
   resourceType: DataResourceType;
@@ -116,6 +117,9 @@ function ResourceContent({
   resourceType: DataResourceType;
   name: string;
 }) {
+  if (resourceType === "type") {
+    return <TypeTooltipCard type={name} />;
+  }
   if (resourceType === "condition" || resourceType === "resource") {
     return <GenericResourceContent name={name} />;
   }

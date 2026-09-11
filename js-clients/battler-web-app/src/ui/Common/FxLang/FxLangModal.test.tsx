@@ -2,6 +2,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import FxLangModal from "./FxLangModal";
+import Modal from "../Modal/Modal";
 import FxLangModalProvider from "./FxLangModalProvider";
 import { FxLangModalContext } from "./FxLangModalContext";
 import { highlightFxlangJson } from "./fxlangHighlighter";
@@ -51,28 +52,11 @@ function renderWithMockedReactInternals<T>(
   }
 }
 
-interface ModalPortalStructure {
-  children: {
-    props: {
-      className: string;
-      onPointerDown?: (e: unknown) => void;
-      children: {
-        props: {
-          onPointerDown?: (e: unknown) => void;
-          children: Array<{
-            props: {
-              children?: any;
-              [key: string]: any;
-            };
-          }>;
-        };
-      };
-    };
-  };
-}
-
 function getModalElements(portal: unknown) {
-  const portalTyped = portal as unknown as ModalPortalStructure;
+  let portalTyped = portal as any;
+  if (portalTyped?.type === Modal) {
+    portalTyped = Modal(portalTyped.props);
+  }
   const backdrop = portalTyped.children;
   const modal = backdrop.props.children;
   const header = modal.props.children[0];

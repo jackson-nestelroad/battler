@@ -7,6 +7,7 @@ import BattleScreen from "./ui/Battle/BattleScreen";
 import ConnectionRequired from "./ui/Common/ConnectionRequired";
 import Lobby from "./ui/Lobby/Lobby";
 import ReplaysHome from "./ui/Replays/ReplaysHome";
+import Resources from "./ui/Resources/Resources";
 import Sidebar from "./ui/Sidebar/Sidebar";
 import Teams from "./ui/Teams/Teams";
 import FxLangModalProvider from "./ui/Common/FxLang/FxLangModalProvider";
@@ -64,6 +65,7 @@ export default function App() {
               {currentView === "teams" && "Teams"}
               {(currentView === "battle" || currentView === "proposal") && "Battles"}
               {currentView === "replays" && "Replays"}
+              {currentView === "resources" && "Resources"}
             </span>
           </header>
 
@@ -80,6 +82,11 @@ export default function App() {
               </ConnectionRequired>
             )}
             {currentView === "replays" && <ReplaysHome />}
+            {currentView === "resources" && (
+              <ConnectionRequired>
+                <Resources />
+              </ConnectionRequired>
+            )}
           </div>
         </main>
       </div>

@@ -22,11 +22,14 @@ impl battler_wamprat::procedure::TypedProcedure for MoveHandler {
             .service
             .get_move(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
-        let description = self
-            .service
-            .get_description(battler_data_service_schema::ResourceType::Move, &input.0.query)?;
+        let description = self.service.get_description(
+            battler_data_service_schema::ResourceType::Move,
+            &input.0.query,
+        )?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -64,11 +67,14 @@ impl battler_wamprat::procedure::TypedProcedure for AbilityHandler {
             .service
             .get_ability(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
-        let description = self
-            .service
-            .get_description(battler_data_service_schema::ResourceType::Ability, &input.0.query)?;
+        let description = self.service.get_description(
+            battler_data_service_schema::ResourceType::Ability,
+            &input.0.query,
+        )?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -106,11 +112,14 @@ impl battler_wamprat::procedure::TypedProcedure for ItemHandler {
             .service
             .get_item(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
-        let description = self
-            .service
-            .get_description(battler_data_service_schema::ResourceType::Item, &input.0.query)?;
+        let description = self.service.get_description(
+            battler_data_service_schema::ResourceType::Item,
+            &input.0.query,
+        )?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -148,11 +157,14 @@ impl battler_wamprat::procedure::TypedProcedure for ConditionHandler {
             .service
             .get_condition(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
-        let description = self
-            .service
-            .get_description(battler_data_service_schema::ResourceType::Condition, &input.0.query)?;
+        let description = self.service.get_description(
+            battler_data_service_schema::ResourceType::Condition,
+            &input.0.query,
+        )?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -190,11 +202,14 @@ impl battler_wamprat::procedure::TypedProcedure for SpeciesHandler {
             .service
             .get_species(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
-        let description = self
-            .service
-            .get_description(battler_data_service_schema::ResourceType::Species, &input.0.query)?;
+        let description = self.service.get_description(
+            battler_data_service_schema::ResourceType::Species,
+            &input.0.query,
+        )?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -232,7 +247,9 @@ impl battler_wamprat::procedure::TypedProcedure for ResourceHandler {
             .service
             .get_resource(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
+                battler_data_service_schema::BattlerDataServiceError::NotFound(
+                    input.0.query.clone(),
+                )
             })?;
         let resource_type = match &data {
             battler_data_service_schema::ResourceData::Condition(_) => {
@@ -251,7 +268,9 @@ impl battler_wamprat::procedure::TypedProcedure for ResourceHandler {
                 battler_data_service_schema::ResourceType::Species
             }
         };
-        let description = self.service.get_description(resource_type, &input.0.query)?;
+        let description = self
+            .service
+            .get_description(resource_type, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
             battler_data_service_schema::ResourceOutputArgs {
@@ -293,6 +312,37 @@ impl battler_wamprat::procedure::TypedProcedure for BatchHandler {
         let result_json = serde_json::to_string(&result)?;
         Ok(battler_data_service_schema::BatchOutput(
             battler_data_service_schema::BatchOutputArgs { result_json },
+        ))
+    }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: false,
+            ..Default::default()
+        }
+    }
+}
+
+pub struct TypeChartHandler {
+    pub service: Arc<BattlerDataService<'static>>,
+}
+
+impl battler_data_service_schema::TypeChartProcedure for TypeChartHandler {}
+
+impl battler_wamprat::procedure::TypedProcedure for TypeChartHandler {
+    type Input = battler_data_service_schema::TypeChartInput;
+    type Output = battler_data_service_schema::TypeChartOutput;
+    type Error = anyhow::Error;
+
+    async fn invoke(
+        &self,
+        _: battler_wamprat::procedure::Invocation,
+        _: Self::Input,
+    ) -> Result<Self::Output, Self::Error> {
+        let type_chart = self.service.get_type_chart()?;
+        let data_json = serde_json::to_string(&type_chart)?;
+        Ok(battler_data_service_schema::TypeChartOutput(
+            battler_data_service_schema::TypeChartOutputArgs { data_json },
         ))
     }
 

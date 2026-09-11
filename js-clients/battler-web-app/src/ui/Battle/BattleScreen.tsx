@@ -18,6 +18,7 @@ import Field from "./Field";
 import LogPanel from "./LogPanel";
 import EngineLogViewer from "./EngineLogViewer";
 import ReplayPanel from "./ReplayPanel";
+import TypeChartModal from "./TypeChartModal";
 import { downloadDebugInfoFile, downloadReplayFile } from "../../utils/replay";
 
 export default function BattleScreen() {
@@ -36,6 +37,7 @@ export default function BattleScreen() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showTypeChart, setShowTypeChart] = useState(false);
 
   const isFinished = battleSession?.battleState?.phase === "finished";
   const isReplay = !!battleSession?.isReplay;
@@ -231,7 +233,7 @@ export default function BattleScreen() {
   return (
     <div className="page-container">
       <header className="screen-header flex-row justify-between align-center gap-m">
-        <div className="screen-header-title flex-col gap-xs">
+        <div className="screen-header-title flex-col gap-xs flex-1 min-w-0">
           <h2>{title}</h2>
           <span className="screen-header-subtitle">
             <span className="screen-header-format">
@@ -266,6 +268,15 @@ export default function BattleScreen() {
               isRefreshing={battleSession?.isLoading || isRefreshing}
             />
           )}
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary flex-row align-center gap-xs"
+            onClick={() => setShowTypeChart(true)}
+            title="View type chart"
+          >
+            <span className="btn-icon-mobile">📊</span>
+            <span className="btn-text-desktop">Type chart</span>
+          </button>
           <button
             className={`btn btn-sm ${showDebug ? "btn-primary" : "btn-secondary"}`}
             onClick={() => setShowDebug(!showDebug)}
@@ -481,6 +492,13 @@ export default function BattleScreen() {
             />
           </section>
         </div>
+      )}
+
+      {showTypeChart && (
+        <TypeChartModal
+          isOpen={showTypeChart}
+          onClose={() => setShowTypeChart(false)}
+        />
       )}
     </div>
   );

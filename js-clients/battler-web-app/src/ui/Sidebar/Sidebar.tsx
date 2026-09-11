@@ -209,6 +209,17 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <span className={styles.navLabel}>Replays</span>
           )}
         </button>
+        <button
+          className={`${styles.navItem} ${currentView === "resources" ? styles.active : ""}`}
+          onClick={() => handleNav("resources")}
+          title="Resources"
+        >
+          {isCollapsed ? (
+            <span className={styles.navIcon}>📖</span>
+          ) : (
+            <span className={styles.navLabel}>Resources</span>
+          )}
+        </button>
       </nav>
 
       {(connection.status === "connected" ||

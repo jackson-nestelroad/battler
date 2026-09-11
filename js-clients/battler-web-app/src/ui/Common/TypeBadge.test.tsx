@@ -97,4 +97,31 @@ describe("TypeBadge", () => {
     expect(html).toContain("typeBadgeSm");
     expect(html).toContain('data-variant="tera"');
   });
+
+  it("wraps with DataTooltipTrigger when interactive is true", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Fire" interactive />);
+    expect(html).toContain('role="button"');
+    expect(html).toContain('aria-haspopup="dialog"');
+    expect(html).toContain("Fire");
+    expect(html).toContain('data-type="fire"');
+  });
+
+  it("renders compact square icon badge when square is true", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Grass" square size="sm" />);
+    expect(html).toContain("typeSquare");
+    expect(html).toContain("typeSquareSm");
+    expect(html).toContain('data-type="grass"');
+    expect(html).toContain('src="/assets/types/grass.png"');
+    expect(html).toContain('title="Grass"');
+    expect(html).toContain('aria-label="Grass"');
+    // Does not render text label element
+    expect(html).not.toContain("typeText");
+  });
+
+  it("supports interactive square badge", () => {
+    const html = renderToStaticMarkup(<TypeBadge type="Water" square interactive />);
+    expect(html).toContain("typeSquare");
+    expect(html).toContain('role="button"');
+    expect(html).toContain('aria-haspopup="dialog"');
+  });
 });

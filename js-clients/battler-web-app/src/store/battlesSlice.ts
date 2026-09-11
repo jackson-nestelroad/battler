@@ -111,12 +111,19 @@ function rebuildActiveTimers(battle: SerializedBattleSession) {
   battle.activeTimers = activeTimers;
 }
 
-export type ActiveView = "lobby" | "teams" | "battle" | "replays" | "proposal";
+export type ActiveView =
+  | "lobby"
+  | "teams"
+  | "battle"
+  | "replays"
+  | "proposal"
+  | "resources";
 
 export interface BattlesState {
   battles: Record<string, SerializedBattleSession>;
   activeBattleId: string | null;
   currentView: ActiveView;
+  activeResource: string | null;
   spectatingBattleIds: string[];
 }
 
@@ -124,6 +131,7 @@ const initialState: BattlesState = {
   battles: {},
   activeBattleId: null,
   currentView: "lobby",
+  activeResource: null,
   spectatingBattleIds: [],
 };
 
@@ -328,10 +336,26 @@ const battlesSlice = createSlice({
     setCurrentView(state, action: PayloadAction<ActiveView>) {
       state.currentView = action.payload;
     },
-    selectBattle(state, action: PayloadAction<{ view: ActiveView; battleId: string | null }>) {
-      const { view, battleId } = action.payload;
+    selectBattle(
+      state,
+      action: PayloadAction<{
+        view: ActiveView;
+        battleId: string | null;
+        resource?: string | null;
+      }>,
+    ) {
+      const { view, battleId, resource } = action.payload;
       state.currentView = view;
       state.activeBattleId = battleId ? normalizeId(battleId) : null;
+      if (view === "resources") {
+        state.activeResource = resource !== undefined ? resource : state.activeResource;
+      } else {
+        state.activeResource = null;
+      }
+    },
+    selectResource(state, action: PayloadAction<string | null>) {
+      state.currentView = "resources";
+      state.activeResource = action.payload;
     },
 
     serviceBattleUpdated(
@@ -448,6 +472,7 @@ export const {
   switchActiveBattle,
   setCurrentView,
   selectBattle,
+  selectResource,
   serviceBattleUpdated,
   setChoiceSubmitted,
   setBattlePlayerData,

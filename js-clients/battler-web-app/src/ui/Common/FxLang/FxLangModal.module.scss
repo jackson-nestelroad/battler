@@ -1,61 +1,8 @@
 @use "../../../styles/tabs" as *;
 
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: var(--bg-modal-overlay);
-  backdrop-filter: blur(var(--spacing-xs));
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-m);
-}
-
-.modal {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-m);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 48rem;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-s) var(--spacing-m);
-  border-bottom: 1px solid var(--border-color);
-  gap: var(--spacing-m);
-  min-width: 0;
-}
-
-.title {
-  font-size: var(--font-size-m);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subtitle {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
 @include segmented-tabs;
 
-.backBtn,
-.closeBtn {
+.backBtn {
   background: none;
   border: none;
   color: var(--text-secondary);

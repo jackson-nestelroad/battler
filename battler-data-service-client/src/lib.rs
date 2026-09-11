@@ -8,6 +8,7 @@ use battler_data::{
     ItemData,
     MoveData,
     SpeciesData,
+    TypeChart,
 };
 use battler_data_service::BattlerDataService;
 pub use battler_data_service_schema::{
@@ -24,6 +25,7 @@ pub use battler_data_service_schema::{
     ResourceLookupOptions,
     ResourceOptions,
     ResourceType,
+    TypeChartInput,
 };
 use battler_wamprat::peer::CallOptions;
 
@@ -48,6 +50,8 @@ pub trait BattlerDataServiceClient: Send + Sync {
     ) -> Result<ResourceData>;
     /// Queries multiple resources in a single batch request.
     async fn batch(&self, query: BatchQuery) -> Result<BatchResult>;
+    /// Queries the full type chart.
+    async fn get_type_chart(&self) -> Result<TypeChart>;
 }
 
 /// Client that forwards calls directly to an in-memory [`BattlerDataService`].
@@ -106,6 +110,10 @@ impl BattlerDataServiceClient for DirectBattlerDataServiceClient {
 
     async fn batch(&self, query: BatchQuery) -> Result<BatchResult> {
         self.service.batch(query)
+    }
+
+    async fn get_type_chart(&self) -> Result<TypeChart> {
+        self.service.get_type_chart()
     }
 }
 
@@ -253,5 +261,15 @@ where
             .result()
             .await?;
         Ok(serde_json::from_str(&output.0.result_json)?)
+    }
+
+    async fn get_type_chart(&self) -> Result<TypeChart> {
+        let output = self
+            .consumer
+            .type_chart(TypeChartInput, CallOptions::default())
+            .await?
+            .result()
+            .await?;
+        Ok(serde_json::from_str(&output.0.data_json)?)
     }
 }

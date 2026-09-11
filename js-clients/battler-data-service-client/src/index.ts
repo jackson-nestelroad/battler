@@ -12,7 +12,7 @@ import {
 export * from "./bindings/index.js";
 export * from "battler-types";
 
-import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
+import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData, TypeChartData } from "battler-types";
 
 export interface ResourceWithDescription<T> {
   data: T;
@@ -113,4 +113,19 @@ export class BattlerDataServiceClient {
     if (!json) throw new Error("Failed to get batch response string");
     return JSON.parse(json);
   }
+
+  async getTypeChart(): Promise<TypeChartData> {
+    const res = await this.session.call<unknown>("com.battler.data_service.type_chart", []);
+    let json: string | null = null;
+    if (Array.isArray(res)) {
+      json = getWampResultString(res[0]);
+    } else if (res && typeof res === "object" && "args" in res && Array.isArray((res as any).args)) {
+      json = getWampResultString((res as any).args[0]);
+    } else {
+      json = getWampResultString(res);
+    }
+    if (!json) throw new Error("Failed to parse type chart response string");
+    return JSON.parse(json);
+  }
 }
+

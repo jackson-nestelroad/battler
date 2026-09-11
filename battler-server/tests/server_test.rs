@@ -40,10 +40,6 @@ use battler_server::{
     ServerConfig,
     start_server,
 };
-use battler_test_utils::{
-    data_dir,
-    descriptions_dir,
-};
 use battler_service::{
     BattleServiceOptions,
     BattleState,
@@ -52,6 +48,10 @@ use battler_service::{
 use battler_service_client::{
     BattlerServiceClient,
     battler_service_client_over_wamp_consumer,
+};
+use battler_test_utils::{
+    data_dir,
+    descriptions_dir,
 };
 use battler_wamp::peer::{
     Peer,

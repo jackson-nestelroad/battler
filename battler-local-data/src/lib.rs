@@ -265,9 +265,12 @@ impl DataStoreByName for LocalDataStore {
     }
 
     fn get_clause_by_name(&self, name: &str) -> Result<Option<ClauseData>> {
-        Ok(get_by_name(&self.clauses_by_name, &self.clauses, name, |c| {
-            &c.name
-        }))
+        Ok(get_by_name(
+            &self.clauses_by_name,
+            &self.clauses,
+            name,
+            |c| &c.name,
+        ))
     }
 
     fn get_condition_by_name(&self, name: &str) -> Result<Option<ConditionData>> {
@@ -322,7 +325,8 @@ impl LocalDescriptionStore {
     /// Conditions descriptions file name.
     pub const CONDITIONS_FILE: &str = "conditions.json";
 
-    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the given root directory.
+    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the given root
+    /// directory.
     pub fn new<P: AsRef<Path>>(root: P) -> Result<Self> {
         let root = root.as_ref();
         if !root.is_dir() {
@@ -340,8 +344,8 @@ impl LocalDescriptionStore {
         })
     }
 
-    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the root directory at the given
-    /// environment variable.
+    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the root directory at
+    /// the given environment variable.
     pub fn new_from_env(env_var: &str) -> Result<Self> {
         Self::new(env::var(env_var).context(format!("{env_var} not defined"))?)
     }
@@ -353,8 +357,7 @@ impl LocalDescriptionStore {
         }
         let file_handle =
             File::open(&path).context(format!("failed to read {}", path.display()))?;
-        serde_json::from_reader(file_handle)
-            .context(format!("failed to parse {}", path.display()))
+        serde_json::from_reader(file_handle).context(format!("failed to parse {}", path.display()))
     }
 }
 

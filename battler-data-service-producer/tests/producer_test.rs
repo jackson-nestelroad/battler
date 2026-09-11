@@ -233,5 +233,10 @@ async fn queries_move_ability_item_condition_species_over_wamp() {
         assert_eq!(data.name, "Toxic Spikes");
     });
 
+    // Type chart query
+    let type_chart = client.get_type_chart().await.unwrap();
+    assert!(!type_chart.types.is_empty());
+    assert!(type_chart.types.contains_key(&battler_data::Type::Water));
+
     context.teardown().await;
 }

@@ -173,3 +173,46 @@
 .typeText {
   display: inline-block;
 }
+
+/* Square Icon Mode (for compact grids and charts) */
+.typeSquare {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-xs);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+  transition: transform var(--transition-fast), filter var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.typeSquareSm {
+  width: var(--type-badge-square-size-sm);
+  height: var(--type-badge-square-size-sm);
+
+  .typeSquareIcon {
+    width: var(--type-square-icon-size-sm);
+    height: var(--type-square-icon-size-sm);
+  }
+}
+
+.typeSquareMd {
+  width: var(--type-badge-square-size-md);
+  height: var(--type-badge-square-size-md);
+
+  .typeSquareIcon {
+    width: var(--type-square-icon-size-md);
+    height: var(--type-square-icon-size-md);
+  }
+}
+
+.typeSquareIcon {
+  display: block;
+  object-fit: contain;
+  filter: var(--drop-shadow-contrast);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}

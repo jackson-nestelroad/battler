@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import type { ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
 import { type ResourceType, useGenericResource } from "../../../hooks/useDataStore";
 import {
@@ -16,6 +15,7 @@ import {
   resolveDelegateTarget,
 } from "./fxlangFormatter";
 import { highlightFxlangJson } from "./fxlangHighlighter";
+import Modal from "../Modal/Modal";
 import styles from "./FxLangModal.module.scss";
 
 import type { FxLangModalTarget, InspectorTab } from "./FxLangModalContext";
@@ -75,17 +75,6 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
     setActiveTab(previous.tab || "fxlang");
   };
 
-  // Dismiss on Escape key (capture phase so background tooltips don't catch it)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [onClose]);
 
   // Extract structured effects or fxlang AST
   const {
@@ -241,118 +230,94 @@ export default function FxLangModal({ target, onClose }: FxLangModalProps) {
         ? formatSpeciesClass(speciesData.class)
         : resolvedType.charAt(0).toUpperCase() + resolvedType.slice(1);
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={styles.backdrop}
-      onClick={onClose}
-      onPointerDown={(e) => e.stopPropagation()}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="fxlang-modal-title"
-    >
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <header className={styles.modalHeader}>
-          <div className="flex-row align-center gap-s min-w-0">
-            {history.length > 0 && (
-              <button
-                type="button"
-                className={styles.backBtn}
-                onClick={handleBack}
-                aria-label={`Back to ${history[history.length - 1].displayName || history[history.length - 1].name}`}
-                title={`Back to ${history[history.length - 1].displayName || history[history.length - 1].name}`}
-              >
-                ←
-              </button>
-            )}
-            <h2 id="fxlang-modal-title" className={styles.title}>
-              {displayName}
-            </h2>
-            <span className={styles.subtitle}>{subtitle}</span>
-          </div>
-
-          {secondaryTab && (
-            <div
-              className={styles.tabBar}
-              role="tablist"
-              aria-label={`${isMove ? "Move" : "Item"} effect views`}
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={hasFxlang && activeTab === "fxlang"}
-                disabled={!hasFxlang}
-                title={hasFxlang ? undefined : "No fxlang callbacks defined"}
-                className={styles.tabBtn}
-                onClick={() => setActiveTab("fxlang")}
-              >
-                FxLang
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={secondaryTab.hasData && activeTab === secondaryTab.id}
-                disabled={!secondaryTab.hasData}
-                title={secondaryTab.hasData ? undefined : secondaryTab.disabledTitle}
-                className={styles.tabBtn}
-                onClick={() => setActiveTab(secondaryTab.id)}
-              >
-                {secondaryTab.label}
-              </button>
-            </div>
-          )}
-
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={displayName}
+      subtitle={subtitle}
+      ariaLabelledBy="fxlang-modal-title"
+      headerLeft={
+        history.length > 0 ? (
           <button
             type="button"
-            aria-label="Close"
-            title="Close"
-            className={styles.closeBtn}
-            onClick={onClose}
+            className={styles.backBtn}
+            onClick={handleBack}
+            aria-label={`Back to ${history[history.length - 1].displayName || history[history.length - 1].name}`}
+            title={`Back to ${history[history.length - 1].displayName || history[history.length - 1].name}`}
           >
-            ✕
+            ←
           </button>
-        </header>
-
-        <div className={styles.content} role="tabpanel" aria-label="Effect code">
-          {loading ? (
-            <div className={styles.loadingState}>
-              <div className="spinner" />
-              <p className="text-secondary">Loading...</p>
-            </div>
-          ) : !activeCode ? (
-            <div className={styles.emptyState}>None</div>
-          ) : highlightedHtml ? (
-            <div
-              className={styles.codeContainer}
-              onClick={handleCodeClick}
-              onKeyDown={handleCodeKeyDown}
-              dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-            />
-          ) : (
-            <div
-              className={styles.codeContainer}
-              onClick={handleCodeClick}
-              onKeyDown={handleCodeKeyDown}
+        ) : undefined
+      }
+      headerActions={
+        secondaryTab ? (
+          <div
+            className={styles.tabBar}
+            role="tablist"
+            aria-label={`${isMove ? "Move" : "Item"} effect views`}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={hasFxlang && activeTab === "fxlang"}
+              disabled={!hasFxlang}
+              title={hasFxlang ? undefined : "No fxlang callbacks defined"}
+              className={styles.tabBtn}
+              onClick={() => setActiveTab("fxlang")}
             >
-              <pre className="shiki">
-                <code>
-                  {activeCode.split("\n").map((line, idx) => (
-                    <span key={idx} className="line">
-                      {line}
-                    </span>
-                  ))}
-                </code>
-              </pre>
-            </div>
-          )}
+              FxLang
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={secondaryTab.hasData && activeTab === secondaryTab.id}
+              disabled={!secondaryTab.hasData}
+              title={secondaryTab.hasData ? undefined : secondaryTab.disabledTitle}
+              className={styles.tabBtn}
+              onClick={() => setActiveTab(secondaryTab.id)}
+            >
+              {secondaryTab.label}
+            </button>
+          </div>
+        ) : undefined
+      }
+      contentRole="tabpanel"
+      contentAriaLabel="Effect code"
+    >
+      {loading ? (
+        <div className={styles.loadingState}>
+          <div className="spinner" />
+          <p className="text-secondary">Loading...</p>
         </div>
-      </div>
-    </div>,
-    document.body,
+      ) : !activeCode ? (
+        <div className={styles.emptyState}>None</div>
+      ) : highlightedHtml ? (
+        <div
+          className={styles.codeContainer}
+          onClick={handleCodeClick}
+          onKeyDown={handleCodeKeyDown}
+          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+        />
+      ) : (
+        <div
+          className={styles.codeContainer}
+          onClick={handleCodeClick}
+          onKeyDown={handleCodeKeyDown}
+        >
+          <pre className="shiki">
+            <code>
+              {activeCode.split("\n").map((line, idx) => (
+                <span key={idx} className="line">
+                  {line}
+                </span>
+              ))}
+            </code>
+          </pre>
+        </div>
+      )}
+    </Modal>
   );
 }
+
+

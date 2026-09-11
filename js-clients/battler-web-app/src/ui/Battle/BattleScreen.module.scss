@@ -10,7 +10,10 @@
 }
 
 .headerControls {
-  flex-wrap: wrap; /* natural wrapping on ultra-narrow viewports */
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
   gap: var(--spacing-s);
 
   @include mobile {

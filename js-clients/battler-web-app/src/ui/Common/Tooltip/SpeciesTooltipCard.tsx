@@ -47,8 +47,8 @@ export default function SpeciesTooltipCard({ data, description }: SpeciesTooltip
         </div>
         <span className={cardStyles.subtitle}>{monClass}</span>
         <div className="flex-row align-center gap-xs">
-          <TypeBadge type={data.primary_type} size="sm" />
-          {data.secondary_type && <TypeBadge type={data.secondary_type} size="sm" />}
+          <TypeBadge type={data.primary_type} size="sm" interactive />
+          {data.secondary_type && <TypeBadge type={data.secondary_type} size="sm" interactive />}
         </div>
       </header>
 

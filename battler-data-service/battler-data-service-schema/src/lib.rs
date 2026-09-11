@@ -295,4 +295,23 @@ pub enum BattlerDataService {
     /// Batch queries multiple resources in a single RPC round-trip.
     #[rpc(uri = "com.battler.data_service.batch", input = BatchInput, output = BatchOutput)]
     Batch,
+
+    /// Queries the full type chart.
+    #[rpc(uri = "com.battler.data_service.type_chart", input = TypeChartInput, output = TypeChartOutput)]
+    TypeChart,
 }
+
+/// Input for querying the type chart.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct TypeChartInput;
+
+/// Arguments for type chart output.
+#[derive(Debug, Default, Clone, WampList)]
+pub struct TypeChartOutputArgs {
+    /// JSON-serialized type chart data.
+    pub data_json: String,
+}
+
+/// Output for querying the type chart.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct TypeChartOutput(#[arguments] pub TypeChartOutputArgs);
