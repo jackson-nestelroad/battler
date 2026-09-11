@@ -127,6 +127,22 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain(">1<");
       expect(html).not.toContain("1 (max 1)");
     });
+
+    it("renders move description when provided", () => {
+      const html = renderToStaticMarkup(
+        <MoveTooltipCard
+          data={mockMove}
+          description={{
+            description:
+              "A strong electric attack that may also leave the target with paralysis.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain(
+        "A strong electric attack that may also leave the target with paralysis.",
+      );
+    });
   });
 
   describe("AbilityTooltipCard", () => {
@@ -143,6 +159,22 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Ability");
       expect(html).toContain("Breakable");
       expect(html).toContain("Effect");
+    });
+
+    it("renders ability description when provided", () => {
+      const html = renderToStaticMarkup(
+        <AbilityTooltipCard
+          data={mockAbility}
+          description={{
+            description:
+              "By floating in the air, the Pokémon receives full immunity to all Ground-type moves.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain(
+        "By floating in the air, the Pokémon receives full immunity to all Ground-type moves.",
+      );
     });
   });
 
@@ -185,6 +217,20 @@ describe("Data Tooltip Cards", () => {
       expect(html).not.toContain("Target:");
       expect(html).not.toContain("Active");
     });
+
+    it("renders item description when provided", () => {
+      const html = renderToStaticMarkup(
+        <ItemTooltipCard
+          data={mockItem}
+          description={{
+            description:
+              "An item to be held by a Pokémon. The holder's HP is gradually restored during battle.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain("The holder&#x27;s HP is gradually restored during battle.");
+    });
   });
 
   describe("ConditionTooltipCard", () => {
@@ -201,6 +247,22 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Weather");
       expect(html).toContain("No copy");
       expect(html).toContain("Effect");
+    });
+
+    it("renders condition description when provided", () => {
+      const html = renderToStaticMarkup(
+        <ConditionTooltipCard
+          data={mockCondition}
+          description={{
+            description:
+              "Rain pours down for five turns, powering up Water-type moves and weakening Fire-type moves.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain(
+        "Rain pours down for five turns, powering up Water-type moves and weakening Fire-type moves.",
+      );
     });
   });
 
@@ -331,6 +393,19 @@ describe("Data Tooltip Cards", () => {
       expect(matches).not.toBeNull();
       expect(matches!.length).toBe(1);
     });
+
+    it("renders Pokédex species description when provided", () => {
+      const html = renderToStaticMarkup(
+        <SpeciesTooltipCard
+          data={mockSpecies}
+          description={{
+            description: "It flies through the sky at Mach speed, searching for prey.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain("It flies through the sky at Mach speed, searching for prey.");
+    });
   });
 
   describe("SimpleDataTooltipCard", () => {
@@ -345,6 +420,20 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Intimidate");
       expect(html).toContain("Ability");
       expect(html).toContain("Breakable");
+    });
+
+    it("renders description when provided", () => {
+      const html = renderToStaticMarkup(
+        <SimpleDataTooltipCard
+          name="Intimidate"
+          subtitle="Ability"
+          description={{
+            description: "Lowers opposing Pokémon's Attack stat.",
+            source: "Scarlet / Violet",
+          }}
+        />,
+      );
+      expect(html).toContain("Lowers opposing Pokémon&#x27;s Attack stat.");
     });
 
     it("omits flags section when no flags provided", () => {

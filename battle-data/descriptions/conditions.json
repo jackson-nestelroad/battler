@@ -1,0 +1,26 @@
+{
+  "par": {
+    "description": "Reduces the Pokémon's Speed by 50% and gives it a 25% chance of being fully paralyzed and unable to act each turn.",
+    "source": "Manual"
+  },
+  "brn": {
+    "description": "Reduces Attack by 50% for physical moves and inflicts damage equal to 1/16 of maximum HP at the end of each turn.",
+    "source": "Manual"
+  },
+  "slp": {
+    "description": "The Pokémon is asleep and unable to move for 1 to 3 turns.",
+    "source": "Manual"
+  },
+  "psn": {
+    "description": "Inflicts damage equal to 1/8 of maximum HP at the end of each turn.",
+    "source": "Manual"
+  },
+  "tox": {
+    "description": "Badly poisons the Pokémon, inflicting damage that increases by 1/16 of maximum HP at the end of each turn.",
+    "source": "Manual"
+  },
+  "frz": {
+    "description": "The Pokémon is frozen solid and unable to move. It has a 20% chance to thaw out each turn.",
+    "source": "Manual"
+  }
+}

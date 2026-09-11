@@ -22,11 +22,17 @@ impl battler_wamprat::procedure::TypedProcedure for MoveHandler {
             .service
             .get_move(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let description = self
+            .service
+            .get_description(battler_data_service_schema::ResourceType::Move, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 
@@ -58,11 +64,17 @@ impl battler_wamprat::procedure::TypedProcedure for AbilityHandler {
             .service
             .get_ability(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let description = self
+            .service
+            .get_description(battler_data_service_schema::ResourceType::Ability, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 
@@ -94,11 +106,17 @@ impl battler_wamprat::procedure::TypedProcedure for ItemHandler {
             .service
             .get_item(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let description = self
+            .service
+            .get_description(battler_data_service_schema::ResourceType::Item, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 
@@ -130,11 +148,17 @@ impl battler_wamprat::procedure::TypedProcedure for ConditionHandler {
             .service
             .get_condition(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let description = self
+            .service
+            .get_description(battler_data_service_schema::ResourceType::Condition, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 
@@ -166,11 +190,17 @@ impl battler_wamprat::procedure::TypedProcedure for SpeciesHandler {
             .service
             .get_species(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let description = self
+            .service
+            .get_description(battler_data_service_schema::ResourceType::Species, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 
@@ -202,11 +232,32 @@ impl battler_wamprat::procedure::TypedProcedure for ResourceHandler {
             .service
             .get_resource(&input.0.query, input.0.options)?
             .ok_or_else(|| {
-                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query)
+                battler_data_service_schema::BattlerDataServiceError::NotFound(input.0.query.clone())
             })?;
+        let resource_type = match &data {
+            battler_data_service_schema::ResourceData::Condition(_) => {
+                battler_data_service_schema::ResourceType::Condition
+            }
+            battler_data_service_schema::ResourceData::Move(_) => {
+                battler_data_service_schema::ResourceType::Move
+            }
+            battler_data_service_schema::ResourceData::Ability(_) => {
+                battler_data_service_schema::ResourceType::Ability
+            }
+            battler_data_service_schema::ResourceData::Item(_) => {
+                battler_data_service_schema::ResourceType::Item
+            }
+            battler_data_service_schema::ResourceData::Species(_) => {
+                battler_data_service_schema::ResourceType::Species
+            }
+        };
+        let description = self.service.get_description(resource_type, &input.0.query)?;
         let data_json = serde_json::to_string(&data)?;
         Ok(battler_data_service_schema::ResourceOutput(
-            battler_data_service_schema::ResourceOutputArgs { data_json },
+            battler_data_service_schema::ResourceOutputArgs {
+                data_json,
+                description,
+            },
         ))
     }
 

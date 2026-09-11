@@ -1,4 +1,7 @@
-use std::sync::LazyLock;
+use std::{
+    env,
+    sync::LazyLock,
+};
 
 use ahash::{
     HashMap,
@@ -17,7 +20,20 @@ use battler::{
     SpeciesData,
     TypeChart,
 };
-use battler_local_data::LocalDataStore;
+use battler_local_data::{
+    LocalDataStore,
+    LocalDescriptionStore,
+};
+
+/// Returns the path to the battle data directory from the environment.
+pub fn data_dir() -> String {
+    env::var("DATA_DIR").expect("DATA_DIR not defined")
+}
+
+/// Returns the path to the battle descriptions directory from the environment.
+pub fn descriptions_dir() -> String {
+    env::var("DESCRIPTIONS_DIR").expect("DESCRIPTIONS_DIR not defined")
+}
 
 /// A [`LocalDataStore`] created from the environment.
 pub fn local_data_store() -> LocalDataStore {
@@ -26,8 +42,20 @@ pub fn local_data_store() -> LocalDataStore {
 
 /// A static [`LocalDataStore`], created from the environment.
 pub fn static_local_data_store() -> &'static LocalDataStore {
-    static DATA_STORE: LazyLock<LocalDataStore> = LazyLock::new(|| local_data_store());
-    &*DATA_STORE
+    static DATA_STORE: LazyLock<LocalDataStore> = LazyLock::new(local_data_store);
+    &DATA_STORE
+}
+
+/// A [`LocalDescriptionStore`] created from the environment.
+pub fn local_description_store() -> LocalDescriptionStore {
+    LocalDescriptionStore::new_from_env("DESCRIPTIONS_DIR").unwrap()
+}
+
+/// A static [`LocalDescriptionStore`], created from the environment.
+pub fn static_local_description_store() -> &'static LocalDescriptionStore {
+    static DESC_STORE: LazyLock<LocalDescriptionStore> =
+        LazyLock::new(local_description_store);
+    &DESC_STORE
 }
 
 /// Wrapper around a battle's [`LocalDataStore`] for testing.

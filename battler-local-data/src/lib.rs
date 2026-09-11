@@ -26,11 +26,15 @@ use battler_data::{
     TypeChart,
     deserialize_aliases,
 };
+use battler_data_service_schema::{
+    DescriptionData,
+    DescriptionStore,
+    ResourceType as ServiceResourceType,
+};
 use serde::de::DeserializeOwned;
 
 /// An implementation of [`DataStore`] that reads all data locally from disk.
 pub struct LocalDataStore {
-    root: String,
     pub type_chart: TypeChart,
     pub abilities: HashMap<Id, AbilityData>,
     pub aliases: PartitionedAliases,
@@ -76,102 +80,78 @@ impl LocalDataStore {
     ///
     /// Fails if the path does not exist, does not point to a directory, or cannot be used to fill
     /// cached data.
-    pub fn new(root: String) -> Result<Self> {
-        if !Path::new(&root).is_dir() {
+    pub fn new<P: AsRef<Path>>(root: P) -> Result<Self> {
+        let root = root.as_ref();
+        if !root.is_dir() {
             return Err(Error::msg(format!(
-                "Root directory for LocalDataStore ({root}) does not exist",
+                "Root directory for LocalDataStore ({}) does not exist",
+                root.display()
             )));
         }
-        let mut store = Self {
-            root,
-            type_chart: TypeChart::new(),
-            abilities: HashMap::default(),
-            aliases: PartitionedAliases::default(),
-            clauses: HashMap::default(),
-            conditions: HashMap::default(),
-            items: HashMap::default(),
-            moves: HashMap::default(),
-            species: HashMap::default(),
+
+        let type_chart = serde_json::from_reader(
+            File::open(root.join(Self::TYPE_CHART_FILE)).context("failed to read type chart")?,
+        )
+        .context("failed to parse type chart")?;
+
+        let aliases = deserialize_aliases(
+            serde_json::from_reader(
+                File::open(root.join(Self::ALIASES_FILE)).context("failed to read aliases")?,
+            )
+            .context("failed to parse aliases")?,
+        );
+
+        let clauses: HashMap<Id, ClauseData> = serde_json::from_reader(
+            File::open(root.join(Self::CLAUSES_FILE)).context("failed to read clauses")?,
+        )
+        .context("failed to parse clauses")?;
+
+        let mut conditions: HashMap<Id, ConditionData> = serde_json::from_reader(
+            File::open(root.join(Self::CONDITIONS_FILE)).context("failed to read conditions")?,
+        )
+        .context("failed to parse conditions")?;
+
+        for base_file in [
+            Self::MOVE_BASES_FILE,
+            Self::ABILITY_BASES_FILE,
+            Self::ITEM_BASES_FILE,
+        ] {
+            let bases: HashMap<Id, ConditionData> = serde_json::from_reader(
+                File::open(root.join(base_file)).context(format!("failed to read {base_file}"))?,
+            )
+            .context(format!("failed to parse {base_file}"))?;
+            conditions.extend(bases);
+        }
+
+        Ok(Self {
+            type_chart,
+            aliases,
+            clauses,
+            conditions,
+            abilities: Self::read_all_files_in_directory(root, Self::ABILITIES_DIR)?,
+            items: Self::read_all_files_in_directory(root, Self::ITEMS_DIR)?,
+            moves: Self::read_all_files_in_directory(root, Self::MOVES_DIR)?,
+            species: Self::read_all_files_in_directory(root, Self::SPECIES_DIR)?,
             abilities_by_name: RwLock::new(HashMap::default()),
             clauses_by_name: RwLock::new(HashMap::default()),
             conditions_by_name: RwLock::new(HashMap::default()),
             items_by_name: RwLock::new(HashMap::default()),
             moves_by_name: RwLock::new(HashMap::default()),
             species_by_name: RwLock::new(HashMap::default()),
-        };
-        store.initialize()?;
-        Ok(store)
+        })
     }
 
     /// Creates a new instance of [`LocalDataStore`] that reads from the root directory at the given
     /// environment variable.
     pub fn new_from_env(env_var: &str) -> Result<Self> {
-        Self::new(env::var(env_var).context("DATA_DIR not defined")?)
-    }
-
-    fn initialize(&mut self) -> Result<()> {
-        self.type_chart = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::TYPE_CHART_FILE))
-                .context("failed to read type chart")?,
-        )
-        .context("failed to parse type chart")?;
-
-        self.aliases = deserialize_aliases(
-            serde_json::from_reader(
-                File::open(Path::new(&self.root).join(Self::ALIASES_FILE))
-                    .context("failed to read aliases")?,
-            )
-            .context("failed to parse aliases")?,
-        );
-
-        let clauses: HashMap<Id, ClauseData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::CLAUSES_FILE))
-                .context("failed to read clauses")?,
-        )
-        .context("failed to parse clauses")?;
-        self.clauses.extend(clauses);
-
-        let conditions: HashMap<Id, ConditionData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::CONDITIONS_FILE))
-                .context("failed to read conditions")?,
-        )
-        .context("failed to parse conditions")?;
-        self.conditions.extend(conditions);
-
-        let move_bases: HashMap<Id, ConditionData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::MOVE_BASES_FILE))
-                .context("failed to read move bases")?,
-        )
-        .context("failed to parse move bases")?;
-        self.conditions.extend(move_bases);
-
-        let ability_bases: HashMap<Id, ConditionData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::ABILITY_BASES_FILE))
-                .context("failed to read ability bases")?,
-        )
-        .context("failed to parse ability bases")?;
-        self.conditions.extend(ability_bases);
-
-        let item_bases: HashMap<Id, ConditionData> = serde_json::from_reader(
-            File::open(Path::new(&self.root).join(Self::ITEM_BASES_FILE))
-                .context("failed to read item bases")?,
-        )
-        .context("failed to parse item bases")?;
-        self.conditions.extend(item_bases);
-
-        self.abilities = self.read_all_files_in_directory::<AbilityData>(Self::ABILITIES_DIR)?;
-        self.items = self.read_all_files_in_directory::<ItemData>(Self::ITEMS_DIR)?;
-        self.moves = self.read_all_files_in_directory::<MoveData>(Self::MOVES_DIR)?;
-        self.species = self.read_all_files_in_directory::<SpeciesData>(Self::SPECIES_DIR)?;
-
-        Ok(())
+        Self::new(env::var(env_var).context(format!("{env_var} not defined"))?)
     }
 
     fn read_all_files_in_directory<T: DeserializeOwned>(
-        &self,
+        root: &Path,
         dir: &str,
     ) -> Result<HashMap<Id, T>> {
-        let tables = Path::new(&self.root)
+        let tables = root
             .join(dir)
             .read_dir()
             .context(format!("failed to read {dir} directory"))?
@@ -180,62 +160,41 @@ impl LocalDataStore {
             .map(|path| {
                 let path_name = path.to_string_lossy().to_string();
                 serde_json::from_reader::<File, HashMap<String, T>>(
-                    File::open(path).context(format!("{path_name} could not be opened"))?,
+                    File::open(&path).context(format!("{path_name} could not be opened"))?,
                 )
                 .context(format!("failed to read {dir} data from {path_name}"))
             })
             .collect::<Result<Vec<_>, _>>()?;
-        let mut map = HashMap::default();
-        map.extend(
-            tables
-                .into_iter()
-                .map(|table| table.into_iter())
-                .flatten()
-                .map(|(key, value)| (Id::from(key), value)),
-        );
-        Ok(map)
+        Ok(tables
+            .into_iter()
+            .flatten()
+            .map(|(key, value)| (Id::from(key), value))
+            .collect())
     }
+}
+
+fn filter_ids<T>(map: &HashMap<Id, T>, filter: &dyn Fn(&T) -> bool) -> Vec<Id> {
+    map.iter()
+        .filter(|(_, data)| filter(data))
+        .map(|(id, _)| id.clone())
+        .collect()
 }
 
 impl DataStore for LocalDataStore {
     fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>> {
-        let mut ability_ids = Vec::new();
-        for (id, ability_data) in self.abilities.iter() {
-            if filter(ability_data) {
-                ability_ids.push(id.clone());
-            }
-        }
-        Ok(ability_ids)
+        Ok(filter_ids(&self.abilities, filter))
     }
 
     fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>> {
-        let mut item_ids = Vec::new();
-        for (id, item_data) in self.items.iter() {
-            if filter(item_data) {
-                item_ids.push(id.clone());
-            }
-        }
-        Ok(item_ids)
+        Ok(filter_ids(&self.items, filter))
     }
 
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
-        let mut move_ids = Vec::new();
-        for (id, move_data) in self.moves.iter() {
-            if filter(move_data) {
-                move_ids.push(id.clone());
-            }
-        }
-        Ok(move_ids)
+        Ok(filter_ids(&self.moves, filter))
     }
 
     fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>> {
-        let mut species_ids = Vec::new();
-        for (id, species_data) in self.species.iter() {
-            if filter(species_data) {
-                species_ids.push(id.clone());
-            }
-        }
-        Ok(species_ids)
+        Ok(filter_ids(&self.species, filter))
     }
 
     fn get_type_chart(&self) -> Result<TypeChart> {
@@ -271,149 +230,148 @@ impl DataStore for LocalDataStore {
     }
 }
 
+fn get_by_name<T: Clone>(
+    cache: &RwLock<HashMap<String, Id>>,
+    map: &HashMap<Id, T>,
+    name: &str,
+    get_name: impl Fn(&T) -> &str,
+) -> Option<T> {
+    if let Ok(c) = cache.read()
+        && let Some(id) = c.get(name)
+    {
+        return map.get(id).cloned();
+    }
+
+    let (id, val) = map.iter().find(|(_, val)| get_name(val) == name)?;
+    cache
+        .write()
+        .unwrap_or_else(|mut err| {
+            **err.get_mut() = HashMap::default();
+            cache.clear_poison();
+            err.into_inner()
+        })
+        .insert(name.to_owned(), id.clone());
+    Some(val.clone())
+}
+
 impl DataStoreByName for LocalDataStore {
     fn get_ability_by_name(&self, name: &str) -> Result<Option<AbilityData>> {
-        if let Ok(cache) = self.abilities_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_ability(id);
-        }
-
-        let (id, ability) = match self
-            .abilities
-            .iter()
-            .find(|(_, ability)| ability.name == name)
-        {
-            Some((id, ability)) => (id.clone(), ability.clone()),
-            None => return Ok(None),
-        };
-        self.abilities_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.abilities_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(ability))
+        Ok(get_by_name(
+            &self.abilities_by_name,
+            &self.abilities,
+            name,
+            |a| &a.name,
+        ))
     }
 
     fn get_clause_by_name(&self, name: &str) -> Result<Option<ClauseData>> {
-        if let Ok(cache) = self.clauses_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_clause(id);
-        }
-
-        let (id, clause) = match self.clauses.iter().find(|(_, clause)| clause.name == name) {
-            Some((id, clause)) => (id.clone(), clause.clone()),
-            None => return Ok(None),
-        };
-        self.clauses_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.clauses_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(clause))
+        Ok(get_by_name(&self.clauses_by_name, &self.clauses, name, |c| {
+            &c.name
+        }))
     }
 
     fn get_condition_by_name(&self, name: &str) -> Result<Option<ConditionData>> {
-        if let Ok(cache) = self.conditions_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_condition(id);
-        }
-
-        let (id, condition) = match self
-            .conditions
-            .iter()
-            .find(|(_, condition)| condition.name == name)
-        {
-            Some((id, condition)) => (id.clone(), condition.clone()),
-            None => return Ok(None),
-        };
-        self.conditions_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.conditions_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(condition))
+        Ok(get_by_name(
+            &self.conditions_by_name,
+            &self.conditions,
+            name,
+            |c| &c.name,
+        ))
     }
 
     fn get_item_by_name(&self, name: &str) -> Result<Option<ItemData>> {
-        if let Ok(cache) = self.items_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_item(id);
-        }
-
-        let (id, item) = match self.items.iter().find(|(_, item)| item.name == name) {
-            Some((id, item)) => (id.clone(), item.clone()),
-            None => return Ok(None),
-        };
-        self.items_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.items_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(item))
+        Ok(get_by_name(&self.items_by_name, &self.items, name, |i| {
+            &i.name
+        }))
     }
 
     fn get_move_by_name(&self, name: &str) -> Result<Option<MoveData>> {
-        if let Ok(cache) = self.moves_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_move(id);
-        }
-
-        let (id, mov) = match self.moves.iter().find(|(_, mov)| mov.name == name) {
-            Some((id, mov)) => (id.clone(), mov.clone()),
-            None => return Ok(None),
-        };
-        self.moves_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.moves_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(mov))
+        Ok(get_by_name(&self.moves_by_name, &self.moves, name, |m| {
+            &m.name
+        }))
     }
 
     fn get_species_by_name(&self, name: &str) -> Result<Option<SpeciesData>> {
-        if let Ok(cache) = self.species_by_name.read()
-            && let Some(id) = cache.get(name)
-        {
-            return self.get_species(id);
-        }
+        Ok(get_by_name(
+            &self.species_by_name,
+            &self.species,
+            name,
+            |s| &s.name,
+        ))
+    }
+}
 
-        let (id, species) = match self
-            .species
-            .iter()
-            .find(|(_, species)| species.name == name)
-        {
-            Some((id, species)) => (id.clone(), species.clone()),
-            None => return Ok(None),
+/// An implementation of [`DescriptionStore`] that reads all descriptions locally from disk.
+pub struct LocalDescriptionStore {
+    pub moves: HashMap<Id, DescriptionData>,
+    pub abilities: HashMap<Id, DescriptionData>,
+    pub items: HashMap<Id, DescriptionData>,
+    pub species: HashMap<Id, DescriptionData>,
+    pub conditions: HashMap<Id, DescriptionData>,
+}
+
+impl LocalDescriptionStore {
+    /// Moves descriptions file name.
+    pub const MOVES_FILE: &str = "moves.json";
+    /// Abilities descriptions file name.
+    pub const ABILITIES_FILE: &str = "abilities.json";
+    /// Items descriptions file name.
+    pub const ITEMS_FILE: &str = "items.json";
+    /// Species descriptions file name.
+    pub const SPECIES_FILE: &str = "species.json";
+    /// Conditions descriptions file name.
+    pub const CONDITIONS_FILE: &str = "conditions.json";
+
+    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the given root directory.
+    pub fn new<P: AsRef<Path>>(root: P) -> Result<Self> {
+        let root = root.as_ref();
+        if !root.is_dir() {
+            return Err(Error::msg(format!(
+                "Root directory for LocalDescriptionStore ({}) does not exist",
+                root.display()
+            )));
+        }
+        Ok(Self {
+            moves: Self::read_file(root, Self::MOVES_FILE)?,
+            abilities: Self::read_file(root, Self::ABILITIES_FILE)?,
+            items: Self::read_file(root, Self::ITEMS_FILE)?,
+            species: Self::read_file(root, Self::SPECIES_FILE)?,
+            conditions: Self::read_file(root, Self::CONDITIONS_FILE)?,
+        })
+    }
+
+    /// Creates a new instance of [`LocalDescriptionStore`] that reads from the root directory at the given
+    /// environment variable.
+    pub fn new_from_env(env_var: &str) -> Result<Self> {
+        Self::new(env::var(env_var).context(format!("{env_var} not defined"))?)
+    }
+
+    fn read_file(root: &Path, file: &str) -> Result<HashMap<Id, DescriptionData>> {
+        let path = root.join(file);
+        if !path.exists() {
+            return Ok(HashMap::default());
+        }
+        let file_handle =
+            File::open(&path).context(format!("failed to read {}", path.display()))?;
+        serde_json::from_reader(file_handle)
+            .context(format!("failed to parse {}", path.display()))
+    }
+}
+
+impl DescriptionStore for LocalDescriptionStore {
+    fn get_description(
+        &self,
+        resource_type: ServiceResourceType,
+        id: &Id,
+    ) -> Result<Option<DescriptionData>> {
+        let entry = match resource_type {
+            ServiceResourceType::Move => self.moves.get(id),
+            ServiceResourceType::Ability => self.abilities.get(id),
+            ServiceResourceType::Item => self.items.get(id),
+            ServiceResourceType::Species => self.species.get(id),
+            ServiceResourceType::Condition => self.conditions.get(id),
         };
-        self.species_by_name
-            .write()
-            .unwrap_or_else(|mut err| {
-                **err.get_mut() = HashMap::default();
-                self.species_by_name.clear_poison();
-                err.into_inner()
-            })
-            .insert(name.to_owned(), id);
-        Ok(Some(species))
+        Ok(entry.cloned())
     }
 }
 
@@ -424,12 +382,19 @@ mod tests {
         Id,
         ResourceType,
     };
+    use battler_data_service_schema::{
+        DescriptionStore,
+        ResourceType as ServiceResourceType,
+    };
 
-    use super::LocalDataStore;
+    use super::{
+        LocalDataStore,
+        LocalDescriptionStore,
+    };
 
     #[test]
     fn translates_partitioned_aliases() {
-        let store = LocalDataStore::new("../battle-data/data".to_owned()).unwrap();
+        let store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
 
         // Species alias
         assert_eq!(
@@ -468,5 +433,98 @@ mod tests {
                 .unwrap(),
             None
         );
+    }
+
+    #[test]
+    fn loads_descriptions_and_verifies_coverage() {
+        let data_store = LocalDataStore::new_from_env("DATA_DIR").unwrap();
+        let desc_store = LocalDescriptionStore::new_from_env("DESCRIPTIONS_DIR").unwrap();
+
+        // Check specific resources
+        let tackle = desc_store
+            .get_description(ServiceResourceType::Move, &Id::from("tackle"))
+            .unwrap()
+            .expect("tackle description missing");
+        assert!(!tackle.description.is_empty());
+
+        let leftovers = desc_store
+            .get_description(ServiceResourceType::Item, &Id::from("leftovers"))
+            .unwrap()
+            .expect("leftovers description missing");
+        assert_eq!(leftovers.source, "Scarlet / Violet");
+
+        let pikachu = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("pikachu"))
+            .unwrap()
+            .expect("pikachu description missing");
+        assert_eq!(pikachu.source, "Scarlet");
+
+        let par = desc_store
+            .get_description(ServiceResourceType::Condition, &Id::from("par"))
+            .unwrap()
+            .expect("par description missing");
+        assert!(!par.description.is_empty());
+
+        // Verify 100% species coverage across authentic ROM dumps
+        for id in data_store.species.keys() {
+            assert!(
+                desc_store.species.contains_key(id),
+                "missing description for species {id}"
+            );
+        }
+
+        // Verify representative species across all 5 games in cascade
+        let charizard = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("charizard"))
+            .unwrap()
+            .expect("charizard description missing");
+        assert_eq!(charizard.source, "Scarlet");
+
+        let mewtwo = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("mewtwo"))
+            .unwrap()
+            .expect("mewtwo description missing");
+        assert_eq!(mewtwo.source, "Brilliant Diamond");
+
+        let zacian = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("zacian"))
+            .unwrap()
+            .expect("zacian description missing");
+        assert_eq!(zacian.source, "Sword");
+
+        let tapukoko = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("tapukoko"))
+            .unwrap()
+            .expect("tapukoko description missing");
+        assert_eq!(tapukoko.source, "Ultra Sun");
+
+        let volcanion = desc_store
+            .get_description(ServiceResourceType::Species, &Id::from("volcanion"))
+            .unwrap()
+            .expect("volcanion description missing");
+        assert_eq!(volcanion.source, "Omega Ruby");
+
+        // Verify LGPE move
+        let zippyzap = desc_store
+            .get_description(ServiceResourceType::Move, &Id::from("zippyzap"))
+            .unwrap()
+            .expect("zippyzap description missing");
+        assert_eq!(zippyzap.source, "Let’s Go, Pikachu! / Let’s Go, Eevee!");
+
+        // Verify moves coverage (except internal pseudomoves)
+        let excluded_moves = ["recharge", "pass"];
+        for id in data_store.moves.keys() {
+            if excluded_moves.contains(&id.as_ref()) {
+                continue;
+            }
+            assert!(
+                desc_store.moves.contains_key(id),
+                "missing description for move {id}"
+            );
+        }
+
+        // Verify abilities and items coverage
+        assert!(desc_store.abilities.len() >= 300);
+        assert!(desc_store.items.len() >= 1700);
     }
 }

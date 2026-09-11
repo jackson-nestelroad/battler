@@ -22,6 +22,7 @@ pub struct Modules {
 /// Runs the battler data service producer over a data store.
 pub async fn run_data_service_producer<'d, S>(
     data: &'d dyn DataStore,
+    descriptions: Option<&'d dyn battler_data_service_schema::DescriptionStore>,
     peer_config: battler_wamprat_schema::PeerConfig,
     peer: battler_wamp::peer::Peer<S>,
     modules: Modules,
@@ -29,10 +30,20 @@ pub async fn run_data_service_producer<'d, S>(
 where
     S: Send + 'static,
 {
-    // SAFETY: The `BattlerDataService` instance, which borrows `data`, is dropped at the end of
+    // SAFETY: The `BattlerDataService` instance, which borrows `data` and `descriptions`, is dropped at the end of
     // this function.
     let data = unsafe { std::mem::transmute::<&'d dyn DataStore, &'static dyn DataStore>(data) };
-    let service = Arc::new(BattlerDataService::new(data));
+    let descriptions = unsafe {
+        std::mem::transmute::<
+            Option<&'d dyn battler_data_service_schema::DescriptionStore>,
+            Option<&'static dyn battler_data_service_schema::DescriptionStore>,
+        >(descriptions)
+    };
+    let mut service = BattlerDataService::new(data);
+    if let Some(descriptions) = descriptions {
+        service.set_descriptions(descriptions);
+    }
+    let service = Arc::new(service);
     run_data_service_producer_over_service(service, peer_config, peer, modules).await
 }
 

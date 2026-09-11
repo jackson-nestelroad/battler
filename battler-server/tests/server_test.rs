@@ -40,6 +40,10 @@ use battler_server::{
     ServerConfig,
     start_server,
 };
+use battler_test_utils::{
+    data_dir,
+    descriptions_dir,
+};
 use battler_service::{
     BattleServiceOptions,
     BattleState,
@@ -275,16 +279,12 @@ async fn wait_for_log_line(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_matchmaking_and_battle_lifecycle() {
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
-
     // 1. Start the server on port 0 (ephemeral port selection)
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -479,16 +479,13 @@ fn multi_proposed_battle_options() -> ProposedBattleOptions {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_multi_battle_lifecycle() {
     let _ = tracing_subscriber::fmt::try_init();
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
 
     // 1. Start the server on port 0 (ephemeral port selection)
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -661,16 +658,13 @@ async fn test_server_multi_battle_lifecycle() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_multi_battle_fulfillment_and_subsequent_proposals() {
     let _ = tracing_subscriber::fmt::try_init();
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
 
     // 1. Start server
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -836,15 +830,12 @@ async fn test_server_multi_battle_fulfillment_and_subsequent_proposals() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_stress_concurrent_battle_fulfillment_and_queries() {
     let _ = tracing_subscriber::fmt::try_init();
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
 
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -900,15 +891,11 @@ async fn test_server_stress_concurrent_battle_fulfillment_and_queries() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_stress_concurrent_live_battles_and_timers() -> Result<()> {
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
-
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -973,15 +960,11 @@ async fn test_server_stress_concurrent_live_battles_and_timers() -> Result<()> {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_server_data_service_queries() {
-    let mut data_dir = "../battle-data/data".to_owned();
-    if !std::path::Path::new(&data_dir).is_dir() {
-        data_dir = "battle-data/data".to_owned();
-    }
-
     let handle = start_server(ServerConfig {
         address: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         port: 0,
-        data_dir,
+        data_dir: data_dir(),
+        descriptions_dir: Some(descriptions_dir()),
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
     })
@@ -1041,6 +1024,23 @@ async fn test_server_data_service_queries() {
     assert_matches::assert_matches!(batch.items.get("Leftovers"), Some(Some(_)));
     assert_matches::assert_matches!(batch.conditions.get("Sandstorm"), Some(Some(_)));
     assert_matches::assert_matches!(batch.species.get("Pikachu"), Some(Some(_)));
+
+    assert_matches::assert_matches!(batch.descriptions.get("Tackle"), Some(Some(_)));
+    assert_matches::assert_matches!(batch.descriptions.get("Intimidate"), Some(Some(_)));
+    let leftovers_desc = batch
+        .descriptions
+        .get("Leftovers")
+        .unwrap()
+        .as_ref()
+        .expect("Leftovers description missing");
+    assert_eq!(leftovers_desc.source, "Scarlet / Violet");
+    let pikachu_desc = batch
+        .descriptions
+        .get("Pikachu")
+        .unwrap()
+        .as_ref()
+        .expect("Pikachu description missing");
+    assert_eq!(pikachu_desc.source, "Scarlet");
 
     handle.shutdown().await.unwrap();
 }

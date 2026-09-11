@@ -3,6 +3,7 @@ import { WampSessionProvider, getWampResultString, safeJsonStringify } from "bat
 import {
   BatchQuery,
   BatchResult,
+  DescriptionData,
   ResourceData,
   ResourceLookupOptions,
   ResourceOptions,
@@ -13,6 +14,37 @@ export * from "battler-types";
 
 import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";
 
+export interface ResourceWithDescription<T> {
+  data: T;
+  description?: DescriptionData | null;
+}
+
+function parseResourceOutput<T>(res: unknown): ResourceWithDescription<T> {
+  let json: string | null = null;
+  let description: DescriptionData | null = null;
+
+  if (Array.isArray(res)) {
+    json = getWampResultString(res[0]);
+    if (res.length > 1 && res[1] && typeof res[1] === "object") {
+      description = res[1] as DescriptionData;
+    }
+  } else if (res && typeof res === "object" && "args" in res && Array.isArray((res as any).args)) {
+    const args = (res as any).args;
+    json = getWampResultString(args[0]);
+    if (args.length > 1 && args[1] && typeof args[1] === "object") {
+      description = args[1] as DescriptionData;
+    }
+  } else {
+    json = getWampResultString(res);
+  }
+
+  if (!json) throw new Error("Failed to parse resource response string");
+  return {
+    data: JSON.parse(json),
+    description,
+  };
+}
+
 export class BattlerDataServiceClient {
   constructor(private provider: WampSessionProvider) {}
 
@@ -22,67 +54,55 @@ export class BattlerDataServiceClient {
     return s;
   }
 
-  async getMove(query: string, options?: ResourceOptions): Promise<MoveData> {
+  async getMove(query: string, options?: ResourceOptions): Promise<ResourceWithDescription<MoveData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.move", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get move response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<MoveData>(res);
   }
 
-  async getAbility(query: string, options?: ResourceOptions): Promise<AbilityData> {
+  async getAbility(query: string, options?: ResourceOptions): Promise<ResourceWithDescription<AbilityData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.ability", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get ability response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<AbilityData>(res);
   }
 
-  async getItem(query: string, options?: ResourceOptions): Promise<ItemData> {
+  async getItem(query: string, options?: ResourceOptions): Promise<ResourceWithDescription<ItemData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.item", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get item response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<ItemData>(res);
   }
 
-  async getCondition(query: string, options?: ResourceOptions): Promise<ConditionData> {
+  async getCondition(query: string, options?: ResourceOptions): Promise<ResourceWithDescription<ConditionData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.condition", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get condition response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<ConditionData>(res);
   }
 
-  async getSpecies(query: string, options?: ResourceOptions): Promise<SpeciesData> {
+  async getSpecies(query: string, options?: ResourceOptions): Promise<ResourceWithDescription<SpeciesData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.species", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get species response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<SpeciesData>(res);
   }
 
   async getResource(
     query: string,
     options?: Partial<ResourceLookupOptions>,
-  ): Promise<ResourceData> {
+  ): Promise<ResourceWithDescription<ResourceData>> {
     const res = await this.session.call<unknown>("com.battler.data_service.resource", [
       query,
       options ?? {},
     ]);
-    const json = getWampResultString(res);
-    if (!json) throw new Error(`Failed to get resource response string for "${query}"`);
-    return JSON.parse(json);
+    return parseResourceOutput<ResourceData>(res);
   }
 
   async batch(query: BatchQuery): Promise<BatchResult> {

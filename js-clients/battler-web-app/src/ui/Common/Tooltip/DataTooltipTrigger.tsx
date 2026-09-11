@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ResourceData } from "battler-data-service-client";
+import type { DescriptionData, ResourceData } from "battler-data-service-client";
 import {
   type ResourceType,
   useGenericResource,
@@ -68,18 +68,22 @@ function EmptyCard({ name }: { name: string }) {
   );
 }
 
-function renderResourceCard(data: ResourceData, fallbackName: string) {
+function renderResourceCard(
+  data: ResourceData,
+  fallbackName: string,
+  description?: DescriptionData | null,
+) {
   switch (data.type) {
     case "move":
-      return <MoveTooltipCard data={data.data} />;
+      return <MoveTooltipCard data={data.data} description={description} />;
     case "ability":
-      return <AbilityTooltipCard data={data.data} />;
+      return <AbilityTooltipCard data={data.data} description={description} />;
     case "item":
-      return <ItemTooltipCard data={data.data} />;
+      return <ItemTooltipCard data={data.data} description={description} />;
     case "condition":
-      return <ConditionTooltipCard data={data.data} />;
+      return <ConditionTooltipCard data={data.data} description={description} />;
     case "species":
-      return <SpeciesTooltipCard data={data.data} />;
+      return <SpeciesTooltipCard data={data.data} description={description} />;
     default:
       return <EmptyCard name={fallbackName} />;
   }
@@ -92,17 +96,17 @@ function TypedResourceContent({
   type: ResourceType;
   name: string;
 }) {
-  const { data, loading } = useResourceData(type, name);
+  const { data, description, loading } = useResourceData(type, name);
   if (loading) return <LoadingCard />;
   if (!data) return <EmptyCard name={name} />;
-  return renderResourceCard({ type, data } as ResourceData, name);
+  return renderResourceCard({ type, data } as ResourceData, name, description);
 }
 
 function GenericResourceContent({ name }: { name: string }) {
-  const { data, loading } = useGenericResource(name);
+  const { data, description, loading } = useGenericResource(name);
   if (loading) return <LoadingCard />;
   if (!data) return <EmptyCard name={name} />;
-  return renderResourceCard(data, name);
+  return renderResourceCard(data, name, description);
 }
 
 function ResourceContent({

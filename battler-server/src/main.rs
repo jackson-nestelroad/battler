@@ -28,6 +28,10 @@ struct Args {
     #[arg(short, long, default_value = "battle-data/data")]
     data_dir: String,
 
+    /// Path to descriptions directory
+    #[arg(long, default_value = "battle-data/descriptions")]
+    descriptions_dir: String,
+
     /// Name of the WAMP realm
     #[arg(long, default_value = "battler")]
     realm_name: String,
@@ -55,6 +59,7 @@ async fn run_server() -> Result<()> {
         address: args.address,
         port: args.port,
         data_dir: args.data_dir,
+        descriptions_dir: Some(args.descriptions_dir),
         realm_name: args.realm_name.clone(),
         realm_uri: args.realm_uri,
     })

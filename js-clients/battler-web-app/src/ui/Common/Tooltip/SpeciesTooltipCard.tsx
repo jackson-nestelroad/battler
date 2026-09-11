@@ -1,3 +1,4 @@
+import type { DescriptionData } from "battler-data-service-client";
 import type { SpeciesData } from "battler-types";
 import { Fragment } from "react";
 import {
@@ -14,9 +15,10 @@ import TooltipFlagsSection from "./TooltipFlagsSection";
 
 export interface SpeciesTooltipCardProps {
   data: SpeciesData;
+  description?: DescriptionData | null;
 }
 
-export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
+export default function SpeciesTooltipCard({ data, description }: SpeciesTooltipCardProps) {
   const monClass = formatSpeciesClass(data.class);
 
   const genderRatio = parseGenderRatio(data.gender_ratio ?? 255);
@@ -49,6 +51,10 @@ export default function SpeciesTooltipCard({ data }: SpeciesTooltipCardProps) {
           {data.secondary_type && <TypeBadge type={data.secondary_type} size="sm" />}
         </div>
       </header>
+
+      {description?.description && (
+        <p className={cardStyles.description}>{description.description}</p>
+      )}
 
       <section className="flex-col gap-xxs">
         <span className={cardStyles.sectionTitle}>Base Stats</span>

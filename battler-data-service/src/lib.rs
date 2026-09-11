@@ -12,6 +12,8 @@ use battler_data::{
 pub use battler_data_service_schema::{
     BatchQuery,
     BatchResult,
+    DescriptionData,
+    DescriptionStore,
     ResourceData,
     ResourceLookupOptions,
     ResourceOptions,
@@ -51,12 +53,45 @@ pub fn sanitize_condition(mut data: ConditionData) -> ConditionData {
 /// Service for querying game data from the `battler` data store.
 pub struct BattlerDataService<'d> {
     data: &'d dyn DataStore,
+    descriptions: Option<&'d dyn DescriptionStore>,
 }
 
 impl<'d> BattlerDataService<'d> {
     /// Creates a new data service over the given data store.
     pub fn new(data: &'d dyn DataStore) -> Self {
-        Self { data }
+        Self {
+            data,
+            descriptions: None,
+        }
+    }
+
+    /// Creates a new data service with descriptions support.
+    pub fn new_with_descriptions(
+        data: &'d dyn DataStore,
+        descriptions: &'d dyn DescriptionStore,
+    ) -> Self {
+        Self {
+            data,
+            descriptions: Some(descriptions),
+        }
+    }
+
+    /// Sets the description store for the service.
+    pub fn set_descriptions(&mut self, descriptions: &'d dyn DescriptionStore) {
+        self.descriptions = Some(descriptions);
+    }
+
+    /// Queries the description for a resource.
+    pub fn get_description(
+        &self,
+        resource_type: SchemaResourceType,
+        query: &str,
+    ) -> Result<Option<DescriptionData>> {
+        let Some(descriptions) = self.descriptions else {
+            return Ok(None);
+        };
+        let id = self.resolve_id(resource_type.into(), query)?;
+        descriptions.get_description(resource_type, &id)
     }
 
     fn resolve_id(&self, resource_type: ResourceType, query: &str) -> Result<Id> {
@@ -171,23 +206,33 @@ impl<'d> BattlerDataService<'d> {
         let mut result = BatchResult::default();
         for m in query.moves {
             let data = self.get_move(&m, query.options)?;
-            result.moves.insert(m, data);
+            let desc = self.get_description(SchemaResourceType::Move, &m)?;
+            result.moves.insert(m.clone(), data);
+            result.descriptions.insert(m, desc);
         }
         for a in query.abilities {
             let data = self.get_ability(&a, query.options)?;
-            result.abilities.insert(a, data);
+            let desc = self.get_description(SchemaResourceType::Ability, &a)?;
+            result.abilities.insert(a.clone(), data);
+            result.descriptions.insert(a, desc);
         }
         for i in query.items {
             let data = self.get_item(&i, query.options)?;
-            result.items.insert(i, data);
+            let desc = self.get_description(SchemaResourceType::Item, &i)?;
+            result.items.insert(i.clone(), data);
+            result.descriptions.insert(i, desc);
         }
         for c in query.conditions {
             let data = self.get_condition(&c, query.options)?;
-            result.conditions.insert(c, data);
+            let desc = self.get_description(SchemaResourceType::Condition, &c)?;
+            result.conditions.insert(c.clone(), data);
+            result.descriptions.insert(c, desc);
         }
         for s in query.species {
             let data = self.get_species(&s, query.options)?;
-            result.species.insert(s, data);
+            let desc = self.get_description(SchemaResourceType::Species, &s)?;
+            result.species.insert(s.clone(), data);
+            result.descriptions.insert(s, desc);
         }
         Ok(result)
     }

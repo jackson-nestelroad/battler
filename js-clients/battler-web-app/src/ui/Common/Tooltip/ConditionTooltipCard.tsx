@@ -1,17 +1,20 @@
+import type { DescriptionData } from "battler-data-service-client";
 import type { ConditionData } from "battler-types";
 import cardStyles from "./DataTooltipCard.module.scss";
 import SimpleDataTooltipCard from "./SimpleDataTooltipCard";
 
 export interface ConditionTooltipCardProps {
   data: ConditionData;
+  description?: DescriptionData | null;
 }
 
-export default function ConditionTooltipCard({ data }: ConditionTooltipCardProps) {
+export default function ConditionTooltipCard({ data, description }: ConditionTooltipCardProps) {
   return (
     <SimpleDataTooltipCard
       name={data.name}
       subtitle={data.condition_type}
       resourceType="condition"
+      description={description}
     >
       {data.no_copy && (
         <section className={cardStyles.traitsGrid}>
@@ -24,3 +27,4 @@ export default function ConditionTooltipCard({ data }: ConditionTooltipCardProps
     </SimpleDataTooltipCard>
   );
 }
+

@@ -17,7 +17,10 @@ use battler::{
     CoreBattleEngineOptions,
     CoreBattleOptions,
 };
-use battler_local_data::LocalDataStore;
+use battler_local_data::{
+    LocalDataStore,
+    LocalDescriptionStore,
+};
 use battler_multiplayer_service::{
     AiPlayerOptions,
     AiPlayerType,
@@ -405,6 +408,7 @@ pub struct ServerConfig {
     pub address: IpAddr,
     pub port: u16,
     pub data_dir: String,
+    pub descriptions_dir: Option<String>,
     pub realm_name: String,
     pub realm_uri: String,
 }
@@ -437,6 +441,11 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     // 1. Initialize local data store from disk (using Box::leak for static lifetime)
     let data_store: &'static LocalDataStore =
         Box::leak(Box::new(LocalDataStore::new(config.data_dir)?));
+
+    let desc_store: Option<&'static LocalDescriptionStore> = match config.descriptions_dir {
+        Some(dir) => Some(Box::leak(Box::new(LocalDescriptionStore::new(dir)?))),
+        None => None,
+    };
 
     // 2. Setup WAMP router config
     let mut router_config = RouterConfig::default();
@@ -597,6 +606,7 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     let data_producer_handle = tokio::spawn(async move {
         let res = battler_data_service_producer::run_data_service_producer(
             data_store,
+            desc_store.map(|d| d as &dyn battler_data_service::DescriptionStore),
             data_config,
             data_peer,
             battler_data_service_producer::Modules {

@@ -1,0 +1,1230 @@
+{
+  "stench": {
+    "description": "By releasing a stench when attacking, the Pokémon may cause the target to flinch.",
+    "source": "Scarlet / Violet"
+  },
+  "drizzle": {
+    "description": "The Pokémon makes it rain when it enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "speedboost": {
+    "description": "The Pokémon’s Speed stat is boosted every turn.",
+    "source": "Scarlet / Violet"
+  },
+  "battlearmor": {
+    "description": "Hard armor protects the Pokémon from critical hits.",
+    "source": "Scarlet / Violet"
+  },
+  "sturdy": {
+    "description": "The Pokémon cannot be knocked out by a single hit as long as its HP is full. One-hit KO moves will also fail to knock it out.",
+    "source": "Scarlet / Violet"
+  },
+  "damp": {
+    "description": "The Pokémon dampens its surroundings, preventing all Pokémon from using explosive moves such as Self-Destruct.",
+    "source": "Scarlet / Violet"
+  },
+  "limber": {
+    "description": "The Pokémon’s limber body prevents it from being paralyzed.",
+    "source": "Scarlet / Violet"
+  },
+  "sandveil": {
+    "description": "Boosts the Pokémon’s evasiveness in a sandstorm.",
+    "source": "Scarlet / Violet"
+  },
+  "static": {
+    "description": "The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it.",
+    "source": "Scarlet / Violet"
+  },
+  "voltabsorb": {
+    "description": "If hit by an Electric-type move, the Pokémon has its HP restored instead of taking damage.",
+    "source": "Scarlet / Violet"
+  },
+  "waterabsorb": {
+    "description": "If hit by a Water-type move, the Pokémon has its HP restored instead of taking damage.",
+    "source": "Scarlet / Violet"
+  },
+  "oblivious": {
+    "description": "The Pokémon is oblivious, keeping it from being infatuated, falling for taunts, or being affected by Intimidate.",
+    "source": "Scarlet / Violet"
+  },
+  "cloudnine": {
+    "description": "Eliminates the effects of weather.",
+    "source": "Scarlet / Violet"
+  },
+  "compoundeyes": {
+    "description": "The Pokémon’s compound eyes boost its accuracy.",
+    "source": "Scarlet / Violet"
+  },
+  "insomnia": {
+    "description": "The Pokémon’s insomnia prevents it from falling asleep.",
+    "source": "Scarlet / Violet"
+  },
+  "colorchange": {
+    "description": "The Pokémon’s type becomes the type of the move used on it.",
+    "source": "Scarlet / Violet"
+  },
+  "immunity": {
+    "description": "The Pokémon’s immune system prevents it from being poisoned.",
+    "source": "Scarlet / Violet"
+  },
+  "flashfire": {
+    "description": "If hit by a Fire-type move, the Pokémon absorbs the flames and uses them to power up its own Fire-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "shielddust": {
+    "description": "Protective dust shields the Pokémon from the additional effects of moves.",
+    "source": "Scarlet / Violet"
+  },
+  "owntempo": {
+    "description": "The Pokémon sticks to its own tempo, preventing it from becoming confused or being affected by Intimidate.",
+    "source": "Scarlet / Violet"
+  },
+  "suctioncups": {
+    "description": "The Pokémon uses suction cups to stay in one spot. This protects it from moves and items that would force it to switch out.",
+    "source": "Scarlet / Violet"
+  },
+  "intimidate": {
+    "description": "When the Pokémon enters a battle, it intimidates opposing Pokémon and makes them cower, lowering their Attack stats.",
+    "source": "Scarlet / Violet"
+  },
+  "shadowtag": {
+    "description": "The Pokémon steps on the opposing Pokémon’s shadows to prevent them from fleeing or switching out.",
+    "source": "Scarlet / Violet"
+  },
+  "roughskin": {
+    "description": "The Pokémon’s rough skin damages attackers that make direct contact with it.",
+    "source": "Scarlet / Violet"
+  },
+  "wonderguard": {
+    "description": "Its mysterious power only lets supereffective moves hit the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "levitate": {
+    "description": "By floating in the air, the Pokémon receives full immunity to all Ground-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "effectspore": {
+    "description": "Contact with the Pokémon may inflict poison, sleep, or paralysis on the attacker.",
+    "source": "Scarlet / Violet"
+  },
+  "synchronize": {
+    "description": "If the Pokémon is burned, paralyzed, or poisoned by another Pokémon, that Pokémon will be inflicted with the same status condition.",
+    "source": "Scarlet / Violet"
+  },
+  "clearbody": {
+    "description": "Prevents other Pokémon’s moves or Abilities from lowering the Pokémon’s stats.",
+    "source": "Scarlet / Violet"
+  },
+  "naturalcure": {
+    "description": "The Pokémon’s status conditions are cured when it switches out.",
+    "source": "Scarlet / Violet"
+  },
+  "lightningrod": {
+    "description": "The Pokémon draws in all Electric-type moves. Instead of taking damage from them, its Sp. Atk stat is boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "serenegrace": {
+    "description": "Raises the likelihood of additional effects occurring when the Pokémon uses its moves.",
+    "source": "Scarlet / Violet"
+  },
+  "swiftswim": {
+    "description": "Boosts the Pokémon’s Speed stat in rain.",
+    "source": "Scarlet / Violet"
+  },
+  "chlorophyll": {
+    "description": "Boosts the Pokémon’s Speed stat in harsh sunlight.",
+    "source": "Scarlet / Violet"
+  },
+  "illuminate": {
+    "description": "By illuminating its surroundings, the Pokémon prevents its accuracy from being lowered.",
+    "source": "Scarlet / Violet"
+  },
+  "trace": {
+    "description": "When it enters a battle, the Pokémon copies an opposing Pokémon’s Ability.",
+    "source": "Scarlet / Violet"
+  },
+  "hugepower": {
+    "description": "Doubles the Pokémon’s Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "poisonpoint": {
+    "description": "Contact with the Pokémon may poison the attacker.",
+    "source": "Scarlet / Violet"
+  },
+  "innerfocus": {
+    "description": "The Pokémon’s intense focus prevents it from flinching or being affected by Intimidate.",
+    "source": "Scarlet / Violet"
+  },
+  "magmaarmor": {
+    "description": "The Pokémon’s hot magma coating prevents it from being frozen.",
+    "source": "Scarlet / Violet"
+  },
+  "waterveil": {
+    "description": "The Pokémon’s water veil prevents it from being burned.",
+    "source": "Scarlet / Violet"
+  },
+  "magnetpull": {
+    "description": "Prevents Steel-type Pokémon from fleeing by pulling them in with magnetism.",
+    "source": "Scarlet / Violet"
+  },
+  "soundproof": {
+    "description": "Soundproofing gives the Pokémon full immunity to all sound-based moves.",
+    "source": "Scarlet / Violet"
+  },
+  "raindish": {
+    "description": "The Pokémon gradually regains HP in rain.",
+    "source": "Scarlet / Violet"
+  },
+  "sandstream": {
+    "description": "The Pokémon summons a sandstorm when it enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "pressure": {
+    "description": "Puts other Pokémon under pressure, causing them to expend more PP to use their moves.",
+    "source": "Scarlet / Violet"
+  },
+  "thickfat": {
+    "description": "The Pokémon is protected by a layer of thick fat, which halves the damage taken from Fire- and Ice-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "earlybird": {
+    "description": "The Pokémon awakens from sleep twice as fast as other Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "flamebody": {
+    "description": "Contact with the Pokémon may burn the attacker.",
+    "source": "Scarlet / Violet"
+  },
+  "runaway": {
+    "description": "Enables a sure getaway from wild Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "keeneye": {
+    "description": "The Pokémon’s keen eyes prevent its accuracy from being lowered.",
+    "source": "Scarlet / Violet"
+  },
+  "hypercutter": {
+    "description": "The Pokémon’s prized, mighty pincers prevent other Pokémon from lowering its Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "pickup": {
+    "description": "The Pokémon may pick up an item another Pokémon used during a battle. It may pick up items outside of battle, too.",
+    "source": "Scarlet / Violet"
+  },
+  "truant": {
+    "description": "Each time the Pokémon uses a move, it spends the next turn loafing around.",
+    "source": "Scarlet / Violet"
+  },
+  "hustle": {
+    "description": "Boosts the Pokémon’s Attack stat but lowers its accuracy.",
+    "source": "Scarlet / Violet"
+  },
+  "cutecharm": {
+    "description": "The Pokémon may infatuate attackers that make direct contact with it.",
+    "source": "Scarlet / Violet"
+  },
+  "plus": {
+    "description": "Boosts the Sp. Atk stat of the Pokémon if an ally with the Plus or Minus Ability is also in battle.",
+    "source": "Scarlet / Violet"
+  },
+  "minus": {
+    "description": "Boosts the Sp. Atk stat of the Pokémon if an ally with the Plus or Minus Ability is also in battle.",
+    "source": "Scarlet / Violet"
+  },
+  "forecast": {
+    "description": "The Pokémon transforms with the weather to change its type to Water, Fire, or Ice.",
+    "source": "Scarlet / Violet"
+  },
+  "stickyhold": {
+    "description": "The Pokémon’s held items cling to its sticky body and cannot be removed by other Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "shedskin": {
+    "description": "The Pokémon may cure its own status conditions by shedding its skin.",
+    "source": "Scarlet / Violet"
+  },
+  "guts": {
+    "description": "It’s so gutsy that having a status condition boosts the Pokémon’s Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "marvelscale": {
+    "description": "The Pokémon’s marvelous scales boost its Defense stat if it has a status condition.",
+    "source": "Scarlet / Violet"
+  },
+  "liquidooze": {
+    "description": "The strong stench of the Pokémon’s oozed liquid damages attackers that use HP-draining moves.",
+    "source": "Scarlet / Violet"
+  },
+  "overgrow": {
+    "description": "Powers up Grass-type moves when the Pokémon’s HP is low.",
+    "source": "Scarlet / Violet"
+  },
+  "blaze": {
+    "description": "Powers up Fire-type moves when the Pokémon’s HP is low.",
+    "source": "Scarlet / Violet"
+  },
+  "torrent": {
+    "description": "Powers up Water-type moves when the Pokémon’s HP is low.",
+    "source": "Scarlet / Violet"
+  },
+  "swarm": {
+    "description": "Powers up Bug-type moves when the Pokémon’s HP is low.",
+    "source": "Scarlet / Violet"
+  },
+  "rockhead": {
+    "description": "Protects the Pokémon from recoil damage.",
+    "source": "Scarlet / Violet"
+  },
+  "drought": {
+    "description": "Turns the sunlight harsh when the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "arenatrap": {
+    "description": "Prevents opposing Pokémon from fleeing from battle.",
+    "source": "Scarlet / Violet"
+  },
+  "vitalspirit": {
+    "description": "The Pokémon is full of vitality, and that prevents it from falling asleep.",
+    "source": "Scarlet / Violet"
+  },
+  "whitesmoke": {
+    "description": "The Pokémon is protected by its white smoke, which prevents other Pokémon from lowering its stats.",
+    "source": "Scarlet / Violet"
+  },
+  "purepower": {
+    "description": "Using its pure power, the Pokémon doubles its Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "shellarmor": {
+    "description": "A hard shell protects the Pokémon from critical hits.",
+    "source": "Scarlet / Violet"
+  },
+  "airlock": {
+    "description": "Eliminates the effects of weather.",
+    "source": "Scarlet / Violet"
+  },
+  "tangledfeet": {
+    "description": "Boosts the Pokémon’s evasiveness if it is confused.",
+    "source": "Scarlet / Violet"
+  },
+  "motordrive": {
+    "description": "The Pokémon takes no damage when hit by Electric-type moves. Instead, its Speed stat is boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "rivalry": {
+    "description": "The Pokémon’s competitive spirit makes it deal more damage to Pokémon of the same gender, but less damage to Pokémon of the opposite gender.",
+    "source": "Scarlet / Violet"
+  },
+  "steadfast": {
+    "description": "The Pokémon’s determination boosts its Speed stat every time it flinches.",
+    "source": "Scarlet / Violet"
+  },
+  "snowcloak": {
+    "description": "Boosts the Pokémon’s evasiveness in snow.",
+    "source": "Scarlet / Violet"
+  },
+  "gluttony": {
+    "description": "If the Pokémon is holding a Berry to be eaten when its HP is low, it will instead eat the Berry when its HP drops to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "angerpoint": {
+    "description": "The Pokémon is angered when it takes a critical hit, and that maxes its Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "unburden": {
+    "description": "Boosts the Speed stat if the Pokémon’s held item is used or lost.",
+    "source": "Scarlet / Violet"
+  },
+  "heatproof": {
+    "description": "The Pokémon’s heatproof body halves the damage taken from Fire-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "simple": {
+    "description": "Doubles the effects of the Pokémon’s stat changes.",
+    "source": "Scarlet / Violet"
+  },
+  "dryskin": {
+    "description": "Restores the Pokémon’s HP in rain or when it is hit by Water-type moves. Reduces HP in harsh sunlight, and increases the damage received from Fire-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "download": {
+    "description": "The Pokémon compares an opposing Pokémon’s Defense and Sp. Def stats before raising its own Attack or Sp. Atk stat—whichever will be more effective.",
+    "source": "Scarlet / Violet"
+  },
+  "ironfist": {
+    "description": "Powers up punching moves.",
+    "source": "Scarlet / Violet"
+  },
+  "poisonheal": {
+    "description": "If poisoned, the Pokémon has its HP restored instead of taking damage.",
+    "source": "Scarlet / Violet"
+  },
+  "adaptability": {
+    "description": "Powers up moves of the same type as the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "skilllink": {
+    "description": "Maximizes the number of times multistrike moves hit.",
+    "source": "Scarlet / Violet"
+  },
+  "hydration": {
+    "description": "Cures the Pokémon’s status conditions in rain.",
+    "source": "Scarlet / Violet"
+  },
+  "solarpower": {
+    "description": "In harsh sunlight, the Pokémon’s Sp. Atk stat is boosted, but its HP decreases every turn.",
+    "source": "Scarlet / Violet"
+  },
+  "quickfeet": {
+    "description": "Boosts the Speed stat if the Pokémon has a status condition.",
+    "source": "Scarlet / Violet"
+  },
+  "normalize": {
+    "description": "All the Pokémon’s moves become Normal type. The power of those moves is boosted a little.",
+    "source": "Scarlet / Violet"
+  },
+  "sniper": {
+    "description": "If the Pokémon’s attack lands a critical hit, the attack is powered up even further.",
+    "source": "Scarlet / Violet"
+  },
+  "magicguard": {
+    "description": "The Pokémon only takes damage from attacks.",
+    "source": "Scarlet / Violet"
+  },
+  "noguard": {
+    "description": "The Pokémon employs no-guard tactics to ensure incoming and outgoing attacks always land.",
+    "source": "Scarlet / Violet"
+  },
+  "stall": {
+    "description": "The Pokémon is always the last to use its moves.",
+    "source": "Scarlet / Violet"
+  },
+  "technician": {
+    "description": "Powers up weak moves so the Pokémon can deal more damage with them.",
+    "source": "Scarlet / Violet"
+  },
+  "leafguard": {
+    "description": "Prevents status conditions in harsh sunlight.",
+    "source": "Scarlet / Violet"
+  },
+  "klutz": {
+    "description": "The Pokémon can’t use any held items.",
+    "source": "Scarlet / Violet"
+  },
+  "moldbreaker": {
+    "description": "The Pokémon’s moves are unimpeded by the Ability of the target.",
+    "source": "Scarlet / Violet"
+  },
+  "superluck": {
+    "description": "The Pokémon is so lucky that the critical-hit ratios of its moves are boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "aftermath": {
+    "description": "Damages the attacker if it knocks out the Pokémon with a move that makes direct contact.",
+    "source": "Scarlet / Violet"
+  },
+  "anticipation": {
+    "description": "The Pokémon can sense an opposing Pokémon’s dangerous moves.",
+    "source": "Scarlet / Violet"
+  },
+  "forewarn": {
+    "description": "When it enters a battle, the Pokémon can tell one of the moves an opposing Pokémon has.",
+    "source": "Scarlet / Violet"
+  },
+  "unaware": {
+    "description": "When attacking, the Pokémon ignores the target’s stat changes.",
+    "source": "Scarlet / Violet"
+  },
+  "tintedlens": {
+    "description": "The Pokémon can use “not very effective” moves to deal regular damage.",
+    "source": "Scarlet / Violet"
+  },
+  "filter": {
+    "description": "Reduces the power of supereffective attacks that hit the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "slowstart": {
+    "description": "For five turns, the Pokémon’s Attack and Speed stats are halved.",
+    "source": "Scarlet / Violet"
+  },
+  "scrappy": {
+    "description": "The Pokémon can hit Ghost-type Pokémon with Normal- and Fighting-type moves. It is also unaffected by Intimidate.",
+    "source": "Scarlet / Violet"
+  },
+  "stormdrain": {
+    "description": "The Pokémon draws in all Water-type moves. Instead of taking damage from them, its Sp. Atk stat is boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "icebody": {
+    "description": "The Pokémon gradually regains HP in snow.",
+    "source": "Scarlet / Violet"
+  },
+  "solidrock": {
+    "description": "Reduces the power of supereffective attacks that hit the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "snowwarning": {
+    "description": "The Pokémon makes it snow when it enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "hailwarning": {
+    "description": "The Pokémon summons a hailstorm when it enters a battle.",
+    "source": "Sword / Shield"
+  },
+  "honeygather": {
+    "description": "The Pokémon may gather Honey after a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "frisk": {
+    "description": "When it enters a battle, the Pokémon can check an opposing Pokémon’s held item.",
+    "source": "Scarlet / Violet"
+  },
+  "reckless": {
+    "description": "Powers up moves that have recoil damage.",
+    "source": "Scarlet / Violet"
+  },
+  "multitype": {
+    "description": "Changes the Pokémon’s type to match the plate it holds.",
+    "source": "Scarlet / Violet"
+  },
+  "flowergift": {
+    "description": "Boosts the Attack and Sp. Def stats of the Pokémon and its allies in harsh sunlight.",
+    "source": "Scarlet / Violet"
+  },
+  "baddreams": {
+    "description": "Damages opposing Pokémon that are asleep.",
+    "source": "Scarlet / Violet"
+  },
+  "pickpocket": {
+    "description": "The Pokémon steals the held item from attackers that make direct contact with it.",
+    "source": "Scarlet / Violet"
+  },
+  "sheerforce": {
+    "description": "Removes any additional effects from the Pokémon’s moves, but increases the moves’ power.",
+    "source": "Scarlet / Violet"
+  },
+  "contrary": {
+    "description": "Reverses any stat changes affecting the Pokémon so that attempts to boost its stats instead lower them— and attempts to lower its stats will boost them.",
+    "source": "Scarlet / Violet"
+  },
+  "unnerve": {
+    "description": "Unnerves opposing Pokémon and makes them unable to eat Berries.",
+    "source": "Scarlet / Violet"
+  },
+  "defiant": {
+    "description": "If the Pokémon has any stat lowered by an opposing Pokémon, its Attack stat will be boosted sharply.",
+    "source": "Scarlet / Violet"
+  },
+  "defeatist": {
+    "description": "Halves the Pokémon’s Attack and Sp. Atk stats when its HP drops to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "cursedbody": {
+    "description": "May disable a move that has dealt damage to the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "healer": {
+    "description": "Sometimes cures the status conditions of the Pokémon’s allies.",
+    "source": "Scarlet / Violet"
+  },
+  "friendguard": {
+    "description": "Reduces damage dealt to allies.",
+    "source": "Scarlet / Violet"
+  },
+  "weakarmor": {
+    "description": "The Pokémon’s Defense stat is lowered when it takes damage from physical moves, but its Speed stat is sharply boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "heavymetal": {
+    "description": "Doubles the Pokémon’s weight.",
+    "source": "Scarlet / Violet"
+  },
+  "lightmetal": {
+    "description": "Halves the Pokémon’s weight.",
+    "source": "Scarlet / Violet"
+  },
+  "multiscale": {
+    "description": "Reduces the amount of damage the Pokémon takes while its HP is full.",
+    "source": "Scarlet / Violet"
+  },
+  "toxicboost": {
+    "description": "Powers up physical moves when the Pokémon is poisoned.",
+    "source": "Scarlet / Violet"
+  },
+  "flareboost": {
+    "description": "Powers up special moves when the Pokémon is burned.",
+    "source": "Scarlet / Violet"
+  },
+  "harvest": {
+    "description": "May create another Berry after one is used.",
+    "source": "Scarlet / Violet"
+  },
+  "telepathy": {
+    "description": "The Pokémon anticipates and dodges the attacks of its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "moody": {
+    "description": "Every turn, one of the Pokémon’s stats will be boosted sharply but another stat will be lowered.",
+    "source": "Scarlet / Violet"
+  },
+  "overcoat": {
+    "description": "The Pokémon takes no damage from sandstorms. It is also protected from the effects of powders and spores.",
+    "source": "Scarlet / Violet"
+  },
+  "poisontouch": {
+    "description": "May poison a target when the Pokémon makes contact.",
+    "source": "Scarlet / Violet"
+  },
+  "regenerator": {
+    "description": "The Pokémon has a little of its HP restored when withdrawn from battle.",
+    "source": "Scarlet / Violet"
+  },
+  "bigpecks": {
+    "description": "Prevents the Pokémon from having its Defense stat lowered.",
+    "source": "Scarlet / Violet"
+  },
+  "sandrush": {
+    "description": "Boosts the Pokémon’s Speed stat in a sandstorm.",
+    "source": "Scarlet / Violet"
+  },
+  "wonderskin": {
+    "description": "Makes status moves more likely to miss the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "analytic": {
+    "description": "Boosts the power of the Pokémon’s move if it is the last to act that turn.",
+    "source": "Scarlet / Violet"
+  },
+  "illusion": {
+    "description": "The Pokémon fools opponents by entering battle disguised as the last Pokémon in its Trainer’s party.",
+    "source": "Scarlet / Violet"
+  },
+  "imposter": {
+    "description": "The Pokémon transforms itself into the Pokémon it’s facing.",
+    "source": "Scarlet / Violet"
+  },
+  "infiltrator": {
+    "description": "The Pokémon’s moves are unaffected by the target’s barriers, substitutes, and the like.",
+    "source": "Scarlet / Violet"
+  },
+  "mummy": {
+    "description": "Contact with the Pokémon changes the attacker’s Ability to Mummy.",
+    "source": "Scarlet / Violet"
+  },
+  "moxie": {
+    "description": "When the Pokémon knocks out a target, it shows moxie, which boosts its Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "justified": {
+    "description": "When the Pokémon is hit by a Dark-type attack, its Attack stat is boosted by its sense of justice.",
+    "source": "Scarlet / Violet"
+  },
+  "rattled": {
+    "description": "The Pokémon gets scared when hit by a Dark-, Ghost-, or Bug-type attack or if intimidated, which boosts its Speed stat.",
+    "source": "Scarlet / Violet"
+  },
+  "magicbounce": {
+    "description": "The Pokémon reflects status moves instead of getting hit by them.",
+    "source": "Scarlet / Violet"
+  },
+  "sapsipper": {
+    "description": "The Pokémon takes no damage when hit by Grass-type moves. Instead, its Attack stat is boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "prankster": {
+    "description": "Gives priority to the Pokémon’s status moves.",
+    "source": "Scarlet / Violet"
+  },
+  "sandforce": {
+    "description": "Boosts the power of Rock-, Ground-, and Steel-type moves in a sandstorm.",
+    "source": "Scarlet / Violet"
+  },
+  "ironbarbs": {
+    "description": "The Pokémon’s iron barbs damage the attacker if it makes direct contact.",
+    "source": "Scarlet / Violet"
+  },
+  "zenmode": {
+    "description": "Changes the Pokémon’s shape when its HP drops to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "victorystar": {
+    "description": "Boosts the accuracy of the Pokémon and its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "turboblaze": {
+    "description": "The Pokémon’s moves are unimpeded by the Ability of the target.",
+    "source": "Scarlet / Violet"
+  },
+  "teravolt": {
+    "description": "The Pokémon’s moves are unimpeded by the Ability of the target.",
+    "source": "Scarlet / Violet"
+  },
+  "aromaveil": {
+    "description": "Protects the Pokémon and its allies from effects that prevent the use of moves.",
+    "source": "Scarlet / Violet"
+  },
+  "flowerveil": {
+    "description": "Ally Grass-type Pokémon are protected from status conditions and the lowering of their stats.",
+    "source": "Scarlet / Violet"
+  },
+  "cheekpouch": {
+    "description": "The Pokémon’s HP is restored when it eats any Berry, in addition to the Berry’s usual effect.",
+    "source": "Scarlet / Violet"
+  },
+  "protean": {
+    "description": "Changes the Pokémon’s type to the type of the move it’s about to use. This works only once each time the Pokémon enters battle.",
+    "source": "Scarlet / Violet"
+  },
+  "furcoat": {
+    "description": "Halves the damage from physical moves.",
+    "source": "Scarlet / Violet"
+  },
+  "magician": {
+    "description": "The Pokémon steals the held item from any target it hits with a move.",
+    "source": "Scarlet / Violet"
+  },
+  "bulletproof": {
+    "description": "Protects the Pokémon from ball and bomb moves.",
+    "source": "Scarlet / Violet"
+  },
+  "competitive": {
+    "description": "Boosts the Pokémon’s Sp. Atk stat sharply when its stats are lowered by an opposing Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "strongjaw": {
+    "description": "The Pokémon’s strong jaw boosts the power of its biting moves.",
+    "source": "Scarlet / Violet"
+  },
+  "refrigerate": {
+    "description": "Normal-type moves become Ice-type moves. The power of those moves is boosted a little.",
+    "source": "Scarlet / Violet"
+  },
+  "sweetveil": {
+    "description": "Prevents the Pokémon and its allies from falling asleep.",
+    "source": "Scarlet / Violet"
+  },
+  "stancechange": {
+    "description": "The Pokémon changes its form to Blade Forme when it uses an attack move and changes to Shield Forme when it uses King’s Shield.",
+    "source": "Scarlet / Violet"
+  },
+  "galewings": {
+    "description": "Gives priority to the Pokémon’s Flying-type moves while its HP is full.",
+    "source": "Scarlet / Violet"
+  },
+  "megalauncher": {
+    "description": "Powers up pulse moves.",
+    "source": "Scarlet / Violet"
+  },
+  "grasspelt": {
+    "description": "Boosts the Pokémon’s Defense stat on Grassy Terrain.",
+    "source": "Scarlet / Violet"
+  },
+  "symbiosis": {
+    "description": "The Pokémon passes its held item to an ally that has used up an item.",
+    "source": "Scarlet / Violet"
+  },
+  "toughclaws": {
+    "description": "Powers up moves that make direct contact.",
+    "source": "Scarlet / Violet"
+  },
+  "pixilate": {
+    "description": "Normal-type moves become Fairy-type moves. The power of those moves is boosted a little.",
+    "source": "Scarlet / Violet"
+  },
+  "gooey": {
+    "description": "Contact with the Pokémon lowers the attacker’s Speed stat.",
+    "source": "Scarlet / Violet"
+  },
+  "aerilate": {
+    "description": "Normal-type moves become Flying-type moves. The power of those moves is boosted a little.",
+    "source": "Scarlet / Violet"
+  },
+  "parentalbond": {
+    "description": "The parent and child attack one after the other.",
+    "source": "Scarlet / Violet"
+  },
+  "darkaura": {
+    "description": "Powers up the Dark-type moves of all Pokémon on the field.",
+    "source": "Scarlet / Violet"
+  },
+  "fairyaura": {
+    "description": "Powers up the Fairy-type moves of all Pokémon on the field.",
+    "source": "Scarlet / Violet"
+  },
+  "aurabreak": {
+    "description": "The effects of “Aura” Abilities are reversed to lower the power of affected moves.",
+    "source": "Scarlet / Violet"
+  },
+  "primordialsea": {
+    "description": "The Pokémon changes the weather to nullify Fire-type attacks.",
+    "source": "Scarlet / Violet"
+  },
+  "desolateland": {
+    "description": "The Pokémon changes the weather to nullify Water-type attacks.",
+    "source": "Scarlet / Violet"
+  },
+  "deltastream": {
+    "description": "The Pokémon changes the weather so that no moves are super effective against the Flying type.",
+    "source": "Scarlet / Violet"
+  },
+  "stamina": {
+    "description": "Boosts the Defense stat when the Pokémon is hit by an attack.",
+    "source": "Scarlet / Violet"
+  },
+  "wimpout": {
+    "description": "The Pokémon cowardly switches out when its HP drops to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "emergencyexit": {
+    "description": "The Pokémon, sensing danger, switches out when its HP drops to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "watercompaction": {
+    "description": "Boosts the Defense stat sharply when the Pokémon is hit by a Water-type move.",
+    "source": "Scarlet / Violet"
+  },
+  "merciless": {
+    "description": "The Pokémon’s attacks become critical hits if the target is poisoned.",
+    "source": "Scarlet / Violet"
+  },
+  "shieldsdown": {
+    "description": "When its HP drops to half or less, the Pokémon’s shell breaks and it becomes aggressive.",
+    "source": "Scarlet / Violet"
+  },
+  "stakeout": {
+    "description": "Doubles the damage dealt to a target that has just switched into battle.",
+    "source": "Scarlet / Violet"
+  },
+  "waterbubble": {
+    "description": "Lowers the power of Fire-type moves that hit the Pokémon and prevents it from being burned.",
+    "source": "Scarlet / Violet"
+  },
+  "steelworker": {
+    "description": "Powers up Steel-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "berserk": {
+    "description": "Boosts the Pokémon’s Sp. Atk stat when it takes a hit that causes its HP to drop to half or less.",
+    "source": "Scarlet / Violet"
+  },
+  "slushrush": {
+    "description": "Boosts the Pokémon’s Speed stat in snow.",
+    "source": "Scarlet / Violet"
+  },
+  "longreach": {
+    "description": "The Pokémon uses its moves without making contact with the target.",
+    "source": "Scarlet / Violet"
+  },
+  "liquidvoice": {
+    "description": "Sound-based moves become Water-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "triage": {
+    "description": "Gives priority to the Pokémon’s healing moves.",
+    "source": "Scarlet / Violet"
+  },
+  "galvanize": {
+    "description": "Normal-type moves become Electric-type moves. The power of those moves is boosted a little.",
+    "source": "Scarlet / Violet"
+  },
+  "surgesurfer": {
+    "description": "Doubles the Pokémon’s Speed stat on Electric Terrain.",
+    "source": "Scarlet / Violet"
+  },
+  "schooling": {
+    "description": "When it has a lot of HP, the Pokémon forms a powerful school. It stops schooling when its HP is low.",
+    "source": "Scarlet / Violet"
+  },
+  "disguise": {
+    "description": "Once per battle, the shroud that covers the Pokémon can protect it from an attack.",
+    "source": "Scarlet / Violet"
+  },
+  "battlebond": {
+    "description": "When the Pokémon knocks out a target, its bond with its Trainer is strengthened, and its Attack, Sp. Atk, and Speed stats are boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "powerconstruct": {
+    "description": "Cells gather to aid the Pokémon when its HP drops to half or less, causing it to change into its Complete Forme.",
+    "source": "Scarlet / Violet"
+  },
+  "corrosion": {
+    "description": "The Pokémon can poison the target even if it’s a Steel or Poison type.",
+    "source": "Scarlet / Violet"
+  },
+  "comatose": {
+    "description": "The Pokémon is always drowsing and will never wake up. It can attack while in its sleeping state.",
+    "source": "Scarlet / Violet"
+  },
+  "queenlymajesty": {
+    "description": "The Pokémon’s majesty pressures opponents and makes them unable to use priority moves against the Pokémon or its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "innardsout": {
+    "description": "When the Pokémon is knocked out, it damages its attacker by the amount equal to the HP it had left before it was hit.",
+    "source": "Scarlet / Violet"
+  },
+  "dancer": {
+    "description": "Whenever a dance move is used in battle, the Pokémon will copy the user to immediately perform that dance move itself.",
+    "source": "Scarlet / Violet"
+  },
+  "battery": {
+    "description": "Powers up ally Pokémon’s special moves.",
+    "source": "Scarlet / Violet"
+  },
+  "fluffy": {
+    "description": "Halves the damage taken from moves that make direct contact, but doubles that of Fire-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "dazzling": {
+    "description": "The Pokémon dazzles its opponents, making them unable to use priority moves against the Pokémon or its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "soulheart": {
+    "description": "Boosts the Pokémon’s Sp. Atk stat every time another Pokémon faints.",
+    "source": "Scarlet / Violet"
+  },
+  "tanglinghair": {
+    "description": "Contact with the Pokémon lowers the attacker’s Speed stat.",
+    "source": "Scarlet / Violet"
+  },
+  "receiver": {
+    "description": "The Pokémon copies the Ability of a defeated ally.",
+    "source": "Scarlet / Violet"
+  },
+  "powerofalchemy": {
+    "description": "The Pokémon copies the Ability of a defeated ally.",
+    "source": "Scarlet / Violet"
+  },
+  "beastboost": {
+    "description": "Boosts the Pokémon’s most proficient stat every time it knocks out a target.",
+    "source": "Scarlet / Violet"
+  },
+  "rkssystem": {
+    "description": "Changes the Pokémon’s type to match the memory disc it holds.",
+    "source": "Scarlet / Violet"
+  },
+  "electricsurge": {
+    "description": "Turns the ground into Electric Terrain when the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "psychicsurge": {
+    "description": "Turns the ground into Psychic Terrain when the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "mistysurge": {
+    "description": "Turns the ground into Misty Terrain when the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "grassysurge": {
+    "description": "Turns the ground into Grassy Terrain when the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "fullmetalbody": {
+    "description": "Prevents other Pokémon’s moves or Abilities from lowering the Pokémon’s stats.",
+    "source": "Scarlet / Violet"
+  },
+  "shadowshield": {
+    "description": "Reduces the amount of damage the Pokémon takes while its HP is full.",
+    "source": "Scarlet / Violet"
+  },
+  "prismarmor": {
+    "description": "Reduces the power of supereffective attacks that hit the Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "neuroforce": {
+    "description": "Powers up the Pokémon’s supereffective attacks even further.",
+    "source": "Scarlet / Violet"
+  },
+  "intrepidsword": {
+    "description": "Boosts the Pokémon’s Attack stat the first time the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "dauntlessshield": {
+    "description": "Boosts the Pokémon’s Defense stat the first time the Pokémon enters a battle.",
+    "source": "Scarlet / Violet"
+  },
+  "libero": {
+    "description": "Changes the Pokémon’s type to the type of the move it’s about to use. This works only once each time the Pokémon enters battle.",
+    "source": "Scarlet / Violet"
+  },
+  "ballfetch": {
+    "description": "If the Pokémon is not holding an item, it will fetch the Poké Ball from the first failed throw of the battle.",
+    "source": "Scarlet / Violet"
+  },
+  "cottondown": {
+    "description": "When the Pokémon is hit by an attack, it scatters cotton fluff around and lowers the Speed stats of all Pokémon except itself.",
+    "source": "Scarlet / Violet"
+  },
+  "propellertail": {
+    "description": "Ignores the effects of opposing Pokémon’s Abilities and moves that draw in moves.",
+    "source": "Scarlet / Violet"
+  },
+  "mirrorarmor": {
+    "description": "Bounces back only the stat-lowering effects that the Pokémon receives.",
+    "source": "Scarlet / Violet"
+  },
+  "gulpmissile": {
+    "description": "When the Pokémon uses Surf or Dive, it will come back with prey. When it takes damage, it will spit out the prey to attack.",
+    "source": "Scarlet / Violet"
+  },
+  "stalwart": {
+    "description": "Ignores the effects of opposing Pokémon’s Abilities and moves that draw in moves.",
+    "source": "Scarlet / Violet"
+  },
+  "steamengine": {
+    "description": "Boosts the Speed stat drastically when the Pokémon is hit by a Fire- or Water-type move.",
+    "source": "Scarlet / Violet"
+  },
+  "punkrock": {
+    "description": "Boosts the power of sound-based moves. The Pokémon also takes half the damage from these kinds of moves.",
+    "source": "Scarlet / Violet"
+  },
+  "sandspit": {
+    "description": "The Pokémon creates a sandstorm when it’s hit by an attack.",
+    "source": "Scarlet / Violet"
+  },
+  "icescales": {
+    "description": "The Pokémon is protected by ice scales, which halve the damage taken from special moves.",
+    "source": "Scarlet / Violet"
+  },
+  "ripen": {
+    "description": "Ripens Berries and doubles their effect.",
+    "source": "Scarlet / Violet"
+  },
+  "iceface": {
+    "description": "The Pokémon’s ice head can take a physical attack as a substitute, but the attack also changes the Pokémon’s appearance. The ice will be restored when it snows.",
+    "source": "Scarlet / Violet"
+  },
+  "powerspot": {
+    "description": "Just being next to the Pokémon powers up moves.",
+    "source": "Scarlet / Violet"
+  },
+  "mimicry": {
+    "description": "Changes the Pokémon’s type depending on the terrain.",
+    "source": "Scarlet / Violet"
+  },
+  "screencleaner": {
+    "description": "When the Pokémon enters a battle, the effects of Light Screen, Reflect, and Aurora Veil are nullified for both opposing and ally Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "steelyspirit": {
+    "description": "Powers up the Steel-type moves of the Pokémon and its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "perishbody": {
+    "description": "When hit by a move that makes direct contact, the Pokémon and the attacker will faint after three turns unless they switch out of battle.",
+    "source": "Scarlet / Violet"
+  },
+  "wanderingspirit": {
+    "description": "The Pokémon exchanges Abilities with a Pokémon that hits it with a move that makes direct contact.",
+    "source": "Scarlet / Violet"
+  },
+  "gorillatactics": {
+    "description": "Boosts the Pokémon’s Attack stat but only allows the use of the first selected move.",
+    "source": "Scarlet / Violet"
+  },
+  "neutralizinggas": {
+    "description": "While the Pokémon is in the battle, the effects of all other Pokémon’s Abilities will be nullified or will not be triggered.",
+    "source": "Scarlet / Violet"
+  },
+  "pastelveil": {
+    "description": "Prevents the Pokémon and its allies from being poisoned.",
+    "source": "Scarlet / Violet"
+  },
+  "hungerswitch": {
+    "description": "The Pokémon changes its form, alternating between its Full Belly Mode and Hangry Mode after the end of every turn.",
+    "source": "Scarlet / Violet"
+  },
+  "quickdraw": {
+    "description": "Enables the Pokémon to move first occasionally.",
+    "source": "Scarlet / Violet"
+  },
+  "unseenfist": {
+    "description": "If the Pokémon uses moves that make direct contact, it can attack the target even if the target protects itself.",
+    "source": "Scarlet / Violet"
+  },
+  "curiousmedicine": {
+    "description": "When the Pokémon enters a battle, it scatters medicine from its shell, which removes all stat changes from allies.",
+    "source": "Scarlet / Violet"
+  },
+  "transistor": {
+    "description": "Powers up Electric-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "dragonsmaw": {
+    "description": "Powers up Dragon-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "chillingneigh": {
+    "description": "When the Pokémon knocks out a target, it utters a chilling neigh, which boosts its Attack stat.",
+    "source": "Scarlet / Violet"
+  },
+  "grimneigh": {
+    "description": "When the Pokémon knocks out a target, it utters a terrifying neigh, which boosts its Sp. Atk stat.",
+    "source": "Scarlet / Violet"
+  },
+  "asone": {
+    "description": "Combines the effects of the user's Unnerve Ability and its companion's Ability.",
+    "source": "Sword / Shield"
+  },
+  "lingeringaroma": {
+    "description": "Contact with the Pokémon changes the attacker’s Ability to Lingering Aroma.",
+    "source": "Scarlet / Violet"
+  },
+  "seedsower": {
+    "description": "Turns the ground into Grassy Terrain when the Pokémon is hit by an attack.",
+    "source": "Scarlet / Violet"
+  },
+  "thermalexchange": {
+    "description": "Boosts the Attack stat when the Pokémon is hit by a Fire-type move. The Pokémon also cannot be burned.",
+    "source": "Scarlet / Violet"
+  },
+  "angershell": {
+    "description": "When an attack causes its HP to drop to half or less, the Pokémon gets angry. This lowers its Defense and Sp. Def stats but boosts its Attack, Sp. Atk, and Speed stats.",
+    "source": "Scarlet / Violet"
+  },
+  "purifyingsalt": {
+    "description": "The Pokémon’s pure salt protects it from status conditions and halves the damage taken from Ghost-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "wellbakedbody": {
+    "description": "The Pokémon takes no damage when hit by Fire-type moves. Instead, its Defense stat is sharply boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "windrider": {
+    "description": "Boosts the Pokémon’s Attack stat if Tailwind takes effect or if the Pokémon is hit by a wind move. The Pokémon also takes no damage from wind moves.",
+    "source": "Scarlet / Violet"
+  },
+  "guarddog": {
+    "description": "Boosts the Pokémon’s Attack stat if intimidated. Moves and items that would force the Pokémon to switch out also fail to work.",
+    "source": "Scarlet / Violet"
+  },
+  "rockypayload": {
+    "description": "Powers up Rock-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "windpower": {
+    "description": "The Pokémon becomes charged when it is hit by a wind move, boosting the power of the next Electric-type move the Pokémon uses.",
+    "source": "Scarlet / Violet"
+  },
+  "zerotohero": {
+    "description": "The Pokémon transforms into its Hero Form when it switches out.",
+    "source": "Scarlet / Violet"
+  },
+  "commander": {
+    "description": "When the Pokémon enters a battle, it goes inside the mouth of an ally Dondozo if one is on the field. The Pokémon then issues commands from there.",
+    "source": "Scarlet / Violet"
+  },
+  "electromorphosis": {
+    "description": "The Pokémon becomes charged when it takes damage, boosting the power of the next Electric-type move the Pokémon uses.",
+    "source": "Scarlet / Violet"
+  },
+  "protosynthesis": {
+    "description": "Boosts the Pokémon’s most proficient stat in harsh sunlight or if the Pokémon is holding Booster Energy.",
+    "source": "Scarlet / Violet"
+  },
+  "quarkdrive": {
+    "description": "Boosts the Pokémon’s most proficient stat on Electric Terrain or if the Pokémon is holding Booster Energy.",
+    "source": "Scarlet / Violet"
+  },
+  "goodasgold": {
+    "description": "A body of pure, solid gold gives the Pokémon full immunity to other Pokémon’s status moves.",
+    "source": "Scarlet / Violet"
+  },
+  "vesselofruin": {
+    "description": "The power of the Pokémon’s ruinous vessel lowers the Sp. Atk stats of all Pokémon except itself.",
+    "source": "Scarlet / Violet"
+  },
+  "swordofruin": {
+    "description": "The power of the Pokémon’s ruinous sword lowers the Defense stats of all Pokémon except itself.",
+    "source": "Scarlet / Violet"
+  },
+  "tabletsofruin": {
+    "description": "The power of the Pokémon’s ruinous wooden tablets lowers the Attack stats of all Pokémon except itself.",
+    "source": "Scarlet / Violet"
+  },
+  "beadsofruin": {
+    "description": "The power of the Pokémon’s ruinous beads lowers the Sp. Def stats of all Pokémon except itself.",
+    "source": "Scarlet / Violet"
+  },
+  "orichalcumpulse": {
+    "description": "Turns the sunlight harsh when the Pokémon enters a battle. The ancient pulse thrumming through the Pokémon also boosts its Attack stat in harsh sunlight.",
+    "source": "Scarlet / Violet"
+  },
+  "hadronengine": {
+    "description": "Turns the ground into Electric Terrain when the Pokémon enters a battle. The futuristic engine within the Pokémon also boosts its Sp. Atk stat on Electric Terrain.",
+    "source": "Scarlet / Violet"
+  },
+  "opportunist": {
+    "description": "If an opponent’s stat is boosted, the Pokémon seizes the opportunity to boost the same stat for itself.",
+    "source": "Scarlet / Violet"
+  },
+  "cudchew": {
+    "description": "When the Pokémon eats a Berry, it will regurgitate that Berry at the end of the next turn and eat it one more time.",
+    "source": "Scarlet / Violet"
+  },
+  "sharpness": {
+    "description": "Powers up slicing moves.",
+    "source": "Scarlet / Violet"
+  },
+  "supremeoverlord": {
+    "description": "When the Pokémon enters a battle, its Attack and Sp. Atk stats are slightly boosted for each of the allies in its party that have already been defeated.",
+    "source": "Scarlet / Violet"
+  },
+  "costar": {
+    "description": "When the Pokémon enters a battle, it copies an ally’s stat changes.",
+    "source": "Scarlet / Violet"
+  },
+  "toxicdebris": {
+    "description": "Scatters poison spikes at the feet of the opposing team when the Pokémon takes damage from physical moves.",
+    "source": "Scarlet / Violet"
+  },
+  "armortail": {
+    "description": "The mysterious tail covering the Pokémon’s head makes opponents unable to use priority moves against the Pokémon or its allies.",
+    "source": "Scarlet / Violet"
+  },
+  "eartheater": {
+    "description": "If hit by a Ground-type move, the Pokémon has its HP restored instead of taking damage.",
+    "source": "Scarlet / Violet"
+  },
+  "myceliummight": {
+    "description": "The Pokémon will always act more slowly when using status moves, but these moves will be unimpeded by the Ability of the target.",
+    "source": "Scarlet / Violet"
+  },
+  "mindseye": {
+    "description": "The Pokémon ignores changes to opponents’ evasiveness, its accuracy can’t be lowered, and it can hit Ghost types with Normal- and Fighting-type moves.",
+    "source": "Scarlet / Violet"
+  },
+  "supersweetsyrup": {
+    "description": "A sickly sweet scent spreads across the field the first time the Pokémon enters a battle, lowering the evasiveness of opposing Pokémon.",
+    "source": "Scarlet / Violet"
+  },
+  "hospitality": {
+    "description": "When the Pokémon enters a battle, it showers its ally with hospitality, restoring a small amount of the ally’s HP.",
+    "source": "Scarlet / Violet"
+  },
+  "toxicchain": {
+    "description": "The power of the Pokémon’s toxic chain may badly poison any target the Pokémon hits with a move.",
+    "source": "Scarlet / Violet"
+  },
+  "embodyaspect": {
+    "description": "The Pokémon’s heart fills with memories, causing the Teal Mask to shine and the Pokémon’s Speed stat to be boosted.",
+    "source": "Scarlet / Violet"
+  },
+  "terashift": {
+    "description": "When the Pokémon enters a battle, it absorbs the energy around itself and transforms into its Terastal Form.",
+    "source": "Scarlet / Violet"
+  },
+  "terashell": {
+    "description": "The Pokémon’s shell contains the powers of each type. All damage-dealing moves that hit the Pokémon when its HP is full will not be very effective.",
+    "source": "Scarlet / Violet"
+  },
+  "teraformzero": {
+    "description": "When Terapagos changes into its Stellar Form, it uses its hidden powers to eliminate all effects of weather and terrain, reducing them to zero.",
+    "source": "Scarlet / Violet"
+  },
+  "poisonpuppeteer": {
+    "description": "Pokémon poisoned by Pecharunt’s moves will also become confused.",
+    "source": "Scarlet / Violet"
+  }
+}

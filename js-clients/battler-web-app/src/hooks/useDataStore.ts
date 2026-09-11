@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type {
   AbilityData,
   ConditionData,
+  DescriptionData,
   ItemData,
   MoveData,
   ResourceData,
@@ -11,7 +12,7 @@ import type {
 import { connectionManager } from "../core/wamp";
 import { extractResourceName, toId } from "../utils/dataTooltipFormatting";
 
-export type { ResourceData, ResourceType };
+export type { DescriptionData, ResourceData, ResourceType };
 export { toId };
 
 export interface ResourceMap {
@@ -23,6 +24,7 @@ export interface ResourceMap {
 }
 
 const cache = new Map<string, unknown>();
+const descriptionCache = new Map<string, DescriptionData | null>();
 const pending = new Map<string, Promise<unknown>>();
 const fxCached = new Set<string>();
 
@@ -81,6 +83,18 @@ function cacheTypedResource(
   }
 }
 
+function cacheTypedDescription(
+  type: ResourceType,
+  query: string,
+  data: unknown,
+  description?: DescriptionData | null,
+): void {
+  if (description === undefined) return;
+  for (const alias of getResourceAliases(query, data)) {
+    descriptionCache.set(`${type}:${alias}`, description);
+  }
+}
+
 export function getCachedResource<T extends ResourceType>(
   type: T,
   query: string,
@@ -96,8 +110,24 @@ export function getCachedResource<T extends ResourceType>(
   return undefined;
 }
 
+export function getCachedDescription(
+  type: ResourceType,
+  query: string,
+): DescriptionData | null | undefined {
+  if (!query) return undefined;
+  const direct = descriptionCache.get(`${type}:${query}`);
+  if (direct !== undefined) return direct;
+  const queryId = toId(query);
+  if (queryId) {
+    const idItem = descriptionCache.get(`${type}:${queryId}`);
+    if (idItem !== undefined) return idItem;
+  }
+  return undefined;
+}
+
 export function clearDataStoreCache(): void {
   cache.clear();
+  descriptionCache.clear();
   pending.clear();
   fxCached.clear();
 }
@@ -122,26 +152,36 @@ export async function fetchResource<T extends ResourceType>(
 
   const promise = (async () => {
     try {
-      let data: unknown = null;
+      let res: unknown = null;
       switch (type) {
         case "move":
-          data = await client.getMove(query);
+          res = await client.getMove(query);
           break;
         case "ability":
-          data = await client.getAbility(query);
+          res = await client.getAbility(query);
           break;
         case "item":
-          data = await client.getItem(query);
+          res = await client.getItem(query);
           break;
         case "condition":
-          data = await client.getCondition(query);
+          res = await client.getCondition(query);
           break;
         case "species":
-          data = await client.getSpecies(query);
+          res = await client.getSpecies(query);
           break;
       }
+      if (!res) return null;
+
+      let data: unknown = res;
+      let description: DescriptionData | null = null;
+      if (typeof res === "object" && res !== null && "data" in res) {
+        data = (res as any).data;
+        description = (res as any).description ?? null;
+      }
+
       if (data) {
         cacheTypedResource(type, query, data);
+        cacheTypedDescription(type, query, data, description);
       }
       return data as ResourceMap[T];
     } catch {
@@ -201,7 +241,29 @@ export function getCachedGenericResource(
       }
       const data = { type, data: item } as ResourceData;
       cache.set(key, data);
+      const itemDesc = getCachedDescription(type, query);
+      if (itemDesc !== undefined) {
+        descriptionCache.set(key, itemDesc);
+      }
       return data;
+    }
+  }
+  return undefined;
+}
+
+export function getCachedGenericDescription(
+  query: string,
+): DescriptionData | null | undefined {
+  if (!query) return undefined;
+  const key = getGenericResourceCacheKey(query);
+  const direct = descriptionCache.get(key);
+  if (direct !== undefined) return direct;
+
+  for (const type of DEFAULT_RESOURCE_SEARCH_ORDER) {
+    const itemDesc = getCachedDescription(type, query);
+    if (itemDesc !== undefined) {
+      descriptionCache.set(key, itemDesc);
+      return itemDesc;
     }
   }
   return undefined;
@@ -230,19 +292,39 @@ export async function fetchGenericResource(
 
   const promise = (async () => {
     try {
-      const data = await client.getResource(
+      const res = await client.getResource(
         query,
         options ? { include_fxlang: options.include_fxlang } : undefined,
       );
+      if (!res) return null;
+
+      let data: ResourceData | null = null;
+      let description: DescriptionData | null = null;
+      if ("data" in res && (res as any).data && "type" in (res as any).data) {
+        data = (res as any).data;
+        description = (res as any).description ?? null;
+      } else if ("type" in res && "data" in res) {
+        data = res as unknown as ResourceData;
+        description = (res as any).description ?? null;
+      }
+
       if (data) {
         const dataName = extractResourceName(data.data);
         const alreadyFx = hasFxAstCached(data.type, query, dataName);
         if (!alreadyFx || options?.include_fxlang) {
           cache.set(key, data);
+          if (description !== undefined) {
+            descriptionCache.set(key, description);
+          }
           if (dataName && dataName !== query) {
-            cache.set(getGenericResourceCacheKey(dataName), data);
+            const aliasKey = getGenericResourceCacheKey(dataName);
+            cache.set(aliasKey, data);
+            if (description !== undefined) {
+              descriptionCache.set(aliasKey, description);
+            }
           }
           cacheTypedResource(data.type, query, data.data, Boolean(options?.include_fxlang));
+          cacheTypedDescription(data.type, query, data.data, description);
         }
 
         if (options?.include_fxlang) {
@@ -307,28 +389,36 @@ function useAsyncCacheEntry<T>(
 export function useGenericResource(
   query?: string | null,
   options?: GenericResourceLookupOptions,
-): { data: ResourceData | null; loading: boolean } {
+): { data: ResourceData | null; description?: DescriptionData | null; loading: boolean } {
   const key = query ? getGenericResourceCacheKey(query) : "";
   const hookKey = query ? `${key}${options?.include_fxlang ? ":fx" : ""}` : "";
 
-  return useAsyncCacheEntry(
+  const { data, loading } = useAsyncCacheEntry(
     hookKey,
     () => (query ? getCachedGenericResource(query, options) : undefined),
     () => (query ? fetchGenericResource(query, options) : Promise.resolve(null)),
   );
+
+  const description = query ? getCachedGenericDescription(query) ?? null : null;
+
+  return { data, description, loading };
 }
 
 export function useResourceData<T extends ResourceType>(
   type: T,
   query?: string | null,
-): { data: ResourceMap[T] | null; loading: boolean } {
+): { data: ResourceMap[T] | null; description?: DescriptionData | null; loading: boolean } {
   const key = query ? `${type}:${query}` : "";
 
-  return useAsyncCacheEntry(
+  const { data, loading } = useAsyncCacheEntry(
     key,
     () => (query ? getCachedResource(type, query) : undefined),
     () => (query ? fetchResource(type, query) : Promise.resolve(null)),
   );
+
+  const description = query ? getCachedDescription(type, query) ?? null : null;
+
+  return { data, description, loading };
 }
 
 export const fetchMove = (nameOrId: string) => fetchResource("move", nameOrId);
@@ -342,3 +432,4 @@ export const useAbilityData = (nameOrId?: string | null) => useResourceData("abi
 export const useItemData = (nameOrId?: string | null) => useResourceData("item", nameOrId);
 export const useConditionData = (nameOrId?: string | null) => useResourceData("condition", nameOrId);
 export const useSpeciesData = (nameOrId?: string | null) => useResourceData("species", nameOrId);
+

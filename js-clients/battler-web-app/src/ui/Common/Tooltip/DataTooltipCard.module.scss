@@ -76,6 +76,13 @@
   color: var(--text-secondary);
 }
 
+.description {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
 .traitsGrid {
   display: flex;
   flex-direction: column;

@@ -1,3 +1,4 @@
+import type { DescriptionData } from "battler-data-service-client";
 import type { MoveData } from "battler-types";
 import {
   formatAccuracy,
@@ -13,9 +14,10 @@ import TooltipFlagsSection from "./TooltipFlagsSection";
 
 export interface MoveTooltipCardProps {
   data: MoveData;
+  description?: DescriptionData | null;
 }
 
-export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
+export default function MoveTooltipCard({ data, description }: MoveTooltipCardProps) {
   const basePowerStr = formatBasePower(data.base_power);
   const accuracyStr = formatAccuracy(data.accuracy);
   const ppStr = formatPp(data.pp, data.no_pp_boosts);
@@ -34,6 +36,11 @@ export default function MoveTooltipCard({ data }: MoveTooltipCardProps) {
           <TypeBadge type={data.primary_type} size="sm" />
         </div>
       </header>
+
+      {description?.description && (
+        <p className={cardStyles.description}>{description.description}</p>
+      )}
+
 
       <section className={cardStyles.traitsGrid}>
         <div className={cardStyles.traitRow}>

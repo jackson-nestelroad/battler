@@ -66,6 +66,18 @@ impl WampDeserialize for ResourceType {
     }
 }
 
+impl From<ResourceType> for battler_data::ResourceType {
+    fn from(resource_type: ResourceType) -> Self {
+        match resource_type {
+            ResourceType::Move => Self::Move,
+            ResourceType::Ability => Self::Ability,
+            ResourceType::Item => Self::Item,
+            ResourceType::Species => Self::Species,
+            ResourceType::Condition => Self::Condition,
+        }
+    }
+}
+
 /// Options for querying a generic resource across multiple types.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, WampDictionary)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
@@ -126,11 +138,31 @@ pub struct ResourceInputArgs {
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct ResourceInput(#[arguments] pub ResourceInputArgs);
 
+/// Description and source information for a resource.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, WampDictionary)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct DescriptionData {
+    pub description: String,
+    pub source: String,
+}
+
+/// Trait for querying descriptions for resources.
+pub trait DescriptionStore: Send + Sync {
+    fn get_description(
+        &self,
+        resource_type: ResourceType,
+        id: &battler_data::Id,
+    ) -> anyhow::Result<Option<DescriptionData>>;
+}
+
 /// Arguments for single resource data output.
 #[derive(Debug, Default, Clone, WampList)]
 pub struct ResourceOutputArgs {
     /// JSON-serialized resource data.
     pub data_json: String,
+    /// Optional description for the resource.
+    #[battler_wamp_values(default)]
+    pub description: Option<DescriptionData>,
 }
 
 /// Output for querying a single resource.
@@ -205,6 +237,12 @@ pub struct BatchResult {
         ts(type = "Record<string, SpeciesData | null>")
     )]
     pub species: HashMap<String, Option<SpeciesData>>,
+    #[serde(default)]
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Record<string, DescriptionData | null>")
+    )]
+    pub descriptions: HashMap<String, Option<DescriptionData>>,
 }
 
 #[cfg(test)]
@@ -216,6 +254,7 @@ mod typescript_tests {
 
     #[test]
     fn export_types() {
+        DescriptionData::export().unwrap();
         ResourceType::export().unwrap();
         ResourceLookupOptions::export().unwrap();
         ResourceData::export().unwrap();

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ResourceType } from "../../../hooks/useDataStore";
+import type { DescriptionData, ResourceType } from "../../../hooks/useDataStore";
 import cardStyles from "./DataTooltipCard.module.scss";
 import TooltipEffectButton from "./TooltipEffectButton";
 import TooltipFlagsSection from "./TooltipFlagsSection";
@@ -9,6 +9,7 @@ export interface SimpleDataTooltipCardProps {
   subtitle: string;
   resourceType?: ResourceType;
   flags?: Iterable<string> | null;
+  description?: DescriptionData | null;
   children?: ReactNode;
 }
 
@@ -17,6 +18,7 @@ export default function SimpleDataTooltipCard({
   subtitle,
   resourceType,
   flags,
+  description,
   children,
 }: SimpleDataTooltipCardProps) {
   return (
@@ -29,8 +31,13 @@ export default function SimpleDataTooltipCard({
         <span className={cardStyles.subtitle}>{subtitle}</span>
       </header>
 
+      {description?.description && (
+        <p className={cardStyles.description}>{description.description}</p>
+      )}
+
       {children}
       <TooltipFlagsSection flags={flags} />
     </article>
   );
 }
+

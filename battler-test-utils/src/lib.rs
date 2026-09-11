@@ -7,8 +7,12 @@ mod test_battle_builder;
 
 pub use cases::read_test_cases;
 pub use data_store::{
+    data_dir,
+    descriptions_dir,
     local_data_store,
+    local_description_store,
     static_local_data_store,
+    static_local_description_store,
     TestDataStore,
 };
 pub use log_util::{

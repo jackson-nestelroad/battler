@@ -155,6 +155,7 @@ for (const { dir, isCore } of directories) {
     if (file === "BatchResult.ts") {
       content =
         'import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";\n' +
+        'import type { DescriptionData } from "./DescriptionData.js";\n' +
         content;
     }
 

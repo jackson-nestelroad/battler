@@ -12,6 +12,7 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-lo
 ahash = { workspace = true }
 anyhow = { workspace = true }
 battler-data = { workspace = true }
+battler-data-service-schema = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

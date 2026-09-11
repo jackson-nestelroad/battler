@@ -96,6 +96,7 @@ impl TestContext {
         let (started_tx, started_rx) = oneshot::channel();
         let handle = tokio::spawn(run_data_service_producer(
             data,
+            None,
             config,
             peer,
             Modules {

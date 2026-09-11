@@ -1,6 +1,7 @@
 import type {
   AbilityData,
   ConditionData,
+  DescriptionData,
   ItemData,
   MoveData,
 } from "battler-data-service-client";
@@ -14,6 +15,8 @@ import {
   fetchItem,
   fetchMove,
   fetchSpecies,
+  getCachedDescription,
+  getCachedGenericDescription,
   getCachedGenericResource,
   getGenericResourceCacheKey,
 } from "./useDataStore";
@@ -430,6 +433,63 @@ describe("useDataStore", () => {
     });
   });
 
+  describe("description caching & retrieval", () => {
+    const mockDescription: DescriptionData = {
+      description: "A strong electric attack.",
+      source: "Scarlet / Violet",
+    };
+
+    it("caches and retrieves descriptions from typed fetch", async () => {
+      mockClient.getMove.mockResolvedValueOnce({
+        data: mockMove,
+        description: mockDescription,
+      });
+
+      const res = await fetchMove("Thunderbolt");
+      expect(res).toEqual(mockMove);
+
+      expect(getCachedDescription("move", "Thunderbolt")).toEqual(mockDescription);
+      expect(getCachedDescription("move", "thunderbolt")).toEqual(mockDescription);
+      expect(getCachedGenericDescription("Thunderbolt")).toEqual(mockDescription);
+    });
+
+    it("caches and retrieves descriptions from generic fetch", async () => {
+      const itemDesc: DescriptionData = {
+        description: "An item to be held by a Pokémon. An exotic berry that burns brightly.",
+        source: "Scarlet / Violet",
+      };
+      mockClient.getResource.mockResolvedValueOnce({
+        data: {
+          type: "item" as const,
+          data: mockItem,
+        },
+        description: itemDesc,
+      });
+
+      const res = await fetchGenericResource("Leftovers");
+      expect(res?.data).toEqual(mockItem);
+
+      expect(getCachedDescription("item", "Leftovers")).toEqual(itemDesc);
+      expect(getCachedDescription("item", "leftovers")).toEqual(itemDesc);
+      expect(getCachedGenericDescription("Leftovers")).toEqual(itemDesc);
+      expect(getCachedGenericDescription("leftovers")).toEqual(itemDesc);
+    });
+
+    it("clears description cache on clearDataStoreCache", async () => {
+      mockClient.getMove.mockResolvedValueOnce({
+        data: mockMove,
+        description: mockDescription,
+      });
+
+      await fetchMove("Thunderbolt");
+      expect(getCachedDescription("move", "Thunderbolt")).toEqual(mockDescription);
+
+      clearDataStoreCache();
+      expect(getCachedDescription("move", "Thunderbolt")).toBeUndefined();
+      expect(getCachedGenericDescription("Thunderbolt")).toBeUndefined();
+    });
+  });
+
   describe("getGenericResourceCacheKey", () => {
     it("builds consistent normalized keys for resource queries", () => {
       expect(getGenericResourceCacheKey("")).toBe("");
@@ -439,3 +499,5 @@ describe("useDataStore", () => {
     });
   });
 });
+
+
