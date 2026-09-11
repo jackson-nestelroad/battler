@@ -219,8 +219,10 @@ describe("conditionData", () => {
     expect(activePlayer.isSpectatorOrReplay).toBe(false);
 
     const spectator = resolveSideLabels(mockState, "spectator-id");
-    expect(spectator.playerSideLabel).toBe("Player 1");
-    expect(spectator.foeSideLabel).toBe("Player 2");
+    expect(spectator.playerSideLabel).toBe("Side 1");
+    expect(spectator.foeSideLabel).toBe("Side 2");
+    expect(spectator.playerSideSubtitle).toBe("Player 1");
+    expect(spectator.foeSideSubtitle).toBe("Player 2");
     expect(spectator.isSpectatorOrReplay).toBe(true);
   });
 

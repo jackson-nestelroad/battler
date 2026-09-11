@@ -3,12 +3,17 @@ import type { BattleState } from "battler-state";
 import { resolveActiveMonName } from "./monHelpers";
 import { getPlayerNameFromState, isMonFaintedInState } from "./battleState";
 
-export function parseTargetValue(targetVal: number, currentSlotIndex: number) {
+export function parseTargetValue(
+  targetVal: number,
+  currentSlotIndex: number,
+  playerSide: number = 0,
+) {
   const isFoe = targetVal > 0;
-  const sideIdx = isFoe ? 1 : 0;
   const pos = isFoe ? targetVal - 1 : Math.abs(targetVal) - 1;
-  const isSelf = sideIdx === 0 && pos === currentSlotIndex;
+  const isSelf = !isFoe && pos === currentSlotIndex;
   const type: "foe" | "ally" | "self" = isFoe ? "foe" : isSelf ? "self" : "ally";
+  const foeSide = playerSide === 0 ? 1 : 0;
+  const sideIdx = isFoe ? foeSide : playerSide;
   return { sideIdx, pos, isSelf, type };
 }
 
@@ -22,7 +27,9 @@ export function getTargetDisplayInfo(
   type: "foe" | "ally" | "self",
   pos: number,
 ) {
-  const sideIdx = type === "foe" ? 1 : 0;
+  const playerSide = playerData?.side ?? 0;
+  const foeSide = playerSide === 0 ? 1 : 0;
+  const sideIdx = type === "foe" ? foeSide : playerSide;
   const fallback = type === "self" ? "Self" : `${getTargetTypeLabel(type)} ${pos + 1}`;
   const monName = resolveActiveMonName(playerData, battleState, sideIdx, pos, fallback);
   const playerName =
@@ -43,7 +50,8 @@ export function resolveTargetLabel(
 ): string | null {
   if (!targetVal) return null;
 
-  const { pos, type } = parseTargetValue(targetVal, currentSlotIndex);
+  const playerSide = playerData?.side ?? 0;
+  const { pos, type } = parseTargetValue(targetVal, currentSlotIndex, playerSide);
   const { label } = getTargetDisplayInfo(playerData, battleState, type, pos);
   return label;
 }
@@ -173,6 +181,8 @@ export function getValidTargets({
   }
 
   const activePerPlayer = getActivePerPlayer(battleType, activeRequestsCount);
+  const playerSide = playerData?.side ?? 0;
+  const foeSide = playerSide === 0 ? 1 : 0;
 
   const targets: TargetOption[] = [];
 
@@ -192,7 +202,7 @@ export function getValidTargets({
   const processSide = (type: "foe" | "ally") => {
     if (type === "foe" && !info.canTargetFoe) return;
     if (type === "ally" && !info.canTargetAlly) return;
-    const sideIdx = type === "foe" ? 1 : 0;
+    const sideIdx = type === "foe" ? foeSide : playerSide;
 
     for (let pos = 0; pos < activePerPlayer; pos++) {
       if (type === "ally" && pos === currentSlotIndex) continue;
@@ -210,7 +220,7 @@ export function getValidTargets({
   processSide("foe");
 
   if (info.canTargetSelf) {
-    if (!isMonFaintedInState(battleState, 0, currentSlotIndex, playerData)) {
+    if (!isMonFaintedInState(battleState, playerSide, currentSlotIndex, playerData)) {
       addTarget("self", currentSlotIndex, buildTargetValue("self", currentSlotIndex));
     }
   }

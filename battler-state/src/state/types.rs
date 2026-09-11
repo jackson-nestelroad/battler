@@ -954,6 +954,9 @@ impl Side {
         }
 
         let mon = self.mon_mut_by_reference_or_else(&reference)?;
+        if !physical_appearance.name.is_empty() {
+            mon.physical_appearance.name = physical_appearance.name.clone();
+        }
         mon.switch_in();
 
         let mon_battle_appearance =

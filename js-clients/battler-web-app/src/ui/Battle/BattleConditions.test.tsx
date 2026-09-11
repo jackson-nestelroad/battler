@@ -239,8 +239,27 @@ describe("BattleConditions", () => {
       );
 
       expect(html).toContain("Field:");
+      expect(html).toContain("Side 1: 3");
+      expect(html).toContain("Side 2: 1");
       expect(html).toContain("Player 1");
       expect(html).toContain("Rival");
+    });
+
+    it("renders side subtitles in popover during spectator or replay mode", () => {
+      const state = createMockBattleState();
+      const html = renderToStaticMarkup(
+        <BattleConditionPopover
+          battleState={state}
+          playerId="spectator"
+          activeTab="player"
+          onTabChange={() => {}}
+        />,
+      );
+
+      expect(html).toContain("Side 1 Conditions");
+      expect(html).toContain("Player 1");
+      expect(html).toContain("Side 1");
+      expect(html).toContain("Side 2");
     });
 
     it("renders interactive DataTooltipTriggers for condition items inside popover", () => {

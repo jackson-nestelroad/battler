@@ -36,14 +36,39 @@ export default function BattleConditionPopover({
     foeData,
     playerSideLabel,
     foeSideLabel,
+    playerSideSubtitle,
+    foeSideSubtitle,
   } = conditions;
 
   const currentSideData = activeTab === "foe" ? foeData : playerData;
 
-  const tabs: { id: ConditionTab; label: string; title: string; count: number }[] = [
-    { id: "field", label: "Field", title: "Field Conditions", count: fieldData.allCount },
-    { id: "player", label: playerSideLabel, title: `${playerSideLabel} Conditions`, count: playerData.allCount },
-    { id: "foe", label: foeSideLabel, title: `${foeSideLabel} Conditions`, count: foeData.allCount },
+  const tabs: {
+    id: ConditionTab;
+    label: string;
+    title: string;
+    subtitle?: string;
+    count: number;
+  }[] = [
+    {
+      id: "field",
+      label: "Field",
+      title: "Field Conditions",
+      count: fieldData.allCount,
+    },
+    {
+      id: "player",
+      label: playerSideLabel,
+      title: `${playerSideLabel} Conditions`,
+      subtitle: playerSideSubtitle,
+      count: playerData.allCount,
+    },
+    {
+      id: "foe",
+      label: foeSideLabel,
+      title: `${foeSideLabel} Conditions`,
+      subtitle: foeSideSubtitle,
+      count: foeData.allCount,
+    },
   ];
 
   const activeTabInfo = tabs.find((t) => t.id === activeTab) ?? tabs[0];
@@ -85,6 +110,7 @@ export default function BattleConditionPopover({
               aria-controls={`condition-panel-${tab.id}`}
               className={cardStyles.tabBtn}
               onClick={() => onTabChange(tab.id)}
+              title={tab.subtitle ? `${tab.label} (${tab.subtitle})` : undefined}
             >
               <span>{tab.label}</span>
               <span
@@ -98,7 +124,12 @@ export default function BattleConditionPopover({
       </div>
 
       {/* Header Bar */}
-      <div className={cardStyles.headerTitle}>{activeTabInfo.title}</div>
+      <header className={cardStyles.headerSection}>
+        <div className={cardStyles.headerTitle}>{activeTabInfo.title}</div>
+        {activeTabInfo.subtitle && (
+          <div className={cardStyles.subtitle}>{activeTabInfo.subtitle}</div>
+        )}
+      </header>
 
       {/* Body Content */}
       <div

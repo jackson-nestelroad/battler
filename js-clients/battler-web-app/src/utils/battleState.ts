@@ -7,7 +7,8 @@ export function isMonFaintedInState(
   activePosition: number,
   playerData?: PlayerBattleData | null,
 ): boolean {
-  if (sideIndex === 0 && playerData?.mons) {
+  const playerSide = playerData?.side ?? 0;
+  if (sideIndex === playerSide && playerData?.mons) {
     const mon = playerData.mons.find((m) => m.player_active_position === activePosition);
     if (!mon || !mon.active || (mon.hp ?? 0) <= 0) {
       return true;

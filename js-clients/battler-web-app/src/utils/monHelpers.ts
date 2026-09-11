@@ -167,7 +167,8 @@ export function resolveActiveMonName(
   pos: number,
   fallbackName: string,
 ): string {
-  const mon = sideIdx === 0 ? getMonByActivePosition(playerData, pos) : null;
+  const playerSide = playerData?.side ?? 0;
+  const mon = sideIdx === playerSide ? getMonByActivePosition(playerData, pos) : null;
   return (
     getMonDisplayName(mon) ||
     getMonNameFromState(battleState, sideIdx, pos) ||

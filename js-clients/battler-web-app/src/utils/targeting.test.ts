@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getMoveTargetInfo, getValidTargets, isAdjacent } from "./targeting";
+import {
+  getMoveTargetInfo,
+  getValidTargets,
+  isAdjacent,
+  parseTargetValue,
+  resolveTargetLabel,
+} from "./targeting";
 import type { BattleState } from "battler-state";
 import type { PlayerBattleData } from "battler-types";
 
@@ -237,6 +243,262 @@ describe("targeting utility", () => {
 
       // Foe 0 (Gengar -> 1) and Foe 2 (Dragonite -> 3) are alive, Foe 1 (Alakazam -> 2) is fainted
       expect(targets.filter((t) => t.type === "foe").map((t) => t.value)).toEqual([1, 3]);
+    });
+
+    it("populates revealed Pokémon names from battleState instead of fallback", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              id: 0,
+              name: "Player Side",
+              players: {
+                "player-1": {
+                  name: "Ash",
+                  mons: [{ fainted: false, physical_appearance: { name: "Pikachu" } }],
+                },
+              },
+              active: [{ player: "player-1", mon_index: 0, battle_appearance_index: 0 }],
+            },
+            {
+              id: 1,
+              name: "Foe Side",
+              players: {
+                "player-2": {
+                  name: "Cynthia",
+                  mons: [
+                    { fainted: false, physical_appearance: { name: "Great Tusk" } },
+                    { fainted: false, physical_appearance: { name: "Zarude" } },
+                  ],
+                },
+              },
+              active: [
+                { player: "player-2", mon_index: 0, battle_appearance_index: 0 },
+                { player: "player-2", mon_index: 1, battle_appearance_index: 0 },
+              ],
+            },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const playerData: PlayerBattleData = {
+        name: "Ash",
+        side: 0,
+        mons: [
+          {
+            name: "Pikachu",
+            species: "Pikachu",
+            hp: 100,
+            max_hp: 100,
+            active: true,
+            player_active_position: 0,
+          },
+        ],
+      } as unknown as PlayerBattleData;
+
+      const targets = getValidTargets({
+        moveTarget: "AdjacentFoe",
+        currentSlotIndex: 0,
+        battleType: "Doubles",
+        battleState: mockState,
+        playerData,
+      });
+
+      expect(targets).toHaveLength(2);
+      expect(targets[0].monName).toBe("Great Tusk");
+      expect(targets[0].label).toBe("Great Tusk (Foe • Cynthia)");
+      expect(targets[1].monName).toBe("Zarude");
+      expect(targets[1].label).toBe("Zarude (Foe • Cynthia)");
+    });
+
+    it("correctly handles player on side 1", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              id: 0,
+              name: "Side 1",
+              players: {
+                "player-1": {
+                  name: "Cynthia",
+                  mons: [
+                    { fainted: false, physical_appearance: { name: "Garchomp" } },
+                    { fainted: false, physical_appearance: { name: "Togekiss" } },
+                  ],
+                },
+              },
+              active: [
+                { player: "player-1", mon_index: 0, battle_appearance_index: 0 },
+                { player: "player-1", mon_index: 1, battle_appearance_index: 0 },
+              ],
+            },
+            {
+              id: 1,
+              name: "Side 2",
+              players: {
+                "player-2": {
+                  name: "Ash",
+                  mons: [
+                    { fainted: false, physical_appearance: { name: "Lucario" } },
+                    { fainted: false, physical_appearance: { name: "Pikachu" } },
+                  ],
+                },
+              },
+              active: [
+                { player: "player-2", mon_index: 0, battle_appearance_index: 0 },
+                { player: "player-2", mon_index: 1, battle_appearance_index: 0 },
+              ],
+            },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const playerData: PlayerBattleData = {
+        name: "Ash",
+        side: 1,
+        mons: [
+          {
+            name: "Lucario",
+            species: "Lucario",
+            hp: 100,
+            max_hp: 100,
+            active: true,
+            player_active_position: 0,
+          },
+          {
+            name: "Pikachu",
+            species: "Pikachu",
+            hp: 100,
+            max_hp: 100,
+            active: true,
+            player_active_position: 1,
+          },
+        ],
+      } as unknown as PlayerBattleData;
+
+      // Foes should come from Side 0 (Cynthia)
+      const foeTargets = getValidTargets({
+        moveTarget: "AdjacentFoe",
+        currentSlotIndex: 0,
+        battleType: "Doubles",
+        battleState: mockState,
+        playerData,
+      });
+
+      expect(foeTargets).toHaveLength(2);
+      expect(foeTargets[0].monName).toBe("Garchomp");
+      expect(foeTargets[0].type).toBe("foe");
+      expect(foeTargets[1].monName).toBe("Togekiss");
+      expect(foeTargets[1].type).toBe("foe");
+
+      // Allies should come from Side 1
+      const allyTargets = getValidTargets({
+        moveTarget: "AdjacentAlly",
+        currentSlotIndex: 0,
+        battleType: "Doubles",
+        battleState: mockState,
+        playerData,
+      });
+
+      expect(allyTargets).toHaveLength(1);
+      expect(allyTargets[0].monName).toBe("Pikachu");
+      expect(allyTargets[0].type).toBe("ally");
+      expect(allyTargets[0].value).toBe(-2);
+    });
+  });
+
+  describe("parseTargetValue", () => {
+    it("parses foe and ally values for player on side 0", () => {
+      expect(parseTargetValue(1, 0, 0)).toEqual({
+        sideIdx: 1,
+        pos: 0,
+        isSelf: false,
+        type: "foe",
+      });
+      expect(parseTargetValue(-1, 0, 0)).toEqual({
+        sideIdx: 0,
+        pos: 0,
+        isSelf: true,
+        type: "self",
+      });
+      expect(parseTargetValue(-2, 0, 0)).toEqual({
+        sideIdx: 0,
+        pos: 1,
+        isSelf: false,
+        type: "ally",
+      });
+    });
+
+    it("parses foe and ally values for player on side 1", () => {
+      // For player on side 1, foe side is 0, ally side is 1
+      expect(parseTargetValue(1, 0, 1)).toEqual({
+        sideIdx: 0,
+        pos: 0,
+        isSelf: false,
+        type: "foe",
+      });
+      expect(parseTargetValue(-1, 0, 1)).toEqual({
+        sideIdx: 1,
+        pos: 0,
+        isSelf: true,
+        type: "self",
+      });
+      expect(parseTargetValue(-2, 0, 1)).toEqual({
+        sideIdx: 1,
+        pos: 1,
+        isSelf: false,
+        type: "ally",
+      });
+    });
+  });
+
+  describe("resolveTargetLabel", () => {
+    it("returns null for null or 0 targetVal", () => {
+      expect(resolveTargetLabel(null, 0)).toBeNull();
+      expect(resolveTargetLabel(0, 0)).toBeNull();
+    });
+
+    it("resolves label correctly for player on side 1", () => {
+      const mockState = {
+        field: {
+          sides: [
+            {
+              id: 0,
+              name: "Foe Side",
+              players: {
+                "player-foe": {
+                  name: "Gary",
+                  mons: [{ physical_appearance: { name: "Blastoise" } }],
+                },
+              },
+              active: [{ player: "player-foe", mon_index: 0 }],
+            },
+            {
+              id: 1,
+              name: "Player Side",
+              players: {
+                "player-me": {
+                  name: "Ash",
+                  mons: [{ physical_appearance: { name: "Charizard" } }],
+                },
+              },
+              active: [{ player: "player-me", mon_index: 0 }],
+            },
+          ],
+        },
+      } as unknown as BattleState;
+
+      const playerData = {
+        name: "Ash",
+        side: 1,
+        mons: [{ player_active_position: 0, name: "Charizard" }],
+      } as unknown as PlayerBattleData;
+
+      const foeLabel = resolveTargetLabel(1, 0, mockState, playerData);
+      expect(foeLabel).toBe("Blastoise (Foe • Gary)");
+
+      const selfLabel = resolveTargetLabel(-1, 0, mockState, playerData);
+      expect(selfLabel).toBe("Self (Charizard)");
     });
   });
 });

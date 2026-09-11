@@ -1,4 +1,4 @@
-import type { MonMoveSlotData, Request } from "battler-types";
+import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
 import { describe, expect, it } from "vitest";
 import {
   canSlotSelect,
@@ -15,6 +15,7 @@ import {
   getSelectReason,
   getSlotLabel,
   normalizeStatusCode,
+  resolveActiveMonName,
 } from "./monHelpers";
 
 describe("monHelpers", () => {
@@ -247,6 +248,52 @@ describe("monHelpers", () => {
     expect(normalizeStatusCode("faint")).toBe("fnt");
     expect(normalizeStatusCode("ok")).toBe("ok");
     expect(normalizeStatusCode("OK")).toBe("ok");
+  });
+
+  describe("resolveActiveMonName", () => {
+    it("resolves active mon name from playerData when side matches playerData.side (side 0)", () => {
+      const playerData = {
+        side: 0,
+        mons: [{ player_active_position: 0, name: "Sparky", species: "Pikachu" }],
+      } as unknown as PlayerBattleData;
+      expect(resolveActiveMonName(playerData, null, 0, 0, "Fallback")).toBe("Sparky");
+    });
+
+    it("resolves active mon name from playerData when side matches playerData.side (side 1)", () => {
+      const playerData = {
+        side: 1,
+        mons: [{ player_active_position: 0, name: "Blaze", species: "Charizard" }],
+      } as unknown as PlayerBattleData;
+      expect(resolveActiveMonName(playerData, null, 1, 0, "Fallback")).toBe("Blaze");
+    });
+
+    it("resolves active mon name from battleState when querying foe side", () => {
+      const playerData = {
+        side: 0,
+        mons: [{ player_active_position: 0, name: "Sparky" }],
+      } as unknown as PlayerBattleData;
+      const battleState = {
+        field: {
+          sides: [
+            { active: [] },
+            {
+              players: {
+                "foe-1": {
+                  mons: [{ physical_appearance: { name: "Great Tusk" } }],
+                },
+              },
+              active: [{ player: "foe-1", mon_index: 0 }],
+            },
+          ],
+        },
+      } as any;
+
+      expect(resolveActiveMonName(playerData, battleState, 1, 0, "Fallback")).toBe("Great Tusk");
+    });
+
+    it("falls back to fallbackName when mon has no name", () => {
+      expect(resolveActiveMonName(null, null, 0, 0, "Fallback")).toBe("Fallback");
+    });
   });
 });
 

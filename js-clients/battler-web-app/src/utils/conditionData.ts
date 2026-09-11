@@ -34,6 +34,8 @@ export interface SideLabelsInfo {
   foeSideIndex: number;
   playerSideLabel: string;
   foeSideLabel: string;
+  playerSideSubtitle?: string;
+  foeSideSubtitle?: string;
   isSpectatorOrReplay: boolean;
 }
 
@@ -167,11 +169,17 @@ export function resolveSideLabels(
       const sideIdx = stateSelectors.sideForPlayer(battleState, playerId);
       if (sideIdx !== -1 && sideIdx < battleState.field.sides.length) {
         const otherIdx = sideIdx === 0 ? 1 : 0;
+        const foeSide = battleState.field.sides[otherIdx];
+        const foeSideName = foeSide?.name;
         return {
           playerSideIndex: sideIdx,
           foeSideIndex: otherIdx,
           playerSideLabel: "Your Side",
           foeSideLabel: "Foe Side",
+          foeSideSubtitle:
+            foeSideName && foeSideName !== "Foe Side" && foeSideName !== "Side 2"
+              ? foeSideName
+              : undefined,
           isSpectatorOrReplay: false,
         };
       }
@@ -182,14 +190,16 @@ export function resolveSideLabels(
 
   const side0 = battleState.field.sides[0];
   const side1 = battleState.field.sides[1];
-  const side0Name = side0?.name || "Side 1";
-  const side1Name = side1?.name || "Side 2";
+  const side0Name = side0?.name;
+  const side1Name = side1?.name;
 
   return {
     playerSideIndex: 0,
     foeSideIndex: 1,
-    playerSideLabel: side0Name,
-    foeSideLabel: side1Name,
+    playerSideLabel: "Side 1",
+    foeSideLabel: "Side 2",
+    playerSideSubtitle: side0Name && side0Name !== "Side 1" ? side0Name : undefined,
+    foeSideSubtitle: side1Name && side1Name !== "Side 2" ? side1Name : undefined,
     isSpectatorOrReplay: true,
   };
 }

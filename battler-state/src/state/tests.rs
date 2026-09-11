@@ -2993,6 +2993,251 @@ mod state_test {
     }
 
     #[test]
+    fn team_preview_mon_without_name_populates_name_on_switch() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:2",
+            "teampreviewstart",
+            "mon|player:player-1|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|species:Charmander|level:100|gender:M",
+            "mon|player:player-2|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        // During team preview, names are hidden so physical_appearance.name is empty.
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "");
+        assert_eq!(p1.mons[0].physical_appearance.species, "Bulbasaur");
+        assert_eq!(p1.mons[1].physical_appearance.name, "");
+        assert_eq!(p1.mons[1].physical_appearance.species, "Charmander");
+
+        // When switching in, the name is revealed (e.g. nickname or species name).
+        log.extend([
+            "battlestart",
+            "switch|player:player-1|position:1|name:Sprouts|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "Sprouts");
+        assert_eq!(p1.mons[0].physical_appearance.species, "Bulbasaur");
+
+        let p2 = &state.field.sides[1].players["player-2"];
+        assert_eq!(p2.mons[0].physical_appearance.name, "Rattata");
+        assert_eq!(p2.mons[0].physical_appearance.species, "Rattata");
+
+        // Verify state selectors see the revealed name on active mon
+        let active_ref_p1 = state_selectors::active_mon_by_position(&state, 0, 0).unwrap().unwrap();
+        let app_p1 = state_selectors::mon_physical_appearance(&state, &active_ref_p1).unwrap();
+        assert_eq!(app_p1.name, "Sprouts");
+
+        let active_ref_p2 = state_selectors::active_mon_by_position(&state, 1, 0).unwrap().unwrap();
+        let app_p2 = state_selectors::mon_physical_appearance(&state, &active_ref_p2).unwrap();
+        assert_eq!(app_p2.name, "Rattata");
+    }
+
+    #[test]
+    fn team_preview_mon_multiple_switches_preserves_names_and_populates_bench() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|species:Charmander|level:100|gender:M",
+            "mon|player:player-2|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Sprouts|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        // Switch out Sprouts (now inactive on bench) and switch in Charmander
+        log.extend([
+            "switchout|mon:Sprouts,player-1,1",
+            "switch|player:player-1|position:1|name:Zippo|species:Charmander|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "Sprouts");
+        assert_eq!(p1.mons[1].physical_appearance.name, "Zippo");
+        assert_eq!(p1.mons.len(), 2);
+
+        // Switch out Zippo, switch Sprouts back in: should match existing Sprouts and NOT create a new Mon
+        log.extend([
+            "switchout|mon:Zippo,player-1,1",
+            "switch|player:player-1|position:1|name:Sprouts|species:Bulbasaur|level:100|gender:F|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons.len(), 2);
+        assert_eq!(p1.mons[0].physical_appearance.name, "Sprouts");
+        assert_eq!(p1.mons[1].physical_appearance.name, "Zippo");
+
+        let active_ref = state_selectors::active_mon_by_position(&state, 0, 0).unwrap().unwrap();
+        assert_eq!(active_ref.mon_index, 0);
+        let app = state_selectors::mon_physical_appearance(&state, &active_ref).unwrap();
+        assert_eq!(app.name, "Sprouts");
+    }
+
+    #[test]
+    fn team_preview_duplicate_species_without_names_populates_distinct_names() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|species:Pikachu|level:100|gender:M",
+            "mon|player:player-1|species:Pikachu|level:100|gender:M",
+            "mon|player:player-2|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Sparky|species:Pikachu|level:100|gender:M|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "Sparky");
+        assert_eq!(p1.mons[1].physical_appearance.name, "");
+
+        // Switch out Sparky, switch in second Pikachu with nickname Puka
+        log.extend([
+            "switchout|mon:Sparky,player-1,1",
+            "switch|player:player-1|position:1|name:Puka|species:Pikachu|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons.len(), 2);
+        assert_eq!(p1.mons[0].physical_appearance.name, "Sparky");
+        assert_eq!(p1.mons[1].physical_appearance.name, "Puka");
+        assert!(p1.mons[0].brought);
+        assert!(p1.mons[1].brought);
+
+        // Switch out Puka, switch Sparky back in: matches mon 0
+        log.extend([
+            "switchout|mon:Puka,player-1,1",
+            "switch|player:player-1|position:1|name:Sparky|species:Pikachu|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let active_ref = state_selectors::active_mon_by_position(&state, 0, 0).unwrap().unwrap();
+        assert_eq!(active_ref.mon_index, 0);
+        let app = state_selectors::mon_physical_appearance(&state, &active_ref).unwrap();
+        assert_eq!(app.name, "Sparky");
+    }
+
+    #[test]
+    fn team_preview_illusion_without_names_populates_name_on_replace() {
+        let mut log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|species:Zoroark|level:100|gender:F",
+            "mon|player:player-2|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "Bulbasaur");
+        assert_eq!(p1.mons[1].physical_appearance.name, ""); // Zoroark not revealed yet
+
+        // Illusion breaks and reveals Zoroark with nickname Shadow via replace
+        log.extend([
+            "replace|player:player-1|position:1|name:Shadow|species:Zoroark|level:100|gender:F|health:50/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(state, &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[0].physical_appearance.name, "Bulbasaur");
+        assert_eq!(p1.mons[1].physical_appearance.name, "Shadow");
+        assert!(p1.mons[0].brought);
+        assert!(p1.mons[1].brought);
+
+        let active_ref = state_selectors::active_mon_by_position(&state, 0, 0).unwrap().unwrap();
+        assert_eq!(active_ref.mon_index, 1);
+        let app = state_selectors::mon_physical_appearance(&state, &active_ref).unwrap();
+        assert_eq!(app.name, "Shadow");
+    }
+
+    #[test]
+    fn team_preview_drag_switch_without_name_populates_name() {
+        let log = Log::new(&[
+            "info|battletype:Singles",
+            "side|id:0|name:Side 1",
+            "side|id:1|name:Side 2",
+            "maxsidelength|length:1",
+            "player|id:player-1|name:Player 1|side:0|position:0",
+            "player|id:player-2|name:Player 2|side:1|position:0",
+            "teamsize|player:player-1|size:2",
+            "teamsize|player:player-2|size:1",
+            "teampreviewstart",
+            "mon|player:player-1|species:Bulbasaur|level:100|gender:F",
+            "mon|player:player-1|species:Charmander|level:100|gender:M",
+            "mon|player:player-2|species:Rattata|level:100|gender:M",
+            "teampreview|pick:2",
+            "battlestart",
+            "switch|player:player-1|position:1|name:Bulbasaur|species:Bulbasaur|level:100|gender:F|health:100/100",
+            "switch|player:player-2|position:1|name:Rattata|species:Rattata|level:100|gender:M|health:100/100",
+            "turn|turn:1",
+            "drag|player:player-1|position:1|name:Zippo|species:Charmander|level:100|gender:M|health:100/100",
+        ])
+        .unwrap();
+        let state = alter_battle_state(BattleState::default(), &log).unwrap();
+
+        let p1 = &state.field.sides[0].players["player-1"];
+        assert_eq!(p1.mons[1].physical_appearance.name, "Zippo");
+
+        let active_ref = state_selectors::active_mon_by_position(&state, 0, 0).unwrap().unwrap();
+        assert_eq!(active_ref.mon_index, 1);
+        let app = state_selectors::mon_physical_appearance(&state, &active_ref).unwrap();
+        assert_eq!(app.name, "Zippo");
+    }
+
+    #[test]
     fn team_preview_with_illusion_user() {
         let mut log = Log::new(&[
             "info|battletype:Singles",

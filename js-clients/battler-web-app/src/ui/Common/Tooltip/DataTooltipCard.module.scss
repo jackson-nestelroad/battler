@@ -46,12 +46,18 @@
   gap: var(--spacing-xxs);
 }
 
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-xs);
+}
+
 .headerTitle {
   font-size: var(--font-size-m);
   font-weight: 700;
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: var(--spacing-xs);
 }
 
 .scrollBody {
@@ -74,6 +80,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
+  overflow-wrap: break-word;
 }
 
 .description {

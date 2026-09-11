@@ -1,26 +1,110 @@
 {
   "par": {
-    "description": "Reduces the Pokémon's Speed by 50% and gives it a 25% chance of being fully paralyzed and unable to act each turn.",
+    "description": "The Pokémon is paralyzed. Its Speed is reduced by 50%, and it has a 25% chance of being unable to move each turn.",
     "source": "Manual"
   },
   "brn": {
-    "description": "Reduces Attack by 50% for physical moves and inflicts damage equal to 1/16 of maximum HP at the end of each turn.",
+    "description": "The Pokémon is burned. Its Attack is reduced by 50% for physical moves, and it takes damage equal to 1/16 of its maximum HP at the end of each turn.",
     "source": "Manual"
   },
   "slp": {
-    "description": "The Pokémon is asleep and unable to move for 1 to 3 turns.",
+    "description": "The Pokémon is asleep and unable to move. It wakes up after 1 to 3 turns.",
     "source": "Manual"
   },
   "psn": {
-    "description": "Inflicts damage equal to 1/8 of maximum HP at the end of each turn.",
+    "description": "The Pokémon is poisoned. It takes damage equal to 1/8 of its maximum HP at the end of each turn.",
     "source": "Manual"
   },
   "tox": {
-    "description": "Badly poisons the Pokémon, inflicting damage that increases by 1/16 of maximum HP at the end of each turn.",
+    "description": "The Pokémon is badly poisoned. It takes damage starting at 1/16 of its maximum HP, increasing by an additional 1/16 at the end of each turn.",
     "source": "Manual"
   },
   "frz": {
     "description": "The Pokémon is frozen solid and unable to move. It has a 20% chance to thaw out each turn.",
+    "source": "Manual"
+  },
+  "rainweather": {
+    "description": "Rain falls on the battlefield. Water-type moves deal 50% more damage, and Fire-type moves deal 50% less damage.",
+    "source": "Manual"
+  },
+  "heavyrainweather": {
+    "description": "Heavy rain pours over the battlefield. Fire-type attacks fail entirely, Water-type moves deal 50% more damage, and other weather conditions cannot be activated.",
+    "source": "Manual"
+  },
+  "harshsunlight": {
+    "description": "The sunlight turns harsh on the battlefield. Fire-type moves deal 50% more damage, and Water-type moves deal 50% less damage.",
+    "source": "Manual"
+  },
+  "extremelyharshsunlight": {
+    "description": "Extremely harsh sunlight blazes over the battlefield. Water-type attacks fail entirely, Fire-type moves deal 50% more damage, and other weather conditions cannot be activated.",
+    "source": "Manual"
+  },
+  "sandstormweather": {
+    "description": "A sandstorm rages across the battlefield. It inflicts damage equal to 1/16 of maximum HP to non-Rock, Ground, or Steel-type Pokémon at the end of each turn, and boosts the Special Defense of Rock-type Pokémon by 50%.",
+    "source": "Manual"
+  },
+  "hailweather": {
+    "description": "A hailstorm rages across the battlefield. It inflicts damage equal to 1/16 of maximum HP to non-Ice-type Pokémon at the end of each turn.",
+    "source": "Manual"
+  },
+  "snowweather": {
+    "description": "Snow falls on the battlefield. It boosts the Defense of Ice-type Pokémon by 50%.",
+    "source": "Manual"
+  },
+  "strongwinds": {
+    "description": "Mysterious strong winds blow across the battlefield. Moves that are normally super effective against Flying-type Pokémon deal neutral damage instead, and other weather conditions cannot be activated.",
+    "source": "Manual"
+  },
+  "confusion": {
+    "description": "The Pokémon is confused for 1 to 4 turns. It has a 33% chance each turn to hurt itself instead of executing its move.",
+    "source": "Manual"
+  },
+  "flinch": {
+    "description": "The Pokémon flinches in shock. It is unable to move for the remainder of the current turn.",
+    "source": "Manual"
+  },
+  "trapped": {
+    "description": "The Pokémon is trapped. It cannot switch out or flee from battle.",
+    "source": "Manual"
+  },
+  "partiallytrapped": {
+    "description": "The Pokémon is trapped by a binding move for 4 to 5 turns. It takes damage equal to 1/8 of its maximum HP at the end of each turn and cannot switch out.",
+    "source": "Manual"
+  },
+  "lockedmove": {
+    "description": "The Pokémon is locked into a rampage for 2 to 3 turns. It repeats the same move each turn and becomes confused when the rampage ends.",
+    "source": "Manual"
+  },
+  "mustrecharge": {
+    "description": "The Pokémon is recharging from a high-powered attack. It cannot act for the turn.",
+    "source": "Manual"
+  },
+  "choicelock": {
+    "description": "The Pokémon is locked into a single move by its Choice item. It can only use that move until it switches out.",
+    "source": "Manual"
+  },
+  "zpower": {
+    "description": "The Pokémon channels Z-Power from its held Z-Crystal. Its move is upgraded into a powerful Z-Move for the turn.",
+    "source": "Manual"
+  },
+  "dynamax": {
+    "description": "The Pokémon is transformed into a giant form for 3 turns. Its maximum HP is boosted by 50% to 100%, and its moves become powerful Max Moves.",
+    "source": "Manual"
+  },
+  "terastallization": {
+    "description": "The Pokémon is crystallized into its Tera Type. Its defensive typing becomes its Tera Type, and its same-type attack bonus (STAB) damage is enhanced for the remainder of the battle.",
+    "source": "Manual"
+  },
+  "commanding": {
+    "description": "The Pokémon has entered the mouth of its ally. It boosts all of its ally's stats by 2 stages while becoming untargetable and unable to act.",
+    "source": "Manual"
+  },
+  "commanded": {
+    "description": "The Pokémon has an ally in its mouth. All of its stats are boosted by 2 stages, but it cannot switch out.",
+    "source": "Manual"
+  },
+  "gem": {
+    "description": "The Pokémon is powered by its held Gem. The power of its next move of the matching type is boosted by 30%, consuming the Gem.",
     "source": "Manual"
   }
 }

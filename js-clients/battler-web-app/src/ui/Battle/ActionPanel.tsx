@@ -142,7 +142,7 @@ export default function ActionPanel({
         const monName = resolveActiveMonName(
           playerData,
           battleSession?.battleState,
-          0,
+          playerData?.side ?? 0,
           currentSlotIndex,
           fallbackName,
         );

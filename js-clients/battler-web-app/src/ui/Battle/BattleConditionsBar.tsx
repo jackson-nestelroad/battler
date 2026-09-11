@@ -49,6 +49,8 @@ export default function BattleConditionsBar({
     foeData,
     playerSideLabel,
     foeSideLabel,
+    playerSideSubtitle,
+    foeSideSubtitle,
   } = conditions;
 
   const clearCloseTimer = useCallback(() => {
@@ -162,7 +164,7 @@ export default function BattleConditionsBar({
     };
   }, [clearCloseTimer]);
 
-  const chips: { tab: ConditionTab; label: string; text: string }[] = [
+  const chips: { tab: ConditionTab; label: string; text: string; title?: string }[] = [
     {
       tab: "field",
       label: "View field conditions",
@@ -170,19 +172,21 @@ export default function BattleConditionsBar({
     },
     {
       tab: "player",
-      label: `View ${playerSideLabel} conditions`,
+      label: `View ${playerSideLabel} conditions${playerSideSubtitle ? ` (${playerSideSubtitle})` : ""}`,
       text: `${playerSideLabel}: ${playerData.allCount}`,
+      title: playerSideSubtitle ? `${playerSideLabel} (${playerSideSubtitle})` : undefined,
     },
     {
       tab: "foe",
-      label: `View ${foeSideLabel} conditions`,
+      label: `View ${foeSideLabel} conditions${foeSideSubtitle ? ` (${foeSideSubtitle})` : ""}`,
       text: `${foeSideLabel}: ${foeData.allCount}`,
+      title: foeSideSubtitle ? `${foeSideLabel} (${foeSideSubtitle})` : undefined,
     },
   ];
 
   return (
     <div className="flex-row align-center gap-s flex-wrap" ref={containerRef}>
-      {chips.map(({ tab, label, text }) => (
+      {chips.map(({ tab, label, text, title }) => (
         <button
           key={tab}
           type="button"
@@ -193,6 +197,7 @@ export default function BattleConditionsBar({
           onMouseLeave={scheduleClose}
           onClick={(e) => handleChipClick(e, tab)}
           aria-label={label}
+          title={title}
         >
           {text}
         </button>

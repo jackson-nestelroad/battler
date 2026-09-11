@@ -176,6 +176,38 @@ describe("isMonFaintedInState", () => {
     // Ally slot 1 (Charizard): fainted
     expect(isMonFaintedInState(mockState, 0, 1)).toBe(true);
   });
+
+  it("checks playerData correctly for side 1 (when player is on side 1)", () => {
+    const playerData: PlayerBattleData = {
+      name: "Ash",
+      side: 1,
+      mons: [
+        {
+          name: "Lucario",
+          species: "Lucario",
+          hp: 100,
+          max_hp: 100,
+          active: true,
+          player_active_position: 0,
+        },
+        {
+          name: "Charizard",
+          species: "Charizard",
+          hp: 0,
+          max_hp: 100,
+          active: true,
+          player_active_position: 1,
+        },
+      ],
+    } as unknown as PlayerBattleData;
+
+    // Slot 0 has healthy active Lucario
+    expect(isMonFaintedInState(null, 1, 0, playerData)).toBe(false);
+    // Slot 1 has fainted active Charizard (hp === 0)
+    expect(isMonFaintedInState(null, 1, 1, playerData)).toBe(true);
+    // Slot 2 has no active mon
+    expect(isMonFaintedInState(null, 1, 2, playerData)).toBe(true);
+  });
 });
 
 describe("isMonActiveOnField", () => {
