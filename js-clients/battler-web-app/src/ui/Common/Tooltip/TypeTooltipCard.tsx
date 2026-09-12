@@ -1,10 +1,10 @@
 import { toId } from "../../../hooks/useDataStore";
 import {
   ALL_POKEMON_TYPES,
-  formatMultiplier,
   getEffectiveness,
   useTypeChart,
 } from "../../../hooks/useTypeChart";
+import EffectivenessBadge from "../EffectivenessBadge";
 import TypeBadge from "../TypeBadge";
 import cardStyles from "./DataTooltipCard.module.scss";
 import TooltipEffectButton from "./TooltipEffectButton";
@@ -21,22 +21,18 @@ function normalizeType(name: string): string {
 
 function TypeListRow({
   label,
-  multiplierText,
-  multiplierClass,
+  mult,
   types,
 }: {
   label: string;
-  multiplierText: string;
-  multiplierClass: string;
+  mult: number;
   types: string[];
 }) {
   return (
     <div className={styles.typeRow}>
       <div className="flex-row align-center gap-xs">
         <span className={styles.typeRowLabel}>{label}</span>
-        <span className={`${styles.multBadge} ${multiplierClass}`}>
-          ({multiplierText})
-        </span>
+        <EffectivenessBadge mult={mult} />
       </div>
       <div className={styles.typeList}>
         {types.length > 0 ? (
@@ -131,21 +127,18 @@ export default function TypeTooltipCard({ type }: TypeTooltipCardProps) {
         <h4 className={styles.sectionTitle}>Offense</h4>
         <TypeListRow
           label="Super effective"
-          multiplierText={formatMultiplier(2)}
-          multiplierClass={styles.multBadgeSuper}
+          mult={2}
           types={offensiveSuper}
         />
         <TypeListRow
           label="Not very effective"
-          multiplierText={formatMultiplier(0.5)}
-          multiplierClass={styles.multBadgeResist}
+          mult={0.5}
           types={offensiveResist}
         />
         {offensiveImmune.length > 0 && (
           <TypeListRow
             label="No effect"
-            multiplierText={formatMultiplier(0)}
-            multiplierClass={styles.multBadgeImmune}
+            mult={0}
             types={offensiveImmune}
           />
         )}
@@ -155,21 +148,18 @@ export default function TypeTooltipCard({ type }: TypeTooltipCardProps) {
         <h4 className={styles.sectionTitle}>Defense</h4>
         <TypeListRow
           label="Weaknesses"
-          multiplierText={formatMultiplier(2)}
-          multiplierClass={styles.multBadgeSuper}
+          mult={2}
           types={defensiveWeak}
         />
         <TypeListRow
           label="Resistances"
-          multiplierText={formatMultiplier(0.5)}
-          multiplierClass={styles.multBadgeResist}
+          mult={0.5}
           types={defensiveResist}
         />
         {defensiveImmune.length > 0 && (
           <TypeListRow
             label="Immunities"
-            multiplierText={formatMultiplier(0)}
-            multiplierClass={styles.multBadgeImmune}
+            mult={0}
             types={defensiveImmune}
           />
         )}

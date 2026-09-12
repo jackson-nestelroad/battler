@@ -24,6 +24,7 @@
   "license": "ISC",
   "dependencies": {
     "battler-state": "^0.1.0",
+    "battler-types": "^0.1.0",
     "i18next": "^23.0.0"
   },
   "devDependencies": {

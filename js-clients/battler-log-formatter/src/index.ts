@@ -18,4 +18,7 @@ export type {
   ContextValue,
 } from "./types.js";
 export type { LogToken } from "./engine.js";
+export { formatMoveEffects } from "./moves/formatter.js";
+export { formatFractionPercent } from "./moves/fraction.js";
+export type { FormattedMoveEffect, MoveEffectSubject, MoveEffectType } from "./moves/types.js";
 

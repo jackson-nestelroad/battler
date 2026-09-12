@@ -64,6 +64,101 @@ export const en = {
     custom: "{{type}}: {{mon}} {{name}}",
     custom_no_mon: "{{type}}: {{name}}",
   },
+  move_effects: {
+    chance_clause: "{{chance}} chance to {{action}}.",
+    declarative_clause: "{{action}}.",
+    stage___one: "{{count}} stage",
+    stage___other: "{{count}} stages",
+    boost: {
+      infinitive_raise: "raise the {{subject}}'s {{stats}} by {{stages}}",
+      infinitive_lower: "lower the {{subject}}'s {{stats}} by {{stages}}",
+      infinitive_raise_all: "raise all of the {{subject}}'s stats by {{stages}}",
+      infinitive_lower_all: "lower all of the {{subject}}'s stats by {{stages}}",
+      declarative_raise: "raises the {{subject}}'s {{stats}} by {{stages}}",
+      declarative_lower: "lowers the {{subject}}'s {{stats}} by {{stages}}",
+      declarative_raise_all: "raises all of the {{subject}}'s stats by {{stages}}",
+      declarative_lower_all: "lowers all of the {{subject}}'s stats by {{stages}}",
+    },
+    status: {
+      infinitive: {
+        target: {
+          par: "paralyze the target",
+          brn: "burn the target",
+          frz: "freeze the target",
+          slp: "put the target to sleep",
+          psn: "poison the target",
+          tox: "badly poison the target",
+        },
+        user: {
+          slp: "put the user to sleep",
+          tox: "badly poison the user",
+        },
+      },
+      declarative: {
+        target: {
+          par: "paralyzes the target",
+          brn: "burns the target",
+          frz: "freezes the target",
+          slp: "puts the target to sleep",
+          psn: "poisons the target",
+          tox: "badly poisons the target",
+        },
+        user: {
+          slp: "puts the user to sleep",
+          tox: "badly poisons the user",
+        },
+      },
+    },
+    volatile_status: {
+      infinitive: {
+        target: {
+          confusion: "confuse the target",
+          flinch: "make the target flinch",
+        },
+        user: {
+          confusion: "confuse the user",
+          flinch: "make the user flinch",
+        },
+      },
+      declarative: {
+        target: {
+          confusion: "confuses the target",
+          flinch: "makes the target flinch",
+        },
+        user: {
+          confusion: "confuses the user",
+          flinch: "makes the user flinch",
+        },
+      },
+    },
+    heal: {
+      infinitive: {
+        user: "restore {{percent}} of the user's HP",
+        target: "restore {{percent}} of the target's HP",
+        allies: "restore {{percent}} of the user's and ally's HP",
+      },
+      declarative: {
+        user: "restores {{percent}} of the user's HP",
+        target: "restores {{percent}} of the target's HP",
+        allies: "restores {{percent}} of the user's and ally's HP",
+      },
+    },
+    subjects: {
+      user: "user",
+      target: "target",
+      allies: "user and ally",
+    },
+    stats: {
+      hp: "HP",
+      atk: "Attack",
+      def: "Defense",
+      spa: "Sp. Atk",
+      spd: "Sp. Def",
+      spe: "Speed",
+      acc: "Accuracy",
+      eva: "Evasiveness",
+    },
+  },
   logs: {
     ability__ability_airlock: "$t(logs.ability__ability_cloudnine)",
     ability__ability_anticipation: "{{MON}} shuddered!",

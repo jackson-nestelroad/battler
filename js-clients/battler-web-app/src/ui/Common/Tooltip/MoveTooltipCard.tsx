@@ -1,4 +1,5 @@
 import type { DescriptionData } from "battler-data-service-client";
+import { formatMoveEffects } from "battler-log-formatter";
 import type { MoveData } from "battler-types";
 import {
   formatAccuracy,
@@ -22,6 +23,7 @@ export default function MoveTooltipCard({ data, description }: MoveTooltipCardPr
   const accuracyStr = formatAccuracy(data.accuracy);
   const ppStr = formatPp(data.pp, data.no_pp_boosts);
   const priorityStr = formatPriority(data.priority);
+  const effects = formatMoveEffects(data);
 
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardFixed}`}>
@@ -41,6 +43,18 @@ export default function MoveTooltipCard({ data, description }: MoveTooltipCardPr
         <p className={cardStyles.description}>{description.description}</p>
       )}
 
+      {effects.length > 0 && (
+        <section className={cardStyles.effectsSection}>
+          <span className={cardStyles.sectionTitle}>Effects</span>
+          <div className={cardStyles.effectsList}>
+            {effects.map((eff, i) => (
+              <p key={i} className={cardStyles.effectItem}>
+                {eff.text}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className={cardStyles.traitsGrid}>
         <div className={cardStyles.traitRow}>

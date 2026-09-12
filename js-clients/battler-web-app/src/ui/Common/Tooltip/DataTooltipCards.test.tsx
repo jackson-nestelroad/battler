@@ -143,6 +143,101 @@ describe("Data Tooltip Cards", () => {
         "A strong electric attack that may also leave the target with paralysis.",
       );
     });
+
+    it("renders secondary effects with chance percentage", () => {
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockMove} />);
+      expect(html).toContain("Effects");
+      expect(html).toContain("10% chance to paralyze the target.");
+    });
+
+    it("renders primary hit_effect without chance percentage", () => {
+      const mockStatusMove: MoveData = {
+        ...mockMove,
+        name: "Thunder Wave",
+        secondary_effects: [],
+        hit_effect: {
+          status: "par",
+          boosts: null,
+          heal_percent: null,
+          volatile_status: null,
+          side_condition: null,
+          slot_condition: null,
+          weather: null,
+          pseudo_weather: null,
+          terrain: null,
+          force_switch: false,
+        },
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockStatusMove} />);
+      expect(html).toContain("Effects");
+      expect(html).toContain("Paralyzes the target.");
+      expect(html).not.toContain("chance");
+    });
+
+    it("renders healing effects concisely", () => {
+      const mockHealMove: MoveData = {
+        ...mockMove,
+        name: "Recover",
+        target: "User",
+        secondary_effects: [],
+        hit_effect: {
+          status: null,
+          boosts: null,
+          heal_percent: "50%",
+          volatile_status: null,
+          side_condition: null,
+          slot_condition: null,
+          weather: null,
+          pseudo_weather: null,
+          terrain: null,
+          force_switch: false,
+        },
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockHealMove} />);
+      expect(html).toContain("Restores 50% of the user&#x27;s HP.");
+    });
+
+    it("renders user stat drops without chance", () => {
+      const mockUserDropMove: MoveData = {
+        ...mockMove,
+        name: "Close Combat",
+        secondary_effects: [],
+        user_effect: {
+          status: null,
+          boosts: {
+            def: -1,
+            spa: -1,
+            atk: 0,
+            spd: 0,
+            spe: 0,
+            acc: 0,
+            eva: 0,
+          },
+          heal_percent: null,
+          volatile_status: null,
+          side_condition: null,
+          slot_condition: null,
+          weather: null,
+          pseudo_weather: null,
+          terrain: null,
+          force_switch: false,
+        },
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={mockUserDropMove} />);
+      expect(html).toContain("Lowers the user&#x27;s Defense and Sp. Atk by 1 stage.");
+      expect(html).not.toContain("chance");
+    });
+
+    it("omits effects section when move has no effects", () => {
+      const noEffectMove: MoveData = {
+        ...mockMove,
+        secondary_effects: [],
+        hit_effect: null,
+        user_effect: null,
+      };
+      const html = renderToStaticMarkup(<MoveTooltipCard data={noEffectMove} />);
+      expect(html).not.toContain("Effects");
+    });
   });
 
   describe("AbilityTooltipCard", () => {

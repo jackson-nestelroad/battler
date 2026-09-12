@@ -90,6 +90,26 @@
   margin: 0;
 }
 
+.effectsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.effectsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.effectItem {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 .traitsGrid {
   display: flex;
   flex-direction: column;
