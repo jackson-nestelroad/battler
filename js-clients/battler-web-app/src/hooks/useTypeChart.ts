@@ -121,19 +121,8 @@ const SUBSCRIPT_DIGITS: Record<string, string> = {
 };
 
 /**
- * Formats a fraction (or multiplier < 1) using unicode vulgar fractions or
- * superscript/subscript small number variants.
- *
- * Supported exact powers of two:
- * - 1/2   => ½
- * - 1/4   => ¼
- * - 1/8   => ⅛
- * - 1/16  => ¹⁄₁₆
- * - 1/32  => ¹⁄₃₂
- * - 1/64  => ¹⁄₆₄
- * - 1/128 => ¹⁄₁₂₈
- *
- * Any other fraction uses superscript "¹" + fraction slash "⁄" + subscript denominator digits.
+ * Formats a fraction (or multiplier < 1) using standard vulgar fractions (½, ¼, ⅛)
+ * or superscript/subscript small number variants.
  */
 export function formatFraction(mult: number): string {
   if (mult === 0.5) return "½";

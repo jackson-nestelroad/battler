@@ -6,7 +6,7 @@ import type {
   TypeChartData,
 } from "battler-types";
 import { getCachedResource } from "../hooks/useDataStore";
-import { getEffectiveness } from "../hooks/useTypeChart";
+import { formatMultiplier, getEffectiveness } from "../hooks/useTypeChart";
 import {
   getActiveRefFromState,
   getMonFromActiveRef,
@@ -176,16 +176,37 @@ export function getMultiplierClass(mult: number): string {
 }
 
 /**
- * Returns a human-readable title describing the effectiveness.
+ * Formats a consistent type effectiveness comparison string in the format:
+ * "$TYPE vs $TYPE: 1×"
+ *
+ * Examples:
+ * - formatEffectivenessComparison("Ice", ["Normal", "Fire", "Water"], 0.25) => "Ice vs Normal/Fire/Water: ¼×"
+ * - formatEffectivenessComparison("Grass", "Water", 2) => "Grass vs Water: 2×"
+ * - formatEffectivenessComparison(undefined, "Psychic", 1) => "vs Psychic: 1×"
+ * - formatEffectivenessComparison(undefined, undefined, 1) => "1×"
  */
-export function getEffectivenessTitle(mult: number): string {
-  if (mult >= 4) return "4× (Double super effective)";
-  if (mult >= 2) return "2× (Super effective)";
-  if (mult === 0) return "0× (No effect)";
-  if (mult <= 0.25) return "¼× (Double resisted)";
-  if (mult <= 0.5) return "½× (Resisted)";
-  return "1× (Normal effectiveness)";
+export function formatEffectivenessComparison(
+  attackerType: string | undefined | null,
+  defenderTypes: string | string[] | undefined | null,
+  mult: number,
+): string {
+  const multText = formatMultiplier(mult);
+  const defStr = Array.isArray(defenderTypes)
+    ? defenderTypes.filter(Boolean).join("/")
+    : defenderTypes || "";
+
+  if (attackerType && defStr) {
+    return `${attackerType} vs ${defStr}: ${multText}`;
+  }
+  if (attackerType) {
+    return `${attackerType}: ${multText}`;
+  }
+  if (defStr) {
+    return `vs ${defStr}: ${multText}`;
+  }
+  return multText;
 }
+
 
 /**
  * Resolves the typing of the opposing active Mon if there is exactly one

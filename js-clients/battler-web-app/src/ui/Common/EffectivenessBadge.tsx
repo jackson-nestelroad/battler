@@ -3,28 +3,27 @@ import { formatMultiplier } from "../../hooks/useTypeChart";
 import {
   calculateTargetEffectiveness,
   canCalculateEffectiveness,
-  getEffectivenessTitle,
+  formatEffectivenessComparison,
   getMultiplierClass,
 } from "../../utils/typeEffectiveness";
 import styles from "./EffectivenessBadge.module.scss";
 
 export interface EffectivenessBadgeProps {
   mult: number;
+  attackerType?: string;
   targetTypes?: string[];
   className?: string;
 }
 
 export default function EffectivenessBadge({
   mult,
+  attackerType,
   targetTypes,
   className,
 }: EffectivenessBadgeProps) {
   const multClass = getMultiplierClass(mult);
   const multText = formatMultiplier(mult);
-  const title =
-    targetTypes && targetTypes.length > 0
-      ? `${getEffectivenessTitle(mult)} against ${targetTypes.join("/")}`
-      : getEffectivenessTitle(mult);
+  const title = formatEffectivenessComparison(attackerType, targetTypes, mult);
 
   const combinedClassName = [
     styles.effectivenessBadge,
@@ -71,6 +70,7 @@ export function MoveEffectivenessBadge({
   return (
     <EffectivenessBadge
       mult={mult}
+      attackerType={move.type}
       targetTypes={targetTypes}
       className={className}
     />

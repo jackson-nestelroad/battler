@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ALL_POKEMON_TYPES,
-  formatMultiplier,
   formatMultiplierValue,
   getDefensiveMultipliers,
   getEffectiveness,
   useTypeChart,
 } from "../../hooks/useTypeChart";
-import { getMultiplierClass } from "../../utils/typeEffectiveness";
+import {
+  formatEffectivenessComparison,
+  getMultiplierClass,
+} from "../../utils/typeEffectiveness";
 import TypeBadge from "./TypeBadge";
 import styles from "./TypeChartGrid.module.scss";
 
@@ -234,8 +236,8 @@ export default function TypeChartGrid({
                           setHoveredRow(atk);
                           setHoveredCol(selectedDefenders[0]);
                         }}
-                        title={`${atk} vs ${selectedDefenders.join(" + ")}: ${formatMultiplier(mult)}`}
-                        aria-label={`${atk} attacking ${selectedDefenders.join(" and ")}: ${formatMultiplier(mult)}`}
+                        title={formatEffectivenessComparison(atk, selectedDefenders, mult)}
+                        aria-label={formatEffectivenessComparison(atk, selectedDefenders, mult)}
                       >
                         {text && (
                           <span
@@ -265,8 +267,8 @@ export default function TypeChartGrid({
                           setHoveredRow(atk);
                           setHoveredCol(defType);
                         }}
-                        title={`${atk} vs ${defType}: ${formatMultiplier(mult)}`}
-                        aria-label={`${atk} attacking ${defType}: ${formatMultiplier(mult)}`}
+                        title={formatEffectivenessComparison(atk, defType, mult)}
+                        aria-label={formatEffectivenessComparison(atk, defType, mult)}
                       >
                         {text && (
                           <span

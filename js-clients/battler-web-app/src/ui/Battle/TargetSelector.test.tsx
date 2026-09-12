@@ -138,7 +138,7 @@ describe("TargetSelector", () => {
     expect(html).toContain("Charizard");
     expect(html).toContain("effectivenessBadge");
     expect(html).toContain("2×");
-    expect(html).toContain("Super effective");
+    expect(html).toContain('title="Water vs Fire: 2×"');
   });
 
   it("shows back button when onBack prop is supplied", () => {

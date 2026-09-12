@@ -62,7 +62,7 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("Grass");
     expect(html).toContain("Water");
     expect(html).toContain("2");
-    expect(html).toContain('aria-label="Grass attacking Water: 2×"');
+    expect(html).toContain('aria-label="Grass vs Water: 2×"');
   });
 
   it("renders merged 2-width column when 2 defendingTypes are specified", () => {
@@ -81,7 +81,7 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("Reset");
     // Grass hits Water (2x) and Ground (2x) -> 4x in combined column
     expect(html).toContain("4");
-    expect(html).toContain('aria-label="Grass attacking Water and Ground: 4×"');
+    expect(html).toContain('aria-label="Grass vs Water/Ground: 4×"');
   });
 
   it("renders merged 3-width column when 3 defendingTypes are specified", () => {
@@ -130,7 +130,7 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("¹⁄₁₂₈");
     expect(html).toContain("cellFraction");
     expect(html).toContain(
-      `aria-label="Grass attacking ${defenders.join(" and ")}: ¹⁄₁₂₈×"`,
+      `aria-label="Grass vs ${defenders.join("/")}: ¹⁄₁₂₈×"`,
     );
   });
 
@@ -148,7 +148,7 @@ describe("TypeChartGrid", () => {
     expect(html).toContain('colSpan="3"');
     expect(html).toContain("8");
     expect(html).toContain(
-      `aria-label="Grass attacking ${defenders.join(" and ")}: 8×"`,
+      `aria-label="Grass vs ${defenders.join("/")}: 8×"`,
     );
   });
 });

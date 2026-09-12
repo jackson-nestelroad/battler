@@ -1,6 +1,7 @@
 import { toId } from "../../../hooks/useDataStore";
 import {
   ALL_POKEMON_TYPES,
+  formatMultiplier,
   getEffectiveness,
   useTypeChart,
 } from "../../../hooks/useTypeChart";
@@ -130,20 +131,20 @@ export default function TypeTooltipCard({ type }: TypeTooltipCardProps) {
         <h4 className={styles.sectionTitle}>Offense</h4>
         <TypeListRow
           label="Super effective"
-          multiplierText="2×"
+          multiplierText={formatMultiplier(2)}
           multiplierClass={styles.multBadgeSuper}
           types={offensiveSuper}
         />
         <TypeListRow
           label="Not very effective"
-          multiplierText="½×"
+          multiplierText={formatMultiplier(0.5)}
           multiplierClass={styles.multBadgeResist}
           types={offensiveResist}
         />
         {offensiveImmune.length > 0 && (
           <TypeListRow
             label="No effect"
-            multiplierText="0×"
+            multiplierText={formatMultiplier(0)}
             multiplierClass={styles.multBadgeImmune}
             types={offensiveImmune}
           />
@@ -154,20 +155,20 @@ export default function TypeTooltipCard({ type }: TypeTooltipCardProps) {
         <h4 className={styles.sectionTitle}>Defense</h4>
         <TypeListRow
           label="Weaknesses"
-          multiplierText="2×"
+          multiplierText={formatMultiplier(2)}
           multiplierClass={styles.multBadgeSuper}
           types={defensiveWeak}
         />
         <TypeListRow
           label="Resistances"
-          multiplierText="½×"
+          multiplierText={formatMultiplier(0.5)}
           multiplierClass={styles.multBadgeResist}
           types={defensiveResist}
         />
         {defensiveImmune.length > 0 && (
           <TypeListRow
             label="Immunities"
-            multiplierText="0×"
+            multiplierText={formatMultiplier(0)}
             multiplierClass={styles.multBadgeImmune}
             types={defensiveImmune}
           />

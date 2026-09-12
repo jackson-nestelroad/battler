@@ -20,7 +20,7 @@
 
 .table {
   border-collapse: separate;
-  border-spacing: 2px;
+  border-spacing: var(--spacing-xxs);
   text-align: center;
   font-size: var(--font-size-xs);
   margin: 0 auto;
@@ -108,8 +108,8 @@
 }
 
 .resetIcon {
-  width: 0.875rem;
-  height: 0.875rem;
+  width: rem(14px);
+  height: rem(14px);
   display: block;
 }
 
@@ -194,7 +194,7 @@
 .cellFraction {
   font-size: var(--font-size-m);
   font-weight: 800;
-  font-family: var(--font-sans);
+  font-family: var(--font-system);
   letter-spacing: -0.02em;
   line-height: 1;
   white-space: nowrap;

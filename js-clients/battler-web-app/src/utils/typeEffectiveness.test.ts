@@ -4,7 +4,7 @@ import type { PlayerBattleData, SpeciesData, TypeChartData } from "battler-types
 import {
   calculateTargetEffectiveness,
   canCalculateEffectiveness,
-  getEffectivenessTitle,
+  formatEffectivenessComparison,
   getMultiplierClass,
   getSingleOpposingTargetTypes,
   getSpeciesTypesFromData,
@@ -141,14 +141,30 @@ describe("typeEffectiveness", () => {
     });
   });
 
-  describe("getEffectivenessTitle", () => {
-    it("returns helpful labels for tooltips", () => {
-      expect(getEffectivenessTitle(4)).toContain("4×");
-      expect(getEffectivenessTitle(2)).toContain("2×");
-      expect(getEffectivenessTitle(1)).toContain("1×");
-      expect(getEffectivenessTitle(0.5)).toContain("½×");
-      expect(getEffectivenessTitle(0.25)).toContain("¼×");
-      expect(getEffectivenessTitle(0)).toContain("0×");
+  describe("formatEffectivenessComparison", () => {
+    it("formats $TYPE vs $TYPE: $MULT consistently", () => {
+      expect(
+        formatEffectivenessComparison("Ice", ["Normal", "Fire", "Water"], 0.25),
+      ).toBe("Ice vs Normal/Fire/Water: ¼×");
+      expect(formatEffectivenessComparison("Grass", "Water", 2)).toBe(
+        "Grass vs Water: 2×",
+      );
+      expect(
+        formatEffectivenessComparison("Water", ["Fire", "Ground"], 4),
+      ).toBe("Water vs Fire/Ground: 4×");
+      expect(formatEffectivenessComparison("Electric", "Ground", 0)).toBe(
+        "Electric vs Ground: 0×",
+      );
+    });
+
+    it("handles missing attacker or defender gracefully", () => {
+      expect(formatEffectivenessComparison(undefined, "Psychic", 1)).toBe(
+        "vs Psychic: 1×",
+      );
+      expect(formatEffectivenessComparison("Grass", undefined, 2)).toBe(
+        "Grass: 2×",
+      );
+      expect(formatEffectivenessComparison(undefined, undefined, 1)).toBe("1×");
     });
   });
 
