@@ -5,6 +5,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -96,6 +97,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxstrike"),
                 name: "Max Strike".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 30,
                 max_pp: 30,
                 target: MoveTarget::AdjacentFoe,
@@ -105,6 +107,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxlightning"),
                 name: "Max Lightning".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,
@@ -114,6 +117,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 20,
                 max_pp: 20,
                 target: MoveTarget::User,
@@ -123,6 +127,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxgeyser"),
                 name: "Max Geyser".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
@@ -132,6 +137,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxgeyser"),
                 name: "Max Geyser".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 25,
                 max_pp: 25,
                 target: MoveTarget::AdjacentFoe,
@@ -141,6 +147,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxairstream"),
                 name: "Max Airstream".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,
@@ -150,6 +157,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxmindstorm"),
                 name: "Max Mindstorm".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
@@ -159,6 +167,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxquake"),
                 name: "Max Quake".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
@@ -168,6 +177,7 @@ fn max_move_changes_based_on_type() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 20,
                 max_pp: 20,
                 target: MoveTarget::User,
@@ -448,6 +458,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::User,
@@ -457,6 +468,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
             MonMoveSlotData {
                 id: Id::from("gmaxcuddle"),
                 name: "G-Max Cuddle".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::AdjacentFoe,
@@ -466,6 +478,7 @@ fn gigantamax_gets_gmax_move_for_certain_type() {
             MonMoveSlotData {
                 id: Id::from("maxflare"),
                 name: "Max Flare".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 15,
                 max_pp: 15,
                 target: MoveTarget::AdjacentFoe,

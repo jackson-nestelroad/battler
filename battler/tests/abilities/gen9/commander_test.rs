@@ -238,6 +238,7 @@ fn commander_activates_on_switch() {
                                 "max_pp": 0,
                                 "target": "User",
                                 "type": "None",
+                                "category": "Status",
                                 "disabled": false
                             }
                         ],

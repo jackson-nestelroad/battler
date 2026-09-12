@@ -4,6 +4,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -102,6 +103,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                 Some(&MonMoveSlotData {
                     name: "Quick Attack".to_owned(),
                     id: Id::from("quickattack"),
+                    category: MoveCategory::Physical,
                     pp: 30,
                     max_pp: 30,
                     target: MoveTarget::Normal,
@@ -128,6 +130,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                 Some(&MonMoveSlotData {
                     name: "Quick Attack".to_owned(),
                     id: Id::from("quickattack"),
+                    category: MoveCategory::Physical,
                     pp: 29,
                     max_pp: 30,
                     target: MoveTarget::Normal,
@@ -160,6 +163,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                 Some(&MonMoveSlotData {
                     name: "Mimic".to_owned(),
                     id: Id::from("mimic"),
+                    category: MoveCategory::Status,
                     pp: 8,
                     max_pp: 10,
                     target: MoveTarget::Normal,
@@ -183,6 +187,7 @@ fn mimic_overwrites_move_slot_as_volatile() {
                 Some(&MonMoveSlotData {
                     name: "Flamethrower".to_owned(),
                     id: Id::from("flamethrower"),
+                    category: MoveCategory::Special,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,

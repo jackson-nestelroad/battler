@@ -64,7 +64,7 @@
 .cornerAxisAtk {
   font-size: var(--font-size-xxs);
   font-weight: 800;
-  color: var(--text-muted);
+  color: var(--color-danger);
   line-height: 1;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -164,11 +164,11 @@
   cursor: default;
   background-color: transparent;
 
-  &.rowHovered:not(.multSuper):not(.multQuad):not(.multResist):not(.multQuadResist):not(.multImmune) {
+  &.rowHovered:not(:global(.multSuper)):not(:global(.multQuad)):not(:global(.multResist)):not(:global(.multQuadResist)):not(:global(.multImmune)) {
     background-color: var(--bg-subtle-hover);
   }
 
-  &.colHovered:not(.multSuper):not(.multQuad):not(.multResist):not(.multQuadResist):not(.multImmune) {
+  &.colHovered:not(:global(.multSuper)):not(:global(.multQuad)):not(:global(.multResist)):not(:global(.multQuadResist)):not(:global(.multImmune)) {
     background-color: var(--bg-subtle-hover);
   }
 
@@ -194,41 +194,12 @@
 .cellFraction {
   font-size: var(--font-size-m);
   font-weight: 800;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.02em;
   line-height: 1;
+  white-space: nowrap;
 }
 
-/* Multiplier Solid Background Styles */
-.multQuad {
-  background-color: var(--type-chart-mult-quad-bg);
-  color: var(--type-chart-mult-quad-text);
-}
-
-.multSuper {
-  background-color: var(--type-chart-mult-super-bg);
-  color: var(--type-chart-mult-super-text);
-}
-
-.multResist {
-  background-color: var(--type-chart-mult-resist-bg);
-  color: var(--type-chart-mult-resist-text);
-}
-
-.multQuadResist {
-  background-color: var(--type-chart-mult-quad-resist-bg);
-  color: var(--type-chart-mult-quad-resist-text);
-}
-
-.multImmune {
-  background-color: var(--type-chart-mult-immune-bg);
-  color: var(--type-chart-mult-immune-text);
-  border: 1px solid var(--type-chart-mult-immune-border);
-}
-
-.multNeutral {
-  /* Blank 1x cell */
-}
 
 .loadingContainer {
   display: flex;

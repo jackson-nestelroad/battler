@@ -15,9 +15,11 @@ import {
   fetchItem,
   fetchMove,
   fetchSpecies,
+  fetchSpeciesBatch,
   getCachedDescription,
   getCachedGenericDescription,
   getCachedGenericResource,
+  getCachedResource,
   getGenericResourceCacheKey,
 } from "./useDataStore";
 
@@ -56,6 +58,7 @@ describe("useDataStore", () => {
     getCondition: vi.fn(),
     getSpecies: vi.fn(),
     getResource: vi.fn(),
+    batch: vi.fn(),
   };
 
   beforeEach(() => {
@@ -487,6 +490,99 @@ describe("useDataStore", () => {
       clearDataStoreCache();
       expect(getCachedDescription("move", "Thunderbolt")).toBeUndefined();
       expect(getCachedGenericDescription("Thunderbolt")).toBeUndefined();
+    });
+  });
+
+  describe("fetchSpeciesBatch", () => {
+    const mockPikachu = {
+      name: "Pikachu",
+      primary_type: "Electric",
+    } as any;
+
+    const mockCharizard = {
+      name: "Charizard",
+      primary_type: "Fire",
+      secondary_type: "Flying",
+    } as any;
+
+    it("returns empty object for empty species list", async () => {
+      const res = await fetchSpeciesBatch([]);
+      expect(res).toEqual({});
+      expect(mockClient.batch).not.toHaveBeenCalled();
+    });
+
+    it("fetches multiple uncached species in a single batch RPC call", async () => {
+      mockClient.batch.mockResolvedValueOnce({
+        species: {
+          Pikachu: mockPikachu,
+          Charizard: mockCharizard,
+        },
+        descriptions: {
+          Pikachu: { description: "Electric mouse", source: "Gen 1" },
+          Charizard: { description: "Flame Pokémon", source: "Gen 1" },
+        },
+      });
+
+      const res = await fetchSpeciesBatch(["Pikachu", "Charizard"]);
+
+      expect(mockClient.batch).toHaveBeenCalledTimes(1);
+      expect(mockClient.batch).toHaveBeenCalledWith({
+        moves: [],
+        abilities: [],
+        items: [],
+        conditions: [],
+        species: ["Pikachu", "Charizard"],
+        options: { include_fxlang: false },
+      });
+      expect(res.Pikachu).toEqual(mockPikachu);
+      expect(res.Charizard).toEqual(mockCharizard);
+
+      // Verify cached in typed store
+      expect(getCachedResource("species", "Pikachu")).toEqual(mockPikachu);
+      expect(getCachedResource("species", "pikachu")).toEqual(mockPikachu);
+      expect(getCachedResource("species", "Charizard")).toEqual(mockCharizard);
+      expect(getCachedDescription("species", "Pikachu")?.description).toBe("Electric mouse");
+    });
+
+    it("only queries missing species when some are already cached", async () => {
+      mockClient.batch.mockResolvedValueOnce({
+        species: {
+          Pikachu: mockPikachu,
+        },
+        descriptions: {},
+      });
+
+      // Pre-warm Charizard
+      await fetchSpeciesBatch(["Pikachu"]);
+      expect(mockClient.batch).toHaveBeenCalledTimes(1);
+
+      // Next call with Pikachu and Charizard should only request Charizard
+      mockClient.batch.mockResolvedValueOnce({
+        species: {
+          Charizard: mockCharizard,
+        },
+        descriptions: {},
+      });
+
+      const res = await fetchSpeciesBatch(["Pikachu", "Charizard"]);
+      expect(mockClient.batch).toHaveBeenCalledTimes(2);
+      expect(mockClient.batch).toHaveBeenLastCalledWith({
+        moves: [],
+        abilities: [],
+        items: [],
+        conditions: [],
+        species: ["Charizard"],
+        options: { include_fxlang: false },
+      });
+      expect(res.Pikachu).toEqual(mockPikachu);
+      expect(res.Charizard).toEqual(mockCharizard);
+    });
+
+    it("handles batch RPC failure gracefully", async () => {
+      mockClient.batch.mockRejectedValueOnce(new Error("Network failure"));
+
+      const res = await fetchSpeciesBatch(["Mewtwo"]);
+      expect(res).toEqual({ Mewtwo: null });
     });
   });
 

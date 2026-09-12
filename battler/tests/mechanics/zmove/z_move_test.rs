@@ -5,6 +5,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -141,6 +142,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("gigavolthavoc"),
                     name: "Gigavolt Havoc".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
@@ -155,6 +157,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("gigavolthavoc"),
                     name: "Gigavolt Havoc".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
@@ -181,6 +184,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("hydrovortex"),
                     name: "Hydro Vortex".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 25,
                     max_pp: 25,
                     target: MoveTarget::Normal,
@@ -247,6 +251,7 @@ fn species_based_z_crystal_only_allows_single_move_and_user() {
                 MonMoveSlotData {
                     id: Id::from("catastropika"),
                     name: "Catastropika".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,

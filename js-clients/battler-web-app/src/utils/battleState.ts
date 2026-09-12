@@ -121,15 +121,21 @@ export function getActiveRefFromState(
   return { side, activeRef };
 }
 
+export function getMonFromActiveRef(
+  side: any,
+  activeRef: { player: string; mon_index: number } | null | undefined,
+) {
+  if (!side || !activeRef) return null;
+  return side.players?.[activeRef.player]?.mons?.[activeRef.mon_index] ?? null;
+}
+
 export function getMonNameFromState(
   state: BattleState | null | undefined,
   sideIdx: number,
   pos: number,
 ): string | null {
   const { side, activeRef } = getActiveRefFromState(state, sideIdx, pos);
-  if (!activeRef) return null;
-  const player = side?.players?.[activeRef.player];
-  const mon = player?.mons?.[activeRef.mon_index];
+  const mon = getMonFromActiveRef(side, activeRef);
   return mon?.physical_appearance?.name || null;
 }
 

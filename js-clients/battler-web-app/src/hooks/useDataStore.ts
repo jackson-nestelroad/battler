@@ -427,9 +427,75 @@ export const fetchItem = (nameOrId: string) => fetchResource("item", nameOrId);
 export const fetchCondition = (nameOrId: string) => fetchResource("condition", nameOrId);
 export const fetchSpecies = (nameOrId: string) => fetchResource("species", nameOrId);
 
+/**
+ * Fetches multiple species using the data service batch RPC endpoint.
+ * Cached species are returned immediately, and uncached species are queried together
+ * in a single network round-trip.
+ */
+export async function fetchSpeciesBatch(
+  speciesList: string[],
+): Promise<Record<string, SpeciesData | null>> {
+  if (!speciesList || speciesList.length === 0) return {};
+
+  const result: Record<string, SpeciesData | null> = {};
+  const missing: string[] = [];
+
+  for (const s of speciesList) {
+    if (!s) continue;
+    const cached = getCachedResource("species", s);
+    if (cached !== undefined) {
+      result[s] = cached;
+    } else {
+      missing.push(s);
+    }
+  }
+
+  if (missing.length === 0) {
+    return result;
+  }
+
+  const client = connectionManager.dataServiceClient;
+  if (!client) {
+    for (const m of missing) {
+      result[m] = null;
+    }
+    return result;
+  }
+
+  try {
+    const batchRes = await client.batch({
+      moves: [],
+      abilities: [],
+      items: [],
+      conditions: [],
+      species: missing,
+      options: { include_fxlang: false },
+    });
+    if (batchRes && batchRes.species) {
+      for (const [key, data] of Object.entries(batchRes.species)) {
+        if (data) {
+          cacheTypedResource("species", key, data);
+          const desc = batchRes.descriptions?.[key] ?? null;
+          cacheTypedDescription("species", key, data, desc);
+          result[key] = data;
+        } else {
+          result[key] = null;
+        }
+      }
+    }
+  } catch {
+    for (const m of missing) {
+      result[m] = null;
+    }
+  }
+
+  return result;
+}
+
 export const useMoveData = (nameOrId?: string | null) => useResourceData("move", nameOrId);
 export const useAbilityData = (nameOrId?: string | null) => useResourceData("ability", nameOrId);
 export const useItemData = (nameOrId?: string | null) => useResourceData("item", nameOrId);
 export const useConditionData = (nameOrId?: string | null) => useResourceData("condition", nameOrId);
 export const useSpeciesData = (nameOrId?: string | null) => useResourceData("species", nameOrId);
+
 

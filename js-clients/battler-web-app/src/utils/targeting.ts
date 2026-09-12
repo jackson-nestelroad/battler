@@ -3,6 +3,10 @@ import type { BattleState } from "battler-state";
 import { resolveActiveMonName } from "./monHelpers";
 import { getPlayerNameFromState, isMonFaintedInState } from "./battleState";
 
+export function getOpposingSide(playerSide: number = 0): number {
+  return playerSide === 0 ? 1 : 0;
+}
+
 export function parseTargetValue(
   targetVal: number,
   currentSlotIndex: number,
@@ -12,7 +16,7 @@ export function parseTargetValue(
   const pos = isFoe ? targetVal - 1 : Math.abs(targetVal) - 1;
   const isSelf = !isFoe && pos === currentSlotIndex;
   const type: "foe" | "ally" | "self" = isFoe ? "foe" : isSelf ? "self" : "ally";
-  const foeSide = playerSide === 0 ? 1 : 0;
+  const foeSide = getOpposingSide(playerSide);
   const sideIdx = isFoe ? foeSide : playerSide;
   return { sideIdx, pos, isSelf, type };
 }
@@ -28,7 +32,7 @@ export function getTargetDisplayInfo(
   pos: number,
 ) {
   const playerSide = playerData?.side ?? 0;
-  const foeSide = playerSide === 0 ? 1 : 0;
+  const foeSide = getOpposingSide(playerSide);
   const sideIdx = type === "foe" ? foeSide : playerSide;
   const fallback = type === "self" ? "Self" : `${getTargetTypeLabel(type)} ${pos + 1}`;
   const monName = resolveActiveMonName(playerData, battleState, sideIdx, pos, fallback);
@@ -182,7 +186,7 @@ export function getValidTargets({
 
   const activePerPlayer = getActivePerPlayer(battleType, activeRequestsCount);
   const playerSide = playerData?.side ?? 0;
-  const foeSide = playerSide === 0 ? 1 : 0;
+  const foeSide = getOpposingSide(playerSide);
 
   const targets: TargetOption[] = [];
 

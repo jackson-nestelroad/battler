@@ -26,6 +26,7 @@ use battler_data::{
     Gender,
     Id,
     Identifiable,
+    MoveCategory,
     MoveTarget,
     Nature,
     PartialStatTable,
@@ -251,6 +252,7 @@ pub struct MonMoveSlotData {
     pub target: MoveTarget,
     #[serde(rename = "type")]
     pub typ: Type,
+    pub category: MoveCategory,
     pub disabled: bool,
 }
 
@@ -260,6 +262,7 @@ impl MonMoveSlotData {
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
+        let category = mov.data.category;
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
         let (target, typ) = core_battle_actions::run_in_using_move_state(context, |context| {
             let target =
@@ -287,6 +290,7 @@ impl MonMoveSlotData {
         Ok(Self {
             name,
             id,
+            category,
             pp: move_slot.pp,
             max_pp: move_slot.max_pp,
             target,
@@ -1791,6 +1795,7 @@ impl Mon {
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
                 id: Id::from_known("struggle"),
+                category: MoveCategory::Physical,
                 pp: 1,
                 max_pp: 1,
                 target: MoveTarget::RandomNormal,
@@ -2257,6 +2262,7 @@ impl Mon {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Recharge".to_owned(),
                     id: Id::from_known("recharge"),
+                    category: MoveCategory::Status,
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
@@ -2267,6 +2273,7 @@ impl Mon {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Pass".to_owned(),
                     id: Id::from_known("pass"),
+                    category: MoveCategory::Status,
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
@@ -2280,6 +2287,7 @@ impl Mon {
             return Ok(Vec::from_iter([MonMoveSlotData {
                 name: locked_move.data.name.clone(),
                 id: locked_move.id().clone(),
+                category: locked_move.data.category,
                 pp: 0,
                 max_pp: 0,
                 target: MoveTarget::Scripted,

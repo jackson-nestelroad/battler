@@ -65,6 +65,14 @@
   }
 }
 
+.moveMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-xs);
+}
+
 .moveName {
   font-size: var(--font-size-s);
   font-weight: 700;
@@ -73,6 +81,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .moveMeta {
@@ -80,6 +89,9 @@
   color: var(--text-secondary);
   line-height: 1.2;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .moveBadge {
@@ -88,6 +100,8 @@
   padding: var(--spacing-xxs) var(--spacing-xs);
   border-radius: var(--border-radius-xs);
   line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .zmoveBadge {

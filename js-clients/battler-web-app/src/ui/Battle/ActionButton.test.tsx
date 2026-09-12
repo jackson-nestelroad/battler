@@ -61,14 +61,23 @@ describe("ActionButton", () => {
     expect(infoHtml).toContain('tabindex="-1"');
   });
 
-  it("omits moveHeaderRight container when neither badgeText nor info button exists", () => {
+  it("omits moveHeaderRight container when neither effectivenessBadge nor info button exists", () => {
     const plainHtml = renderToStaticMarkup(<ActionButton title="Pass" />);
     expect(plainHtml).not.toContain("moveHeaderRight");
+
+    const infoHtml = renderToStaticMarkup(
+      <ActionButton
+        title="Thunderbolt"
+        infoResourceType="move"
+        infoResourceName="Thunderbolt"
+      />,
+    );
+    expect(infoHtml).toContain("moveHeaderRight");
 
     const badgeHtml = renderToStaticMarkup(
       <ActionButton title="Thunderbolt" badgeText="Z-Move" />,
     );
-    expect(badgeHtml).toContain("moveHeaderRight");
+    expect(badgeHtml).toContain("moveMetaRow");
     expect(badgeHtml).toContain("Z-Move");
   });
 
@@ -217,6 +226,21 @@ describe("ActionButton", () => {
     expect(infoDisabled.props["aria-disabled"]).toBe(true);
     expect(infoDisabled.props.tabIndex).toBe(-1);
     expect(infoDisabled.props.onClick).toBeUndefined();
+  });
+
+  it("renders effectivenessBadge inside moveHeaderRight", () => {
+    const html = renderToStaticMarkup(
+      <ActionButton
+        title="Flamethrower"
+        subtitle="Fire | PP: 15/15"
+        effectivenessBadge={<span className="test-badge">2×</span>}
+      />,
+    );
+
+    expect(html).toContain("Flamethrower");
+    expect(html).toContain("test-badge");
+    expect(html).toContain("2×");
+    expect(html).toContain("moveHeaderRight");
   });
 });
 

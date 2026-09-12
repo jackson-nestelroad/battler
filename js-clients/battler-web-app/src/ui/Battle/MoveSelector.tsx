@@ -1,7 +1,11 @@
-import type { MonMoveSlotData } from "battler-types";
+import type { BattleState } from "battler-state";
+import type { MonMoveSlotData, PlayerBattleData } from "battler-types";
+import { useMemo } from "react";
+import { useTypeChart } from "../../hooks/useTypeChart";
 import { type ChoiceModifiers, UI_MODIFIER_KEYS, CHOICE_MODIFIER_CONFIGS, CHOICE_MODIFIER_KEYS } from "../../utils/choiceBuilder";
-
 import { getAvailableMoves } from "../../utils/monHelpers";
+import { getSingleOpposingTargetTypes } from "../../utils/typeEffectiveness";
+import { MoveEffectivenessBadge } from "../Common/EffectivenessBadge";
 import ActionButton from "./ActionButton";
 import styles from "./ActionPanel.module.scss";
 
@@ -25,6 +29,10 @@ export interface MoveSelectorProps {
   canShift?: boolean;
   onShift?: () => void;
   onBack?: () => void;
+  battleState?: BattleState | null;
+  playerData?: PlayerBattleData | null;
+  battleType?: string | null;
+  activeRequestsCount?: number;
 }
 
 export default function MoveSelector({
@@ -38,8 +46,24 @@ export default function MoveSelector({
   canShift = false,
   onShift,
   onBack,
+  battleState,
+  playerData,
+  battleType,
+  activeRequestsCount = 1,
 }: MoveSelectorProps) {
+  const { typeChart } = useTypeChart();
   const isMaxMoveActive = modifiers.dyna || isDynamaxed;
+
+  const singleOpponentTypes = useMemo(
+    () =>
+      getSingleOpposingTargetTypes(
+        battleState,
+        playerData,
+        battleType,
+        activeRequestsCount,
+      ),
+    [battleState, playerData, battleType, activeRequestsCount],
+  );
 
   const hasModifiers = CHOICE_MODIFIER_KEYS.some(
     (key) => !!activeReq[CHOICE_MODIFIER_CONFIGS[key].requestFlag],
@@ -123,6 +147,14 @@ export default function MoveSelector({
               ? `${moveToRender.type} | PP: ${baseMove.pp}/${baseMove.max_pp}`
               : moveToRender.type;
 
+          const effectivenessBadge = (
+            <MoveEffectivenessBadge
+              typeChart={typeChart}
+              move={moveToRender}
+              targetTypes={singleOpponentTypes}
+            />
+          );
+
           return (
             <ActionButton
               key={baseMove.id || index}
@@ -132,6 +164,7 @@ export default function MoveSelector({
               disabled={isMoveDisabled || isLoading}
               typeColor={`var(--color-type-${moveToRender.type.toLowerCase()})`}
               badgeText={badgeText}
+              effectivenessBadge={effectivenessBadge}
               infoResourceType="move"
               infoResourceName={moveToRender.name}
             />
@@ -150,3 +183,4 @@ export default function MoveSelector({
     </div>
   );
 }
+

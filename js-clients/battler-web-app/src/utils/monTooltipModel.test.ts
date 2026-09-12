@@ -93,6 +93,7 @@ describe("monTooltipModel", () => {
         {
           id: "thunderbolt",
           name: "Thunderbolt",
+          category: "Special",
           pp: 14,
           max_pp: 15,
           type: "Electric",
@@ -102,6 +103,7 @@ describe("monTooltipModel", () => {
         {
           id: "voltswitch",
           name: "Volt Switch",
+          category: "Special",
           pp: 20,
           max_pp: 20,
           type: "Electric",

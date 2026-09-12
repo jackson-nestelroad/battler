@@ -134,7 +134,7 @@
     grid-template-columns: 1fr;
   }
 
-  @container (max-width: 26rem) {
+  @container (max-width: 28rem) {
     grid-template-columns: 1fr;
   }
 }
@@ -143,7 +143,7 @@
 
 .targetGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: var(--spacing-s);
 
   @include mobile {
@@ -154,7 +154,7 @@
 .targetBtn {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
   padding: var(--spacing-xs) var(--spacing-s);
   border-radius: var(--border-radius-m);
@@ -178,14 +178,14 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+}
 
-  @include mobile {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-s);
-    min-height: 3.5rem;
-  }
+.targetHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-xs);
 }
 
 .targetMonName {
@@ -193,6 +193,10 @@
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .targetSubText {
@@ -203,6 +207,10 @@
   border: 1px solid transparent;
   line-height: 1.2;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  align-self: flex-start;
 
   &.foe {
     color: var(--color-danger);

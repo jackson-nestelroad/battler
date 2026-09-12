@@ -8,6 +8,14 @@ const MOCK_CHART = {
     Grass: {
       Water: 2,
       Ground: 2,
+      Rock: 2,
+      Fire: 0.5,
+      Grass: 0.5,
+      Poison: 0.5,
+      Flying: 0.5,
+      Bug: 0.5,
+      Dragon: 0.5,
+      Steel: 0.5,
     },
     Water: {
       Fire: 2,
@@ -105,5 +113,42 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("cellFaded");
     expect(html).toContain("headerFaded");
     expect(html).toContain("Reset");
+  });
+
+  it("renders small fraction variant 1/128 when 7 resisting defenders are specified", () => {
+    vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
+      typeChart: MOCK_CHART,
+      loading: false,
+      error: null,
+    });
+
+    const defenders = ["Fire", "Grass", "Poison", "Flying", "Bug", "Dragon", "Steel"];
+    const html = renderToStaticMarkup(
+      <TypeChartGrid defendingTypes={defenders} />,
+    );
+    expect(html).toContain('colSpan="7"');
+    expect(html).toContain("¹⁄₁₂₈");
+    expect(html).toContain("cellFraction");
+    expect(html).toContain(
+      `aria-label="Grass attacking ${defenders.join(" and ")}: ¹⁄₁₂₈×"`,
+    );
+  });
+
+  it("renders higher integer multipliers (e.g. 8x) correctly", () => {
+    vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
+      typeChart: MOCK_CHART,
+      loading: false,
+      error: null,
+    });
+
+    const defenders = ["Water", "Ground", "Rock"];
+    const html = renderToStaticMarkup(
+      <TypeChartGrid defendingTypes={defenders} />,
+    );
+    expect(html).toContain('colSpan="3"');
+    expect(html).toContain("8");
+    expect(html).toContain(
+      `aria-label="Grass attacking ${defenders.join(" and ")}: 8×"`,
+    );
   });
 });

@@ -903,6 +903,45 @@ a.badge-primary,
   color: var(--color-black);
 }
 
+/* 7b. Centralized Type Effectiveness Multiplier Classes */
+.multQuad {
+  background-color: var(--type-chart-mult-quad-bg);
+  color: var(--type-chart-mult-quad-text);
+  font-weight: 800;
+}
+
+.multSuper {
+  background-color: var(--type-chart-mult-super-bg);
+  color: var(--type-chart-mult-super-text);
+  font-weight: 800;
+}
+
+.multResist {
+  background-color: var(--type-chart-mult-resist-bg);
+  color: var(--type-chart-mult-resist-text);
+  font-weight: 800;
+}
+
+.multQuadResist {
+  background-color: var(--type-chart-mult-quad-resist-bg);
+  color: var(--type-chart-mult-quad-resist-text);
+  font-weight: 800;
+}
+
+.multImmune {
+  background-color: var(--type-chart-mult-immune-bg);
+  color: var(--type-chart-mult-immune-text);
+  font-weight: 800;
+  border: 1px solid var(--type-chart-mult-immune-border);
+}
+
+.multNeutral {
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+
 /* 8. Layout Utilities */
 .flex-col {
   display: flex;

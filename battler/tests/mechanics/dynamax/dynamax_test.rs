@@ -5,6 +5,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -129,6 +130,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("tackle"),
                 name: "Tackle".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::Normal,
@@ -138,6 +140,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("toxic"),
                 name: "Toxic".to_owned(),
+                category: MoveCategory::Status,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::Normal,
@@ -147,6 +150,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("dynamaxcannon"),
                 name: "Dynamax Cannon".to_owned(),
+                category: MoveCategory::Special,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::Normal,
@@ -158,6 +162,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxstrike"),
                 name: "Max Strike".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
@@ -167,6 +172,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::User,
@@ -176,6 +182,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxwyrmwind"),
                 name: "Max Wyrmwind".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
@@ -234,6 +241,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("tackle"),
                 name: "Tackle".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::Normal,
@@ -243,6 +251,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("toxic"),
                 name: "Toxic".to_owned(),
+                category: MoveCategory::Status,
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::Normal,
@@ -252,6 +261,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("dynamaxcannon"),
                 name: "Dynamax Cannon".to_owned(),
+                category: MoveCategory::Special,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::Normal,
@@ -263,6 +273,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxstrike"),
                 name: "Max Strike".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
@@ -272,6 +283,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::User,
@@ -281,6 +293,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxwyrmwind"),
                 name: "Max Wyrmwind".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,

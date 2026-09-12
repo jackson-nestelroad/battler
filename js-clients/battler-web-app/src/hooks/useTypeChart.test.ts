@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { TypeChartData } from "battler-types";
 import {
   ALL_POKEMON_TYPES,
+  formatFraction,
   formatMultiplier,
   getDefensiveMultipliers,
   getEffectiveness,
@@ -82,12 +83,35 @@ describe("useTypeChart helpers", () => {
     expect(Object.keys(offensive)).toHaveLength(ALL_POKEMON_TYPES.length);
   });
 
-  it("formats multipliers into concise symbols", () => {
+  it("formats multipliers into concise symbols including higher multipliers and fractions", () => {
+    expect(formatMultiplier(32)).toBe("32×");
+    expect(formatMultiplier(16)).toBe("16×");
+    expect(formatMultiplier(8)).toBe("8×");
     expect(formatMultiplier(4)).toBe("4×");
     expect(formatMultiplier(2)).toBe("2×");
     expect(formatMultiplier(1)).toBe("1×");
     expect(formatMultiplier(0.5)).toBe("½×");
     expect(formatMultiplier(0.25)).toBe("¼×");
+    expect(formatMultiplier(0.125)).toBe("⅛×");
+    expect(formatMultiplier(0.0625)).toBe("¹⁄₁₆×");
+    expect(formatMultiplier(0.03125)).toBe("¹⁄₃₂×");
+    expect(formatMultiplier(0.015625)).toBe("¹⁄₆₄×");
+    expect(formatMultiplier(0.0078125)).toBe("¹⁄₁₂₈×");
     expect(formatMultiplier(0)).toBe("0×");
+  });
+
+  it("formats fraction variants correctly down to 1/128 and arbitrary denominators", () => {
+    expect(formatFraction(0.5)).toBe("½");
+    expect(formatFraction(0.25)).toBe("¼");
+    expect(formatFraction(0.125)).toBe("⅛");
+    expect(formatFraction(0.0625)).toBe("¹⁄₁₆");
+    expect(formatFraction(0.03125)).toBe("¹⁄₃₂");
+    expect(formatFraction(0.015625)).toBe("¹⁄₆₄");
+    expect(formatFraction(0.0078125)).toBe("¹⁄₁₂₈");
+    // Arbitrary denominator fallback
+    expect(formatFraction(1 / 256)).toBe("¹⁄₂₅₆");
+    // Non-fractions
+    expect(formatFraction(2)).toBe("2");
+    expect(formatFraction(1)).toBe("1");
   });
 });

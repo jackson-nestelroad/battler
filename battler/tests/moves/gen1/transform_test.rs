@@ -101,6 +101,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Normal",
                                 "type": "Normal",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -110,6 +111,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Any",
                                 "type": "Flying",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -119,6 +121,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -128,6 +131,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -137,6 +141,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             }
                         ]
@@ -246,6 +251,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Normal",
                                 "type": "Normal",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -255,6 +261,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Any",
                                 "type": "Flying",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -264,6 +271,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -273,6 +281,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -282,6 +291,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             }
                         ],

@@ -118,6 +118,7 @@ fn razor_wind_uses_two_turns() {
                     "max_pp": 0,
                     "target": "Scripted",
                     "type": "Normal",
+                    "category": "Special",
                     "disabled": false
                 }
             ],
@@ -214,6 +215,7 @@ fn fly_grants_invulnerability() {
                     "max_pp": 0,
                     "target": "Scripted",
                     "type": "Flying",
+                    "category": "Physical",
                     "disabled": false
                 }
             ],
@@ -330,6 +332,7 @@ fn fly_locks_target() {
                     "max_pp": 0,
                     "target": "Scripted",
                     "type": "Flying",
+                    "category": "Physical",
                     "disabled": false
                 }
             ],

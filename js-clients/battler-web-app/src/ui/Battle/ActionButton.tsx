@@ -1,4 +1,4 @@
-import type { CSSProperties, KeyboardEvent } from "react";
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import DataTooltipTrigger, { type DataResourceType } from "../Common/Tooltip/DataTooltipTrigger";
 import styles from "./ActionButton.module.scss";
 
@@ -16,6 +16,7 @@ export interface ActionButtonProps {
   htmlTitle?: string;
   infoResourceType?: DataResourceType;
   infoResourceName?: string;
+  effectivenessBadge?: ReactNode;
 }
 
 export default function ActionButton({
@@ -32,6 +33,7 @@ export default function ActionButton({
   htmlTitle,
   infoResourceType,
   infoResourceName,
+  effectivenessBadge,
 }: ActionButtonProps) {
   const combinedClassName = `${styles.moveBtn} type-border ${className || ""}`.trim();
   const combinedStyle: CSSProperties = {
@@ -84,16 +86,21 @@ export default function ActionButton({
     <>
       <div className={styles.moveHeaderRow}>
         <span className={styles.moveName}>{title}</span>
-        {(badgeText || infoButton) && (
+        {(effectivenessBadge || infoButton) && (
           <div className={styles.moveHeaderRight}>
-            {badgeText && (
-              <span className={combinedBadgeClass}>{badgeText}</span>
-            )}
+            {effectivenessBadge}
             {infoButton}
           </div>
         )}
       </div>
-      {subtitle && <span className={styles.moveMeta}>{subtitle}</span>}
+      {(subtitle || badgeText) && (
+        <div className={styles.moveMetaRow}>
+          {subtitle && <span className={styles.moveMeta}>{subtitle}</span>}
+          {badgeText && (
+            <span className={combinedBadgeClass}>{badgeText}</span>
+          )}
+        </div>
+      )}
     </>
   );
 

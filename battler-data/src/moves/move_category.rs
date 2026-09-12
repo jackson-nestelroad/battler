@@ -5,7 +5,15 @@ use serde_string_enum::{
 
 /// The category of a move.
 #[derive(
-    Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]

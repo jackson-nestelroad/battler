@@ -94,7 +94,7 @@ describe("choiceFormatter utility", () => {
         active: [
           {
             team_position: 0,
-            moves: [{ id: "flamethrower", name: "Flamethrower", type: "Fire", pp: 15, max_pp: 15, disabled: false, target: "Normal" }],
+            moves: [{ id: "flamethrower", name: "Flamethrower", category: "Special", type: "Fire", pp: 15, max_pp: 15, disabled: false, target: "Normal" }],
             z_moves: [],
             max_moves: [],
             trapped: false,

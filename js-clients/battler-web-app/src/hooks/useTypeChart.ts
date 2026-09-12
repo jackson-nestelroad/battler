@@ -107,13 +107,74 @@ export function getOffensiveMultipliers(
   return result;
 }
 
+const SUBSCRIPT_DIGITS: Record<string, string> = {
+  "0": "₀",
+  "1": "₁",
+  "2": "₂",
+  "3": "₃",
+  "4": "₄",
+  "5": "₅",
+  "6": "₆",
+  "7": "₇",
+  "8": "₈",
+  "9": "₉",
+};
+
+/**
+ * Formats a fraction (or multiplier < 1) using unicode vulgar fractions or
+ * superscript/subscript small number variants.
+ *
+ * Supported exact powers of two:
+ * - 1/2   => ½
+ * - 1/4   => ¼
+ * - 1/8   => ⅛
+ * - 1/16  => ¹⁄₁₆
+ * - 1/32  => ¹⁄₃₂
+ * - 1/64  => ¹⁄₆₄
+ * - 1/128 => ¹⁄₁₂₈
+ *
+ * Any other fraction uses superscript "¹" + fraction slash "⁄" + subscript denominator digits.
+ */
+export function formatFraction(mult: number): string {
+  if (mult === 0.5) return "½";
+  if (mult === 0.25) return "¼";
+  if (mult === 0.125) return "⅛";
+  if (mult === 0.0625) return "¹⁄₁₆";
+  if (mult === 0.03125) return "¹⁄₃₂";
+  if (mult === 0.015625) return "¹⁄₆₄";
+  if (mult === 0.0078125) return "¹⁄₁₂₈";
+
+  if (mult > 0 && mult < 1) {
+    const denom = Math.round(1 / mult);
+    const sub = denom
+      .toString()
+      .split("")
+      .map((d) => SUBSCRIPT_DIGITS[d] ?? d)
+      .join("");
+    return `¹⁄${sub}`;
+  }
+
+  return mult.toString();
+}
+
+/**
+ * Formats a multiplier value into a numeric string or fraction representation,
+ * optionally returning null for neutral (1×) multipliers.
+ */
+export function formatMultiplierValue(
+  multiplier: number,
+  showNeutral = false,
+): string | null {
+  if (multiplier === 0) return "0";
+  if (multiplier === 1) return showNeutral ? "1" : null;
+  if (multiplier > 0 && multiplier < 1) return formatFraction(multiplier);
+  if (multiplier > 1) return multiplier.toString();
+  return null;
+}
+
 export function formatMultiplier(multiplier: number): string {
-  if (multiplier === 0) return "0×";
-  if (multiplier === 0.25) return "¼×";
-  if (multiplier === 0.5) return "½×";
-  if (multiplier === 2) return "2×";
-  if (multiplier === 4) return "4×";
-  return "1×";
+  const val = formatMultiplierValue(multiplier, true);
+  return val !== null ? `${val}×` : "1×";
 }
 
 export interface UseTypeChartResult {

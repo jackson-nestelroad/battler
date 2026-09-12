@@ -1,0 +1,15 @@
+.effectivenessBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-s);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  font-family: var(--font-sans);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  user-select: none;
+  flex-shrink: 0;
+}
+

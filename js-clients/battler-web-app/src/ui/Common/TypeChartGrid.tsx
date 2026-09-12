@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ALL_POKEMON_TYPES,
   formatMultiplier,
+  formatMultiplierValue,
   getDefensiveMultipliers,
   getEffectiveness,
   useTypeChart,
 } from "../../hooks/useTypeChart";
+import { getMultiplierClass } from "../../utils/typeEffectiveness";
 import TypeBadge from "./TypeBadge";
 import styles from "./TypeChartGrid.module.scss";
 
@@ -13,29 +15,6 @@ export interface TypeChartGridProps {
   defendingTypes?: string[];
   onDefendersChange?: (defenders: string[]) => void;
   className?: string;
-}
-
-function renderMultiplierText(mult: number, showNeutral = false): string | null {
-  if (mult >= 4) return mult.toString();
-  if (mult === 2) return "2";
-  if (mult === 0.5) return "½";
-  if (mult === 0.25) return "¼";
-  if (mult === 0.125) return "⅛";
-  if (mult === 0.0625) return "¹⁄₁₆";
-  if (mult === 0) return "0";
-  if (showNeutral && mult === 1) return "1";
-  if (mult < 1 && mult > 0) return `1/${Math.round(1 / mult)}`;
-  if (mult > 1) return mult.toString();
-  return null;
-}
-
-function getMultiplierClass(mult: number): string {
-  if (mult >= 4) return styles.multQuad;
-  if (mult >= 2) return styles.multSuper;
-  if (mult === 0.5) return styles.multResist;
-  if (mult > 0 && mult < 0.5) return styles.multQuadResist;
-  if (mult === 0) return styles.multImmune;
-  return styles.multNeutral;
 }
 
 export default function TypeChartGrid({
@@ -241,7 +220,7 @@ export default function TypeChartGrid({
                   {/* If defenders are selected: One combined cell spanning all selected columns */}
                   {hasSelection && (() => {
                     const mult = combinedMultipliers?.[atk] ?? 1;
-                    const text = renderMultiplierText(mult, true);
+                    const text = formatMultiplierValue(mult, true);
                     const multClass = getMultiplierClass(mult);
                     const isFraction = mult < 1 && mult > 0;
                     const isCombinedColHovered = selectedDefenders.some((d) => hoveredCol === d);
@@ -274,9 +253,9 @@ export default function TypeChartGrid({
                     const isColHovered = hoveredCol === defType;
                     const isCellHovered = isRowHovered && isColHovered;
                     const mult = getEffectiveness(typeChart, atk, defType);
-                    const text = renderMultiplierText(mult, false);
+                    const text = formatMultiplierValue(mult, false);
                     const multClass = getMultiplierClass(mult);
-                    const isFraction = mult === 0.5 || mult === 0.25;
+                    const isFraction = mult < 1 && mult > 0;
 
                     return (
                       <td

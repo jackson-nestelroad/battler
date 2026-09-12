@@ -23,7 +23,7 @@ const crates = [
 
 for (const crate of crates) {
   console.log(`Running cargo test for ${crate}...`);
-  execSync(`cargo test -p ${crate} --features typescript export_types`, {
+  execSync(`cargo test -p ${crate} --lib --features typescript export_types`, {
     cwd: rootDir,
     stdio: "inherit",
   });

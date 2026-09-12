@@ -31,6 +31,7 @@ import TargetSelector from "./TargetSelector";
 import TeamSummary from "./TeamSummary";
 import ForfeitButton from "./ForfeitButton";
 import { isMonDynamaxedInState } from "../../utils/battleState";
+import { usePreloadFieldSpecies } from "../../hooks/usePreloadFieldSpecies";
 
 import styles from "./ActionPanel.module.scss";
 
@@ -70,6 +71,7 @@ export default function ActionPanel({
 }: ActionPanelProps) {
   const dispatch = useAppDispatch();
   const battleSession = useAppSelector((state) => state.battles.battles[battleId]);
+  const battleState = battleSession?.battleState;
   const turn = useAppSelector((state) => state.battles.battles[battleId]?.battleState?.turn || 0);
 
   const choiceError = battleSession?.choiceError || null;
@@ -100,6 +102,8 @@ export default function ActionPanel({
   });
 
   const [dynamicTargets, setDynamicTargets] = useState<TargetOption[]>([]);
+
+  usePreloadFieldSpecies(battleState, playerData);
 
   // Reset dynamicTargets when request or turn changes
   useEffect(() => {
@@ -439,12 +443,20 @@ export default function ActionPanel({
           onSelectMove={handleSelectMove}
           onClearError={clearChoiceError}
           onBack={showBackButton ? goBackStep : undefined}
+          battleState={battleState}
+          playerData={playerData}
+          battleType={battleType}
+          activeRequestsCount={activeRequests.length}
         />
       ) : (
         <TargetSelector
           selectedMoveTarget={selectedMove.target}
+          selectedMove={selectedMove}
           dynamicTargets={dynamicTargets}
           isLoading={isLoading}
+          battleState={battleState}
+          playerData={playerData}
+          currentSlotIndex={currentSlotIndex}
           onConfirmMove={handleConfirmMove}
           onBack={showBackButton ? goBackStep : undefined}
         />
