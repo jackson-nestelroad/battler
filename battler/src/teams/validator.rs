@@ -407,6 +407,34 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         check
     }
 
+    fn should_validate_obtainable_moves(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainablemoves"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_abilities(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableabilities"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_formes(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableformes"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_events(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableevents"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
     fn species_validation_ids(species: &ElementRef<'_, Species>) -> Vec<Id> {
         let flags = species
             .data
@@ -448,25 +476,27 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     ) -> Vec<String> {
         let mut problems = Vec::new();
 
-        if species.data.battle_only_forme {
-            problems.push(format!(
-                "{} is only available via in-battle transformation, so your team may not start with one.",
-                species.data.display_name()
-            ));
-        }
+        if self.should_validate_obtainable_formes() {
+            if species.data.battle_only_forme {
+                problems.push(format!(
+                    "{} is only available via in-battle transformation, so your team may not start with one.",
+                    species.data.display_name()
+                ));
+            }
 
-        if !species.data.required_items.is_empty()
-            && (item.is_none()
-                || !species
-                    .data
-                    .required_items
-                    .contains(item.as_ref().unwrap().id().as_ref()))
-        {
-            problems.push(format!(
-                "{} is only available when holding one of the following items: {}.",
-                species.data.display_name(),
-                species.data.required_items.iter().join(", ")
-            ));
+            if !species.data.required_items.is_empty()
+                && (item.is_none()
+                    || !species
+                        .data
+                        .required_items
+                        .contains(item.as_ref().unwrap().id().as_ref()))
+            {
+                problems.push(format!(
+                    "{} is only available when holding one of the following items: {}.",
+                    species.data.display_name(),
+                    species.data.required_items.iter().join(", ")
+                ));
+            }
         }
 
         // The item forces this base species into some forme, so modify the Mon's species.
@@ -595,20 +625,22 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ResourceCheck::Unknown => (),
         }
 
-        match self.validate_can_learn(mon, species, mov, state) {
-            MoveLegality::Legal => (),
-            MoveLegality::Illegal(reason) => {
-                problems.push(format!(
-                    "{} cannot learn {}, because {} {reason}",
-                    mon.name, mov.data.name, mov.data.name,
-                ));
-            }
-            // This should not happen.
-            MoveLegality::Unknown => {
-                problems.push(format!(
-                    "It is unknown if {} can learn {}. This is a bug in the validation algorithm.",
-                    mon.name, mov.data.name,
-                ));
+        if self.should_validate_obtainable_moves() {
+            match self.validate_can_learn(mon, species, mov, state) {
+                MoveLegality::Legal => (),
+                MoveLegality::Illegal(reason) => {
+                    problems.push(format!(
+                        "{} cannot learn {}, because {} {reason}",
+                        mon.name, mov.data.name, mov.data.name,
+                    ));
+                }
+                // This should not happen.
+                MoveLegality::Unknown => {
+                    problems.push(format!(
+                        "It is unknown if {} can learn {}. This is a bug in the validation algorithm.",
+                        mon.name, mov.data.name,
+                    ));
+                }
             }
         }
 
@@ -824,6 +856,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ResourceCheck::Unknown => (),
         }
 
+        if !self.should_validate_obtainable_abilities() {
+            return problems;
+        }
+
         // Normal ability.
         if species.data.abilities.contains(&ability.data.name) {
             return problems;
@@ -851,6 +887,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         state: &mut MonValidationState<'state>,
     ) -> Vec<String> {
         let mut problems = Vec::new();
+
+        if !self.should_validate_obtainable_events() {
+            return problems;
+        }
 
         // Nothing to check.
         if !state.from_event {

@@ -312,7 +312,7 @@
     }
   },
   "adjust_level_down_does_not_invalidate_moves": {
-    "format": { "battle_type": "Singles", "rules": ["Adjust Level Down = 50"] },
+    "format": { "battle_type": "Singles", "rules": ["Adjust Level Down = 50", "Obtainable"] },
     "team": {
       "members": [
         {
@@ -933,7 +933,7 @@
     "expected_problems": []
   },
   "cannot_learn_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -953,7 +953,7 @@
     ]
   },
   "only_prevo_can_learn_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -971,7 +971,7 @@
     "expected_problems": []
   },
   "move_not_learned_yet": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1104,7 +1104,7 @@
     "expected_problems": []
   },
   "unobtainable_ability": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1122,7 +1122,7 @@
     "expected_problems": ["Bulba Fett cannot have the ability Torrent because it is unobtainable."]
   },
   "forme_moves": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1139,7 +1139,7 @@
     "expected_problems": []
   },
   "battle_only_forme": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1158,7 +1158,7 @@
     ]
   },
   "item_induced_forme": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1210,7 +1210,7 @@
     }
   },
   "event_giveaway": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1235,7 +1235,7 @@
     "expected_problems": []
   },
   "event_with_illegal_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1255,7 +1255,7 @@
     ]
   },
   "multiple_event_source": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1274,7 +1274,7 @@
     ]
   },
   "invalid_ball_for_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1291,7 +1291,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_non_shiny_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1309,7 +1309,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_ivs_for_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1327,7 +1327,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_shiny_only_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1344,7 +1344,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "evolved_from_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1546,5 +1546,42 @@
       }
     },
     "expected_problems": ["Item Potion is not allowed."]
+  },
+  "unobtainable_move_allowed_without_obtainable_clause": {
+    "format": { "battle_type": "Singles", "rules": [] },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba Fett",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": ["Water Gun"],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal",
+          "level": 50
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "unobtainable_ability_allowed_without_obtainable_clause": {
+    "format": { "battle_type": "Singles", "rules": [] },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba Fett",
+          "species": "Bulbasaur",
+          "ability": "Torrent",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal",
+          "level": 1
+        }
+      ]
+    },
+    "expected_problems": []
   }
 }
+

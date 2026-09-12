@@ -65,6 +65,7 @@ export default function ProposalForm() {
   const [customRules, setCustomRules] = useState<CustomRulesState>({
     preset: "standard",
     teamPreview: true,
+    obtainable: true,
     speciesClause: true,
     sleepClause: true,
     itemClause: true,
@@ -351,6 +352,7 @@ export default function ProposalForm() {
     } else if (customRules.preset === "flatrules") {
       rulesArray = ["Flat Rules"];
     } else if (customRules.preset === "custom") {
+      if (customRules.obtainable) rulesArray.push("Obtainable");
       if (customRules.sleepClause) rulesArray.push("Sleep Clause");
       if (customRules.speciesClause) rulesArray.push("Species Clause");
       if (customRules.itemClause) rulesArray.push("Item Clause");

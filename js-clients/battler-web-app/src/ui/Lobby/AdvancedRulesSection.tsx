@@ -4,6 +4,7 @@ import styles from "./ProposalForm.module.scss";
 export interface CustomRulesState {
   preset: "none" | "standard" | "standarddoubles" | "flatrules" | "custom";
   teamPreview: boolean;
+  obtainable: boolean;
   speciesClause: boolean;
   sleepClause: boolean;
   itemClause: boolean;
@@ -135,6 +136,15 @@ export default function AdvancedRulesSection({ customRules, onChange }: Advanced
       {isCustom && (
         <div className="flex-col gap-m mt-m">
           <div className={styles.checkboxGrid}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={customRules.obtainable}
+                onChange={(e) => onChange({ obtainable: e.target.checked })}
+              />
+              <span>Obtainable</span>
+            </label>
+
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"

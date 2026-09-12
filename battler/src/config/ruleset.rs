@@ -811,6 +811,10 @@ mod rule_set_test {
         .unwrap();
         let want = serde_json::from_str(
             r#"[
+                "Obtainable Moves",
+                "Obtainable Abilities",
+                "Obtainable Formes",
+                "Obtainable Events",
                 "Team Preview",
                 "Species Clause",
                 "Item Clause",
