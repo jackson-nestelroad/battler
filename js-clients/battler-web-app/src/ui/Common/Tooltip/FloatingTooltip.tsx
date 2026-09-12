@@ -47,7 +47,7 @@ export default function FloatingTooltip({
   preferredPlacement = "top",
 }: FloatingTooltipProps) {
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(() => typeof document !== "undefined");
   const [coords, setCoords] = useState<FloatingCoordsResult>({
     top: -9999,
     left: -9999,

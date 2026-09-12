@@ -4,6 +4,17 @@ import { describe, expect, it, vi } from "vitest";
 import FloatingTooltip from "./FloatingTooltip";
 import { calculateFloatingCoords, getElementRect } from "../../../utils/floatingCoords";
 
+let capturedPortal: React.ReactElement | null = null;
+
+vi.mock("react-dom", () => ({
+  createPortal: (children: React.ReactNode) => {
+    if (React.isValidElement(children)) {
+      capturedPortal = children;
+    }
+    return children;
+  },
+}));
+
 function createMockRect(rect: Partial<DOMRect>): DOMRect {
   return {
     top: 0,
@@ -143,95 +154,58 @@ describe("FloatingTooltip", () => {
 
   it("isolates bubble events while avoiding capture-phase interference with children", () => {
     const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
     try {
-      internals.H = {
-        useState: (init: unknown) => [
-          typeof init === "boolean"
-            ? true
-            : { top: 100, left: 100, placement: "top" },
-          () => {},
-        ],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useLayoutEffect: () => {},
-      };
       globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+      capturedPortal = null;
 
-      const portal = FloatingTooltip({
-        isOpen: true,
-        children: <button id="inner-tab">Tab 1</button>,
-      });
+      renderToStaticMarkup(
+        <FloatingTooltip isOpen={true}>
+          <button id="inner-tab">Tab 1</button>
+        </FloatingTooltip>,
+      );
 
-      expect(portal).toBeDefined();
-      const portalContainer = (
-        portal as unknown as { children: { props: Record<string, any> } }
-      ).children;
-      expect(portalContainer.props.className).toContain("floatingPortal");
+      expect(capturedPortal).toBeDefined();
+      const props = (capturedPortal as unknown as { props: Record<string, any> }).props;
+      expect(props.className).toContain("floatingPortal");
 
       // Verify capture-phase handlers are NOT present (avoid blocking interactive children)
-      expect(portalContainer.props.onClickCapture).toBeUndefined();
-      expect(portalContainer.props.onMouseDownCapture).toBeUndefined();
-      expect(portalContainer.props.onPointerDownCapture).toBeUndefined();
+      expect(props.onClickCapture).toBeUndefined();
+      expect(props.onMouseDownCapture).toBeUndefined();
+      expect(props.onPointerDownCapture).toBeUndefined();
 
       // Verify pointerdown and mousedown are NOT intercepted (allows parent/outside click tracking)
-      expect(portalContainer.props.onMouseDown).toBeUndefined();
-      expect(portalContainer.props.onPointerDown).toBeUndefined();
+      expect(props.onMouseDown).toBeUndefined();
+      expect(props.onPointerDown).toBeUndefined();
 
       // Verify onClick stopPropagation is called on bubble phase to protect parent ActionButton
       const stopPropagationClick = vi.fn();
-      portalContainer.props.onClick({ stopPropagation: stopPropagationClick });
+      props.onClick({ stopPropagation: stopPropagationClick });
       expect(stopPropagationClick).toHaveBeenCalledTimes(1);
     } finally {
-      internals.H = prevH;
       globalThis.document = originalDocument;
     }
   });
 
-  it("anchors top coordinate when tooltip content shrinks while open", () => {
+  it("renders portal container with floating styles when open in DOM environment", () => {
     const originalDocument = globalThis.document;
-    const internals = (
-      React as unknown as {
-        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
-      }
-    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-    const prevH = internals.H;
-
     try {
-      let stateCoords = { top: 92, left: 100, placement: "top" as const };
-      const setCoords = vi.fn((newCoords) => {
-        stateCoords = typeof newCoords === "function" ? newCoords(stateCoords) : newCoords;
-      });
-
-      internals.H = {
-        useState: (init: unknown) => [
-          typeof init === "boolean" ? true : stateCoords,
-          typeof init === "boolean" ? () => {} : setCoords,
-        ],
-        useRef: (init: unknown) => ({ current: init }),
-        useCallback: (fn: unknown) => fn,
-        useEffect: () => {},
-        useLayoutEffect: () => {},
-      };
       globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+      capturedPortal = null;
 
-      const portal = FloatingTooltip({
-        isOpen: true,
-        targetRect: createMockRect({ left: 100, top: 600, width: 200, height: 50 }),
-        children: <div>Content</div>,
-        preferredPlacement: "top",
-      });
+      renderToStaticMarkup(
+        <FloatingTooltip
+          isOpen={true}
+          targetRect={createMockRect({ left: 100, top: 600, width: 200, height: 50 })}
+          preferredPlacement="top"
+        >
+          <div>Content</div>
+        </FloatingTooltip>,
+      );
 
-      expect(portal).toBeDefined();
+      expect(capturedPortal).toBeDefined();
+      const props = (capturedPortal as unknown as { props: Record<string, any> }).props;
+      expect(props.className).toContain("floatingPortal");
     } finally {
-      internals.H = prevH;
       globalThis.document = originalDocument;
     }
   });
