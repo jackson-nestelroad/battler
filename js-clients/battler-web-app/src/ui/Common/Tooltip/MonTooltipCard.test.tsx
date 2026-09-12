@@ -245,8 +245,10 @@ describe("MonTooltipCard", () => {
       expect(html).toContain('role="tablist"');
       expect(html).toContain('id="mon-tab-battle"');
       expect(html).toContain('aria-controls="mon-panel-battle"');
+      expect(html).toContain('>Battle<');
       expect(html).toContain('id="mon-tab-summary"');
       expect(html).toContain('aria-controls="mon-panel-summary"');
+      expect(html).toContain('>Team<');
       expect(html).toContain('role="tabpanel"');
       expect(html).toContain('id="mon-panel-battle"');
       expect(html).toContain('aria-labelledby="mon-tab-battle"');

@@ -194,6 +194,47 @@ describe("FloatingTooltip", () => {
       globalThis.document = originalDocument;
     }
   });
+
+  it("anchors top coordinate when tooltip content shrinks while open", () => {
+    const originalDocument = globalThis.document;
+    const internals = (
+      React as unknown as {
+        __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE: { H: unknown };
+      }
+    ).__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+    const prevH = internals.H;
+
+    try {
+      let stateCoords = { top: 92, left: 100, placement: "top" as const };
+      const setCoords = vi.fn((newCoords) => {
+        stateCoords = typeof newCoords === "function" ? newCoords(stateCoords) : newCoords;
+      });
+
+      internals.H = {
+        useState: (init: unknown) => [
+          typeof init === "boolean" ? true : stateCoords,
+          typeof init === "boolean" ? () => {} : setCoords,
+        ],
+        useRef: (init: unknown) => ({ current: init }),
+        useCallback: (fn: unknown) => fn,
+        useEffect: () => {},
+        useLayoutEffect: () => {},
+      };
+      globalThis.document = { body: { nodeType: 1 } } as unknown as Document;
+
+      const portal = FloatingTooltip({
+        isOpen: true,
+        targetRect: createMockRect({ left: 100, top: 600, width: 200, height: 50 }),
+        children: <div>Content</div>,
+        preferredPlacement: "top",
+      });
+
+      expect(portal).toBeDefined();
+    } finally {
+      internals.H = prevH;
+      globalThis.document = originalDocument;
+    }
+  });
 });
 
 describe("getElementRect", () => {

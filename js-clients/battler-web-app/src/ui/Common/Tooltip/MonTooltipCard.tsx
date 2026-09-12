@@ -207,7 +207,7 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
             className={cardStyles.tabBtn}
             onClick={() => setActiveTab("summary")}
           >
-            Summary
+            Team
           </button>
         </div>
       )}

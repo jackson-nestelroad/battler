@@ -54,12 +54,21 @@ export default function FloatingTooltip({
     placement: preferredPlacement,
   });
 
+  const anchoredTopRef = useRef<number | null>(null);
+  const lastTargetTopRef = useRef<number | null>(null);
+  const lastTargetLeftRef = useRef<number | null>(null);
+  const lastPlacementRef = useRef<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
     if (!isOpen) {
+      anchoredTopRef.current = null;
+      lastTargetTopRef.current = null;
+      lastTargetLeftRef.current = null;
+      lastPlacementRef.current = null;
       setCoords({ top: -9999, left: -9999, placement: preferredPlacement });
     }
   }, [isOpen, preferredPlacement]);
@@ -80,14 +89,37 @@ export default function FloatingTooltip({
     const tooltipWidth = tooltipEl.offsetWidth;
     const tooltipHeight = tooltipEl.offsetHeight;
 
-    setCoords(
-      calculateFloatingCoords(
-        rect,
-        tooltipWidth,
-        tooltipHeight,
-        preferredPlacement,
-      ),
+    const newCoords = calculateFloatingCoords(
+      rect,
+      tooltipWidth,
+      tooltipHeight,
+      preferredPlacement,
     );
+
+    // If target element moved (e.g. scroll), placement flipped, or initial position: establish fresh anchor
+    if (
+      lastTargetTopRef.current !== rect.top ||
+      lastTargetLeftRef.current !== rect.left ||
+      lastPlacementRef.current !== newCoords.placement ||
+      anchoredTopRef.current === null
+    ) {
+      lastTargetTopRef.current = rect.top;
+      lastTargetLeftRef.current = rect.left;
+      lastPlacementRef.current = newCoords.placement;
+      anchoredTopRef.current = newCoords.top;
+      setCoords(newCoords);
+      return;
+    }
+
+    // When tooltip content shrinks/expands while open without target moving (e.g. switching tabs):
+    // Anchor top so it doesn't drop downwards away from the user's cursor
+    const stableTop = Math.min(anchoredTopRef.current, newCoords.top);
+    anchoredTopRef.current = stableTop;
+
+    setCoords({
+      ...newCoords,
+      top: stableTop,
+    });
   }, [isOpen, targetRect, targetRef, preferredPlacement]);
 
   // Recalculate immediately when props or children change

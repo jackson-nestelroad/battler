@@ -65,7 +65,7 @@ function useInteractiveTooltip(
       if (openChildCountRef.current > 0) return;
       closeChild?.();
       setIsOpen(false);
-    }, 40);
+    }, 120);
   }, [clearCloseTimer, closeChild]);
 
   const handleBlur = () => {
@@ -113,6 +113,8 @@ function useInteractiveTooltip(
       }
 
       if (contentRef?.current?.contains(target)) {
+        clearCloseTimer();
+        isHoveringRef.current = true;
         if (isTargetInChild && !isTargetInChild(target)) {
           closeChild?.();
         }
