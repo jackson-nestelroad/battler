@@ -208,10 +208,24 @@
 }
 
 .unrevealedPip {
-  font-size: var(--font-size-xxs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   line-height: 1;
   color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.teamSummaryRow .unrevealedPip {
+  width: 2rem;
+  height: 2rem;
+}
+
+.teamSummaryCard .unrevealedPip {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: var(--font-size-s);
 }
 
 .rowActingBadge {

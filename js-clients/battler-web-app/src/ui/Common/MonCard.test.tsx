@@ -62,7 +62,7 @@ describe("MonCard", () => {
   });
 
   it("renders unrevealed placeholder when isUnrevealed is true", () => {
-    const html = renderToStaticMarkup(
+    const rowHtml = renderToStaticMarkup(
       <MonCard
         name="Unknown"
         hp={100}
@@ -74,9 +74,28 @@ describe("MonCard", () => {
       />,
     );
 
-    expect(html).toContain("Unrevealed");
-    expect(html).not.toContain("Not revealed");
-    expect(html).toContain("unrevealed");
+    expect(rowHtml).toContain("Unrevealed");
+    expect(rowHtml).not.toContain("Not revealed");
+    expect(rowHtml).toContain("unrevealed");
+    expect(rowHtml).toContain("rowIdentity");
+    expect(rowHtml).toContain("unrevealedPip");
+
+    const cardHtml = renderToStaticMarkup(
+      <MonCard
+        name="Unknown"
+        hp={100}
+        maxHp={100}
+        status={null}
+        active={false}
+        isUnrevealed={true}
+        variant="card"
+      />,
+    );
+
+    expect(cardHtml).toContain("Unrevealed");
+    expect(cardHtml).toContain("cardMain");
+    expect(cardHtml).toContain("cardDetails");
+    expect(cardHtml).toContain("unrevealedPip");
   });
 
   it("renders faded unbrought styling when isUnbrought is true", () => {

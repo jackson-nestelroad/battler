@@ -56,17 +56,30 @@ export default function MonCard({
   preferredPlacement,
 }: MonCardProps) {
   if (isUnrevealed) {
+    if (variant === "row") {
+      return (
+        <div className={`${styles.teamSummaryRow} ${styles.unrevealed}`}>
+          <div className={styles.rowIdentity}>
+            <span className={styles.unrevealedPip} aria-hidden="true">
+              ○
+            </span>
+            <span className={styles.summaryMonName} title="Unrevealed">Unrevealed</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div
-        className={`${variant === "row" ? styles.teamSummaryRow : styles.teamSummaryCard} ${
-          styles.unrevealed
-        }`}
-      >
-        <div className={variant === "row" ? styles.rowIdentity : styles.summaryCardHeader}>
+      <div className={`${styles.teamSummaryCard} ${styles.unrevealed}`}>
+        <div className={styles.cardMain}>
           <span className={styles.unrevealedPip} aria-hidden="true">
             ○
           </span>
-          <span className={styles.summaryMonName}>Unrevealed</span>
+          <div className={styles.cardDetails}>
+            <div className={styles.summaryCardHeader}>
+              <span className={styles.summaryMonName} title="Unrevealed">Unrevealed</span>
+            </div>
+          </div>
         </div>
       </div>
     );
