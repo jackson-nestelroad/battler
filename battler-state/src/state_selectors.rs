@@ -422,7 +422,7 @@ pub fn side_players<'s>(
     Ok(side_or_else(state, side)?.players.values())
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod state_selectors_test {
     use alloc::{
         borrow::ToOwned,

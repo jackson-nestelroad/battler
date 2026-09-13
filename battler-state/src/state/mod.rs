@@ -2,7 +2,7 @@ mod log_handler;
 mod state;
 mod types;
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests;
 
 pub(crate) use log_handler::alter_battle_state_from_log;

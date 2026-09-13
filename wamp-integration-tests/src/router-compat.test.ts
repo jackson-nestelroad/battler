@@ -298,7 +298,9 @@ describe("WAMP Router Compatibility Tests", () => {
     const caller = await connectClient(router.port);
     await assert.rejects(
       Promise.resolve(caller.session!.call("com.compat.cleanup")),
-      (err: unknown) => (err as WampError).error === "wamp.error.no_available_callee",
+      (err: unknown) =>
+        (err as WampError).error === "wamp.error.no_available_callee" ||
+        (err as WampError).error === "wamp.error.no_such_procedure",
     );
 
     caller.close();

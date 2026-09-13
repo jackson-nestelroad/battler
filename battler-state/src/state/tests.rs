@@ -2,6 +2,7 @@
 mod state_test {
     use alloc::{
         borrow::ToOwned,
+        vec,
         vec::Vec,
     };
 

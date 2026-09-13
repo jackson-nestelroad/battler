@@ -184,19 +184,19 @@ macro_rules! ui_log {
         $(, values = { $($k:expr => $v:expr),* $(,)? })?
     ) => {{
         #[allow(unused_mut)]
-        let mut values = hashbrown::HashMap::<String, crate::ui::LogValue>::new();
+        let mut values = hashbrown::HashMap::<alloc::string::String, $crate::ui::LogValue>::new();
         $($(
-            values.insert($k.to_owned(), $crate::ui::IntoLogValue::into_log_value($v));
+            values.insert(alloc::borrow::ToOwned::to_owned($k), $crate::ui::IntoLogValue::into_log_value($v));
         )*)?
-        crate::ui::UiLogEntry {
-            title: $title.to_owned(),
-            side: ui_log!(@opt $($side)?),
-            slot: ui_log!(@opt $($slot)?),
-            player: ui_log!(@opt $($player)?),
-            target: ui_log!(@opt $($target)?),
-            source: ui_log!(@opt $($source)?),
-            effect: ui_log!(@opt $($effect)?),
-            source_effect: ui_log!(@opt $($source_effect)?),
+        $crate::ui::UiLogEntry {
+            title: alloc::borrow::ToOwned::to_owned($title),
+            side: $crate::ui_log!(@opt $($side)?),
+            slot: $crate::ui_log!(@opt $($slot)?),
+            player: $crate::ui_log!(@opt $($player)?),
+            target: $crate::ui_log!(@opt $($target)?),
+            source: $crate::ui_log!(@opt $($source)?),
+            effect: $crate::ui_log!(@opt $($effect)?),
+            source_effect: $crate::ui_log!(@opt $($source_effect)?),
             values,
         }
     }};
