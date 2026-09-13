@@ -17,5 +17,12 @@ describe("assets helper", () => {
     expect(itemIconUrl("Leftovers")).toBe("/assets/items/leftovers.png");
     expect(itemIconUrl("Choice Scarf")).toBe("/assets/items/choicescarf.png");
     expect(itemIconUrl("King's Rock")).toBe("/assets/items/kingsrock.png");
+    expect(itemIconUrl("Poké Ball")).toBe("/assets/items/pokeball.png");
+    expect(itemIconUrl("pokeball")).toBe("/assets/items/pokeball.png");
+  });
+
+  it("handles accented names without dropping decomposed characters", () => {
+    expect(monRenderUrl("Flabébé")).toBe("/assets/mons/renders/flabebe.webp");
+    expect(monIconUrl("Flabébé")).toBe("/assets/mons/icons/flabebe.png");
   });
 });

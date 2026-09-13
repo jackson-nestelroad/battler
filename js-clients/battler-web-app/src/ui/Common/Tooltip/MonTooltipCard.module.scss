@@ -45,6 +45,26 @@
   font-size: var(--font-size-xs);
 }
 
+.ballTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  transition: var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.ballIcon {
+  width: var(--font-size-l);
+  height: var(--font-size-l);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .ownerText {
   font-size: var(--font-size-xxs);
   color: var(--text-muted);

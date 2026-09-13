@@ -296,7 +296,11 @@ export function formatStatusBadge(status?: string | null): StatusDisplayInfo | n
  */
 export function formatBallName(ball?: string | null): string {
   if (!ball) return "";
-  const lower = ball.toLowerCase().replace(/[-_ ]/g, "");
+  const lower = ball
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[-_ ]/g, "");
   if (lower === "pokeball") return "Poké Ball";
   if (lower.endsWith("ball") && lower !== "ball") {
     const prefix = lower.slice(0, -4);

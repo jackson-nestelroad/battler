@@ -1,4 +1,4 @@
-import { monRenderUrl } from "../../../utils/assets";
+import { itemIconUrl, monRenderUrl } from "../../../utils/assets";
 import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
@@ -21,6 +21,7 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
     level,
     gender,
     shiny,
+    ball,
     ownerLabel,
     types,
     teraType,
@@ -36,6 +37,8 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
   const displayName = name || species;
 
   const activeTeraType = isTerastallized && teraType ? teraType : null;
+  const ballName = ball ? formatBallName(ball) : "";
+  const ballIconSrc = ball ? itemIconUrl(ball) : "";
 
   return (
     <header className={cardStyles.header}>
@@ -52,6 +55,24 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
               <span className={styles.shinyStar} title="Shiny">
                 ✨
               </span>
+            )}
+            {ball && ballIconSrc && (
+              <DataTooltipTrigger
+                resourceType="item"
+                name={ballName}
+                title={ballName}
+                ariaLabel={`Ball: ${ballName}`}
+                showUnderline={false}
+                className={styles.ballTrigger}
+              >
+                <img
+                  src={ballIconSrc}
+                  alt=""
+                  aria-hidden="true"
+                  className={styles.ballIcon}
+                  draggable={false}
+                />
+              </DataTooltipTrigger>
             )}
           </div>
 
@@ -356,30 +377,14 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
         </section>
       )}
 
-      {/* Secondary traits: Ball, Weight, Hidden Power, Friendship */}
-      {(current.ball ||
-        current.weightKg != null ||
-        current.hiddenPowerType ||
+      {/* Secondary traits: Weight, Friendship */}
+      {(current.weightKg != null ||
         current.friendship != null) && (
         <section className={cardStyles.traitsGrid}>
-          {current.ball && (
-            <div className={cardStyles.traitRow}>
-              <span className={cardStyles.traitLabel}>Ball:</span>
-              <span className={cardStyles.traitValue}>{formatBallName(current.ball)}</span>
-            </div>
-          )}
-
           {current.weightKg != null && (
             <div className={cardStyles.traitRow}>
               <span className={cardStyles.traitLabel}>Weight:</span>
               <span className={cardStyles.traitValue}>{current.weightKg} kg</span>
-            </div>
-          )}
-
-          {current.hiddenPowerType && (
-            <div className={cardStyles.traitRow}>
-              <span className={cardStyles.traitLabel}>Hidden Power:</span>
-              <span className={cardStyles.traitValue}>{current.hiddenPowerType}</span>
             </div>
           )}
 

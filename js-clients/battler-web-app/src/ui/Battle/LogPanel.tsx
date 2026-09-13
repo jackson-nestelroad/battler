@@ -8,7 +8,6 @@ import { formatContextValue, formatNoticeText } from "../../utils/logFormatter";
 import { useFormattedLogs } from "../../hooks/useFormattedLogs";
 import MonTooltipTrigger from "../Common/Tooltip/MonTooltipTrigger";
 import DataTooltipTrigger, { type DataResourceType } from "../Common/Tooltip/DataTooltipTrigger";
-import EngineLogViewer from "./EngineLogViewer";
 import PlayerStateViewer from "./PlayerStateViewer";
 
 import styles from "./LogPanel.module.scss";
@@ -17,7 +16,6 @@ interface LogPanelProps {
   battleId?: string | null;
   uiLogs?: UiLogEntry[];
   visibleLogs?: FormattedLogDisplayItem[];
-  engineLogs?: string[];
   battleState?: BattleState | null;
   rules?: string[] | null;
   playerData?: PlayerBattleData | null;
@@ -154,7 +152,6 @@ export default function LogPanel({
   battleId,
   uiLogs = [],
   visibleLogs: explicitVisibleLogs,
-  engineLogs = [],
   battleState,
   rules,
   playerData,
@@ -162,7 +159,7 @@ export default function LogPanel({
   localPlayerId,
   isSpectator = false,
 }: LogPanelProps) {
-  const [mode, setMode] = useState<"text" | "players" | "engine">("text");
+  const [mode, setMode] = useState<"text" | "players">("text");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -181,7 +178,7 @@ export default function LogPanel({
     if (scrollRef.current && mode === "text") {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [visibleLogs.length, engineLogs.length, mode]);
+  }, [visibleLogs.length, mode]);
 
   return (
     <div className={`card ${styles.logPanel} ${isCollapsed ? styles.collapsed : ""}`}>
@@ -195,7 +192,7 @@ export default function LogPanel({
           >
             {isCollapsed ? "▲" : "▼"}
           </button>
-          <h3>{mode === "players" ? "Players" : mode === "engine" ? "Engine" : "Logs"}</h3>
+          <h3>{mode === "players" ? "Players" : "Logs"}</h3>
         </div>
         <Tabs
           active={mode}
@@ -203,7 +200,6 @@ export default function LogPanel({
           options={[
             { value: "text", label: "Text" },
             { value: "players", label: "Players" },
-            { value: "engine", label: "Engine" },
           ]}
         />
       </header>
@@ -218,8 +214,6 @@ export default function LogPanel({
             rules={rules}
           />
         )}
-
-        {mode === "engine" && <EngineLogViewer engineLogs={engineLogs} />}
 
         {mode === "text" && (
           <div className="flex-col gap-xs">

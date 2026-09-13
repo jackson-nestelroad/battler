@@ -18,6 +18,8 @@ describe("dataTooltipFormatting", () => {
       expect(toId("U-turn")).toBe("uturn");
       expect(toId("Zoroark-Hisui")).toBe("zoroarkhisui");
       expect(toId("10,000,000 Volt Volt")).toBe("10000000voltvolt");
+      expect(toId("Poké Ball")).toBe("pokeball");
+      expect(toId("Flabébé")).toBe("flabebe");
     });
 
     it("handles empty strings", () => {

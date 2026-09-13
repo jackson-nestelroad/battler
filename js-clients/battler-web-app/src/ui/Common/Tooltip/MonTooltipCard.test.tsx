@@ -267,4 +267,44 @@ describe("MonTooltipCard", () => {
       expect(html).toContain('src="/assets/mons/renders/charizard.webp"');
     });
   });
+
+  describe("Ball icon in header", () => {
+    it("renders Poké Ball icon in header identity with title and item tooltip trigger", () => {
+      const mon = createMockMon({ ball: "pokeball" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+
+      expect(html).toContain('src="/assets/items/pokeball.png"');
+      expect(html).toContain('title="Poké Ball"');
+      expect(html).toContain('aria-label="Ball: Poké Ball"');
+      expect(html).not.toContain(`<span class="${cardStyles.traitLabel}">Ball:</span>`);
+    });
+
+    it("renders non-standard ball icon with formatted name", () => {
+      const mon = createMockMon({ ball: "cherishball" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+
+      expect(html).toContain('src="/assets/items/cherishball.png"');
+      expect(html).toContain('title="Cherish Ball"');
+      expect(html).toContain('aria-label="Ball: Cherish Ball"');
+      expect(html).not.toContain(`<span class="${cardStyles.traitLabel}">Ball:</span>`);
+    });
+
+    it("omits ball icon when ball is null or empty", () => {
+      const mon = createMockMon({ ball: null });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+
+      expect(html).not.toContain('/assets/items/');
+      expect(html).not.toContain(`<span class="${cardStyles.traitLabel}">Ball:</span>`);
+    });
+  });
+
+  describe("Secondary traits", () => {
+    it("does not render Hidden Power even if specified on data model", () => {
+      const mon = createMockMon({ hiddenPowerType: "Ice" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+
+      expect(html).not.toContain("Hidden Power");
+      expect(html).not.toContain(`<span class="${cardStyles.traitLabel}">Hidden Power:</span>`);
+    });
+  });
 });

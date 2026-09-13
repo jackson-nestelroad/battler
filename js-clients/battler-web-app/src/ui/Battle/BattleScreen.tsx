@@ -435,7 +435,6 @@ export default function BattleScreen() {
             <LogPanel
               battleId={battleId}
               uiLogs={battleSession.uiLogs}
-              engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
               rules={metadata?.rules}
               playerData={battleSession.playerData}
@@ -482,7 +481,6 @@ export default function BattleScreen() {
             <LogPanel
               battleId={battleId}
               uiLogs={battleSession.uiLogs}
-              engineLogs={battleSession.engineLogs}
               battleState={battleSession.battleState}
               rules={metadata?.rules}
               playerData={battleSession.playerData}

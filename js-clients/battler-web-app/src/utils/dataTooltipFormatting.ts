@@ -3,7 +3,12 @@ import type { Accuracy } from "battler-types";
 /**
  * Normalizes an arbitrary string into a lowercased alphanumeric identifier.
  */
-export const toId = (str: string): string => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+export const toId = (str: string): string =>
+  str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 
 /**
  * Formats base power directly, showing an em dash for 0 or omitted power (status/variable moves).
