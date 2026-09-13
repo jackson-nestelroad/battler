@@ -21,6 +21,7 @@
   text-align: left;
   cursor: pointer;
   user-select: none;
+  overflow: hidden;
   transition: border-color var(--transition-duration) var(--transition-timing),
               background-color var(--transition-duration) var(--transition-timing),
               box-shadow var(--transition-duration) var(--transition-timing);
@@ -47,12 +48,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-m);
+  gap: var(--spacing-s);
   min-width: 0;
   flex: 1;
 }
 
-.teamName {
+.label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
@@ -120,8 +121,8 @@
   transition: background-color var(--transition-duration) var(--transition-timing),
               border-color var(--transition-duration) var(--transition-timing);
 
-  &:hover,
-  &.highlighted {
+  &:hover:not(.disabled),
+  &.highlighted:not(.disabled) {
     background-color: color-mix(in srgb, var(--color-primary) 12%, var(--bg-card));
     border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
   }
@@ -130,9 +131,14 @@
     background-color: color-mix(in srgb, var(--color-primary) 18%, var(--bg-card));
     border-color: var(--color-primary);
   }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
-.optionName {
+.optionLabel {
   font-size: var(--font-size-xs);
   font-weight: 600;
   line-height: 1.25;

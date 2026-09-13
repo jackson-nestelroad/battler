@@ -2,18 +2,32 @@
 
 .formatField {
   flex: 1;
-  min-width: rem(160px);
+  min-width: rem(140px);
   max-width: rem(240px);
+
+  @include tablet {
+    max-width: 100%;
+  }
 }
 
 .opponentControlField {
   flex: 1;
-  min-width: rem(160px);
+  min-width: rem(140px);
+  max-width: rem(240px);
+
+  @include tablet {
+    max-width: 100%;
+  }
 }
 
 .opponentField {
-  flex: 1;
-  min-width: rem(200px);
+  flex: 2;
+  min-width: rem(360px);
+
+  @include tablet {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
 }
 
 /* Advanced Battle Proposal Styles */

@@ -102,25 +102,25 @@ export default function PlayerSlotCard({
               <option value="protagonist">Protagonist</option>
             </select>
           </div>
-
-          {player.controlType === "ai" && !isChaos && (
-            <div className="form-group flex-1">
-              <label htmlFor={`ai-team-${side}-${index}`}>AI team</label>
-              {teamNames.length > 0 ? (
-                <TeamSelect
-                  id={`ai-team-${side}-${index}`}
-                  value={player.selectedTeam || ""}
-                  onChange={(val) => onChange({ selectedTeam: val })}
-                  teamNames={teamNames}
-                  teams={teams}
-                  required
-                />
-              ) : (
-                <span className="text-danger text-sm">No teams. Go to Teams.</span>
-              )}
-            </div>
-          )}
         </div>
+
+        {player.controlType === "ai" && !isChaos && (
+          <div className="form-group">
+            <label htmlFor={`ai-team-${side}-${index}`}>AI team</label>
+            {teamNames.length > 0 ? (
+              <TeamSelect
+                id={`ai-team-${side}-${index}`}
+                value={player.selectedTeam || ""}
+                onChange={(val) => onChange({ selectedTeam: val })}
+                teamNames={teamNames}
+                teams={teams}
+                required
+              />
+            ) : (
+              <span className="text-danger text-sm">No teams. Go to Teams.</span>
+            )}
+          </div>
+        )}
 
         <div>
           <button
