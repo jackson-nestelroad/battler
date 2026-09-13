@@ -1,4 +1,3 @@
-
 use ahash::HashSet;
 use anyhow::Result;
 use battler::{
