@@ -607,7 +607,7 @@ describe("monTooltipModel", () => {
 
       expect(vm).toBeDefined();
       expect(vm?.species).toBe("Bulbasaur");
-      expect(vm?.ownerLabel).toBe("Player: bob");
+      expect(vm?.ownerLabel).toBe("bob's Mon");
       expect(vm?.stats).toBeNull(); // Never leaks private stats
     });
 
@@ -734,7 +734,7 @@ describe("monTooltipModel", () => {
       expect(vm?.ability).toBe("Dragon's Maw");
       expect(vm?.moves[0].name).toBe("Trick-or-Treat");
       expect(vm?.item).toBe("None");
-      expect(vm?.ownerLabel).toBe("Player: ai-random-1");
+      expect(vm?.ownerLabel).toBe("ai-random-1's Mon");
     });
 
     it("detects transformed opponent Mon from battleState", () => {
@@ -1098,7 +1098,7 @@ describe("monTooltipModel", () => {
       expect(vm).toBeDefined();
       expect(vm?.species).toBe("Froslass");
       expect(vm?.name).toBe("Froslass");
-      expect(vm?.ownerLabel).toBe("Player: ai-random-1");
+      expect(vm?.ownerLabel).toBe("ai-random-1's Mon");
       expect(vm?.hp).toBeNull();
       expect(vm?.maxHp).toBeNull();
       expect(vm?.hpPercentage).toBeNull();

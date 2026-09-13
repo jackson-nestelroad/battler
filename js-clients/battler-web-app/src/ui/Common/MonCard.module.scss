@@ -17,11 +17,22 @@
     box-shadow: 0 0 0 1px var(--color-primary-border);
   }
 
-  &.summaryFainted,
+  &.summaryFainted {
+    opacity: 0.65;
+    background-color: var(--bg-input);
+    border-color: var(--border-disabled);
+  }
+
   &.summaryUnbrought {
     opacity: 0.65;
     background-color: var(--bg-input);
     border-color: var(--border-disabled);
+
+    .rowHpGroup,
+    :global(.hp-bar) {
+      opacity: 0.5;
+      filter: grayscale(1);
+    }
   }
 
   &.unrevealed {
@@ -49,14 +60,6 @@
 
   &.summaryActing {
     z-index: 2;
-
-    .summaryMonLevel {
-      display: none;
-    }
-
-    .summaryMonName {
-      max-width: calc(100% - var(--spacing-xxl));
-    }
   }
 
   &.summaryFainted.clickableSummaryCard {
@@ -85,8 +88,38 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-xs);
-  min-height: 2.25rem;
+  min-height: 2.625rem;
   width: 100%;
+}
+
+.cardMain {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.cardDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  flex: 1;
+  min-width: 0;
+}
+
+.cardMonIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.rowMonIcon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .summaryCardHeader {
@@ -95,12 +128,10 @@
   align-items: center;
   font-size: var(--font-size-xs);
   font-weight: 700;
-
-  .summaryMonLevel {
-    color: var(--text-muted);
-    font-size: var(--font-size-xs);
-  }
+  width: 100%;
+  min-width: 0;
 }
+
 
 .summaryMonName {
   color: var(--text-primary);
@@ -117,7 +148,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-top: var(--spacing-xs);
+  margin-top: 0;
   gap: var(--spacing-xs);
 }
 
@@ -176,29 +207,10 @@
   overflow: hidden;
 }
 
-.rowPip,
 .unrevealedPip {
   font-size: var(--font-size-xxs);
   flex-shrink: 0;
   line-height: 1;
-}
-
-.rowPip {
-  color: var(--color-success);
-  &.activePip {
-    color: var(--color-primary);
-  }
-
-  &.faintedPip {
-    color: var(--color-danger);
-  }
-
-  &.unbroughtPip {
-    color: var(--text-muted);
-  }
-}
-
-.unrevealedPip {
   color: var(--text-muted);
 }
 

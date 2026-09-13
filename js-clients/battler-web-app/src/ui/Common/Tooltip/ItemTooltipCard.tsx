@@ -1,5 +1,6 @@
 import type { DescriptionData } from "battler-data-service-client";
 import type { ItemData } from "battler-types";
+import { itemIconUrl } from "../../../utils/assets";
 import SimpleDataTooltipCard from "./SimpleDataTooltipCard";
 
 export interface ItemTooltipCardProps {
@@ -13,6 +14,7 @@ export default function ItemTooltipCard({ data, description }: ItemTooltipCardPr
       name={data.name}
       subtitle="Item"
       resourceType="item"
+      iconSrc={itemIconUrl(data.name)}
       flags={data.flags}
       description={description}
     />

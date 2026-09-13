@@ -105,6 +105,7 @@ export default function TeamSummary({
             <MonCard
               key={idx}
               name={name}
+              species={mon.species}
               level={mon.summary?.level || 50}
               hp={mon.hp}
               maxHp={mon.max_hp}

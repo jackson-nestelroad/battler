@@ -1,3 +1,4 @@
+import { monRenderUrl } from "../../../utils/assets";
 import { type CSSProperties, useState } from "react";
 import type { MonTooltipViewModel } from "../../../utils/monTooltipModel";
 import { computeHpPercentage, formatBallName } from "../../../utils/monHelpers";
@@ -24,6 +25,10 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
     types,
     teraType,
     isTerastallized,
+    ability,
+    item,
+    nature,
+    natureModifiers,
   } = data;
   const genderLower = gender?.toLowerCase();
   const isMale = genderLower === "m" || genderLower === "male";
@@ -34,72 +39,118 @@ function TooltipHeader({ data }: { data: MonTooltipViewModel }) {
 
   return (
     <header className={cardStyles.header}>
-      <div className={styles.headerTop}>
-        <div className={styles.identity}>
-          <span className={styles.monName}>{displayName}</span>
-          {level != null && (
-            <span className={styles.levelBadge}>L{level}</span>
-          )}
-          {isMale && <span className={styles.genderMale}>♂</span>}
-          {isFemale && <span className={styles.genderFemale}>♀</span>}
-          {shiny && (
-            <span className={styles.shinyStar} title="Shiny">
-              ✨
-            </span>
-          )}
-        </div>
-        {ownerLabel && <span className={styles.ownerBadge}>{ownerLabel}</span>}
-      </div>
-
-      {species && (
-        <DataTooltipTrigger resourceType="species" name={species}>
-          <span className={styles.speciesSubtitle}>{species}</span>
-        </DataTooltipTrigger>
-      )}
-
-      {/* Types and Tera state */}
-      <div className="flex-col gap-xxs">
-        {activeTeraType ? (
-          <>
-            {/* Active Tera Type */}
-            <div className="flex-row align-center gap-xs flex-wrap">
-              <TypeBadge type={activeTeraType} size="md" variant="tera" interactive />
-              <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
-                Terastallized
+      <div className="flex-row justify-between align-start gap-s">
+        <div className="flex-col gap-xxs flex-1 min-w-0">
+          <div className={styles.identity}>
+            <span className={styles.monName}>{displayName}</span>
+            {level != null && (
+              <span className={styles.levelBadge}>L{level}</span>
+            )}
+            {isMale && <span className={styles.genderMale}>♂</span>}
+            {isFemale && <span className={styles.genderFemale}>♀</span>}
+            {shiny && (
+              <span className={styles.shinyStar} title="Shiny">
+                ✨
               </span>
-            </div>
+            )}
+          </div>
 
-            {/* Base Types composite pill matching Tera pill */}
-            {types && types.length > 0 && (
-              <div className={styles.baseTypesPill}>
-                <span className={styles.baseTypesLabel}>Base:</span>
-                <div className="flex-row align-center gap-xxs flex-wrap">
-                  {types.map((type) => (
-                    <TypeBadge key={type} type={type} size="sm" interactive />
-                  ))}
+          {species && (
+            <DataTooltipTrigger resourceType="species" name={species}>
+              <span className={styles.speciesSubtitle}>{species}</span>
+            </DataTooltipTrigger>
+          )}
+
+          {/* Types and Tera state */}
+          <div className="flex-col gap-xxs">
+            {activeTeraType ? (
+              <>
+                {/* Active Tera Type */}
+                <div className="flex-row align-center gap-xs flex-wrap">
+                  <TypeBadge type={activeTeraType} size="md" variant="tera" interactive />
+                  <span className={`${styles.specialBadge} ${styles.teraBadge}`}>
+                    Terastallized
+                  </span>
                 </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* Real types on their own line */}
-            {types && types.length > 0 && (
-              <div className="flex-row align-center gap-xs flex-wrap">
-                {types.map((type) => (
-                  <TypeBadge key={type} type={type} size="md" interactive />
-                ))}
-              </div>
+
+                {/* Base Types composite pill matching Tera pill */}
+                {types && types.length > 0 && (
+                  <div className={styles.baseTypesPill}>
+                    <span className={styles.baseTypesLabel}>Base:</span>
+                    <div className="flex-row align-center gap-xxs flex-wrap">
+                      {types.map((type) => (
+                        <TypeBadge key={type} type={type} size="sm" interactive />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Real types on their own line */}
+                {types && types.length > 0 && (
+                  <div className="flex-row align-center gap-xs flex-wrap">
+                    {types.map((type) => (
+                      <TypeBadge key={type} type={type} size="md" interactive />
+                    ))}
+                  </div>
+                )}
+
+                {/* Tera Type on its own line below real types, with tera purple pill + type badge */}
+                {teraType && (
+                  <div className={styles.teraPill}>
+                    <span className={styles.teraPillLabel}>Tera Type:</span>
+                    <TypeBadge type={teraType} size="sm" variant="tera" interactive />
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Tera Type on its own line below real types, with tera purple pill + type badge */}
-            {teraType && (
-              <div className={styles.teraPill}>
-                <span className={styles.teraPillLabel}>Tera Type:</span>
-                <TypeBadge type={teraType} size="sm" variant="tera" interactive />
-              </div>
+            {ownerLabel && (
+              <span className={styles.ownerText}>{ownerLabel}</span>
             )}
-          </>
+
+            <div className={`${cardStyles.traitsGrid} ${styles.headerTraits}`}>
+              <div className={cardStyles.traitRow}>
+                <span className={cardStyles.traitLabel}>Ability:</span>
+                {renderAbilityContent(ability)}
+              </div>
+
+              <div className={cardStyles.traitRow}>
+                <span className={cardStyles.traitLabel}>Item:</span>
+                {renderItemContent(item)}
+              </div>
+
+              {nature && (
+                <div className={cardStyles.traitRow}>
+                  <span className={cardStyles.traitLabel}>Nature:</span>
+                  <span className={cardStyles.traitValue}>
+                    {nature}
+                    {natureModifiers?.plus && natureModifiers?.minus && (
+                      <>
+                        <span className={styles.natureModifierPlus}>
+                          +{natureModifiers.plus}
+                        </span>
+                        <span className={styles.natureModifierMinus}>
+                          -{natureModifiers.minus}
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {species && (
+          <img
+            src={monRenderUrl(species)}
+            alt=""
+            aria-hidden="true"
+            className={cardStyles.monRender}
+            draggable={false}
+          />
         )}
       </div>
     </header>
@@ -305,72 +356,50 @@ export default function MonTooltipCard({ data }: MonTooltipCardProps) {
         </section>
       )}
 
-      {/* Traits: Ability, Item, Weight, Nature, Hidden Power, Friendship */}
-      <section className={cardStyles.traitsGrid}>
-        <div className={cardStyles.traitRow}>
-          <span className={cardStyles.traitLabel}>Ability:</span>
-          {renderAbilityContent(current.ability)}
-        </div>
+      {/* Secondary traits: Ball, Weight, Hidden Power, Friendship */}
+      {(current.ball ||
+        current.weightKg != null ||
+        current.hiddenPowerType ||
+        current.friendship != null) && (
+        <section className={cardStyles.traitsGrid}>
+          {current.ball && (
+            <div className={cardStyles.traitRow}>
+              <span className={cardStyles.traitLabel}>Ball:</span>
+              <span className={cardStyles.traitValue}>{formatBallName(current.ball)}</span>
+            </div>
+          )}
 
-        <div className={cardStyles.traitRow}>
-          <span className={cardStyles.traitLabel}>Item:</span>
-          {renderItemContent(current.item)}
-        </div>
+          {current.weightKg != null && (
+            <div className={cardStyles.traitRow}>
+              <span className={cardStyles.traitLabel}>Weight:</span>
+              <span className={cardStyles.traitValue}>{current.weightKg} kg</span>
+            </div>
+          )}
 
-        {current.ball && (
-          <div className={cardStyles.traitRow}>
-            <span className={cardStyles.traitLabel}>Ball:</span>
-            <span className={cardStyles.traitValue}>{formatBallName(current.ball)}</span>
-          </div>
-        )}
+          {current.hiddenPowerType && (
+            <div className={cardStyles.traitRow}>
+              <span className={cardStyles.traitLabel}>Hidden Power:</span>
+              <span className={cardStyles.traitValue}>{current.hiddenPowerType}</span>
+            </div>
+          )}
 
-        {current.weightKg != null && (
-          <div className={cardStyles.traitRow}>
-            <span className={cardStyles.traitLabel}>Weight:</span>
-            <span className={cardStyles.traitValue}>{current.weightKg} kg</span>
-          </div>
-        )}
+          {current.friendship != null && (
+            <div className={cardStyles.traitRow}>
+              <span className={cardStyles.traitLabel}>Friendship:</span>
+              <span className={cardStyles.traitValue}>{current.friendship}</span>
+            </div>
+          )}
+        </section>
+      )}
 
-        {current.nature && (
-          <div className={cardStyles.traitRow}>
-            <span className={cardStyles.traitLabel}>Nature:</span>
-            <span className={cardStyles.traitValue}>
-              {current.nature}
-              {current.natureModifiers?.plus && current.natureModifiers?.minus && (
-                <>
-                  <span className={styles.natureModifierPlus}>
-                    +{current.natureModifiers.plus}
-                  </span>
-                  <span className={styles.natureModifierMinus}>
-                    -{current.natureModifiers.minus}
-                  </span>
-                </>
-              )}
-            </span>
-          </div>
-        )}
-
-        {current.hiddenPowerType && (
-          <div className={cardStyles.traitRow}>
-            <span className={cardStyles.traitLabel}>Hidden Power:</span>
-            <span className={cardStyles.traitValue}>{current.hiddenPowerType}</span>
-          </div>
-        )}
-
-        {current.friendship != null && (
-          <div className={cardStyles.traitRow}>
-            <span className={cardStyles.traitLabel}>Friendship:</span>
-            <span className={cardStyles.traitValue}>{current.friendship}</span>
-          </div>
-        )}
-
-        {current.moves.length === 0 && (
+      {current.moves.length === 0 && (
+        <section className={cardStyles.traitsGrid}>
           <div className={cardStyles.traitRow}>
             <span className={cardStyles.traitLabel}>Moves:</span>
             <span className={cardStyles.traitEmpty}>???</span>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Moveset Grid (only renders when moves are known) */}
       {current.moves.length > 0 && (

@@ -16,7 +16,7 @@ describe("MonCard", () => {
     );
 
     expect(html).toContain("Pikachu");
-    expect(html).toContain("L50");
+    expect(html).not.toContain("L50");
     expect(html).toContain("100/100");
     expect(html).toContain("teamSummaryCard");
   });
@@ -94,7 +94,8 @@ describe("MonCard", () => {
     );
 
     expect(rowHtml).toContain("summaryUnbrought");
-    expect(rowHtml).toContain("unbroughtPip");
+    expect(rowHtml).toContain("status-badge unbrought");
+    expect(rowHtml).toContain("—");
 
     const cardHtml = renderToStaticMarkup(
       <MonCard
@@ -110,5 +111,51 @@ describe("MonCard", () => {
     );
 
     expect(cardHtml).toContain("summaryUnbrought");
+    expect(cardHtml).toContain("status-badge unbrought");
+    expect(cardHtml).toContain("—");
+  });
+
+  it("renders Mon icon in card variant", () => {
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Pikachu"
+        level={50}
+        hp={100}
+        maxHp={100}
+        variant="card"
+      />,
+    );
+
+    expect(html).toContain('src="/assets/mons/icons/pikachu.png"');
+    expect(html).toContain("cardMonIcon");
+  });
+
+  it("renders Mon icon in row variant", () => {
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Charizard"
+        level={100}
+        hp={75}
+        maxHp={100}
+        variant="row"
+      />,
+    );
+
+    expect(html).toContain('src="/assets/mons/icons/charizard.png"');
+    expect(html).toContain("rowMonIcon");
+  });
+
+  it("omits Mon icon when isUnrevealed is true", () => {
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Unknown"
+        hp={100}
+        maxHp={100}
+        isUnrevealed={true}
+        variant="card"
+      />,
+    );
+
+    expect(html).not.toContain("/assets/mons/icons/");
   });
 });

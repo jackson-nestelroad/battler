@@ -14,7 +14,7 @@
 }
 
 .cardFixed {
-  width: 20rem;
+  width: 23.5rem;
 }
 
 .cardCompact {
@@ -67,6 +67,20 @@
   max-height: 20rem;
   overflow-y: auto;
   font-size: var(--font-size-xs);
+}
+
+.headerIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.monRender {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .name {

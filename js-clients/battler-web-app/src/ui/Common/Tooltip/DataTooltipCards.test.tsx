@@ -326,6 +326,12 @@ describe("Data Tooltip Cards", () => {
       );
       expect(html).toContain("The holder&#x27;s HP is gradually restored during battle.");
     });
+
+    it("renders item icon image in header", () => {
+      const html = renderToStaticMarkup(<ItemTooltipCard data={mockItem} />);
+      expect(html).toContain('src="/assets/items/leftovers.png"');
+      expect(html).toContain("headerIcon");
+    });
   });
 
   describe("ConditionTooltipCard", () => {
@@ -429,6 +435,7 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("95.0 kg");
       expect(html).toContain("SubLegendary");
       expect(html).toContain("Effect");
+      expect(html).toContain('src="/assets/mons/renders/garchomp.webp"');
     });
 
     it("formats class without Pokémon suffix into Descriptor Mon (e.g. Tricky Fox -> Tricky Fox Mon)", () => {

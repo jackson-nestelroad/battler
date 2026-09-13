@@ -1,11 +1,4 @@
 
-.headerTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-xs);
-}
-
 .identity {
   display: flex;
   align-items: center;
@@ -52,14 +45,16 @@
   font-size: var(--font-size-xs);
 }
 
-.ownerBadge {
+.ownerText {
   font-size: var(--font-size-xxs);
-  color: var(--text-secondary);
-  background-color: var(--color-secondary-bg);
-  border: 1px solid var(--color-secondary-border);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  border-radius: var(--border-radius-xs);
-  white-space: nowrap;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: var(--spacing-xxs);
+}
+
+.headerTraits {
+  margin-top: var(--spacing-xxs);
 }
 
 /* Special battle mechanic badge (Active Terastallization) */

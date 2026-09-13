@@ -14,12 +14,11 @@ describe("PlayerStateViewer", () => {
     expect(htmlEmpty).toContain("None");
   });
 
-  it("renders sides, players, active conditions, and Mon roster", () => {
-    const mockState = {
+  it("renders sides, players, and Mon roster without side conditions", () => {
+    const mockState: BattleState = {
       field: {
         sides: [
           {
-            id: 0,
             name: "Side 1",
             conditions: {
               "Stealth Rock": {},
@@ -110,8 +109,8 @@ describe("PlayerStateViewer", () => {
       />,
     );
 
-    // Verify Sides and conditions (consolidated header in 1v1 shows player names and side conditions)
-    expect(html).toContain("Stealth Rock");
+    // Verify side conditions are omitted from players tab
+    expect(html).not.toContain("Stealth Rock");
 
     // Verify Players
     expect(html).toContain("Alice");

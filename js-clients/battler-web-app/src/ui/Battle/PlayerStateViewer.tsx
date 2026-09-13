@@ -179,6 +179,7 @@ function renderStateMonRow(
     <MonCard
       key={`${keyPrefix}-${monIdx}`}
       name={name}
+      species={phys?.species || (hasBattleAppearance ? stateSelectors.monSpecies(battleState, monRef) : undefined)}
       level={level}
       hp={hp}
       maxHp={maxHp}
@@ -194,14 +195,6 @@ function renderStateMonRow(
   );
 }
 
-function renderSideConditions(conditions: string[]) {
-  if (conditions.length === 0) return null;
-  return conditions.map((cond) => (
-    <span key={cond} className="badge badge-info">
-      {cond}
-    </span>
-  ));
-}
 
 function renderPrivatePlayerTeam(
   targetPlayerData: PlayerBattleData,
@@ -238,6 +231,7 @@ function renderPrivatePlayerTeam(
       <MonCard
         key={`brought-${idx}`}
         name={getMonDisplayName(mon) || "Mon"}
+        species={mon.species}
         level={mon.summary?.level ?? 50}
         hp={mon.hp}
         maxHp={mon.max_hp}
@@ -323,7 +317,6 @@ export default function PlayerStateViewer({
     <div className="flex-col gap-s w-full">
       {battleState.field.sides.map((side, sideIdx) => {
         const sideTitle = side.name || `Side ${sideIdx + 1}`;
-        const sideConditions = stateSelectors.sideConditions(battleState, sideIdx);
         const players = stateSelectors
           .sidePlayers(battleState, sideIdx)
           .slice()
@@ -358,21 +351,13 @@ export default function PlayerStateViewer({
               {single ? (
                 <div className={`flex-row justify-between align-center gap-xs ${styles.sideHeader}`}>
                   {renderPlayerLabel(single.player, single.isLocalPlayer)}
-                  <div className="flex-row align-center gap-xs flex-wrap justify-end">
-                    {renderSideConditions(sideConditions)}
-                    <span className={styles.aliveCount}>
-                      {single.counts.aliveCount}/{single.counts.totalCount}
-                    </span>
-                  </div>
+                  <span className={styles.aliveCount}>
+                    {single.counts.aliveCount}/{single.counts.totalCount}
+                  </span>
                 </div>
               ) : (
                 <div className={`flex-row justify-between align-center gap-xs ${styles.sideHeader}`}>
                   <span className={styles.sideTitle}>{sideTitle}</span>
-                  {sideConditions.length > 0 && (
-                    <div className="flex-row gap-xs flex-wrap">
-                      {renderSideConditions(sideConditions)}
-                    </div>
-                  )}
                 </div>
               )}
 

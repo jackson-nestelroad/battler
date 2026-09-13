@@ -1,5 +1,6 @@
-import type { BattleState, MonBattleAppearanceReference, UiMon } from "battler-state";
+import { stateSelectors, type BattleState, type MonBattleAppearanceReference, type UiMon } from "battler-state";
 import type { MonBattleData } from "battler-types";
+import { monIconUrl } from "../../utils/assets";
 import { normalizeStatusCode } from "../../utils/monHelpers";
 import HpBar from "./HpBar";
 import StatusBadge from "./StatusBadge";
@@ -8,6 +9,7 @@ import MonTooltipTrigger from "./Tooltip/MonTooltipTrigger";
 
 export interface MonCardProps {
   name?: string;
+  species?: string;
   level?: number | null;
   hp?: number;
   maxHp?: number;
@@ -32,7 +34,7 @@ export interface MonCardProps {
 
 export default function MonCard({
   name = "Mon",
-  level,
+  species,
   hp = 100,
   maxHp = 100,
   hpText,
@@ -72,6 +74,17 @@ export default function MonCard({
 
   const isFainted = hp <= 0 || normalizeStatusCode(status) === "fnt";
 
+  const resolvedSpecies =
+    species ||
+    monBattleData?.species ||
+    (appearanceRef && battleState
+      ? stateSelectors.monPhysicalAppearance(battleState, appearanceRef)?.species ||
+        stateSelectors.monSpecies(battleState, appearanceRef)
+      : undefined) ||
+    name;
+
+  const iconSrc = resolvedSpecies ? monIconUrl(resolvedSpecies) : null;
+
   const stateClasses = [
     active && styles.summaryActive,
     isActing && styles.summaryActing,
@@ -88,20 +101,21 @@ export default function MonCard({
       className={`${styles.teamSummaryRow} ${stateClasses}`.trim()}
     >
       <div className={styles.rowIdentity}>
-        <span
-          className={`${styles.rowPip} ${active ? styles.activePip : ""} ${
-            isFainted ? styles.faintedPip : ""
-          } ${isUnbrought ? styles.unbroughtPip : ""}`}
-          aria-hidden="true"
-        >
-          ●
-        </span>
+        {iconSrc && (
+          <img
+            src={iconSrc}
+            alt=""
+            aria-hidden="true"
+            className={styles.rowMonIcon}
+            draggable={false}
+          />
+        )}
         <span className={styles.summaryMonName} title={name}>{name}</span>
         {isActing && <span className={styles.rowActingBadge}>{actingBadgeText}</span>}
       </div>
 
       <div className={styles.rowMeta}>
-        <StatusBadge status={status} isFainted={isFainted} />
+        <StatusBadge status={status} isFainted={isFainted} isUnbrought={isUnbrought} />
         <div className={styles.rowHpGroup}>
           <span className={styles.summaryHpText}>{hpText ?? `${hp}/${maxHp}`}</span>
           <div className={styles.rowHpBar}>
@@ -123,16 +137,28 @@ export default function MonCard({
         <div className={styles.selectionBadge}>{selectionOrder}</div>
       )}
       {isActing && <div className={styles.actingBadge}>{actingBadgeText}</div>}
-      <div className={styles.summaryCardHeader}>
-        <span className={styles.summaryMonName} title={name}>{name}</span>
-        {level != null && <span className={styles.summaryMonLevel}>L{level}</span>}
-      </div>
+      <div className={styles.cardMain}>
+        {iconSrc && (
+          <img
+            src={iconSrc}
+            alt=""
+            aria-hidden="true"
+            className={styles.cardMonIcon}
+            draggable={false}
+          />
+        )}
+        <div className={styles.cardDetails}>
+          <div className={styles.summaryCardHeader}>
+            <span className={styles.summaryMonName} title={name}>{name}</span>
+          </div>
 
-      <div className={styles.summaryCardMetaRow}>
-        <StatusBadge status={status} isFainted={isFainted} />
-        <span className={styles.summaryHpText}>
-          {hpText ?? `${hp}/${maxHp}`}
-        </span>
+          <div className={styles.summaryCardMetaRow}>
+            <StatusBadge status={status} isFainted={isFainted} isUnbrought={isUnbrought} />
+            <span className={styles.summaryHpText}>
+              {hpText ?? `${hp}/${maxHp}`}
+            </span>
+          </div>
+        </div>
       </div>
 
       <HpBar hp={hp} maxHp={maxHp} />

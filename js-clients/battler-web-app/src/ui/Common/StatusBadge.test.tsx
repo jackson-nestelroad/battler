@@ -22,6 +22,11 @@ describe("StatusBadge", () => {
     expect(html).toBe('<span class="status-badge ok">OK</span>');
   });
 
+  it("renders — with unbrought class when isUnbrought is true", () => {
+    const html = renderToStaticMarkup(<StatusBadge isUnbrought />);
+    expect(html).toBe('<span class="status-badge unbrought">—</span>');
+  });
+
   it("renders FNT when isFainted is true even with another status", () => {
     const html = renderToStaticMarkup(<StatusBadge isFainted status="brn" />);
     expect(html).toBe('<span class="status-badge fnt">FNT</span>');

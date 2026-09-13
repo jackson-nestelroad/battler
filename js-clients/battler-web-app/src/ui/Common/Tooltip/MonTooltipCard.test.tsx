@@ -260,5 +260,11 @@ describe("MonTooltipCard", () => {
       expect(html).not.toContain('role="tablist"');
       expect(html).not.toContain('role="tabpanel"');
     });
+
+    it("renders the species render image in the header", () => {
+      const mon = createMockMon({ species: "Charizard" });
+      const html = renderToStaticMarkup(<MonTooltipCard data={mon} />);
+      expect(html).toContain('src="/assets/mons/renders/charizard.webp"');
+    });
   });
 });

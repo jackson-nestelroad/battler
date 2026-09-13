@@ -699,7 +699,7 @@ function makeEmptyPublicTooltip(species: string, player?: string): MonTooltipVie
   return {
     species,
     name: species,
-    ownerLabel: player ? `Player: ${player}` : null,
+    ownerLabel: player ? `${player}'s Mon` : null,
     hp: null,
     maxHp: null,
     hpPercentage: null,
@@ -840,7 +840,7 @@ export function appearanceRefToTooltip(
       teraType,
       isTerastallized,
       ball: null,
-      ownerLabel: monRef.player ? `Player: ${monRef.player}` : null,
+      ownerLabel: monRef.player ? `${monRef.player}'s Mon` : null,
       hp,
       maxHp,
       hpPercentage,

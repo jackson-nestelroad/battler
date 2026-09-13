@@ -884,6 +884,10 @@ a.badge-primary,
 .status-badge.fnt {
   background-color: var(--color-danger);
 }
+.status-badge.unbrought {
+  background-color: var(--border-color);
+  color: var(--text-muted);
+}
 
 .status-badge.brn {
   background-color: var(--color-status-brn);

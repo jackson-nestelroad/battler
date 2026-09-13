@@ -1,6 +1,7 @@
 import type { DescriptionData } from "battler-data-service-client";
 import type { SpeciesData } from "battler-types";
 import { Fragment } from "react";
+import { monRenderUrl } from "../../../utils/assets";
 import {
   formatDeciMetric,
   formatSpeciesClass,
@@ -45,16 +46,29 @@ export default function SpeciesTooltipCard({ data, description }: SpeciesTooltip
           <span className={cardStyles.name}>{data.name}</span>
           <TooltipEffectButton type="species" name={data.name} />
         </div>
-        <span className={cardStyles.subtitle}>{monClass}</span>
-        <div className="flex-row align-center gap-xs">
-          <TypeBadge type={data.primary_type} size="sm" interactive />
-          {data.secondary_type && <TypeBadge type={data.secondary_type} size="sm" interactive />}
+
+        <div className="flex-row justify-between align-start gap-s">
+          <div className="flex-col gap-xs min-w-0 flex-1">
+            <span className={cardStyles.subtitle}>{monClass}</span>
+            <div className="flex-row align-center gap-xs">
+              <TypeBadge type={data.primary_type} size="sm" interactive />
+              {data.secondary_type && <TypeBadge type={data.secondary_type} size="sm" interactive />}
+            </div>
+            {description?.description && (
+              <p className={cardStyles.description}>{description.description}</p>
+            )}
+          </div>
+          {data.name && (
+            <img
+              src={monRenderUrl(data.name)}
+              alt=""
+              aria-hidden="true"
+              className={cardStyles.monRender}
+              draggable={false}
+            />
+          )}
         </div>
       </header>
-
-      {description?.description && (
-        <p className={cardStyles.description}>{description.description}</p>
-      )}
 
       <section className="flex-col gap-xxs">
         <span className={cardStyles.sectionTitle}>Base Stats</span>
