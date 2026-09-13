@@ -24,7 +24,7 @@ export default function TeamSelect({
   teams,
   disabled = false,
   required = false,
-  placeholder = "Select team...",
+  placeholder = "Select team",
 }: TeamSelectProps) {
   const options: CustomSelectOption<string>[] = useMemo(
     () =>
@@ -56,6 +56,3 @@ export default function TeamSelect({
     />
   );
 }
-
-
-

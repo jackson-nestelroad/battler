@@ -312,10 +312,11 @@ export default function Teams() {
               {Object.keys(SAMPLE_TEAMS).map((sampleName) => (
                 <button
                   key={sampleName}
-                  className={`btn btn-secondary ${styles.sampleItem}`}
+                  type="button"
+                  className={styles.teamListItem}
                   onClick={() => handleLoadSample(sampleName)}
                 >
-                  <span>{sampleName}</span>
+                  <span className={styles.teamNameLabel}>{sampleName}</span>
                   <TeamMonIcons members={SAMPLE_TEAMS[sampleName] as MonData[]} />
                 </button>
               ))}

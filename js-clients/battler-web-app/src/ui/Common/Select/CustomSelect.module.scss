@@ -38,9 +38,11 @@
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     background-color: var(--bg-primary);
+    border-color: var(--border-disabled);
+    color: var(--text-muted);
   }
 }
 
@@ -138,15 +140,3 @@
   }
 }
 
-.optionLabel {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  flex: 1;
-}

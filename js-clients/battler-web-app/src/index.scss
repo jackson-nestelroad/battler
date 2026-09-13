@@ -1016,6 +1016,12 @@ a.badge-primary,
 .text-right {
   text-align: right !important;
 }
+.text-danger {
+  color: var(--color-danger) !important;
+}
+.text-sm {
+  font-size: var(--font-size-xs) !important;
+}
 
 /* Margin and Padding Utilities */
 .mt-xs {

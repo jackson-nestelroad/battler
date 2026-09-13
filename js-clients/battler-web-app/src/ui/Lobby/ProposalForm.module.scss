@@ -1,15 +1,6 @@
 @use "../../styles/breakpoints" as *;
 
-.formatField {
-  flex: 1;
-  min-width: rem(140px);
-  max-width: rem(240px);
-
-  @include tablet {
-    max-width: 100%;
-  }
-}
-
+.formatField,
 .opponentControlField {
   flex: 1;
   min-width: rem(140px);

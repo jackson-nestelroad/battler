@@ -26,7 +26,7 @@ describe("TeamSelect", () => {
     expect(html).toContain('role="combobox"');
     expect(html).toContain('id="test-team-select"');
     expect(html).toContain('aria-expanded="false"');
-    expect(html).toContain("Select team...");
+    expect(html).toContain("Select team");
     expect(html).not.toContain('src="/assets/mons/icons/pikachu.png"');
   });
 

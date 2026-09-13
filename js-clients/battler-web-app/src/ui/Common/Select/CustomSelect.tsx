@@ -39,7 +39,7 @@ export default function CustomSelect<T = string>({
   value,
   onChange,
   options,
-  placeholder = "Select...",
+  placeholder = "Select",
   disabled = false,
   required = false,
   ariaLabel,
@@ -271,7 +271,7 @@ export default function CustomSelect<T = string>({
                   renderOption(opt, isOptionSelected, isHighlighted)
                 ) : (
                   <>
-                    <span className={styles.optionLabel} title={opt.label}>
+                    <span className={styles.label} title={opt.label}>
                       {opt.label}
                     </span>
                     {opt.endContent}
