@@ -87,7 +87,7 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
           <div className={styles.teamSelectionSection}>
             <label htmlFor="battle-team-select">Team</label>
             {teamNames.length > 0 ? (
-              <div className="flex-row flex-mobile-col gap-s align-start">
+              <div className="flex-row flex-mobile-col gap-s align-center">
                 <TeamSelect
                   id="battle-team-select"
                   className="flex-1"
