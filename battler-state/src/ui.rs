@@ -1,4 +1,8 @@
-use alloc::string::String;
+use alloc::{
+    borrow::ToOwned,
+    string::String,
+    vec::Vec,
+};
 
 use hashbrown::{
     HashMap,

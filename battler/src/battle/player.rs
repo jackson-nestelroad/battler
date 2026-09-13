@@ -8,10 +8,7 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::{
-    cmp,
-    usize,
-};
+use core::cmp;
 
 use anyhow::Result;
 use battler_choice::{

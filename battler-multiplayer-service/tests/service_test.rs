@@ -5,7 +5,6 @@ use std::{
         Instant,
         SystemTime,
     },
-    usize,
 };
 
 use ahash::HashSet;

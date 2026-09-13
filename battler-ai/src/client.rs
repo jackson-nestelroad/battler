@@ -1,4 +1,3 @@
-use std::usize;
 
 use ahash::HashSet;
 use anyhow::Result;

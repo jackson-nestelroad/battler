@@ -60,7 +60,7 @@ itertools = "0.14"
 num = "0.4"
 rand = "0.10"
 regex = "1.11"
-scopeguard = "1.2"
+scopeguard = { version = "1.2", default-features = false }
 unicase = "2.8"
 uuid = { version = "1.16", features = ["fast-rng", "serde", "v4"] }
 
@@ -92,7 +92,6 @@ log = "0.4"
 # Testing,
 assert_matches = "1.5"
 pretty_assertions = "1.4"
-pretty_assertions_sorted = "1.2"
 tracing-core = "0.1"
 tracing-subscriber = "0.3"
 

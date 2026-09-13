@@ -14,7 +14,6 @@ use core::{
     },
     iter,
     ops::Mul,
-    u8,
 };
 
 use anyhow::Result;

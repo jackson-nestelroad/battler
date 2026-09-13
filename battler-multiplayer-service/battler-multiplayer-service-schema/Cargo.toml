@@ -9,7 +9,7 @@ license = "MIT"
 repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-multiplayer-service-schema"
 
 [features]
-typescript = ["dep:ts-rs", "battler-service-schema/typescript"]
+typescript = ["dep:ts-rs"]
 
 [dependencies]
 anyhow = { workspace = true }
@@ -25,5 +25,3 @@ battler-wamprat-error = { workspace = true }
 battler-wamprat-message = { workspace = true }
 battler-wamprat-schema = { workspace = true }
 battler-wamprat-uri = { workspace = true }
-
-battler-service-schema = { path = "../../battler-service/battler-service-schema" }

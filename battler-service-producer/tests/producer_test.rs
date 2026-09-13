@@ -4,7 +4,6 @@ use std::{
         Duration,
         Instant,
     },
-    usize,
 };
 
 use anyhow::{
