@@ -1,0 +1,71 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  &.sm {
+    --mon-icon-size: 1.5rem;
+    --mon-overlap: calc(-1 * var(--spacing-xxs));
+  }
+
+  &.md {
+    --mon-icon-size: 2.25rem;
+    --mon-overlap: -0.375rem;
+  }
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mon-icon-size);
+  height: var(--mon-icon-size);
+  position: relative;
+  transition: transform var(--transition-fast), z-index var(--transition-fast);
+  cursor: inherit;
+  flex-shrink: 0;
+
+  & + .iconWrapper {
+    margin-left: var(--mon-overlap);
+  }
+
+  &:hover {
+    z-index: 2;
+    transform: scale(1.18);
+  }
+}
+
+.monIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.overflowBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin-bottom: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-pill);
+  padding: 0.125rem var(--spacing-s);
+  margin-left: var(--spacing-xs);
+  line-height: 1.2;
+  user-select: none;
+  cursor: inherit;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary) 15%, var(--bg-card));
+  }
+}

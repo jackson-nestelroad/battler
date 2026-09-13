@@ -65,6 +65,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-s);
   padding: var(--spacing-s) var(--spacing-m);
   border-radius: var(--border-radius-s);
   background-color: var(--bg-primary);
@@ -73,9 +74,11 @@
   overflow: hidden;
   cursor: pointer;
   min-width: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: var(--text-muted);
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+    border-color: var(--color-primary);
   }
 }
 
@@ -86,15 +89,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.teamSizeBadge {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  background-color: var(--border-color);
-  padding: var(--spacing-xxs) var(--spacing-s);
-  border-radius: var(--border-radius-l);
-  flex-shrink: 0;
 }
 
 .defaultBadge {
@@ -144,8 +138,20 @@
   gap: var(--spacing-s);
 }
 
-.sampleItem {
+button.sampleItem {
   width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--spacing-s);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--bg-primary));
+    border-color: var(--color-primary);
+  }
 }
 
 .editorForm {

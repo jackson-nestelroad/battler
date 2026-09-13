@@ -11,6 +11,7 @@ import {
 } from "../../store/teamsSlice";
 import JsonEditor from "../Common/JsonEditor";
 import Tabs from "../Common/Tabs";
+import TeamMonIcons from "../Common/TeamMonIcons";
 
 import styles from "./Teams.module.scss";
 
@@ -273,7 +274,7 @@ export default function Teams() {
                           <span className={styles.defaultBadge}>Default</span>
                         )}
                       </span>
-                      <span className={styles.teamSizeBadge}>{teams[name]?.length || 0} Mons</span>
+                      <TeamMonIcons members={teams[name]} />
                     </button>
                     <div className={styles.orderControls}>
                       <button
@@ -314,7 +315,8 @@ export default function Teams() {
                   className={`btn btn-secondary ${styles.sampleItem}`}
                   onClick={() => handleLoadSample(sampleName)}
                 >
-                  {sampleName}
+                  <span>{sampleName}</span>
+                  <TeamMonIcons members={SAMPLE_TEAMS[sampleName] as MonData[]} />
                 </button>
               ))}
             </div>
