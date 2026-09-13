@@ -106,6 +106,27 @@ fn steelix() -> Result<TeamData> {
     .wrap_error()
 }
 
+fn slow_pidgeot() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Pidgeot",
+                    "species": "Pidgeot",
+                    "ability": "No Ability",
+                    "moves": [
+                        "Fly"
+                    ],
+                    "nature": "Hardy",
+                    "gender": "M",
+                    "level": 20
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
 fn make_battle(team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
@@ -303,6 +324,80 @@ fn switch_out_resets_toxic_state() {
                 "damage|mon:Charizard,player-2,1|from:status:Bad Poison|health:3/100",
                 "turn|turn:9"
             ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn toxic_never_misses_when_user_is_poison_type() {
+    let mut battle = make_battle(venusaur().unwrap(), slow_pidgeot().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Venusaur passes, Pidgeot uses Fly.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // Turn 2: Venusaur is faster and uses Toxic while Pidgeot is in semi-invulnerable Fly state.
+    // Toxic hits and inflicts Bad Poison, then Pidgeot attacks.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Pidgeot,player-2,1|name:Fly|noanim",
+            "prepare|mon:Pidgeot,player-2,1|move:Fly",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Venusaur,player-1,1|name:Toxic|target:Pidgeot,player-2,1",
+            "status|mon:Pidgeot,player-2,1|status:Bad Poison",
+            "move|mon:Pidgeot,player-2,1|name:Fly|target:Venusaur,player-1,1",
+            "supereffective|mon:Venusaur,player-1,1",
+            "split|side:0",
+            "damage|mon:Venusaur,player-1,1|health:116/140",
+            "damage|mon:Venusaur,player-1,1|health:83/100",
+            "residual",
+            "split|side:1",
+            "damage|mon:Pidgeot,player-2,1|from:status:Bad Poison|health:60/63",
+            "damage|mon:Pidgeot,player-2,1|from:status:Bad Poison|health:96/100",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn toxic_misses_invulnerable_target_when_user_is_not_poison_type() {
+    let mut battle = make_battle(charizard().unwrap(), slow_pidgeot().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Charizard passes, Pidgeot uses Fly.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // Turn 2: Charizard (Fire/Flying, not Poison) uses Toxic while Pidgeot is in Fly state.
+    // Toxic misses!
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Pidgeot,player-2,1|name:Fly|noanim",
+            "prepare|mon:Pidgeot,player-2,1|move:Fly",
+            "residual",
+            "turn|turn:2",
+            "continue",
+            "move|mon:Charizard,player-1,1|name:Toxic|noanim",
+            "miss|mon:Pidgeot,player-2,1",
+            "move|mon:Pidgeot,player-2,1|name:Fly|target:Charizard,player-1,1",
+            "split|side:0",
+            "damage|mon:Charizard,player-1,1|health:125/138",
+            "damage|mon:Charizard,player-1,1|health:91/100",
+            "residual",
+            "turn|turn:3"
+        ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

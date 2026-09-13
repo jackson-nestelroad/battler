@@ -1947,6 +1947,7 @@ impl BattleEvent {
             Self::ModifySpeciesCatchRate => true,
             Self::ModifyTarget => true,
             Self::WeatherModifyDamage => true,
+            Self::Invulnerability => true,
             _ => false,
         }
     }

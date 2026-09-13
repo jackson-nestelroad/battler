@@ -6420,7 +6420,11 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
         Some(data) => data,
         None => return Ok(None),
     };
-    if Id::from(mega_evolution_data.from) != *species.id() {
+    if !mega_evolution_data
+        .from
+        .iter()
+        .any(|from| Id::from(from.as_str()) == *species.id())
+    {
         return Ok(None);
     }
     return Ok(Some(MegaEvolution {

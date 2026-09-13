@@ -3198,7 +3198,7 @@
       "level": 25
     },
     "base_forme": "Male",
-    "formes": ["Meowstic-Female", "Meowstic-M-Mega"],
+    "formes": ["Meowstic-Female", "Meowstic-Mega"],
     "flags": [],
     "learnset": {
       "alluringvoice": ["M"],
@@ -8069,6 +8069,7 @@
       "spd": 81,
       "spe": 104
     },
+    "formes": ["Meowstic-Mega"],
     "flags": [],
     "learnset": {}
   },
@@ -9434,6 +9435,8 @@
       "spe": 124
     },
     "battle_only_forme": true,
+    "required_items": ["Meowsticite"],
+    "changes_from": "Meowstic",
     "flags": [],
     "learnset": {}
   }

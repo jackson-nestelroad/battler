@@ -61,6 +61,90 @@ fn team() -> Result<TeamData> {
     .wrap_error()
 }
 
+fn meowstic_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Meowstic",
+                    "species": "Meowstic",
+                    "ability": "Infiltrator",
+                    "item": "Meowsticite",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn meowstic_female_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Meowstic-Female",
+                    "species": "Meowstic-Female",
+                    "ability": "Infiltrator",
+                    "item": "Meowsticite",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn zygarde_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Zygarde",
+                    "species": "Zygarde",
+                    "ability": "Aura Break",
+                    "item": "Zygardite",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
+fn zygarde_10_team() -> Result<TeamData> {
+    serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Zygarde-10",
+                    "species": "Zygarde-10",
+                    "ability": "Aura Break",
+                    "item": "Zygardite",
+                    "moves": [
+                        "Tackle"
+                    ],
+                    "nature": "Hardy",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .wrap_error()
+}
+
 fn make_battle(seed: u64, team_1: TeamData, team_2: TeamData) -> Result<PublicCoreBattle<'static>> {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
@@ -347,4 +431,70 @@ fn mega_evolution_occurs_in_speed_order() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
+
+#[test]
+fn meowstic_male_and_female_mega_evolve() {
+    let mut battle =
+        make_battle(0, meowstic_team().unwrap(), meowstic_female_team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,mega"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0,mega"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["specieschange", "player-1", "species:Meowstic-Mega"],
+            ["specieschange", "player-1", "species:Meowstic-Mega"],
+            "mega|mon:Meowstic,player-1,1|species:Meowstic-Mega|from:item:Meowsticite",
+            "abilityend|mon:Meowstic,player-1,1|ability:Trace|from:ability:Trace",
+            "abilitystart|mon:Meowstic,player-1,1|ability:Infiltrator|source:Meowstic-Female,player-2,1|from:ability:Trace",
+            "split|side:1",
+            ["specieschange", "player-2", "species:Meowstic-Mega"],
+            ["specieschange", "player-2", "species:Meowstic-Mega"],
+            "mega|mon:Meowstic-Female,player-2,1|species:Meowstic-Mega|from:item:Meowsticite",
+            "abilityend|mon:Meowstic-Female,player-2,1|ability:Trace|from:ability:Trace",
+            "abilitystart|mon:Meowstic-Female,player-2,1|ability:Infiltrator|source:Meowstic,player-1,1|from:ability:Trace",
+            "move|mon:Meowstic,player-1,1|name:Tackle|target:Meowstic-Female,player-2,1",
+            "split|side:1",
+            "damage|mon:Meowstic-Female,player-2,1|health:121/134",
+            "damage|mon:Meowstic-Female,player-2,1|health:91/100",
+            "move|mon:Meowstic-Female,player-2,1|name:Tackle|target:Meowstic,player-1,1",
+            "split|side:0",
+            "damage|mon:Meowstic,player-1,1|health:121/134",
+            "damage|mon:Meowstic,player-1,1|health:91/100",
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn zygarde_non_complete_cannot_mega_evolve() {
+    let mut battle = make_battle(0, zygarde_team().unwrap(), zygarde_10_team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,mega"),
+        Err(err) => {
+            let err_msg = format!("{err:#}");
+            assert!(
+                err_msg.contains("cannot mega evolve"),
+                "unexpected error: {err_msg}"
+            );
+        }
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 0,mega"),
+        Err(err) => {
+            let err_msg = format!("{err:#}");
+            assert!(
+                err_msg.contains("cannot mega evolve"),
+                "unexpected error: {err_msg}"
+            );
+        }
+    );
 }

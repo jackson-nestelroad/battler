@@ -3,7 +3,7 @@
     "name": "Gengarite",
     "special_data": {
       "mega_evolution": {
-        "from": "Gengar",
+        "from": ["Gengar"],
         "into": "Gengar-Mega"
       },
       "fling": {
@@ -24,7 +24,7 @@
     "name": "Gardevoirite",
     "special_data": {
       "mega_evolution": {
-        "from": "Gardevoir",
+        "from": ["Gardevoir"],
         "into": "Gardevoir-Mega"
       },
       "fling": {
@@ -45,7 +45,7 @@
     "name": "Ampharosite",
     "special_data": {
       "mega_evolution": {
-        "from": "Ampharos",
+        "from": ["Ampharos"],
         "into": "Ampharos-Mega"
       },
       "fling": {
@@ -66,7 +66,7 @@
     "name": "Venusaurite",
     "special_data": {
       "mega_evolution": {
-        "from": "Venusaur",
+        "from": ["Venusaur"],
         "into": "Venusaur-Mega"
       },
       "fling": {
@@ -87,7 +87,7 @@
     "name": "Charizardite X",
     "special_data": {
       "mega_evolution": {
-        "from": "Charizard",
+        "from": ["Charizard"],
         "into": "Charizard-Mega-X"
       },
       "fling": {
@@ -108,7 +108,7 @@
     "name": "Blastoisinite",
     "special_data": {
       "mega_evolution": {
-        "from": "Blastoise",
+        "from": ["Blastoise"],
         "into": "Blastoise-Mega"
       },
       "fling": {
@@ -129,7 +129,7 @@
     "name": "Mewtwonite X",
     "special_data": {
       "mega_evolution": {
-        "from": "Mewtwo",
+        "from": ["Mewtwo"],
         "into": "Mewtwo-Mega-X"
       },
       "fling": {
@@ -150,7 +150,7 @@
     "name": "Mewtwonite Y",
     "special_data": {
       "mega_evolution": {
-        "from": "Mewtwo",
+        "from": ["Mewtwo"],
         "into": "Mewtwo-Mega-Y"
       },
       "fling": {
@@ -171,7 +171,7 @@
     "name": "Blazikenite",
     "special_data": {
       "mega_evolution": {
-        "from": "Blaziken",
+        "from": ["Blaziken"],
         "into": "Blaziken-Mega"
       },
       "fling": {
@@ -192,7 +192,7 @@
     "name": "Medichamite",
     "special_data": {
       "mega_evolution": {
-        "from": "Medicham",
+        "from": ["Medicham"],
         "into": "Medicham-Mega"
       },
       "fling": {
@@ -213,7 +213,7 @@
     "name": "Houndoominite",
     "special_data": {
       "mega_evolution": {
-        "from": "Houndoom",
+        "from": ["Houndoom"],
         "into": "Houndoom-Mega"
       },
       "fling": {
@@ -234,7 +234,7 @@
     "name": "Aggronite",
     "special_data": {
       "mega_evolution": {
-        "from": "Aggron",
+        "from": ["Aggron"],
         "into": "Aggron-Mega"
       },
       "fling": {
@@ -255,7 +255,7 @@
     "name": "Banettite",
     "special_data": {
       "mega_evolution": {
-        "from": "Banette",
+        "from": ["Banette"],
         "into": "Banette-Mega"
       },
       "fling": {
@@ -276,7 +276,7 @@
     "name": "Tyranitarite",
     "special_data": {
       "mega_evolution": {
-        "from": "Tyranitar",
+        "from": ["Tyranitar"],
         "into": "Tyranitar-Mega"
       },
       "fling": {
@@ -297,7 +297,7 @@
     "name": "Scizorite",
     "special_data": {
       "mega_evolution": {
-        "from": "Scizor",
+        "from": ["Scizor"],
         "into": "Scizor-Mega"
       },
       "fling": {
@@ -318,7 +318,7 @@
     "name": "Pinsirite",
     "special_data": {
       "mega_evolution": {
-        "from": "Pinsir",
+        "from": ["Pinsir"],
         "into": "Pinsir-Mega"
       },
       "fling": {
@@ -339,7 +339,7 @@
     "name": "Aerodactylite",
     "special_data": {
       "mega_evolution": {
-        "from": "Aerodactyl",
+        "from": ["Aerodactyl"],
         "into": "Aerodactyl-Mega"
       },
       "fling": {
@@ -360,7 +360,7 @@
     "name": "Lucarionite",
     "special_data": {
       "mega_evolution": {
-        "from": "Lucario",
+        "from": ["Lucario"],
         "into": "Lucario-Mega"
       },
       "fling": {
@@ -381,7 +381,7 @@
     "name": "Abomasite",
     "special_data": {
       "mega_evolution": {
-        "from": "Abomasnow",
+        "from": ["Abomasnow"],
         "into": "Abomasnow-Mega"
       },
       "fling": {
@@ -402,7 +402,7 @@
     "name": "Kangaskhanite",
     "special_data": {
       "mega_evolution": {
-        "from": "Kangaskhan",
+        "from": ["Kangaskhan"],
         "into": "Kangaskhan-Mega"
       },
       "fling": {
@@ -423,7 +423,7 @@
     "name": "Gyaradosite",
     "special_data": {
       "mega_evolution": {
-        "from": "Gyarados",
+        "from": ["Gyarados"],
         "into": "Gyarados-Mega"
       },
       "fling": {
@@ -444,7 +444,7 @@
     "name": "Absolite",
     "special_data": {
       "mega_evolution": {
-        "from": "Absol",
+        "from": ["Absol"],
         "into": "Absol-Mega"
       },
       "fling": {
@@ -465,7 +465,7 @@
     "name": "Charizardite Y",
     "special_data": {
       "mega_evolution": {
-        "from": "Charizard",
+        "from": ["Charizard"],
         "into": "Charizard-Mega-Y"
       },
       "fling": {
@@ -486,7 +486,7 @@
     "name": "Alakazite",
     "special_data": {
       "mega_evolution": {
-        "from": "Alakazam",
+        "from": ["Alakazam"],
         "into": "Alakazam-Mega"
       },
       "fling": {
@@ -507,7 +507,7 @@
     "name": "Heracronite",
     "special_data": {
       "mega_evolution": {
-        "from": "Heracross",
+        "from": ["Heracross"],
         "into": "Heracross-Mega"
       },
       "fling": {
@@ -528,7 +528,7 @@
     "name": "Mawilite",
     "special_data": {
       "mega_evolution": {
-        "from": "Mawile",
+        "from": ["Mawile"],
         "into": "Mawile-Mega"
       },
       "fling": {
@@ -549,7 +549,7 @@
     "name": "Manectite",
     "special_data": {
       "mega_evolution": {
-        "from": "Manectric",
+        "from": ["Manectric"],
         "into": "Manectric-Mega"
       },
       "fling": {
@@ -570,7 +570,7 @@
     "name": "Garchompite",
     "special_data": {
       "mega_evolution": {
-        "from": "Garchomp",
+        "from": ["Garchomp"],
         "into": "Garchomp-Mega"
       },
       "fling": {
@@ -591,7 +591,7 @@
     "name": "Latiasite",
     "special_data": {
       "mega_evolution": {
-        "from": "Latias",
+        "from": ["Latias"],
         "into": "Latias-Mega"
       },
       "fling": {
@@ -612,7 +612,7 @@
     "name": "Latiosite",
     "special_data": {
       "mega_evolution": {
-        "from": "Latios",
+        "from": ["Latios"],
         "into": "Latios-Mega"
       },
       "fling": {
@@ -633,7 +633,7 @@
     "name": "Swampertite",
     "special_data": {
       "mega_evolution": {
-        "from": "Swampert",
+        "from": ["Swampert"],
         "into": "Swampert-Mega"
       },
       "fling": {
@@ -654,7 +654,7 @@
     "name": "Sceptilite",
     "special_data": {
       "mega_evolution": {
-        "from": "Sceptile",
+        "from": ["Sceptile"],
         "into": "Sceptile-Mega"
       },
       "fling": {
@@ -675,7 +675,7 @@
     "name": "Sablenite",
     "special_data": {
       "mega_evolution": {
-        "from": "Sableye",
+        "from": ["Sableye"],
         "into": "Sableye-Mega"
       },
       "fling": {
@@ -696,7 +696,7 @@
     "name": "Altarianite",
     "special_data": {
       "mega_evolution": {
-        "from": "Altaria",
+        "from": ["Altaria"],
         "into": "Altaria-Mega"
       },
       "fling": {
@@ -717,7 +717,7 @@
     "name": "Galladite",
     "special_data": {
       "mega_evolution": {
-        "from": "Gallade",
+        "from": ["Gallade"],
         "into": "Gallade-Mega"
       },
       "fling": {
@@ -738,7 +738,7 @@
     "name": "Audinite",
     "special_data": {
       "mega_evolution": {
-        "from": "Audino",
+        "from": ["Audino"],
         "into": "Audino-Mega"
       },
       "fling": {
@@ -759,7 +759,7 @@
     "name": "Metagrossite",
     "special_data": {
       "mega_evolution": {
-        "from": "Metagross",
+        "from": ["Metagross"],
         "into": "Metagross-Mega"
       },
       "fling": {
@@ -780,7 +780,7 @@
     "name": "Sharpedonite",
     "special_data": {
       "mega_evolution": {
-        "from": "Sharpedo",
+        "from": ["Sharpedo"],
         "into": "Sharpedo-Mega"
       },
       "fling": {
@@ -801,7 +801,7 @@
     "name": "Slowbronite",
     "special_data": {
       "mega_evolution": {
-        "from": "Slowbro",
+        "from": ["Slowbro"],
         "into": "Slowbro-Mega"
       },
       "fling": {
@@ -822,7 +822,7 @@
     "name": "Steelixite",
     "special_data": {
       "mega_evolution": {
-        "from": "Steelix",
+        "from": ["Steelix"],
         "into": "Steelix-Mega"
       },
       "fling": {
@@ -843,7 +843,7 @@
     "name": "Pidgeotite",
     "special_data": {
       "mega_evolution": {
-        "from": "Pidgeot",
+        "from": ["Pidgeot"],
         "into": "Pidgeot-Mega"
       },
       "fling": {
@@ -864,7 +864,7 @@
     "name": "Glalitite",
     "special_data": {
       "mega_evolution": {
-        "from": "Glalie",
+        "from": ["Glalie"],
         "into": "Glalie-Mega"
       },
       "fling": {
@@ -885,7 +885,7 @@
     "name": "Diancite",
     "special_data": {
       "mega_evolution": {
-        "from": "Diancie",
+        "from": ["Diancie"],
         "into": "Diancie-Mega"
       },
       "fling": {
@@ -906,7 +906,7 @@
     "name": "Cameruptite",
     "special_data": {
       "mega_evolution": {
-        "from": "Camerupt",
+        "from": ["Camerupt"],
         "into": "Camerupt-Mega"
       },
       "fling": {
@@ -927,7 +927,7 @@
     "name": "Lopunnite",
     "special_data": {
       "mega_evolution": {
-        "from": "Lopunny",
+        "from": ["Lopunny"],
         "into": "Lopunny-Mega"
       },
       "fling": {
@@ -948,7 +948,7 @@
     "name": "Salamencite",
     "special_data": {
       "mega_evolution": {
-        "from": "Salamence",
+        "from": ["Salamence"],
         "into": "Salamence-Mega"
       },
       "fling": {
@@ -969,7 +969,7 @@
     "name": "Beedrillite",
     "special_data": {
       "mega_evolution": {
-        "from": "Beedrill",
+        "from": ["Beedrill"],
         "into": "Beedrill-Mega"
       },
       "fling": {
@@ -990,7 +990,7 @@
     "name": "Absolite Z",
     "special_data": {
       "mega_evolution": {
-        "from": "Absol",
+        "from": ["Absol"],
         "into": "Absol-Mega-Z"
       },
       "fling": {
@@ -1011,7 +1011,7 @@
     "name": "Barbaracite",
     "special_data": {
       "mega_evolution": {
-        "from": "Barbaracle",
+        "from": ["Barbaracle"],
         "into": "Barbaracle-Mega"
       },
       "fling": {
@@ -1032,7 +1032,7 @@
     "name": "Baxcalibrite",
     "special_data": {
       "mega_evolution": {
-        "from": "Baxcalibur",
+        "from": ["Baxcalibur"],
         "into": "Baxcalibur-Mega"
       },
       "fling": {
@@ -1053,7 +1053,7 @@
     "name": "Chandelurite",
     "special_data": {
       "mega_evolution": {
-        "from": "Chandelure",
+        "from": ["Chandelure"],
         "into": "Chandelure-Mega"
       },
       "fling": {
@@ -1074,7 +1074,7 @@
     "name": "Chesnaughtite",
     "special_data": {
       "mega_evolution": {
-        "from": "Chesnaught",
+        "from": ["Chesnaught"],
         "into": "Chesnaught-Mega"
       },
       "fling": {
@@ -1095,7 +1095,7 @@
     "name": "Chimechite",
     "special_data": {
       "mega_evolution": {
-        "from": "Chimecho",
+        "from": ["Chimecho"],
         "into": "Chimecho-Mega"
       },
       "fling": {
@@ -1116,7 +1116,7 @@
     "name": "Clefablite",
     "special_data": {
       "mega_evolution": {
-        "from": "Clefable",
+        "from": ["Clefable"],
         "into": "Clefable-Mega"
       },
       "fling": {
@@ -1137,7 +1137,7 @@
     "name": "Crabominite",
     "special_data": {
       "mega_evolution": {
-        "from": "Crabominable",
+        "from": ["Crabominable"],
         "into": "Crabominable-Mega"
       },
       "fling": {
@@ -1158,7 +1158,7 @@
     "name": "Darkranite",
     "special_data": {
       "mega_evolution": {
-        "from": "Darkrai",
+        "from": ["Darkrai"],
         "into": "Darkrai-Mega"
       },
       "fling": {
@@ -1179,7 +1179,7 @@
     "name": "Delphoxite",
     "special_data": {
       "mega_evolution": {
-        "from": "Delphox",
+        "from": ["Delphox"],
         "into": "Delphox-Mega"
       },
       "fling": {
@@ -1200,7 +1200,7 @@
     "name": "Dragalgite",
     "special_data": {
       "mega_evolution": {
-        "from": "Dragalge",
+        "from": ["Dragalge"],
         "into": "Dragalge-Mega"
       },
       "fling": {
@@ -1221,7 +1221,7 @@
     "name": "Dragoninite",
     "special_data": {
       "mega_evolution": {
-        "from": "Dragonite",
+        "from": ["Dragonite"],
         "into": "Dragonite-Mega"
       },
       "fling": {
@@ -1242,7 +1242,7 @@
     "name": "Drampanite",
     "special_data": {
       "mega_evolution": {
-        "from": "Drampa",
+        "from": ["Drampa"],
         "into": "Drampa-Mega"
       },
       "fling": {
@@ -1263,7 +1263,7 @@
     "name": "Eelektrossite",
     "special_data": {
       "mega_evolution": {
-        "from": "Eelektross",
+        "from": ["Eelektross"],
         "into": "Eelektross-Mega"
       },
       "fling": {
@@ -1284,7 +1284,7 @@
     "name": "Emboarite",
     "special_data": {
       "mega_evolution": {
-        "from": "Emboar",
+        "from": ["Emboar"],
         "into": "Emboar-Mega"
       },
       "fling": {
@@ -1305,7 +1305,7 @@
     "name": "Excadrite",
     "special_data": {
       "mega_evolution": {
-        "from": "Excadrill",
+        "from": ["Excadrill"],
         "into": "Excadrill-Mega"
       },
       "fling": {
@@ -1326,7 +1326,7 @@
     "name": "Falinksite",
     "special_data": {
       "mega_evolution": {
-        "from": "Falinks",
+        "from": ["Falinks"],
         "into": "Falinks-Mega"
       },
       "fling": {
@@ -1347,7 +1347,7 @@
     "name": "Feraligite",
     "special_data": {
       "mega_evolution": {
-        "from": "Feraligatr",
+        "from": ["Feraligatr"],
         "into": "Feraligatr-Mega"
       },
       "fling": {
@@ -1368,7 +1368,7 @@
     "name": "Floettite",
     "special_data": {
       "mega_evolution": {
-        "from": "Floette-Eternal",
+        "from": ["Floette-Eternal"],
         "into": "Floette-Mega"
       },
       "fling": {
@@ -1389,7 +1389,7 @@
     "name": "Froslassite",
     "special_data": {
       "mega_evolution": {
-        "from": "Froslass",
+        "from": ["Froslass"],
         "into": "Froslass-Mega"
       },
       "fling": {
@@ -1410,7 +1410,7 @@
     "name": "Garchompite Z",
     "special_data": {
       "mega_evolution": {
-        "from": "Garchomp",
+        "from": ["Garchomp"],
         "into": "Garchomp-Mega-Z"
       },
       "fling": {
@@ -1431,7 +1431,7 @@
     "name": "Glimmoranite",
     "special_data": {
       "mega_evolution": {
-        "from": "Glimmora",
+        "from": ["Glimmora"],
         "into": "Glimmora-Mega"
       },
       "fling": {
@@ -1452,7 +1452,7 @@
     "name": "Golisopite",
     "special_data": {
       "mega_evolution": {
-        "from": "Golisopod",
+        "from": ["Golisopod"],
         "into": "Golisopod-Mega"
       },
       "fling": {
@@ -1473,7 +1473,7 @@
     "name": "Golurkite",
     "special_data": {
       "mega_evolution": {
-        "from": "Golurk",
+        "from": ["Golurk"],
         "into": "Golurk-Mega"
       },
       "fling": {
@@ -1494,7 +1494,7 @@
     "name": "Greninjite",
     "special_data": {
       "mega_evolution": {
-        "from": "Greninja",
+        "from": ["Greninja"],
         "into": "Greninja-Mega"
       },
       "fling": {
@@ -1515,7 +1515,7 @@
     "name": "Hawluchanite",
     "special_data": {
       "mega_evolution": {
-        "from": "Hawlucha",
+        "from": ["Hawlucha"],
         "into": "Hawlucha-Mega"
       },
       "fling": {
@@ -1536,7 +1536,7 @@
     "name": "Heatranite",
     "special_data": {
       "mega_evolution": {
-        "from": "Heatran",
+        "from": ["Heatran"],
         "into": "Heatran-Mega"
       },
       "fling": {
@@ -1557,7 +1557,7 @@
     "name": "Lucarionite Z",
     "special_data": {
       "mega_evolution": {
-        "from": "Lucario",
+        "from": ["Lucario"],
         "into": "Lucario-Mega-Z"
       },
       "fling": {
@@ -1578,7 +1578,7 @@
     "name": "Magearnite",
     "special_data": {
       "mega_evolution": {
-        "from": "Magearna",
+        "from": ["Magearna"],
         "into": "Magearna-Mega"
       },
       "fling": {
@@ -1599,7 +1599,7 @@
     "name": "Malamarite",
     "special_data": {
       "mega_evolution": {
-        "from": "Malamar",
+        "from": ["Malamar"],
         "into": "Malamar-Mega"
       },
       "fling": {
@@ -1620,7 +1620,7 @@
     "name": "Meganiumite",
     "special_data": {
       "mega_evolution": {
-        "from": "Meganium",
+        "from": ["Meganium"],
         "into": "Meganium-Mega"
       },
       "fling": {
@@ -1641,8 +1641,8 @@
     "name": "Meowsticite",
     "special_data": {
       "mega_evolution": {
-        "from": "Meowstic",
-        "into": "Meowstic-M-Mega"
+        "from": ["Meowstic", "Meowstic-Female"],
+        "into": "Meowstic-Mega"
       },
       "fling": {
         "power": 80
@@ -1662,7 +1662,7 @@
     "name": "Pyroarite",
     "special_data": {
       "mega_evolution": {
-        "from": "Pyroar",
+        "from": ["Pyroar"],
         "into": "Pyroar-Mega"
       },
       "fling": {
@@ -1683,7 +1683,7 @@
     "name": "Raichunite X",
     "special_data": {
       "mega_evolution": {
-        "from": "Raichu",
+        "from": ["Raichu"],
         "into": "Raichu-Mega-X"
       },
       "fling": {
@@ -1704,7 +1704,7 @@
     "name": "Raichunite Y",
     "special_data": {
       "mega_evolution": {
-        "from": "Raichu",
+        "from": ["Raichu"],
         "into": "Raichu-Mega-Y"
       },
       "fling": {
@@ -1725,7 +1725,7 @@
     "name": "Scolipite",
     "special_data": {
       "mega_evolution": {
-        "from": "Scolipede",
+        "from": ["Scolipede"],
         "into": "Scolipede-Mega"
       },
       "fling": {
@@ -1746,7 +1746,7 @@
     "name": "Scovillainite",
     "special_data": {
       "mega_evolution": {
-        "from": "Scovillain",
+        "from": ["Scovillain"],
         "into": "Scovillain-Mega"
       },
       "fling": {
@@ -1767,7 +1767,7 @@
     "name": "Scraftinite",
     "special_data": {
       "mega_evolution": {
-        "from": "Scrafty",
+        "from": ["Scrafty"],
         "into": "Scrafty-Mega"
       },
       "fling": {
@@ -1788,7 +1788,7 @@
     "name": "Skarmorite",
     "special_data": {
       "mega_evolution": {
-        "from": "Skarmory",
+        "from": ["Skarmory"],
         "into": "Skarmory-Mega"
       },
       "fling": {
@@ -1809,7 +1809,7 @@
     "name": "Staraptite",
     "special_data": {
       "mega_evolution": {
-        "from": "Staraptor",
+        "from": ["Staraptor"],
         "into": "Staraptor-Mega"
       },
       "fling": {
@@ -1830,7 +1830,7 @@
     "name": "Starminite",
     "special_data": {
       "mega_evolution": {
-        "from": "Starmie",
+        "from": ["Starmie"],
         "into": "Starmie-Mega"
       },
       "fling": {
@@ -1851,7 +1851,7 @@
     "name": "Tatsugirinite",
     "special_data": {
       "mega_evolution": {
-        "from": "Tatsugiri",
+        "from": ["Tatsugiri"],
         "into": "Tatsugiri-Curly-Mega"
       },
       "fling": {
@@ -1872,7 +1872,7 @@
     "name": "Victreebelite",
     "special_data": {
       "mega_evolution": {
-        "from": "Victreebel",
+        "from": ["Victreebel"],
         "into": "Victreebel-Mega"
       },
       "fling": {
@@ -1893,7 +1893,7 @@
     "name": "Zeraorite",
     "special_data": {
       "mega_evolution": {
-        "from": "Zeraora",
+        "from": ["Zeraora"],
         "into": "Zeraora-Mega"
       },
       "fling": {
@@ -1914,7 +1914,7 @@
     "name": "Zygardite",
     "special_data": {
       "mega_evolution": {
-        "from": "Zygarde-Complete",
+        "from": ["Zygarde-Complete"],
         "into": "Zygarde-Mega"
       },
       "fling": {

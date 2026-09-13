@@ -67,7 +67,8 @@ pub struct MultiAttackData {
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct MegaEvolutionData {
-    pub from: String,
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<String>"))]
+    pub from: HashSet<String>,
     pub into: String,
 }
 

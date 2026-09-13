@@ -1553,6 +1553,21 @@
     "hit_effect": {
       "status": "tox"
     },
+    "effect": {
+      "callbacks": {
+        "on_use_move": [
+          "if func_call(has_type: $user poison):",
+          ["$move.accuracy = exempt"]
+        ],
+        "on_invulnerability": {
+          "order": 1,
+          "program": [
+            "if func_call(has_type: $source poison):",
+            ["return true"]
+          ]
+        }
+      }
+    },
     "z_move": {
       "boosts": {
         "def": 1

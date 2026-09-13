@@ -91,7 +91,7 @@ const ALL_BALLS: &[&str] = &[
 
 pub struct ItemPools {
     pub items_pool: Vec<String>,
-    pub megastones_map: HashMap<String, String>,
+    pub megastones_map: HashMap<String, HashSet<String>>,
     pub type_to_zcrystal: HashMap<Type, String>,
 }
 
@@ -146,7 +146,7 @@ pub fn extract_item_pools(store: &dyn DataStore) -> Result<ItemPools> {
             let name_str = item.name.clone();
             let mut is_special = false;
             if let Some(mega) = &item.special_data.mega_evolution {
-                megastones_map.insert(name_str.clone(), mega.from.clone());
+                megastones_map.insert(name_str.clone(), mega.from.iter().cloned().collect());
                 is_special = true;
             }
             if let Some(z) = &item.special_data.z_crystal {
@@ -322,9 +322,10 @@ pub fn generate_full_random_team(
 
     for i in 0..team_size {
         let (_species_id, species_data, mut held_item) = if Some(i) == mega_index {
-            if let Some((stone, base_species_name)) =
+            if let Some((stone, base_species_set)) =
                 pools.item_pools.megastones_map.iter().choose(rng)
             {
+                let base_species_name = base_species_set.iter().choose(rng).unwrap();
                 let base_species_id = battler::Id::from(base_species_name.as_str());
                 let s_data = store
                     .get_species(&base_species_id)?
@@ -597,7 +598,7 @@ pub fn generate_random_team(
     rng: &mut StdRng,
     team_size: usize,
     items_pool: &[String],
-    megastones_map: &HashMap<String, String>,
+    megastones_map: &HashMap<String, HashSet<String>>,
     type_to_zcrystal: &HashMap<Type, String>,
     enable_mega: bool,
     enable_z_moves: bool,
@@ -640,7 +641,10 @@ pub fn generate_random_team(
 
         if Some(i) == mega_index {
             // Force Mega species and Mega Stone.
-            let mut megastone_choices: Vec<(&String, &String)> = megastones_map.iter().collect();
+            let mut megastone_choices: Vec<(&String, &String)> = megastones_map
+                .iter()
+                .flat_map(|(stone, from_set)| from_set.iter().map(move |species| (stone, species)))
+                .collect();
             megastone_choices.shuffle(rng);
 
             for (stone_id, from_species_name) in megastone_choices {
@@ -1023,10 +1027,13 @@ mod tests {
             let mega_mon = mega_mons[0];
             let held_stone = mega_mon.item.as_ref().unwrap();
             let required_species = item_pools.megastones_map.get(held_stone).unwrap();
-            assert_eq!(
-                &mega_mon.species, required_species,
-                "Seed {}: Mega Mon species {} did not match required species {} for stone {}",
-                seed, mega_mon.species, required_species, held_stone
+            assert!(
+                required_species.contains(&mega_mon.species),
+                "Seed {}: Mega Mon species {} did not match required species {:?} for stone {}",
+                seed,
+                mega_mon.species,
+                required_species,
+                held_stone
             );
 
             // No mon should hold a Z-Crystal.
