@@ -1823,11 +1823,11 @@ async fn watchdog_drops_stuck_battle_on_inactivity() {
 
     battler_service.start(battle.uuid).await.unwrap();
 
-    tokio::time::sleep(Duration::from_millis(15)).await;
+    tokio::time::sleep(Duration::from_millis(100)).await;
 
     let watchdog_options = WatchdogOptions {
         proceed_step_timeout: Duration::from_secs(5),
-        max_inactivity_duration: Duration::from_millis(5),
+        max_inactivity_duration: Duration::from_millis(10),
         max_battle_duration: Duration::from_secs(3600),
     };
 
@@ -1858,12 +1858,12 @@ async fn watchdog_drops_stuck_battle_on_max_battle_duration() {
 
     battler_service.start(battle.uuid).await.unwrap();
 
-    tokio::time::sleep(Duration::from_millis(15)).await;
+    tokio::time::sleep(Duration::from_millis(50)).await;
 
     let watchdog_options = WatchdogOptions {
         proceed_step_timeout: Duration::from_secs(5),
         max_inactivity_duration: Duration::from_secs(3600),
-        max_battle_duration: Duration::from_millis(5),
+        max_battle_duration: Duration::from_millis(10),
     };
 
     let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;

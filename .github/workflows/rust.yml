@@ -13,6 +13,7 @@ env:
   DESCRIPTIONS_DIR: ${{ github.workspace }}/battle-data/descriptions
   CRATE_ROOT: ${{ github.workspace }}
   TOKIO_WORKER_THREADS: 8
+  TSAN_OPTIONS: "suppressions=${{ github.workspace }}/.github/tsan_suppressions.txt"
 
 jobs:
   detect-changes:

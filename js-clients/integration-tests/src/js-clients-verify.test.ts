@@ -29,6 +29,7 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
     // Start the Rust battler-server on port 0
     const binPath = path.resolve(__dirname, "../../../target/debug/battler-server");
     const dataDir = path.resolve(__dirname, "../../../battle-data/data");
+    const descriptionsDir = path.resolve(__dirname, "../../../battle-data/descriptions");
 
     console.log(`Spawning server binary: ${binPath} with data: ${dataDir}`);
 
@@ -37,6 +38,8 @@ describe("JS/TS WAMP Clients Integration Tests", () => {
       "0",
       "--data-dir",
       dataDir,
+      "--descriptions-dir",
+      descriptionsDir,
       "--realm-name",
       "battler",
       "--realm-uri",
