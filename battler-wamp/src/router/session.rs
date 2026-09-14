@@ -225,6 +225,7 @@ mod router_session_message {
 #[derive(Debug, Clone)]
 struct RpcInvocationCalleeDetails {
     callee: ProcedureCallee,
+    invocation_request_id: Id,
     progressive_call_results: bool,
     forward_timeout_to_callee: bool,
     caller_identification: bool,
@@ -262,7 +263,6 @@ impl Default for RpcInvocationState {
 /// The result of an RPC invocation.
 #[derive(Debug, Clone)]
 struct RpcInvocation {
-    invocation_request_id: Id,
     procedure: Uri,
     arguments: List,
     arguments_keyword: Dictionary,
@@ -1048,10 +1048,7 @@ impl Session {
             .and_then(|val| val.bool())
             .unwrap_or_default();
 
-        let request_id = self.id_allocator.generate_id().await;
-
         let invocation = RpcInvocation {
-            invocation_request_id: request_id,
             procedure: message.procedure.clone(),
             arguments: message.arguments.clone(),
             arguments_keyword: message.arguments_keyword.clone(),
@@ -1180,6 +1177,7 @@ impl Session {
         let session = context.session(callee.session).await.ok_or_else(|| {
             BasicError::NotFound(format!("callee session {} not found", callee.session))
         })?;
+        let invocation_request_id = session.session.id_generator().generate_id().await;
         let progressive_call_results = invocation.progressive_call_results
             && session
                 .session
@@ -1202,6 +1200,7 @@ impl Session {
 
         let callee_details = RpcInvocationCalleeDetails {
             callee,
+            invocation_request_id,
             progressive_call_results,
             forward_timeout_to_callee,
             caller_identification,
@@ -1278,7 +1277,7 @@ impl Session {
         session
             .session
             .send_message(Message::Invocation(InvocationMessage {
-                request: invocation.invocation_request_id,
+                request: callee_details.invocation_request_id,
                 registered_registration: callee_details.callee.registration,
                 details,
                 call_arguments: invocation.arguments.clone(),
@@ -1394,7 +1393,7 @@ impl Session {
                 &mut rpc_yield_rx,
                 &mut cancel_rx,
                 &mut closed_session_rx,
-                invocation.invocation_request_id,
+                callee_details.invocation_request_id,
                 callee
                     .session
                     .roles()
@@ -1562,11 +1561,11 @@ impl Session {
         let context = context.realm_context(&realm)?;
 
         // If there is no callee, the call should already be canceled.
-        let callee = match &invocation.state.lock().await.current_callee {
-            Some(callee_details) => callee_details.callee.session,
+        let callee_details = match &invocation.state.lock().await.current_callee {
+            Some(callee_details) => callee_details.clone(),
             None => return Ok(()),
         };
-        let callee = match context.session(callee).await {
+        let callee = match context.session(callee_details.callee.session).await {
             Some(callee) => callee,
             None => return Ok(()),
         };
@@ -1589,7 +1588,7 @@ impl Session {
             callee
                 .session
                 .send_message(Message::Interrupt(InterruptMessage {
-                    invocation_request: invocation.invocation_request_id,
+                    invocation_request: callee_details.invocation_request_id,
                     ..Default::default()
                 }))
                 .await?;
@@ -1598,7 +1597,7 @@ impl Session {
         if immediate_error {
             // Notify the task that is waiting for YIELD messages to stop.
             self.rpc_yield_cancel_tx
-                .send(invocation.invocation_request_id)?;
+                .send(callee_details.invocation_request_id)?;
         }
 
         // Mark the invocation as canceled, so the task waiting for YIELD messages knows to stop.
