@@ -1,0 +1,45 @@
+[
+  {
+    "category": "hint",
+    "condition": {
+      "extension": "battlerservice",
+      "titleIn": [
+        "timer",
+        "started",
+        "done"
+      ]
+    }
+  },
+  {
+    "category": "primary",
+    "condition": {
+      "titleIn": [
+        "move",
+        "switch",
+        "drag",
+        "faint",
+        "mega",
+        "primal",
+        "ultra",
+        "dynamax",
+        "gigantamax",
+        "tera",
+        "useitem",
+        "catch",
+        "catchfailed",
+        "uncatchable",
+        "win",
+        "tie",
+        "turnlimit",
+        "forfeited",
+        "escaped"
+      ]
+    }
+  },
+  {
+    "category": "secondary",
+    "condition": {
+      "default": true
+    }
+  }
+]

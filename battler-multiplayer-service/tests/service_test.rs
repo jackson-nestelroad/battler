@@ -5,7 +5,6 @@ use std::{
         Instant,
         SystemTime,
     },
-    usize,
 };
 
 use ahash::HashSet;
@@ -18,22 +17,24 @@ use battler::{
     CoreBattleOptions,
     FieldData,
     FormatData,
-    Id,
     MonData,
     PlayerData,
-    Rule,
     SideData,
     TeamData,
 };
 use battler_multiplayer_service::{
     BattlerMultiplayerService,
+    ChaosBattleMode,
+    ChaosBattleOptions,
     Player,
     PlayerStatus,
     ProposedBattleOptions,
     ProposedBattleRejection,
     ProposedBattleResponse,
     ProposedBattleUpdate,
+    ProposedSpecialBattleOptions,
     Side,
+    SpecialBattle,
 };
 use battler_service::{
     BattleServiceOptions,
@@ -87,10 +88,7 @@ fn battle_options() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: hashbrown::HashSet::from_iter([Rule::Value {
-                name: Id::from("Species Clause"),
-                value: String::default(),
-            }]),
+            rules: Vec::from_iter(["Species Clause".to_owned()]),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -226,6 +224,22 @@ async fn cannot_create_proposed_battle_if_not_participating() {
             .await,
         Err(err) => {
             assert_eq!(err.to_string(), "you must participate in the battle");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn cannot_create_proposed_battle_with_pre_specified_human_team() {
+    let service = battler_multiplayer_service().await;
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_2.players[0].team = team_data();
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .propose_battle(options)
+            .await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "cannot pre-specify team for player player-2");
         }
     );
 }
@@ -470,11 +484,8 @@ async fn proposed_battle_updates_when_team_updates() {
         battler_service
             .update_team(battle, "player-2", invalid_team_data)
             .await,
-        Ok(())
+        Err(_)
     );
-
-    let update = update_rx.recv().await.unwrap();
-    assert_matches::assert_matches!(update.deletion_reason, None);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -540,6 +551,109 @@ async fn battle_starting_deletes_proposed_battle() {
     assert_matches::assert_matches!(service.proposed_battle(proposed_battle.uuid).await, Err(err) => {
         assert_eq!(err.to_string(), "proposed battle not found");
     })
+}
+
+fn multi_proposed_battle_options<S>(creator: S) -> ProposedBattleOptions
+where
+    S: Into<String>,
+{
+    let mut options = battle_options();
+    options.format.battle_type = BattleType::Multi;
+    options.side_1.players = vec![
+        PlayerData {
+            id: "player-1".to_owned(),
+            name: "Player 1".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+        PlayerData {
+            id: "player-2".to_owned(),
+            name: "Player 2".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+    ];
+    options.side_2.players = vec![
+        PlayerData {
+            id: "player-3".to_owned(),
+            name: "Player 3".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+        PlayerData {
+            id: "player-4".to_owned(),
+            name: "Player 4".to_owned(),
+            team: TeamData::default(),
+            ..Default::default()
+        },
+    ];
+    ProposedBattleOptions {
+        battle_options: options,
+        service_options: battle_service_options(creator),
+        timeout: Duration::from_secs(30),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn multi_battle_starting_deletes_proposed_battle() {
+    let battler_service = battler_service();
+    let service = battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
+    let proposed_battle = service
+        .clone()
+        .propose_battle(multi_proposed_battle_options("player-1"))
+        .await
+        .unwrap();
+    let mut update_rx = service.proposed_battle_updates("player-1").await.unwrap();
+
+    for player in ["player-2", "player-3", "player-4"] {
+        assert_matches::assert_matches!(
+            service
+                .respond_to_proposed_battle(
+                    proposed_battle.uuid,
+                    player,
+                    &ProposedBattleResponse { accept: true },
+                )
+                .await,
+            Ok(_)
+        );
+    }
+
+    let mut battle = None;
+    while battle.is_none() {
+        let update = update_rx.recv().await.unwrap();
+        battle = update.proposed_battle.battle;
+    }
+    let battle = battle.unwrap();
+
+    for player in ["player-1", "player-2", "player-3", "player-4"] {
+        assert_matches::assert_matches!(
+            battler_service
+                .update_team(battle, player, team_data())
+                .await,
+            Ok(())
+        );
+    }
+
+    let updates = read_all_entries_from_update_rx_stopping_at_deleted_or_timeout(
+        &mut update_rx,
+        Duration::from_secs(5),
+    )
+    .await;
+    let update = updates.last().unwrap();
+
+    assert_matches::assert_matches!(&update.deletion_reason, Some(reason) => {
+        assert_eq!(reason, "fulfilled");
+    });
+
+    assert_matches::assert_matches!(
+        wait_until_proposed_battle_deleted(&service, proposed_battle.uuid, Duration::from_secs(5))
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(service.proposed_battle(proposed_battle.uuid).await, Err(err) => {
+        assert_eq!(err.to_string(), "proposed battle not found");
+    });
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -635,5 +749,248 @@ async fn lists_proposed_battles_for_player() {
             .map(|proposed_battle| proposed_battle.uuid)
             .collect::<HashSet<_>>(),
         HashSet::default()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_rate_limit_cooldown() {
+    let service = battler_multiplayer_service().await;
+
+    // Propose first battle.
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .propose_battle(proposed_battle_options("player-1"))
+            .await,
+        Ok(_)
+    );
+
+    // Immediately propose second battle (cooldown is 3 seconds, so this must fail).
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(proposed_battle_options("player-1")).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "you are proposing battles too quickly");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_outgoing_quota_limit() {
+    let service = battler_multiplayer_service().await;
+
+    // Propose 3 battles, waiting 3.1 seconds between each to bypass the rate limit.
+    for i in 1..=3 {
+        let mut options = proposed_battle_options("player-1");
+        options.battle_options.side_2.players[0].id = format!("player-{}", i + 1);
+
+        assert_matches::assert_matches!(service.clone().propose_battle(options).await, Ok(_));
+        tokio::time::sleep(Duration::from_millis(3100)).await;
+    }
+
+    // 4th proposal should fail because MAX_OUTGOING_PROPOSALS is 3.
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_2.players[0].id = "player-5".to_owned();
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "you have too many active proposed battles");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_incoming_quota_limit() {
+    let service = battler_multiplayer_service().await;
+
+    // Have player-1, player-2, player-3, player-4, player-5 all propose battles to player-6
+    // (recipient).
+    for i in 1..=5 {
+        let mut options = proposed_battle_options(format!("player-{}", i));
+        options.battle_options.side_1.players[0].id = format!("player-{}", i);
+        options.battle_options.side_2.players[0].id = "player-6".to_owned();
+
+        assert_matches::assert_matches!(service.clone().propose_battle(options).await, Ok(_));
+    }
+
+    // 6th proposal from player-7 to player-6 should fail because MAX_INCOMING_PROPOSALS is 5
+    let mut options = proposed_battle_options("player-7");
+    options.battle_options.side_1.players[0].id = "player-7".to_owned();
+    options.battle_options.side_2.players[0].id = "player-6".to_owned();
+
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "opponent player-6 has too many pending incoming challenges");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_rejects_self_challenge() {
+    let service = battler_multiplayer_service().await;
+
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_1.players[0].id = "player-1".to_owned();
+    options.battle_options.side_2.players[0].id = "player-1".to_owned();
+
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert_eq!(err.to_string(), "duplicate players are not allowed");
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn proposed_battle_rejects_invalid_options() {
+    let service = battler_multiplayer_service().await;
+
+    // Create options where Side 2 has no players (empty players array).
+    let mut options = proposed_battle_options("player-1");
+    options.battle_options.side_1.players[0].id = "player-1".to_owned();
+    options.battle_options.side_2.players.clear();
+
+    assert_matches::assert_matches!(
+        service.clone().propose_battle(options).await,
+        Err(err) => {
+            assert!(
+                err.to_string().contains("invalid battle options:"),
+                "{err:#}"
+            );
+            assert!(
+                err.to_string().contains("Side 2 has no players"),
+                "{err:#}"
+            );
+        }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn creates_special_chaos_battle() {
+    let service = battler_multiplayer_service().await;
+    let proposed = service
+        .clone()
+        .propose_special_battle(ProposedSpecialBattleOptions {
+            special_battle: SpecialBattle::Chaos(ChaosBattleOptions {
+                mode: ChaosBattleMode::Singles6v6,
+                true_chaos: false,
+            }),
+            side_1: SideData {
+                name: "Side 1".to_string(),
+                players: vec![PlayerData {
+                    id: "player-1".to_string(),
+                    name: "Player 1".to_string(),
+                    ..Default::default()
+                }],
+            },
+            side_2: SideData {
+                name: "Side 2".to_string(),
+                players: vec![PlayerData {
+                    id: "player-2".to_string(),
+                    name: "Player 2".to_string(),
+                    ..Default::default()
+                }],
+            },
+            service_options: BattleServiceOptions {
+                creator: "player-1".to_string(),
+                ..Default::default()
+            },
+            timeout: Duration::from_secs(60),
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(
+        proposed.sides[0].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert_eq!(proposed.sides[1].players[0].status, None);
+    assert_eq!(proposed.special, Some("Chaos (Singles 6v6)".to_string()));
+    assert!(proposed.rules.contains(&"Species Clause".to_string()));
+    assert!(proposed.rules.contains(&"Item Clause".to_string()));
+
+    // Opponent accepts
+    let updated = service
+        .respond_to_proposed_battle(
+            proposed.uuid,
+            "player-2",
+            &ProposedBattleResponse { accept: true },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        updated.sides[1].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert!(updated.battle.is_some());
+    assert_eq!(updated.special, Some("Chaos (Singles 6v6)".to_string()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn creates_special_true_chaos_battle() {
+    let service = battler_multiplayer_service().await;
+    let proposed = service
+        .clone()
+        .propose_special_battle(ProposedSpecialBattleOptions {
+            special_battle: SpecialBattle::Chaos(ChaosBattleOptions {
+                mode: ChaosBattleMode::Singles6v6,
+                true_chaos: true,
+            }),
+            side_1: SideData {
+                name: "Side 1".to_string(),
+                players: vec![PlayerData {
+                    id: "player-1".to_string(),
+                    name: "Player 1".to_string(),
+                    ..Default::default()
+                }],
+            },
+            side_2: SideData {
+                name: "Side 2".to_string(),
+                players: vec![PlayerData {
+                    id: "player-2".to_string(),
+                    name: "Player 2".to_string(),
+                    ..Default::default()
+                }],
+            },
+            service_options: BattleServiceOptions {
+                creator: "player-1".to_string(),
+                ..Default::default()
+            },
+            timeout: Duration::from_secs(60),
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(
+        proposed.sides[0].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert_eq!(proposed.sides[1].players[0].status, None);
+    assert_eq!(
+        proposed.special,
+        Some("True Chaos (Singles 6v6)".to_string())
+    );
+    assert!(!proposed.rules.contains(&"Species Clause".to_string()));
+    assert!(!proposed.rules.contains(&"Item Clause".to_string()));
+
+    // Opponent accepts
+    let updated = service
+        .respond_to_proposed_battle(
+            proposed.uuid,
+            "player-2",
+            &ProposedBattleResponse { accept: true },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        updated.sides[1].players[0].status,
+        Some(PlayerStatus::Accepted)
+    );
+    assert!(updated.battle.is_some());
+    assert_eq!(
+        updated.special,
+        Some("True Chaos (Singles 6v6)".to_string())
     );
 }

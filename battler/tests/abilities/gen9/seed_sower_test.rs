@@ -57,24 +57,24 @@ fn seed_sower_sets_grassy_terrain_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Arboliva,player-1,1|name:Tackle|target:Arboliva,player-2,1",
-            "split|side:1",
-            "damage|mon:Arboliva,player-2,1|health:117/138",
-            "damage|mon:Arboliva,player-2,1|health:85/100",
-            "fieldstart|move:Grassy Terrain|from:ability:Seed Sower|of:Arboliva,player-2,1",
-            "move|mon:Arboliva,player-2,1|name:Tackle|target:Arboliva,player-1,1",
-            "split|side:0",
-            "damage|mon:Arboliva,player-1,1|health:119/138",
-            "damage|mon:Arboliva,player-1,1|health:87/100",
-            "split|side:0",
-            "heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:127/138",
-            "heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:93/100",
-            "split|side:1",
-            "heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:125/138",
-            "heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:91/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Arboliva,player-1,1|name:Tackle|target:Arboliva,player-2,1",
+                "split|side:1",
+                "damage|mon:Arboliva,player-2,1|health:117/138",
+                "damage|mon:Arboliva,player-2,1|health:85/100",
+                "fieldstart|move:Grassy Terrain|from:ability:Seed Sower|of:Arboliva,player-2,1",
+                "move|mon:Arboliva,player-2,1|name:Tackle|target:Arboliva,player-1,1",
+                "split|side:0",
+                "damage|mon:Arboliva,player-1,1|health:119/138",
+                "damage|mon:Arboliva,player-1,1|health:87/100",
+                "residual",
+                "split|side:0",
+                "heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:127/138",
+                "heal|mon:Arboliva,player-1,1|from:move:Grassy Terrain|health:93/100",
+                "split|side:1",
+                "heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:125/138",
+                "heal|mon:Arboliva,player-2,1|from:move:Grassy Terrain|health:91/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

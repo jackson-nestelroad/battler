@@ -126,6 +126,12 @@ struct EstablishedSessionState {
     active_invocations_by_call: HashMap<Id, RpcInvocation>,
 }
 
+struct CleanupSessionData {
+    realm: Uri,
+    subscriptions: HashMap<Id, WildcardUri>,
+    procedures: HashMap<Id, WildcardUri>,
+}
+
 impl Debug for EstablishedSessionState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         #[derive(Debug)]
@@ -219,6 +225,7 @@ mod router_session_message {
 #[derive(Debug, Clone)]
 struct RpcInvocationCalleeDetails {
     callee: ProcedureCallee,
+    invocation_request_id: Id,
     progressive_call_results: bool,
     forward_timeout_to_callee: bool,
     caller_identification: bool,
@@ -256,7 +263,6 @@ impl Default for RpcInvocationState {
 /// The result of an RPC invocation.
 #[derive(Debug, Clone)]
 struct RpcInvocation {
-    invocation_request_id: Id,
     procedure: Uri,
     arguments: List,
     arguments_keyword: Dictionary,
@@ -278,7 +284,7 @@ pub struct SessionHandle {
     id: Id,
     shared_state: Arc<RwLock<SharedSessionState>>,
     id_allocator: Arc<Box<dyn IdAllocator>>,
-    message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
 
     closed_session_rx: broadcast::Receiver<()>,
     rpc_yield_rx: broadcast::Receiver<ChannelTransmittableResult<router_session_message::RpcYield>>,
@@ -308,13 +314,14 @@ impl SessionHandle {
 
     /// Sends a message over the session.
     pub async fn send_message(&self, message: Message) -> Result<()> {
-        self.message_tx.send(message).map_err(Error::new)
+        self.message_tx.send(message).await.map_err(Error::new)
     }
 
     /// Closes the session.
     pub async fn close(&self, close_reason: CloseReason) -> Result<()> {
         self.message_tx
             .send(goodbye_with_close_reason(close_reason))
+            .await
             .map_err(Error::new)
     }
 
@@ -335,7 +342,7 @@ impl SessionHandle {
 pub struct Session {
     id: Id,
     connection_type: ConnectionType,
-    message_tx: mpsc::UnboundedSender<Message>,
+    message_tx: mpsc::Sender<Message>,
     service_message_tx: mpsc::Sender<Message>,
     state: RwLock<SessionState>,
     shared_state: Arc<RwLock<SharedSessionState>>,
@@ -349,6 +356,7 @@ pub struct Session {
 
     publish_tx: broadcast::Sender<PublishMessage>,
     procedure_message_tx: broadcast::Sender<ProcedureMessage>,
+    cleanup_data: Mutex<Option<CleanupSessionData>>,
 }
 
 impl Session {
@@ -356,7 +364,7 @@ impl Session {
     pub fn new(
         id: Id,
         connection_type: ConnectionType,
-        message_tx: mpsc::UnboundedSender<Message>,
+        message_tx: mpsc::Sender<Message>,
         service_message_tx: mpsc::Sender<Message>,
     ) -> Self {
         let id_allocator = SequentialIdAllocator::default();
@@ -379,6 +387,7 @@ impl Session {
             rpc_yield_cancel_rx,
             publish_tx,
             procedure_message_tx,
+            cleanup_data: Mutex::new(None),
         }
     }
 
@@ -609,6 +618,19 @@ impl Session {
         modify_welcome_message: Box<dyn FnOnce(&mut WelcomeMessage) -> Result<()> + Send>,
     ) -> Result<()> {
         let context = context.realm_context(&message.realm)?;
+
+        let peer_info = PeerInfo {
+            connection_type: self.connection_type.clone(),
+            identity: identity.clone().unwrap_or_default(),
+        };
+
+        let session_handle = self.session_handle();
+        context
+            .router()
+            .connection_policies
+            .validate_connection(&session_handle, &peer_info)
+            .await?;
+
         context.realm().sessions.write().await.insert(
             self.id,
             Arc::new(RealmSession {
@@ -642,10 +664,7 @@ impl Session {
         );
 
         self.shared_state.write().await.roles = Self::read_peer_roles(&message);
-        self.shared_state.write().await.peer_info = Some(PeerInfo {
-            connection_type: self.connection_type.clone(),
-            identity: identity.clone().unwrap_or_default(),
-        });
+        self.shared_state.write().await.peer_info = Some(peer_info);
 
         self.transition_state(SessionState::Established(EstablishedSessionState {
             realm: context.realm().uri().clone(),
@@ -1029,10 +1048,7 @@ impl Session {
             .and_then(|val| val.bool())
             .unwrap_or_default();
 
-        let request_id = self.id_allocator.generate_id().await;
-
         let invocation = RpcInvocation {
-            invocation_request_id: request_id,
             procedure: message.procedure.clone(),
             arguments: message.arguments.clone(),
             arguments_keyword: message.arguments_keyword.clone(),
@@ -1161,6 +1177,7 @@ impl Session {
         let session = context.session(callee.session).await.ok_or_else(|| {
             BasicError::NotFound(format!("callee session {} not found", callee.session))
         })?;
+        let invocation_request_id = session.session.id_generator().generate_id().await;
         let progressive_call_results = invocation.progressive_call_results
             && session
                 .session
@@ -1183,6 +1200,7 @@ impl Session {
 
         let callee_details = RpcInvocationCalleeDetails {
             callee,
+            invocation_request_id,
             progressive_call_results,
             forward_timeout_to_callee,
             caller_identification,
@@ -1259,7 +1277,7 @@ impl Session {
         session
             .session
             .send_message(Message::Invocation(InvocationMessage {
-                request: invocation.invocation_request_id,
+                request: callee_details.invocation_request_id,
                 registered_registration: callee_details.callee.registration,
                 details,
                 call_arguments: invocation.arguments.clone(),
@@ -1375,7 +1393,7 @@ impl Session {
                 &mut rpc_yield_rx,
                 &mut cancel_rx,
                 &mut closed_session_rx,
-                invocation.invocation_request_id,
+                callee_details.invocation_request_id,
                 callee
                     .session
                     .roles()
@@ -1543,11 +1561,11 @@ impl Session {
         let context = context.realm_context(&realm)?;
 
         // If there is no callee, the call should already be canceled.
-        let callee = match &invocation.state.lock().await.current_callee {
-            Some(callee_details) => callee_details.callee.session,
+        let callee_details = match &invocation.state.lock().await.current_callee {
+            Some(callee_details) => callee_details.clone(),
             None => return Ok(()),
         };
-        let callee = match context.session(callee).await {
+        let callee = match context.session(callee_details.callee.session).await {
             Some(callee) => callee,
             None => return Ok(()),
         };
@@ -1570,7 +1588,7 @@ impl Session {
             callee
                 .session
                 .send_message(Message::Interrupt(InterruptMessage {
-                    invocation_request: invocation.invocation_request_id,
+                    invocation_request: callee_details.invocation_request_id,
                     ..Default::default()
                 }))
                 .await?;
@@ -1579,7 +1597,7 @@ impl Session {
         if immediate_error {
             // Notify the task that is waiting for YIELD messages to stop.
             self.rpc_yield_cancel_tx
-                .send(invocation.invocation_request_id)?;
+                .send(callee_details.invocation_request_id)?;
         }
 
         // Mark the invocation as canceled, so the task waiting for YIELD messages knows to stop.
@@ -1622,16 +1640,37 @@ impl Session {
             self.id,
             self.state.read().await
         );
-        *self.state.write().await = state;
 
-        match &*self.state.read().await {
-            SessionState::Established(_) => {
-                self.id_allocator.reset().await;
+        let mut cleanup_data = None;
+        {
+            let mut state_guard = self.state.write().await;
+            if let SessionState::Established(established) = &mut *state_guard {
+                if !matches!(state, SessionState::Established(_)) {
+                    cleanup_data = Some(CleanupSessionData {
+                        realm: established.realm.clone(),
+                        subscriptions: std::mem::take(&mut established.subscriptions),
+                        procedures: std::mem::take(&mut established.procedures),
+                    });
+                }
             }
-            SessionState::Closed => {
-                self.closed_session_tx.send(()).ok();
+            *state_guard = state;
+
+            match &*state_guard {
+                SessionState::Established(_) => {
+                    self.id_allocator.reset().await;
+                }
+                SessionState::Closed => {
+                    self.closed_session_tx.send(()).ok();
+                }
+                _ => (),
             }
-            _ => (),
+        }
+
+        if let Some(data) = cleanup_data {
+            let mut cleanup_guard = self.cleanup_data.lock().await;
+            if cleanup_guard.is_none() {
+                *cleanup_guard = Some(data);
+            }
         }
 
         Ok(())
@@ -1640,40 +1679,46 @@ impl Session {
     pub async fn clean_up<S>(&self, context: &RouterContext<S>) {
         let id = self.id;
 
-        // We only need to clean up if we have resources in a realm.
-        let realm = match self
-            .get_from_established_session_state(|state| state.realm.clone())
-            .await
-        {
-            Ok(realm) => realm,
-            Err(_) => return,
+        let cleanup_data = {
+            let mut cleanup_guard = self.cleanup_data.lock().await;
+            cleanup_guard.take()
         };
 
-        let mut context = match context.realm_context(&realm) {
+        let cleanup_data = match cleanup_data {
+            Some(cleanup_data) => cleanup_data,
+            None => {
+                let mut state_guard = self.state.write().await;
+                if let SessionState::Established(established) = &mut *state_guard {
+                    CleanupSessionData {
+                        realm: established.realm.clone(),
+                        subscriptions: std::mem::take(&mut established.subscriptions),
+                        procedures: std::mem::take(&mut established.procedures),
+                    }
+                } else {
+                    return;
+                }
+            }
+        };
+
+        let mut context = match context.realm_context(&cleanup_data.realm) {
             Ok(context) => context,
             Err(err) => {
                 error!(
-                    "Failed to clean up session {id}, due to error getting context for realm {realm}: {err:?}"
+                    "Failed to clean up session {id}, due to error getting context for realm {}: {err:?}",
+                    cleanup_data.realm
                 );
                 return;
             }
         };
 
-        match &mut *self.state.write().await {
-            SessionState::Established(state) => {
-                for topic in state.subscriptions.values() {
-                    TopicManager::unsubscribe(&mut context, id, &topic).await;
-                }
-                state.subscriptions.clear();
-
-                for procedure in state.procedures.values() {
-                    ProcedureManager::unregister(&mut context, id, &procedure).await;
-                }
-                state.procedures.clear();
-
-                context.realm().sessions.write().await.remove(&id);
-            }
-            _ => (),
+        for topic in cleanup_data.subscriptions.values() {
+            TopicManager::unsubscribe(&mut context, id, &topic).await;
         }
+
+        for procedure in cleanup_data.procedures.values() {
+            ProcedureManager::unregister(&mut context, id, &procedure).await;
+        }
+
+        context.realm().sessions.write().await.remove(&id);
     }
 }

@@ -4,7 +4,10 @@ use anyhow::Result;
 use battler_service::BattlerService;
 use uuid::Uuid;
 
-use crate::BattleAuthorizer;
+use crate::{
+    BattleAuthorizer,
+    common::error::map_battle_error,
+};
 
 pub(crate) struct Handler<'d> {
     pub service: Arc<BattlerService<'d>>,
@@ -25,24 +28,32 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        let uuid = Uuid::try_parse(&procedure.0)?;
-        let side = input.0.side.map(|side| side as usize);
-        let battle = self.service.battle(uuid).await?;
+        crate::log_procedure!(
+            "LastLogEntry",
+            format!("battle={}, side={:?}", procedure.0, input.0.side),
+            async {
+                let uuid = Uuid::try_parse(&procedure.0)?;
+                let side = input.0.side.map(|side| side as usize);
+                let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
 
-        self.authorizer
-            .authorize_log_access(&invocation.peer_info, &battle, side)
-            .await?;
+                self.authorizer
+                    .authorize_log_access(&invocation.peer_info, &battle, side)
+                    .await?;
 
-        let last_log_entry = self
-            .service
-            .last_log_entry(Uuid::try_parse(&procedure.0)?, side)
-            .await?;
-        Ok(battler_service_schema::LastLogEntryOutput(
-            last_log_entry.map(|entry| battler_service_schema::LogEntry {
-                index: entry.0 as battler_wamp_values::Integer,
-                content: entry.1,
-            }),
-        ))
+                let last_log_entry = self
+                    .service
+                    .last_log_entry(Uuid::try_parse(&procedure.0)?, side)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::LastLogEntryOutput(
+                    last_log_entry.map(|entry| battler_service_schema::LogEntry {
+                        index: entry.0 as battler_wamp_values::Integer,
+                        content: entry.1,
+                    }),
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

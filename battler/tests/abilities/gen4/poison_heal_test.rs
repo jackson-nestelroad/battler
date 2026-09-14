@@ -60,25 +60,25 @@ fn poison_heal_heals_each_turn_when_poisoned() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gliscor,player-1,1|name:Tackle|target:Gliscor,player-2,1",
-            "split|side:1",
-            "damage|mon:Gliscor,player-2,1|health:121/135",
-            "damage|mon:Gliscor,player-2,1|health:90/100",
-            "status|mon:Gliscor,player-1,1|status:Bad Poison|from:item:Toxic Orb",
-            "status|mon:Gliscor,player-2,1|status:Bad Poison|from:item:Toxic Orb",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Gliscor,player-1,1|name:Tackle|target:Gliscor,player-2,1",
-            "split|side:1",
-            "damage|mon:Gliscor,player-2,1|health:108/135",
-            "damage|mon:Gliscor,player-2,1|health:80/100",
-            "split|side:1",
-            "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:124/135",
-            "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:92/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Gliscor,player-1,1|name:Tackle|target:Gliscor,player-2,1",
+                "split|side:1",
+                "damage|mon:Gliscor,player-2,1|health:121/135",
+                "damage|mon:Gliscor,player-2,1|health:90/100",
+                "residual",
+                "status|mon:Gliscor,player-1,1|status:Bad Poison|from:item:Toxic Orb",
+                "status|mon:Gliscor,player-2,1|status:Bad Poison|from:item:Toxic Orb",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Gliscor,player-1,1|name:Tackle|target:Gliscor,player-2,1",
+                "split|side:1",
+                "damage|mon:Gliscor,player-2,1|health:108/135",
+                "damage|mon:Gliscor,player-2,1|health:80/100",
+                "residual",
+                "split|side:1",
+                "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:124/135",
+                "heal|mon:Gliscor,player-2,1|from:ability:Poison Heal|health:92/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

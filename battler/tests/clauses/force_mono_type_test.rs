@@ -15,7 +15,6 @@ fn make_battle_builder() -> TestBattleBuilder {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
-        .with_team_validation(false)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
 }
@@ -101,12 +100,7 @@ fn enforces_mono_type() {
         .build(static_local_data_store())
         .unwrap();
 
-    assert_matches::assert_matches!(
-        battle.update_team("player-1", three_starters().unwrap()),
-        Ok(())
-    );
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", three_starters().unwrap()), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Bulbasaur is not Water type."), "{err:?}");
             assert!(err.problems().contains(&"Charmander is not Water type."), "{err:?}");
@@ -128,7 +122,6 @@ fn enforces_mono_type() {
         Ok(())
     );
 
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
     assert_matches::assert_matches!(battle.start(), Ok(()));
 }
 

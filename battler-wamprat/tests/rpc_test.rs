@@ -15,6 +15,7 @@ use battler_wamp::{
         new_web_socket_peer,
     },
     router::{
+        EmptyConnectionPolicies,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmAuthenticationConfig,
@@ -65,6 +66,7 @@ async fn start_router(port: u16) -> Result<(RouterHandle, JoinHandle<()>)> {
     });
     let router = new_web_socket_router(
         config,
+        Box::new(EmptyConnectionPolicies::default()),
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
@@ -995,6 +997,44 @@ async fn shared_registration_persists_across_reconnects() {
 
     callee_2_handle.cancel().unwrap();
     callee_2_join_handle.await.unwrap();
+
+    router_handle.cancel().unwrap();
+    router_join_handle.await.unwrap();
+}
+
+#[tokio::test]
+async fn callee_reconnects_and_reregisters_procedure_after_session_ended() {
+    let (router_handle, router_join_handle) = start_router(0).await.unwrap();
+
+    let mut peer_builder = PeerBuilder::new(PeerConnectionType::Remote(format!(
+        "ws://{}",
+        router_handle.local_addr()
+    )));
+    peer_builder.add_procedure(
+        Uri::try_from("com.battler.test.procedure").unwrap(),
+        AddHandler,
+    );
+    let (callee_handle, callee_join_handle) = peer_builder.start(
+        create_peer("callee").unwrap(),
+        Uri::try_from(REALM).unwrap(),
+    );
+    callee_handle.wait_until_ready().await.unwrap();
+
+    let mut session_finished_rx = callee_handle.session_finished_rx();
+    router_handle
+        .end_session(
+            Uri::try_from(REALM).unwrap(),
+            callee_handle.current_session_id().await.unwrap(),
+        )
+        .await
+        .unwrap();
+    session_finished_rx.recv().await.unwrap();
+
+    // Reconnection and procedure re-registration should succeed cleanly.
+    callee_handle.wait_until_ready().await.unwrap();
+
+    callee_handle.cancel().unwrap();
+    callee_join_handle.await.unwrap();
 
     router_handle.cancel().unwrap();
     router_join_handle.await.unwrap();

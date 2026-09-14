@@ -57,14 +57,14 @@ fn corrosion_ignores_poison_immunity() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Salazzle,player-1,1|name:Toxic|target:Salazzle,player-2,1",
-            "status|mon:Salazzle,player-2,1|status:Bad Poison",
-            "split|side:1",
-            "damage|mon:Salazzle,player-2,1|from:status:Bad Poison|health:231/246",
-            "damage|mon:Salazzle,player-2,1|from:status:Bad Poison|health:94/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Salazzle,player-1,1|name:Toxic|target:Salazzle,player-2,1",
+                "status|mon:Salazzle,player-2,1|status:Bad Poison",
+                "residual",
+                "split|side:1",
+                "damage|mon:Salazzle,player-2,1|from:status:Bad Poison|health:231/246",
+                "damage|mon:Salazzle,player-2,1|from:status:Bad Poison|health:94/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

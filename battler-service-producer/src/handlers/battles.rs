@@ -19,22 +19,29 @@ impl<'d> battler_wamprat::procedure::TypedProcedure for Handler<'d> {
         _: battler_wamprat::procedure::Invocation,
         input: Self::Input,
     ) -> Result<Self::Output, Self::Error> {
-        let battles = self
-            .service
-            .battles(input.0.count as usize, input.0.offset as usize)
-            .await;
-        Ok(battler_service_schema::BattlesOutput(
-            battler_service_schema::BattlesOutputArgs {
-                battles: battles
-                    .into_iter()
-                    .map(|battle| {
-                        Ok(battler_service_schema::BattlePreview {
-                            battle_json: serde_json::to_string(&battle)?,
-                        })
-                    })
-                    .collect::<Result<Vec<_>>>()?,
-            },
-        ))
+        crate::log_procedure!(
+            "Battles",
+            format!("count={}, offset={}", input.0.count, input.0.offset),
+            async {
+                let battles = self
+                    .service
+                    .battles(input.0.count as usize, input.0.offset as usize)
+                    .await;
+                Ok(battler_service_schema::BattlesOutput(
+                    battler_service_schema::BattlesOutputArgs {
+                        battles: battles
+                            .into_iter()
+                            .map(|battle| {
+                                Ok(battler_service_schema::BattlePreview {
+                                    battle_json: serde_json::to_string(&battle)?,
+                                })
+                            })
+                            .collect::<Result<Vec<_>>>()?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

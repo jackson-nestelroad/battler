@@ -67,24 +67,24 @@ fn magic_room_suppresses_passive_items() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gothitelle,player-1,1|name:Magic Room",
-            "fieldstart|move:Magic Room",
-            "move|mon:Gothitelle,player-2,1|name:Bug Buzz|target:Gothitelle,player-1,1",
-            "supereffective|mon:Gothitelle,player-1,1",
-            "split|side:0",
-            "damage|mon:Gothitelle,player-1,1|health:62/130",
-            "damage|mon:Gothitelle,player-1,1|health:48/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Gothitelle,player-1,1|name:Magic Room",
-            "fieldend|move:Magic Room",
-            "split|side:0",
-            "heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:70/130",
-            "heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:54/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Gothitelle,player-1,1|name:Magic Room",
+                "fieldstart|move:Magic Room",
+                "move|mon:Gothitelle,player-2,1|name:Bug Buzz|target:Gothitelle,player-1,1",
+                "supereffective|mon:Gothitelle,player-1,1",
+                "split|side:0",
+                "damage|mon:Gothitelle,player-1,1|health:62/130",
+                "damage|mon:Gothitelle,player-1,1|health:48/100",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Gothitelle,player-1,1|name:Magic Room",
+                "fieldend|move:Magic Room",
+                "residual",
+                "split|side:0",
+                "heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:70/130",
+                "heal|mon:Gothitelle,player-1,1|from:item:Leftovers|health:54/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -179,24 +179,24 @@ fn magic_room_terminates_after_5_turns() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Gothitelle,player-1,1|name:Magic Room",
-            "fieldstart|move:Magic Room",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "residual",
-            "turn|turn:4",
-            "continue",
-            "residual",
-            "turn|turn:5",
-            "continue",
-            "fieldend|move:Magic Room",
-            "residual",
-            "turn|turn:6"
-        ]"#,
+                "move|mon:Gothitelle,player-1,1|name:Magic Room",
+                "fieldstart|move:Magic Room",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "residual",
+                "turn|turn:4",
+                "continue",
+                "residual",
+                "turn|turn:5",
+                "continue",
+                "residual",
+                "fieldend|move:Magic Room",
+                "turn|turn:6"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

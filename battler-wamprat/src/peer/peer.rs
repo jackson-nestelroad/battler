@@ -29,6 +29,7 @@ use battler_wamp::{
         RpcCall,
         RpcResult,
         SimplePendingRpc,
+        SubscriptionOptions,
         SupportedAuthMethod,
     },
     router::RouterHandle,
@@ -38,7 +39,10 @@ use battler_wamp_uri::{
     WildcardUri,
 };
 use battler_wamprat_message::WampApplicationMessage;
-use futures_util::lock::Mutex;
+use futures_util::{
+    future::FutureExt,
+    lock::Mutex,
+};
 use log::{
     error,
     warn,
@@ -361,11 +365,34 @@ where
         T: TypedSubscription<Event = Event> + 'static,
         Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
     {
-        self.subscriber
+        let wildcard_topic = self
+            .subscriber
             .lock()
             .await
-            .subscribe(topic, subscription)
+            .add_subscription(topic, subscription)?;
+
+        let subscription = match self
+            .peer
+            .subscribe_with_options(wildcard_topic.clone(), SubscriptionOptions::default())
             .await
+        {
+            Ok(sub) => sub,
+            Err(err) => {
+                self.subscriber
+                    .lock()
+                    .await
+                    .remove_subscription(&wildcard_topic);
+                return Err(err);
+            }
+        };
+
+        self.subscriber.lock().await.activate_subscription(
+            &wildcard_topic,
+            subscription.id,
+            subscription.event_rx,
+        )?;
+
+        Ok(())
     }
 
     /// Subscribes to a topic.
@@ -375,11 +402,12 @@ where
         Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
         Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
     {
-        self.subscriber
-            .lock()
-            .await
-            .subscribe_pattern_matched::<T, Pattern, Event>(subscription)
-            .await
+        self.subscribe_pattern_matched_with_uri(
+            Pattern::uri_for_router(),
+            Pattern::match_style(),
+            subscription,
+        )
+        .await
     }
 
     /// Subscribes to a topic.
@@ -394,20 +422,62 @@ where
         Generator: battler_wamprat_uri::WampWildcardUriGenerator<Pattern> + Send + Sync + 'static,
         Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
     {
-        self.subscriber
+        self.subscribe_pattern_matched_with_uri(
+            generator.wamp_generate_wildcard_uri()?,
+            Pattern::match_style(),
+            subscription,
+        )
+        .await
+    }
+
+    async fn subscribe_pattern_matched_with_uri<T, Pattern, Event>(
+        &self,
+        topic: WildcardUri,
+        match_style: Option<MatchStyle>,
+        subscription: T,
+    ) -> Result<()>
+    where
+        T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
+        Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
+        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
+    {
+        let wildcard_topic = self
+            .subscriber
             .lock()
             .await
-            .subscribe_pattern_matched_with_uri(
-                generator.wamp_generate_wildcard_uri()?,
-                Pattern::match_style(),
-                subscription,
-            )
+            .add_subscription_pattern_matched_with_uri(topic, match_style, subscription)?;
+
+        let subscription = match self
+            .peer
+            .subscribe_with_options(wildcard_topic.clone(), SubscriptionOptions { match_style })
             .await
+        {
+            Ok(sub) => sub,
+            Err(err) => {
+                self.subscriber
+                    .lock()
+                    .await
+                    .remove_subscription(&wildcard_topic);
+                return Err(err);
+            }
+        };
+
+        self.subscriber.lock().await.activate_subscription(
+            &wildcard_topic,
+            subscription.id,
+            subscription.event_rx,
+        )?;
+
+        Ok(())
     }
 
     /// Unsubscribes from a topic.
     pub async fn unsubscribe(&self, topic: &WildcardUri) -> Result<()> {
-        self.subscriber.lock().await.unsubscribe(topic).await
+        let id = self.subscriber.lock().await.unsubscribe(topic);
+        if let Some(id) = id {
+            self.peer.unsubscribe(id).await?;
+        }
+        Ok(())
     }
 
     /// Unsubscribes from a topic.
@@ -418,11 +488,15 @@ where
     where
         Generator: battler_wamprat_uri::WampWildcardUriGenerator<T>,
     {
-        self.subscriber
+        let id = self
+            .subscriber
             .lock()
             .await
-            .unsubscribe(&generator.wamp_generate_wildcard_uri()?)
-            .await
+            .unsubscribe(&generator.wamp_generate_wildcard_uri()?);
+        if let Some(id) = id {
+            self.peer.unsubscribe(id).await?;
+        }
+        Ok(())
     }
 
     /// Calls a procedure, without type checking, and waits for its result.
@@ -701,6 +775,7 @@ where
                             "Failed to send peer error over channel for external communication: {err}"
                         );
                     }
+                    tokio::time::sleep(self.connection_config.reconnect_delay).await;
                 }
             }
         }
@@ -776,8 +851,22 @@ where
         invocation_done_rx: mpsc::Sender<Id>,
     ) {
         let id = invocation.id();
-        if let Err(err) = procedure.invoke(invocation).await {
-            error!("Procedure invocation {id} of {uri} failed: {err}");
+        let result = std::panic::AssertUnwindSafe(procedure.invoke(invocation))
+            .catch_unwind()
+            .await;
+        match result {
+            Ok(Ok(())) => {}
+            Ok(Err(err)) => {
+                error!("Procedure invocation {id} of {uri} failed: {err}");
+            }
+            Err(panic_payload) => {
+                let msg = panic_payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| panic_payload.downcast_ref::<String>().map(|s| s.as_str()))
+                    .unwrap_or("unknown panic");
+                error!("Procedure invocation {id} of {uri} panicked: {msg}");
+            }
         }
         invocation_done_rx.send(id).await.ok();
     }
@@ -803,11 +892,16 @@ where
                             )));
                         }
                         Ok(ProcedureMessage::Interrupt(interrupt)) => {
-                            if let Some(handle) = invocations.remove(&interrupt.id()) {
+                            let id = interrupt.id();
+                            if let Some(handle) = invocations.remove(&id) {
+                                warn!("Procedure invocation {id} of {uri} was cancelled/interrupted by caller");
                                 handle.abort();
                             }
                         }
-                        Err(_) => {
+                        Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("Procedure {uri} message receiver lagged by {skipped} messages");
+                        }
+                        Err(tokio::sync::broadcast::error::RecvError::Closed) => {
                             break;
                         }
                     }
@@ -831,7 +925,7 @@ where
         self.session_established_tx.send(()).ok();
 
         // Restore all subscriptions.
-        self.subscriber.lock().await.restore_subscriptions().await?;
+        self.restore_subscriptions().await?;
 
         // Restart all procedure handlers.
         for (uri, procedure) in &self.procedures {
@@ -868,6 +962,29 @@ where
 
         *self.peer_state.write().await = PeerState::Ready;
         self.session_ready_tx.send(()).ok();
+
+        Ok(())
+    }
+
+    async fn restore_subscriptions(&self) -> Result<()> {
+        let subscriptions = {
+            let subscriber = self.subscriber.lock().await;
+            subscriber.subscriptions_for_restoration()
+        };
+
+        for (topic, match_style) in subscriptions {
+            let subscription = self
+                .peer
+                .subscribe_with_options(topic.clone(), SubscriptionOptions { match_style })
+                .await
+                .map_err(|err| err.context(format!("failed to resubscribe to {topic}")))?;
+
+            self.subscriber.lock().await.activate_subscription(
+                &topic,
+                subscription.id,
+                subscription.event_rx,
+            )?;
+        }
 
         Ok(())
     }

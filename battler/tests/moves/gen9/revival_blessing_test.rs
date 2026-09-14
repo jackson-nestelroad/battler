@@ -119,6 +119,9 @@ fn revival_blessing_revives_selected_mon() {
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Err(err) => {
         assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch out of turn");
     });
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Err(err) => {
+        assert_eq!(format!("{err:#}"), "invalid choice 0: cannot pass: you must select a mon for Pawmot");
+    });
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "select 1"), Ok(()));
 
     assert_matches::assert_matches!(
@@ -168,4 +171,37 @@ fn revival_blessing_revives_selected_mon() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn revival_blessing_randomall_revives_fainted_mon() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 1,2;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 2,1;pass"),
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(
+        battle.request_for_player("player-1"),
+        Ok(Some(Request::Select(_)))
+    );
+
+    // Using randomall on the SelectRequest should successfully pick Quaxly (the only fainted mon).
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "randomall"), Ok(()));
+
+    // Turn 3: Quaxly is revived, so player-1 can switch it back in.
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "switch 1;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
 }

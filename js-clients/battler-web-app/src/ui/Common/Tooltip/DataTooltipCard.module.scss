@@ -1,0 +1,206 @@
+@use "../../../styles/tabs" as *;
+
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  box-shadow: 0 var(--spacing-s) var(--spacing-xl) var(--bg-overlay);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  backdrop-filter: blur(var(--spacing-s));
+}
+
+.cardFixed {
+  width: 23.5rem;
+}
+
+.cardCompact {
+  min-width: 12rem;
+  max-width: 18rem;
+  width: max-content;
+}
+
+@include segmented-tabs;
+
+.tabCountBadge {
+  font-size: var(--font-size-xxs);
+  padding: 0 var(--spacing-xxs);
+  border-radius: var(--border-radius-xs);
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 700;
+  line-height: 1.2;
+
+  &.hasItems {
+    background-color: var(--color-primary-border);
+    color: var(--color-primary);
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.headerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-xs);
+}
+
+.headerTitle {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.scrollBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  max-height: 20rem;
+  overflow-y: auto;
+  font-size: var(--font-size-xs);
+}
+
+.headerIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.monRender {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  overflow-wrap: break-word;
+}
+
+.description {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.effectsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.effectsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.effectItem {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.traitsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  font-size: var(--font-size-xs);
+}
+
+.traitRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.traitLabel {
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 5.5rem;
+  flex-shrink: 0;
+}
+
+.traitValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.traitEmpty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.flagBadge {
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid var(--border-color);
+  background-color: var(--color-secondary-bg);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.conditionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border: 1px solid var(--color-info-border);
+  background-color: var(--color-info-bg);
+  color: var(--color-info-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.slotTag {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.loadingCard,
+.emptyCard {
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-style: italic;
+}

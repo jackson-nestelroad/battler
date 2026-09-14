@@ -58,19 +58,19 @@ fn burning_jealousy_burns_if_stats_raised_this_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Grimmsnarl,player-1,1|name:Swords Dance|target:Grimmsnarl,player-1,1",
-            "boost|mon:Grimmsnarl,player-1,1|stat:atk|by:2",
-            "move|mon:Grimmsnarl,player-2,1|name:Burning Jealousy",
-            "split|side:0",
-            "damage|mon:Grimmsnarl,player-1,1|health:117/155",
-            "damage|mon:Grimmsnarl,player-1,1|health:76/100",
-            "status|mon:Grimmsnarl,player-1,1|status:Burn",
-            "split|side:0",
-            "damage|mon:Grimmsnarl,player-1,1|from:status:Burn|health:108/155",
-            "damage|mon:Grimmsnarl,player-1,1|from:status:Burn|health:70/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Grimmsnarl,player-1,1|name:Swords Dance|target:Grimmsnarl,player-1,1",
+                "boost|mon:Grimmsnarl,player-1,1|stat:atk|by:2",
+                "move|mon:Grimmsnarl,player-2,1|name:Burning Jealousy",
+                "split|side:0",
+                "damage|mon:Grimmsnarl,player-1,1|health:117/155",
+                "damage|mon:Grimmsnarl,player-1,1|health:76/100",
+                "status|mon:Grimmsnarl,player-1,1|status:Burn",
+                "residual",
+                "split|side:0",
+                "damage|mon:Grimmsnarl,player-1,1|from:status:Burn|health:108/155",
+                "damage|mon:Grimmsnarl,player-1,1|from:status:Burn|health:70/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

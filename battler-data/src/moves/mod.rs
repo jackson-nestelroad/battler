@@ -21,6 +21,7 @@ pub use boost::{
 pub use mon_override::MonOverride;
 pub use move_category::MoveCategory;
 pub use move_data::{
+    AdvancedTargeting,
     HitEffect,
     MaxMoveData,
     MoveData,

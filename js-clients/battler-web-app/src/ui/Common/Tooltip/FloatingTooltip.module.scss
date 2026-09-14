@@ -1,0 +1,59 @@
+.floatingPortal {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: calc(100vw - var(--spacing-l) * 2);
+}
+
+.bridgeTop::after,
+.bridgeBottom::before,
+.bridgeLeft::after,
+.bridgeRight::before {
+  content: "";
+  position: absolute;
+  pointer-events: auto;
+}
+
+.bridgeTop::after {
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--spacing-s));
+  height: calc(var(--spacing-s) + var(--spacing-xs));
+}
+
+.bridgeBottom::before {
+  left: 0;
+  right: 0;
+  top: calc(-1 * var(--spacing-s));
+  height: calc(var(--spacing-s) + var(--spacing-xs));
+}
+
+.bridgeLeft::after {
+  top: 0;
+  bottom: 0;
+  right: calc(-1 * var(--spacing-s));
+  width: calc(var(--spacing-s) + var(--spacing-xs));
+}
+
+.bridgeRight::before {
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--spacing-s));
+  width: calc(var(--spacing-s) + var(--spacing-xs));
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition:
+    opacity var(--transition-duration) var(--transition-timing),
+    transform var(--transition-duration) var(--transition-timing);
+}
+
+.hidden {
+  opacity: 0;
+  transform: translateY(var(--spacing-xs)) scale(0.98);
+  pointer-events: none;
+  transition: none;
+}

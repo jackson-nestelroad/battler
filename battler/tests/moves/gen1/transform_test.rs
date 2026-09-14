@@ -101,6 +101,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Normal",
                                 "type": "Normal",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -110,6 +111,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Any",
                                 "type": "Flying",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -119,6 +121,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -128,6 +131,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -137,6 +141,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             }
                         ]
@@ -197,13 +202,17 @@ fn transform_transforms_into_target() {
                             "moves": [
                                 {
                                     "name": "Transform",
-                                    "pp": 9
+                                    "pp": 9,
+                                    "max_pp": 10
                                 }
                             ],
                             "ability": "No Ability",
                             "item": null,
                             "status": null,
-                            "hidden_power_type": "Fighting"
+                            "hidden_power_type": "Fighting",
+                            "level_experience": 125000,
+                            "next_level_experience": 132651,
+                            "weight": 40
                         },
                         "species": "Charizard",
                         "hp": 108,
@@ -242,6 +251,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Normal",
                                 "type": "Normal",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -251,6 +261,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "Any",
                                 "type": "Flying",
+                                "category": "Physical",
                                 "disabled": false
                             },
                             {
@@ -260,6 +271,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -269,6 +281,7 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             },
                             {
@@ -278,12 +291,14 @@ fn transform_transforms_into_target() {
                                 "max_pp": 5,
                                 "target": "User",
                                 "type": "Normal",
+                                "category": "Status",
                                 "disabled": false
                             }
                         ],
                         "ability": "Blaze",
                         "item": null,
-                        "status": null
+                        "status": null,
+                        "weight": 905
                     }
                 ]
             }"#
@@ -385,7 +400,7 @@ fn transform_copies_type_change() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Charizard,player-2,1|name:Conversion|target:Charizard,player-2,1",
-            "typechange|mon:Charizard,player-2,1|types:Normal",
+            "typechange|mon:Charizard,player-2,1|types:Normal|from:move:Conversion",
             "residual",
             "turn|turn:2",
             "continue",

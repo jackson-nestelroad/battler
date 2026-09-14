@@ -25,7 +25,10 @@ use crate::{
 /// Generates an ABORT message for an error.
 pub fn abort_message_for_error(error: &Error) -> Message {
     Message::Abort(AbortMessage {
-        details: Dictionary::from_iter([("message".to_owned(), Value::String(error.to_string()))]),
+        details: Dictionary::from_iter([(
+            "message".to_owned(),
+            Value::String(format!("{error:#}")),
+        )]),
         reason: uri_for_error(error),
         ..Default::default()
     })
@@ -63,7 +66,7 @@ pub fn error_for_request(message: &Message, error: &Error) -> Message {
             }
             (args, error.arguments_keyword().clone())
         } else {
-            let message = error.to_string();
+            let message = format!("{error:#}");
             details.insert("message".to_owned(), Value::String(message.clone()));
             (
                 List::from_iter([Value::String(message)]),

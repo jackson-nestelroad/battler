@@ -18,7 +18,7 @@
                   "name": "Charmander",
                   "species": "Charmander",
                   "ability": "Blaze",
-                  "moves": ["Tackle", "Ember"],
+                  "moves": ["Scratch", "Ember"],
                   "item": null,
                   "nature": "Hardy",
                   "gender": "M",

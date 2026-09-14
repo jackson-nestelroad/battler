@@ -2,6 +2,7 @@ use anyhow::Result;
 use battler_data::{
     DataStore,
     Id,
+    ResourceType,
     SpeciesData,
 };
 
@@ -23,6 +24,8 @@ pub struct SpeciesLookup<'d> {
 }
 
 impl<'d> ResourceLookup<'d, SpeciesData> for SpeciesLookup<'d> {
+    const RESOURCE_TYPE: ResourceType = ResourceType::Species;
+
     fn new(data: &'d dyn DataStore) -> Self {
         Self { data }
     }

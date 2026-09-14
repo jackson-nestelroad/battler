@@ -1,0 +1,42 @@
+.typeTooltipCard {
+  width: 23.5rem;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  margin: 0;
+  padding-bottom: var(--spacing-xxs);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.typeRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.typeRowLabel {
+  font-size: var(--font-size-xxs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+
+.typeList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xxs);
+}
+
+.noneText {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+

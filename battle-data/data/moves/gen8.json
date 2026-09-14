@@ -938,7 +938,7 @@
         "on_try_use_move": [
           "$base_species = func_call(base_species: $user)",
           "if $base_species != morpeko:",
-          ["log_cant", "return stopfail"]
+          ["log_cant: with_move", "return stopfail"]
         ],
         "on_modify_move_type": ["if $user.species == morpekohangry:", ["return dark"]]
       }
@@ -1863,16 +1863,12 @@
     "pp": 5,
     "target": "Normal",
     "flags": ["Contact", "Mirror", "Protect", "Punch"],
-    "secondary_effects": [
-      {
-        "user": {
-          "boosts": {
-            "def": -1,
-            "spd": -1
-          }
-        }
+    "user_effect": {
+      "boosts": {
+        "def": -1,
+        "spd": -1
       }
-    ]
+    }
   },
   "barbbarrage": {
     "name": "Barb Barrage",
@@ -1928,7 +1924,7 @@
     "flags": ["Mirror", "Protect"],
     "secondary_effects": [
       {
-        "user": {
+        "target": {
           "boosts": {
             "atk": -1
           }

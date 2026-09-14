@@ -66,24 +66,24 @@ fn mud_sport_lasts_five_turns() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Taillow,player-1,1|name:Mud Sport",
-            "fieldstart|move:Mud Sport|of:Taillow,player-1,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "residual",
-            "turn|turn:4",
-            "continue",
-            "residual",
-            "turn|turn:5",
-            "continue",
-            "fieldend|move:Mud Sport",
-            "residual",
-            "turn|turn:6"
-        ]"#,
+                "move|mon:Taillow,player-1,1|name:Mud Sport",
+                "fieldstart|move:Mud Sport|of:Taillow,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "residual",
+                "turn|turn:4",
+                "continue",
+                "residual",
+                "turn|turn:5",
+                "continue",
+                "residual",
+                "fieldend|move:Mud Sport",
+                "turn|turn:6"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

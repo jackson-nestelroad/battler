@@ -58,22 +58,22 @@ fn beak_blast_burns_attackers_while_before_use() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Toucannon,player-1,1|move:Beak Blast",
-            "move|mon:Toucannon,player-2,1|name:Tackle|target:Toucannon,player-1,1",
-            "split|side:0",
-            "damage|mon:Toucannon,player-1,1|health:191/270",
-            "damage|mon:Toucannon,player-1,1|health:71/100",
-            "status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1",
-            "move|mon:Toucannon,player-1,1|name:Beak Blast|target:Toucannon,player-2,1",
-            "split|side:1",
-            "damage|mon:Toucannon,player-2,1|health:90/270",
-            "damage|mon:Toucannon,player-2,1|health:34/100",
-            "split|side:1",
-            "damage|mon:Toucannon,player-2,1|from:status:Burn|health:74/270",
-            "damage|mon:Toucannon,player-2,1|from:status:Burn|health:28/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "singleturn|mon:Toucannon,player-1,1|move:Beak Blast",
+                "move|mon:Toucannon,player-2,1|name:Tackle|target:Toucannon,player-1,1",
+                "split|side:0",
+                "damage|mon:Toucannon,player-1,1|health:191/270",
+                "damage|mon:Toucannon,player-1,1|health:71/100",
+                "status|mon:Toucannon,player-2,1|status:Burn|from:move:Beak Blast|of:Toucannon,player-1,1",
+                "move|mon:Toucannon,player-1,1|name:Beak Blast|target:Toucannon,player-2,1",
+                "split|side:1",
+                "damage|mon:Toucannon,player-2,1|health:90/270",
+                "damage|mon:Toucannon,player-2,1|health:34/100",
+                "residual",
+                "split|side:1",
+                "damage|mon:Toucannon,player-2,1|from:status:Burn|health:74/270",
+                "damage|mon:Toucannon,player-2,1|from:status:Burn|health:28/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

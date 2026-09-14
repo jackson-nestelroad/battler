@@ -17,7 +17,6 @@ use battler_service::{
     BattlePreview,
     BattleServiceOptions,
     LogEntry,
-    PlayerValidation,
 };
 use battler_wamp_values::Integer;
 use battler_wamprat::{
@@ -115,26 +114,6 @@ where
             .result()
             .await?;
         Ok(())
-    }
-
-    async fn validate_player(&self, battle: Uuid, player: &str) -> Result<PlayerValidation> {
-        let output = self
-            .consumer
-            .validate_player(
-                battler_service_schema::ValidatePlayerPattern(uuid_for_uri(&battle)),
-                battler_service_schema::ValidatePlayerInput(
-                    battler_service_schema::ValidatePlayerInputArgs {
-                        player: player.to_owned(),
-                    },
-                ),
-                CallOptions::default(),
-            )
-            .await?
-            .result()
-            .await?;
-        Ok(PlayerValidation {
-            problems: output.0.problems,
-        })
     }
 
     async fn start(&self, battle: Uuid) -> Result<()> {
@@ -252,7 +231,7 @@ where
         battle: Uuid,
         side: Option<usize>,
     ) -> Result<broadcast::Receiver<LogEntry>> {
-        let (entry_tx, entry_rx) = broadcast::channel(1024);
+        let (entry_tx, entry_rx) = broadcast::channel(4096);
         let pattern = battler_service_schema::LogPattern(
             uuid_for_uri(&battle),
             side.map(|side| battler_service_schema::LogSelector::Side(side))

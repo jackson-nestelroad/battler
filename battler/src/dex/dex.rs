@@ -2,9 +2,12 @@ use alloc::vec::Vec;
 
 use anyhow::Result;
 use battler_data::{
+    AbilityData,
     DataStore,
     Id,
+    ItemData,
     MoveData,
+    SpeciesData,
     TypeChart,
 };
 
@@ -60,8 +63,23 @@ impl<'d> Dex<'d> {
         self.type_chart.get()
     }
 
+    /// Gets all ability IDs, applying the given filter on the underlying data.
+    pub fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>> {
+        self.data.all_ability_ids(filter)
+    }
+
+    /// Gets all item IDs, applying the given filter on the underlying data.
+    pub fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>> {
+        self.data.all_item_ids(filter)
+    }
+
     /// Gets all move IDs, applying the given filter on the underlying data.
     pub fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         self.data.all_move_ids(filter)
+    }
+
+    /// Gets all species IDs, applying the given filter on the underlying data.
+    pub fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>> {
+        self.data.all_species_ids(filter)
     }
 }

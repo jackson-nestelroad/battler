@@ -1,0 +1,998 @@
+abilityend|ability:*|from:ability:Lingering Aroma
+abilityend|ability:*|from:ability:Mummy
+abilityend|ability:*|from:ability:Power of Alchemy
+abilityend|ability:*|from:ability:Receiver
+abilityend|ability:*|from:ability:Trace
+abilityend|ability:*|from:ability:Wandering Spirit
+abilityend|ability:*|from:move:Doodle
+abilityend|ability:*|from:move:Entrainment
+abilityend|ability:*|from:move:Gastro Acid
+abilityend|ability:*|from:move:Role Play
+abilityend|ability:*|from:move:Simple Beam
+abilityend|ability:*|from:move:Skill Swap
+abilityend|ability:*|from:move:Worry Seed
+abilitystart|ability:*|from:ability:Lingering Aroma
+abilitystart|ability:*|from:ability:Mummy
+abilitystart|ability:*|from:ability:Power of Alchemy
+abilitystart|ability:*|from:ability:Receiver
+abilitystart|ability:*|from:ability:Trace
+abilitystart|ability:*|from:ability:Wandering Spirit
+abilitystart|ability:*|from:move:Doodle
+abilitystart|ability:*|from:move:Entrainment
+abilitystart|ability:*|from:move:Role Play
+abilitystart|ability:*|from:move:Simple Beam
+abilitystart|ability:*|from:move:Skill Swap
+abilitystart|ability:*|from:move:Worry Seed
+ability|ability:Air Lock
+ability|ability:Anticipation
+ability|ability:As One
+ability|ability:Aura Break
+ability|ability:Beads of Ruin
+ability|ability:Cloud Nine
+ability|ability:Dark Aura
+ability|ability:Fairy Aura
+ability|ability:Gooey
+ability|ability:Mega Sol
+ability|ability:Mirror Armor
+ability|ability:Mold Breaker
+ability|ability:Neutralizing Gas
+ability|ability:Perish Body
+ability|ability:Pressure
+ability|ability:Supersweet Syrup
+ability|ability:Sword of Ruin
+ability|ability:Tablets of Ruin
+ability|ability:Tangling Hair
+ability|ability:Teraform Zero
+ability|ability:Teravolt
+ability|ability:Turboblaze
+ability|ability:Unnerve
+ability|ability:Vessel of Ruin
+activate|ability:Battle Bond
+activate|ability:Commander
+activate|ability:Cotton Down
+activate|ability:Cud Chew
+activate|ability:Dancer
+activate|ability:Emergency Exit
+activate|ability:Forewarn
+activate|ability:Forewarn|move:*
+activate|ability:Guard Dog
+activate|ability:Hadron Engine
+activate|ability:Healer
+activate|ability:Hydration
+activate|ability:Intimidate
+activate|ability:Leaf Guard
+activate|ability:Lightning Rod
+activate|ability:Magic Bounce
+activate|ability:Oblivious
+activate|ability:Orichalcum Pulse
+activate|ability:Own Tempo
+activate|ability:Pastel Veil
+activate|ability:Piercing Drill
+activate|ability:Protosynthesis
+activate|ability:Protosynthesis|from:item:Booster Energy
+activate|ability:Quark Drive
+activate|ability:Quark Drive|from:item:Booster Energy
+activate|ability:Quick Draw
+activate|ability:Ripen
+activate|ability:Schooling
+activate|ability:Schooling|started
+activate|ability:Schooling|stopped
+activate|ability:Screen Cleaner
+activate|ability:Shields Down
+activate|ability:Shields Down|activated
+activate|ability:Shields Down|deactivated
+activate|ability:Stance Change
+activate|ability:Stance Change|blade
+activate|ability:Stance Change|shield
+activate|ability:Sticky Hold
+activate|ability:Storm Drain
+activate|ability:Sturdy
+activate|ability:Suction Cups
+activate|ability:Supreme Overlord
+activate|ability:Synchronize
+activate|ability:Telepathy
+activate|ability:Tera Shell
+activate|ability:Tera Shift
+activate|ability:Toxic Debris
+activate|ability:Wandering Spirit
+activate|ability:Water Bubble
+activate|ability:Wimp Out
+activate|ability:Zero to Hero
+activate|clause:Endless Battle Clause
+activate|clause:Sleep Clause
+activate|condition:Affection
+activate|condition:Affection|tough
+activate|condition:Break Protect
+activate|condition:Break Protect|broken
+activate|condition:Confusion
+activate|condition:Disobedience
+activate|condition:Disobedience|confusion
+activate|condition:Future Move
+activate|condition:Highlighting Sample
+activate|condition:Knock Down
+activate|condition:Must Recharge
+activate|condition:Partially Trapped
+activate|condition:Protect Move Condition Base
+activate|condition:Swap Abilities
+activate|condition:Trapped
+activate|condition:Weaken Through Protection Move Base
+activate|item:Babiri Berry
+activate|item:Charti Berry
+activate|item:Chilan Berry
+activate|item:Chilan Berry|weaken
+activate|item:Chople Berry
+activate|item:Coba Berry
+activate|item:Colbur Berry
+activate|item:Custap Berry
+activate|item:Enigma Berry
+activate|item:Enigma Berry|weaken
+activate|item:Focus Band
+activate|item:Haban Berry
+activate|item:Haban Berry|weaken
+activate|item:Kasib Berry
+activate|item:Kasib Berry|weaken
+activate|item:Kebia Berry
+activate|item:Occa Berry
+activate|item:Occa Berry|weaken
+activate|item:Passho Berry
+activate|item:Passho Berry|weaken
+activate|item:Payapa Berry
+activate|item:Quick Claw
+activate|item:Red Card
+activate|item:Rindo Berry
+activate|item:Roseli Berry
+activate|item:Shuca Berry
+activate|item:Smoke Ball
+activate|item:Tanga Berry
+activate|item:Wacan Berry
+activate|item:Yache Berry
+activate|move:After You
+activate|move:Aromatherapy
+activate|move:Attract
+activate|move:Beat Up
+activate|move:Bide
+activate|move:Bind
+activate|move:Celebrate
+activate|move:Clamp
+activate|move:Court Change
+activate|move:Crafty Shield
+activate|move:Destiny Bond
+activate|move:Doom Desire
+activate|move:Electric Terrain
+activate|move:Endure
+activate|move:Fickle Beam
+activate|move:Fire Spin
+activate|move:Fling
+activate|move:Fling|item:*
+activate|move:Future Sight
+activate|move:G-Max Centiferno
+activate|move:G-Max Sandblast
+activate|move:Grassy Terrain
+activate|move:Gravity
+activate|move:Guard Split
+activate|move:Happy Hour
+activate|move:Heal Bell
+activate|move:Healing Wish
+activate|move:Infestation
+activate|move:Ingrain
+activate|move:Lock-On
+activate|move:Lunar Dance
+activate|move:Magic Coat
+activate|move:Magma Storm
+activate|move:Magnitude
+activate|move:Mat Block
+activate|move:Max Guard
+activate|move:Mist
+activate|move:Misty Terrain
+activate|move:Poltergeist
+activate|move:Poltergeist|item:*
+activate|move:Powder
+activate|move:Power Split
+activate|move:Protect
+activate|move:Psychic Terrain
+activate|move:Pursuit
+activate|move:Quash
+activate|move:Quick Guard
+activate|move:Safeguard
+activate|move:Sand Tomb
+activate|move:Sketch
+activate|move:Skill Swap
+activate|move:Smack Down
+activate|move:Snap Trap
+activate|move:Snatch
+activate|move:Spectral Thief
+activate|move:Speed Swap
+activate|move:Splash
+activate|move:Sticky Web
+activate|move:Substitute
+activate|move:Substitute|damage
+activate|move:Thunder Cage
+activate|move:Whirlpool
+activate|move:Wide Guard
+activate|move:Wish
+activate|move:Wrap
+addedtype|type:*
+addpseudoweather|condition:*
+addsidecondition|condition:*
+addslotcondition|condition:*
+addvolatile|volatile:*
+animatemove
+appear
+battlestart
+block|ability:*|from:ability:Aroma Veil
+block|ability:*|from:ability:Flower Veil
+block|ability:*|from:ability:Pastel Veil
+block|ability:*|from:ability:Sweet Veil
+block|ability:*|from:item:Ability Shield
+block|move:*|from:Dynamax
+block|move:*|from:ability:Aroma Veil
+block|move:*|from:ability:Flower Veil
+block|move:*|from:ability:Pastel Veil
+block|move:*|from:ability:Sweet Veil
+block|move:*|from:item:Ability Shield
+boost|by:0
+boost|by:1
+boost|by:1|from:Z-Power
+boost|by:2
+boost|by:2|from:Z-Power
+boost|by:3plus
+boost|by:3plus|from:Z-Power
+boost|by:3plus|max
+cannotescape
+cant|from:Flinch
+cant|from:Must Recharge
+cant|from:ability:Armor Tail|move:*
+cant|from:ability:Queenly Majesty|move:*
+cant|from:ability:Truant
+cant|from:move:Attract
+cant|from:move:Focus Punch
+cant|from:move:Shell Trap
+cant|from:status:Bad Poison
+cant|from:status:Burn
+cant|from:status:Freeze
+cant|from:status:Paralysis
+cant|from:status:Poison
+cant|from:status:Sleep
+cant|move:*|from:ability:Armor Tail
+cant|move:*|from:ability:Damp
+cant|move:*|from:ability:Dazzling
+cant|move:*|from:ability:Queenly Majesty
+cant|move:*|from:move:Aura Wheel
+cant|move:*|from:move:Disable
+cant|move:*|from:move:Gravity
+cant|move:*|from:move:Heal Block
+cant|move:*|from:move:Imprison
+cant|move:*|from:move:Petal Dance
+cant|move:*|from:move:Taunt
+cant|move:*|from:move:Telekinesis
+cant|move:*|from:move:Throat Chop
+catchfailed|item:*|shakes:0
+catchfailed|item:*|shakes:1
+catchfailed|item:*|shakes:2
+catchfailed|item:*|shakes:3
+catch|item:*|shakes:1|critical
+catch|item:*|shakes:4
+clearallboosts
+clearboosts
+clearnegativeboosts
+clearnegativeboosts|from:Z-Power
+clearpositiveboosts
+clearweather|weather:Extremely Harsh Sunlight
+clearweather|weather:Hail
+clearweather|weather:Harsh Sunlight
+clearweather|weather:Heavy Rain
+clearweather|weather:Rain
+clearweather|weather:Sandstorm
+clearweather|weather:Snow
+clearweather|weather:Strong Winds
+combine
+continue
+copyboosts
+crit
+crit|battletype:singles
+curestatus|from:Affection|status:Burn
+curestatus|from:Affection|status:Freeze
+curestatus|from:Affection|status:Paralysis
+curestatus|from:Affection|status:Poison
+curestatus|from:Affection|status:Sleep
+curestatus|from:move:Uproar|status:Bad Poison
+curestatus|from:move:Uproar|status:Burn
+curestatus|from:move:Uproar|status:Freeze
+curestatus|from:move:Uproar|status:Paralysis
+curestatus|from:move:Uproar|status:Poison
+curestatus|status:Bad Poison
+curestatus|status:Bad Poison|from:Affection
+curestatus|status:Burn
+curestatus|status:Freeze
+curestatus|status:Paralysis
+curestatus|status:Poison
+curestatus|status:Sleep
+curestatus|status:Sleep|from:move:Uproar
+damage
+damage|from:Confusion
+damage|from:Disobedience
+damage|from:Recoil
+damage|from:Struggle Recoil
+damage|from:ability:Aftermath
+damage|from:ability:Bad Dreams
+damage|from:ability:Disguise
+damage|from:ability:Dry Skin
+damage|from:ability:Gulp Missile
+damage|from:ability:Innards Out
+damage|from:ability:Liquid Ooze
+damage|from:ability:Rough Skin
+damage|from:ability:Solar Power
+damage|from:item:Black Sludge
+damage|from:item:Jaboca Berry
+damage|from:item:Life Orb
+damage|from:item:Rowap Berry
+damage|from:item:Sticky Barb
+damage|from:move:Axe Kick
+damage|from:move:Bind
+damage|from:move:Clamp
+damage|from:move:Curse
+damage|from:move:Fire Pledge
+damage|from:move:Fire Spin
+damage|from:move:Flame Burst
+damage|from:move:G-Max Cannonade
+damage|from:move:G-Max Centiferno
+damage|from:move:G-Max Sandblast
+damage|from:move:G-Max Steelsurge
+damage|from:move:G-Max Vine Lash
+damage|from:move:G-Max Volcalith
+damage|from:move:G-Max Wildfire
+damage|from:move:High Jump Kick
+damage|from:move:Infestation
+damage|from:move:Jump Kick
+damage|from:move:Leech Seed
+damage|from:move:Magma Storm
+damage|from:move:Nightmare
+damage|from:move:Powder
+damage|from:move:Salt Cure
+damage|from:move:Sand Tomb
+damage|from:move:Snap Trap
+damage|from:move:Spikes
+damage|from:move:Spiky Shield
+damage|from:move:Stealth Rock
+damage|from:move:Supercell Slam
+damage|from:move:Thunder Cage
+damage|from:move:Whirlpool
+damage|from:move:Wrap
+damage|from:status:Bad Poison
+damage|from:status:Burn
+damage|from:status:Freeze
+damage|from:status:Paralysis
+damage|from:status:Poison
+damage|from:status:Sleep
+damage|from:weather:Extremely Harsh Sunlight
+damage|from:weather:Hail
+damage|from:weather:Harsh Sunlight
+damage|from:weather:Heavy Rain
+damage|from:weather:Rain
+damage|from:weather:Sandstorm
+damage|from:weather:Snow
+damage|from:weather:Strong Winds
+debug
+deductpp|move:*
+didnotlearnmove|move:*
+drag
+dynamax
+end|ability:Flash Fire
+end|ability:Flash Fire|silent
+end|ability:Illusion
+end|ability:Neutralizing Gas
+end|ability:Protosynthesis
+end|ability:Quark Drive
+end|ability:Slow Start
+end|ability:Supreme Overlord
+end|ability:Supreme Overlord|silent
+end|ability:Zen Mode
+end|condition:Commanding
+end|condition:Confusion
+end|condition:Highlighting Sample
+end|condition:Immobilized
+end|condition:Partially Trapped
+end|move:Attract
+end|move:Bide
+end|move:Bind
+end|move:Bind|silent
+end|move:Charge
+end|move:Charge|silent
+end|move:Clamp
+end|move:Clamp|silent
+end|move:Disable
+end|move:Embargo
+end|move:Encore
+end|move:Fire Spin
+end|move:Fire Spin|silent
+end|move:G-Max Centiferno
+end|move:G-Max Centiferno|silent
+end|move:G-Max Sandblast
+end|move:G-Max Sandblast|silent
+end|move:Heal Block
+end|move:Infestation
+end|move:Infestation|silent
+end|move:Laser Focus
+end|move:Laser Focus|silent
+end|move:Leech Seed
+end|move:Magma Storm
+end|move:Magma Storm|silent
+end|move:Magnet Rise
+end|move:Octolock
+end|move:Octolock|silent
+end|move:Power Trick
+end|move:Salt Cure
+end|move:Sand Tomb
+end|move:Sand Tomb|silent
+end|move:Sky Drop
+end|move:Sky Drop|silent
+end|move:Snap Trap
+end|move:Snap Trap|silent
+end|move:Stockpile
+end|move:Substitute
+end|move:Syrup Bomb
+end|move:Syrup Bomb|silent
+end|move:Taunt
+end|move:Telekinesis
+end|move:Throat Chop
+end|move:Thunder Cage
+end|move:Thunder Cage|silent
+end|move:Torment
+end|move:Uproar
+end|move:Whirlpool
+end|move:Whirlpool|silent
+end|move:Wrap
+end|move:Wrap|silent
+end|move:Yawn
+end|move:Yawn|silent
+escaped
+exp
+fail
+fail|from:Choice Lock
+fail|from:weather:Extremely Harsh Sunlight
+fail|from:weather:Hail
+fail|from:weather:Harsh Sunlight
+fail|from:weather:Heavy Rain
+fail|from:weather:Rain
+fail|from:weather:Sandstorm
+fail|from:weather:Snow
+fail|from:weather:Strong Winds
+fail|what:*|from:move:Uproar
+fail|what:heal
+fail|what:move:Corrosive Gas
+fail|what:move:Soak
+fail|what:move:Teatime
+fail|what:status:Sleep|from:move:Uproar
+fail|what:unboost|from:ability:*
+fail|what:unboost|from:item:*
+fail|what:unboost|from:move:*
+faint
+fieldactivate|condition:Stat Shuffle
+fieldactivate|move:Fairy Lock
+fieldactivate|move:Perish Song
+fieldactivate|move:Teatime
+fieldactivate|weather:Extremely Harsh Sunlight
+fieldactivate|weather:Hail
+fieldactivate|weather:Harsh Sunlight
+fieldactivate|weather:Heavy Rain
+fieldactivate|weather:Rain
+fieldactivate|weather:Sandstorm
+fieldactivate|weather:Snow
+fieldactivate|weather:Strong Winds
+fieldend|move:Electric Terrain
+fieldend|move:Grassy Terrain
+fieldend|move:Gravity
+fieldend|move:Magic Room
+fieldend|move:Misty Terrain
+fieldend|move:Mud Sport
+fieldend|move:Psychic Terrain
+fieldend|move:Trick Room
+fieldend|move:Water Sport
+fieldend|move:Wonder Room
+fieldstart|condition:Stat Shuffle
+fieldstart|from:Start|move:Grassy Terrain
+fieldstart|from:Start|move:Misty Terrain
+fieldstart|from:Start|move:Psychic Terrain
+fieldstart|move:Electric Terrain
+fieldstart|move:Electric Terrain|from:Start
+fieldstart|move:Grassy Terrain
+fieldstart|move:Gravity
+fieldstart|move:Ion Deluge
+fieldstart|move:Magic Room
+fieldstart|move:Misty Terrain
+fieldstart|move:Mud Sport
+fieldstart|move:Psychic Terrain
+fieldstart|move:Trick Room
+fieldstart|move:Water Sport
+fieldstart|move:Wonder Room
+forfeited
+formechange|from:Faint
+formechange|from:ability:Battle Bond
+formechange|from:ability:Disguise
+formechange|from:ability:Flower Gift
+formechange|from:ability:Forecast
+formechange|from:ability:Gulp Missile
+formechange|from:ability:Hunger Switch
+formechange|from:ability:Ice Face
+formechange|from:ability:Multitype
+formechange|from:ability:Power Construct
+formechange|from:ability:RKS System
+formechange|from:ability:Schooling
+formechange|from:ability:Shields Down
+formechange|from:ability:Stance Change
+formechange|from:ability:Tera Shift
+formechange|from:ability:Zen Mode
+formechange|from:ability:Zero to Hero
+formechange|from:move:Relic Song
+formechange|from:species:Dialga
+formechange|from:species:Dialga-Origin
+formechange|from:species:Giratina
+formechange|from:species:Giratina-Origin
+formechange|from:species:Ogerpon
+formechange|from:species:Ogerpon-Cornerstone-Mask
+formechange|from:species:Ogerpon-Hearthflame-Mask
+formechange|from:species:Ogerpon-Teal-Mask-Tera
+formechange|from:species:Ogerpon-Wellspring-Mask
+formechange|from:species:Palkia
+formechange|from:species:Palkia-Origin
+formechange|from:species:Shaymin-Sky
+formechange|from:species:Terapagos-Terastal
+formechange|from:species:Xerneas
+formechange|from:species:Xerneas-Neutral
+formechange|from:species:Zacian
+formechange|from:species:Zacian-Crowned
+formechange|from:species:Zamazenta
+formechange|from:species:Zamazenta-Crowned
+gigantamax
+heal
+heal|from:Drain
+heal|from:Heal
+heal|from:Z-Power
+heal|from:ability:Cheek Pouch
+heal|from:ability:Dry Skin
+heal|from:ability:Earth Eater
+heal|from:ability:Hospitality
+heal|from:ability:Ice Body
+heal|from:ability:Poison Heal
+heal|from:ability:Rain Dish
+heal|from:ability:Regenerator
+heal|from:ability:Volt Absorb
+heal|from:item:Aguav Berry
+heal|from:item:Berry Juice
+heal|from:item:Black Sludge
+heal|from:item:Full Restore
+heal|from:item:Leftovers
+heal|from:item:Max Potion
+heal|from:item:Oran Berry
+heal|from:item:Potion
+heal|from:item:Shell Bell
+heal|from:item:Sitrus Berry
+heal|from:item:Sweet Heart
+heal|from:move:Aqua Ring
+heal|from:move:Electric Terrain
+heal|from:move:Grassy Terrain
+heal|from:move:Healing Wish
+heal|from:move:Ingrain
+heal|from:move:Leech Seed
+heal|from:move:Lunar Dance
+heal|from:move:Misty Terrain
+heal|from:move:Psychic Terrain
+heal|from:move:Wish
+hitcount
+immune
+info|battletype:*
+info|environment:*
+info|rule:*
+invertboosts
+itemend|from:move:Bug Bite|item:*
+itemend|from:move:Covet|item:*
+itemend|from:move:Switcheroo|item:*
+itemend|item:*|from:ability:Magician
+itemend|item:*|from:ability:Pickpocket
+itemend|item:*|from:ability:Symbiosis
+itemend|item:*|from:item:Sticky Barb
+itemend|item:*|from:move:Bestow
+itemend|item:*|from:move:Corrosive Gas
+itemend|item:*|from:move:Fling|silent
+itemend|item:*|from:move:Incinerate
+itemend|item:*|from:move:Knock Off
+itemend|item:*|from:move:Pluck
+itemend|item:*|from:move:Switcheroo
+itemend|item:*|from:move:Thief
+itemend|item:*|from:move:Trick
+itemend|item:Absorb Bulb
+itemend|item:Aguav Berry|eat
+itemend|item:Air Balloon
+itemend|item:Berry Juice
+itemend|item:Blunder Policy
+itemend|item:Booster Energy
+itemend|item:Bug Gem
+itemend|item:Cell Battery
+itemend|item:Cheri Berry|eat
+itemend|item:Chilan Berry|eat
+itemend|item:Custap Berry|eat
+itemend|item:Dark Gem
+itemend|item:Dragon Gem
+itemend|item:Eject Button
+itemend|item:Eject Pack
+itemend|item:Electric Gem
+itemend|item:Electric Seed
+itemend|item:Enigma Berry|eat
+itemend|item:Fairy Gem
+itemend|item:Fighting Gem
+itemend|item:Fire Gem
+itemend|item:Flying Gem
+itemend|item:Focus Sash
+itemend|item:Ganlon Berry|eat
+itemend|item:Ghost Gem
+itemend|item:Grass Gem
+itemend|item:Grassy Seed
+itemend|item:Ground Gem
+itemend|item:Haban Berry|eat
+itemend|item:Ice Gem
+itemend|item:Jaboca Berry|eat
+itemend|item:Kasib Berry|eat
+itemend|item:Kee Berry|eat
+itemend|item:Leppa Berry|eat
+itemend|item:Liechi Berry|eat
+itemend|item:Lum Berry|eat
+itemend|item:Luminous Moss
+itemend|item:Maranga Berry|eat
+itemend|item:Mental Herb
+itemend|item:Micle Berry|eat
+itemend|item:Mirror Herb
+itemend|item:Misty Seed
+itemend|item:Normal Gem
+itemend|item:Occa Berry|eat
+itemend|item:Oran Berry|eat
+itemend|item:Passho Berry|eat
+itemend|item:Poison Gem
+itemend|item:Power Herb
+itemend|item:Psychic Gem
+itemend|item:Psychic Seed
+itemend|item:Rawst Berry|eat
+itemend|item:Red Card
+itemend|item:Rock Gem
+itemend|item:Room Service
+itemend|item:Rowap Berry|eat
+itemend|item:Sitrus Berry|eat
+itemend|item:Snowball
+itemend|item:Starf Berry|eat
+itemend|item:Steel Gem
+itemend|item:Throat Spray
+itemend|item:Water Gem
+itemend|item:Weakness Policy
+itemend|item:White Herb
+itemstart|from:move:Covet|item:*
+itemstart|from:move:Switcheroo|item:*
+itemstart|item:*|from:ability:Ball Fetch
+itemstart|item:*|from:ability:Harvest
+itemstart|item:*|from:ability:Magician
+itemstart|item:*|from:ability:Pickpocket
+itemstart|item:*|from:ability:Pickup
+itemstart|item:*|from:ability:Symbiosis
+itemstart|item:*|from:item:Sticky Barb
+itemstart|item:*|from:move:Bestow
+itemstart|item:*|from:move:G-Max Replenish
+itemstart|item:*|from:move:Recycle
+itemstart|item:*|from:move:Switcheroo
+itemstart|item:*|from:move:Thief
+itemstart|item:*|from:move:Trick
+item|item:Air Balloon
+item|item:Cheri Berry|from:ability:Frisk
+item|item:Life Orb|from:ability:Frisk
+learnedmove|move:*
+learnedmove|move:*|forgot:*
+levelup
+maxsidelength
+mega
+mega|from:move:Dragon Ascent
+miss
+mon
+move
+move|from:ability:Dancer
+move|from:ability:Magic Bounce
+move|from:move:Assist
+move|from:move:Assist|zpower
+move|from:move:Copycat
+move|from:move:Copycat|zpower
+move|from:move:Grass Pledge
+move|from:move:Instruct
+move|from:move:Magic Coat
+move|from:move:Me First
+move|from:move:Me First|zpower
+move|from:move:Metronome
+move|from:move:Metronome|zpower
+move|from:move:Mirror Move
+move|from:move:Mirror Move|zpower
+move|from:move:Nature Power
+move|from:move:Round
+move|from:move:Sleep Talk
+move|from:move:Sleep Talk|zpower
+move|from:move:Snatch
+move|from:move:Water Pledge
+move|notarget
+move|zpower
+ohko
+player
+prepare|move:Bounce
+prepare|move:Chilly Reception
+prepare|move:Dig
+prepare|move:Dive
+prepare|move:Electro Shot
+prepare|move:Fly
+prepare|move:Freeze Shock
+prepare|move:Geomancy
+prepare|move:Ice Burn
+prepare|move:Meteor Beam
+prepare|move:Phantom Force
+prepare|move:Razor Wind
+prepare|move:Shadow Force
+prepare|move:Skull Bash
+prepare|move:Sky Attack
+prepare|move:Sky Drop
+prepare|move:Solar Beam
+prepare|move:Solar Blade
+primal
+protectweaken
+removepseudoweather|condition:*
+removesidecondition|condition:*
+removeslotcondition|condition:*
+removevolatile|volatile:*
+replace
+resettypechange
+residual
+resisted
+resisted|battletype:singles
+restorepp|move:*
+revertdynamax
+revertgigantamax
+revertmega
+revertprimal
+reverttera
+revertultra
+revive|from:item:*
+revive|from:move:Revival Blessing
+sethp
+setpp|move:*|from:move:Grudge
+side
+sideend|move:Aurora Veil
+sideend|move:Brick Break
+sideend|move:Defog
+sideend|move:Fire Pledge
+sideend|move:G-Max Cannonade
+sideend|move:G-Max Steelsurge
+sideend|move:G-Max Vine Lash
+sideend|move:G-Max Volcalith
+sideend|move:G-Max Wildfire
+sideend|move:Grass Pledge
+sideend|move:Light Screen
+sideend|move:Lucky Chant
+sideend|move:Mist
+sideend|move:Mortal Spin
+sideend|move:Psychic Fangs
+sideend|move:Raging Bull
+sideend|move:Rapid Spin
+sideend|move:Reflect
+sideend|move:Safeguard
+sideend|move:Spikes
+sideend|move:Stealth Rock
+sideend|move:Sticky Web
+sideend|move:Tailwind
+sideend|move:Tidy Up
+sideend|move:Toxic Spikes
+sideend|move:Water Pledge
+sidestart|move:Aurora Veil
+sidestart|move:Fire Pledge
+sidestart|move:G-Max Cannonade
+sidestart|move:G-Max Resonance
+sidestart|move:G-Max Steelsurge
+sidestart|move:G-Max Stonesurge
+sidestart|move:G-Max Vine Lash
+sidestart|move:G-Max Volcalith
+sidestart|move:G-Max Wildfire
+sidestart|move:Grass Pledge
+sidestart|move:Light Screen
+sidestart|move:Lucky Chant
+sidestart|move:Mist
+sidestart|move:Pursuit
+sidestart|move:Reflect
+sidestart|move:Safeguard
+sidestart|move:Spikes
+sidestart|move:Stealth Rock
+sidestart|move:Sticky Web
+sidestart|move:Tailwind
+sidestart|move:Toxic Spikes
+sidestart|move:Water Pledge
+singlemove|move:Destiny Bond
+singlemove|move:Glaive Rush
+singlemove|move:Grudge
+singleturn|condition:Protect Move Condition Base
+singleturn|condition:Z-Power
+singleturn|from:Z-Power|move:Spotlight
+singleturn|move:Beak Blast
+singleturn|move:Crafty Shield
+singleturn|move:Electrify
+singleturn|move:Endure
+singleturn|move:Focus Punch
+singleturn|move:Follow Me
+singleturn|move:Follow Me|from:Z-Power
+singleturn|move:Helping Hand
+singleturn|move:Instruct
+singleturn|move:Magic Coat
+singleturn|move:Mat Block
+singleturn|move:Max Guard
+singleturn|move:Powder
+singleturn|move:Protect
+singleturn|move:Quick Guard
+singleturn|move:Roost
+singleturn|move:Shell Trap
+singleturn|move:Snatch
+singleturn|move:Spotlight
+singleturn|move:Wide Guard
+slotend|condition:Future Move
+slotend|condition:Heal Replacement
+slotend|condition:Z-Power
+slotend|move:Doom Desire
+slotend|move:Future Sight
+slotend|move:Healing Wish
+slotend|move:Lunar Dance
+slotend|move:Wish
+slotstart|condition:Future Move
+slotstart|condition:Heal Replacement
+slotstart|condition:Z-Power
+slotstart|move:Doom Desire
+slotstart|move:Future Sight
+slotstart|move:Healing Wish
+slotstart|move:Lunar Dance
+slotstart|move:Wish
+specieschange
+specieschange|status:Bad Poison
+specieschange|status:Burn
+specieschange|status:Freeze
+specieschange|status:Paralysis
+specieschange|status:Poison
+specieschange|status:Sleep
+split
+start|ability:Flash Fire
+start|ability:Flash Fire|silent
+start|ability:Protosynthesis
+start|ability:Quark Drive
+start|ability:Slow Start
+start|ability:Supreme Overlord
+start|ability:Supreme Overlord|silent
+start|ability:Zen Mode
+start|condition:Commanding
+start|condition:Confusion
+start|condition:Confusion|fatigue
+start|condition:Highlighting Sample
+start|condition:Immobilized
+start|move:Aqua Ring
+start|move:Attract
+start|move:Autotomize
+start|move:Bide
+start|move:Charge
+start|move:Curse
+start|move:Disable
+start|move:Disable|disabledmove:*
+start|move:Dragon Cheer
+start|move:Dragon Cheer|silent
+start|move:Embargo
+start|move:Encore
+start|move:Focus Energy
+start|move:Focus Energy|from:Z-Power
+start|move:Focus Energy|silent
+start|move:Foresight
+start|move:G-Max Chi Strike
+start|move:Heal Block
+start|move:Imprison
+start|move:Ingrain
+start|move:Laser Focus
+start|move:Leech Seed
+start|move:Magnet Rise
+start|move:Mimic
+start|move:Miracle Eye
+start|move:Nightmare
+start|move:No Retreat
+start|move:Octolock
+start|move:Perish Song
+start|move:Power Trick
+start|move:Salt Cure
+start|move:Sky Drop|silent
+start|move:Smack Down
+start|move:Stockpile
+start|move:Substitute
+start|move:Syrup Bomb
+start|move:Tar Shot
+start|move:Taunt
+start|move:Telekinesis
+start|move:Throat Chop
+start|move:Throat Chop|silent
+start|move:Torment
+start|move:Uproar
+start|move:Uproar|residual
+start|move:Yawn
+status|from:Disobedience|status:Bad Poison
+status|from:Disobedience|status:Burn
+status|from:Disobedience|status:Freeze
+status|from:Disobedience|status:Paralysis
+status|from:Disobedience|status:Poison
+status|status:Bad Poison
+status|status:Burn
+status|status:Freeze
+status|status:Paralysis
+status|status:Poison
+status|status:Sleep
+status|status:Sleep|from:Disobedience
+supereffective
+supereffective|battletype:singles
+swap
+swapboosts|from:move:Guard Swap
+swapboosts|from:move:Heart Swap
+swapboosts|from:move:Power Swap
+swapplayer
+swapsideconditions|from:move:Court Change
+swapsidecondition|condition:*|from:move:Court Change
+switch
+switchout
+switchout|copysubstitute
+switchout|copyvolatile
+teampreview
+teampreviewstart
+teamsize
+tera|type:*
+tie
+transform
+transform|from:ability:Imposter
+turn
+turnlimit
+typechange|types:*
+typechange|types:*|from:move:Burn Up
+typechange|types:*|from:move:Camouflage
+typechange|types:*|from:move:Conversion
+typechange|types:*|from:move:Conversion 2
+typechange|types:*|from:move:Double Shock
+typechange|types:*|from:move:Reflect Type
+typechange|types:*|from:move:Soak
+typechange|types:None|from:move:Burn Up
+typechange|types:None|from:move:Reflect Type
+ultra|from:item:Ultranecrozium Z
+unboost|by:0
+unboost|by:1
+unboost|by:2
+unboost|by:3plus
+unboost|by:3plus|min
+uncatchable
+uncatchable|thief
+useitem
+waiting
+weather|from:Start|weather:Extremely Harsh Sunlight
+weather|from:Start|weather:Hail
+weather|from:Start|weather:Harsh Sunlight
+weather|from:Start|weather:Heavy Rain
+weather|from:Start|weather:Rain
+weather|from:Start|weather:Sandstorm
+weather|from:Start|weather:Snow
+weather|from:Start|weather:Strong Winds
+weather|weather:Extremely Harsh Sunlight
+weather|weather:Extremely Harsh Sunlight|residual
+weather|weather:Hail
+weather|weather:Hail|from:Start
+weather|weather:Hail|residual
+weather|weather:Harsh Sunlight
+weather|weather:Harsh Sunlight|from:Start
+weather|weather:Harsh Sunlight|residual
+weather|weather:Heavy Rain
+weather|weather:Heavy Rain|residual
+weather|weather:Rain
+weather|weather:Rain|from:Start
+weather|weather:Rain|residual
+weather|weather:Sandstorm
+weather|weather:Sandstorm|from:Start
+weather|weather:Sandstorm|residual
+weather|weather:Snow
+weather|weather:Snow|from:Start
+weather|weather:Snow|residual
+weather|weather:Strong Winds
+weather|weather:Strong Winds|residual
+win

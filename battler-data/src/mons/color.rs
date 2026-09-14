@@ -5,6 +5,8 @@ use serde_string_enum::{
 
 /// A defined enumeration of species colors.
 #[derive(Debug, Clone, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum Color {
     #[string = "Red"]
     Red,

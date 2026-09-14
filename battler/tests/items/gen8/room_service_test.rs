@@ -70,7 +70,7 @@ fn room_service_lowers_speed_in_trick_room() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Rillaboom,player-1,1|name:Trick Room",
-            "fieldstart|move:Trick Room",
+            "fieldstart|move:Trick Room|of:Rillaboom,player-1,1",
             "itemend|mon:Rillaboom,player-1,1|item:Room Service",
             "unboost|mon:Rillaboom,player-1,1|stat:spe|by:1|from:item:Room Service",
             "itemend|mon:Rillaboom,player-2,1|item:Room Service",

@@ -75,7 +75,7 @@
       "callbacks": {
         "on_any_try_move": [
           "if [explosion, mindblown, mistyexplosion, selfdestruct] has $move.id:",
-          ["log_cant: with_source use_effect_state_target_as_source", "return stopfail"]
+          ["log_cant: with_move with_source use_effect_state_target_as_source", "return stopfail"]
         ],
         "on_any_damage": ["if $effect.id == aftermath:", ["return 0"]]
       }
@@ -551,7 +551,7 @@
           ],
           "require !$targets.is_empty else return",
           "$target = func_call(sample: $targets)",
-          "set_ability: $mon $target.ability"
+          "set_ability: $mon $target.ability $target"
         ]
       }
     }

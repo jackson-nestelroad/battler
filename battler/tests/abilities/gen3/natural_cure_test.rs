@@ -117,23 +117,23 @@ fn natural_cure_heals_status_on_battle_end() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Budew,player-2,1|name:Will-O-Wisp|target:Roselia,player-1,1",
-            "status|mon:Roselia,player-1,1|status:Burn",
-            "split|side:0",
-            "damage|mon:Roselia,player-1,1|from:status:Burn|health:104/110",
-            "damage|mon:Roselia,player-1,1|from:status:Burn|health:95/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Roselia,player-1,1|name:Flamethrower|target:Budew,player-2,1",
-            "supereffective|mon:Budew,player-2,1",
-            "split|side:1",
-            "damage|mon:Budew,player-2,1|health:0",
-            "damage|mon:Budew,player-2,1|health:0",
-            "faint|mon:Budew,player-2,1",
-            "curestatus|mon:Roselia,player-1,1|status:Burn|from:ability:Natural Cure",
-            "win|side:0"
-        ]"#,
+                "move|mon:Budew,player-2,1|name:Will-O-Wisp|target:Roselia,player-1,1",
+                "status|mon:Roselia,player-1,1|status:Burn",
+                "residual",
+                "split|side:0",
+                "damage|mon:Roselia,player-1,1|from:status:Burn|health:104/110",
+                "damage|mon:Roselia,player-1,1|from:status:Burn|health:95/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Roselia,player-1,1|name:Flamethrower|target:Budew,player-2,1",
+                "supereffective|mon:Budew,player-2,1",
+                "split|side:1",
+                "damage|mon:Budew,player-2,1|health:0",
+                "damage|mon:Budew,player-2,1|health:0",
+                "faint|mon:Budew,player-2,1",
+                "curestatus|mon:Roselia,player-1,1|status:Burn|from:ability:Natural Cure",
+                "win|side:0"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -1,0 +1,358 @@
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.monName {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.speciesSubtitle {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.levelBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.genderMale {
+  color: var(--color-type-water);
+  font-weight: 700;
+  font-size: var(--font-size-s);
+}
+
+.genderFemale {
+  color: var(--color-type-psychic);
+  font-weight: 700;
+  font-size: var(--font-size-s);
+}
+
+.shinyStar {
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+}
+
+.ballTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  transition: var(--transition-fast);
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.ballIcon {
+  width: var(--font-size-l);
+  height: var(--font-size-l);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.ownerText {
+  font-size: var(--font-size-xxs);
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: var(--spacing-xxs);
+}
+
+.headerTraits {
+  margin-top: var(--spacing-xxs);
+}
+
+/* Special battle mechanic badge (Active Terastallization) */
+.specialBadge {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.teraBadge {
+  background-color: var(--color-badge-tera-bg);
+  border-color: var(--color-badge-tera-border);
+  color: var(--color-badge-tera-text);
+}
+
+.baseTypesPill,
+.teraPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+  width: fit-content;
+}
+
+.baseTypesPill {
+  background-color: var(--color-secondary-bg);
+  border-color: var(--color-secondary-border);
+}
+
+.teraPill {
+  background-color: var(--color-badge-tera-bg);
+  border-color: var(--color-badge-tera-border);
+}
+
+.baseTypesLabel,
+.teraPillLabel {
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.baseTypesLabel {
+  color: var(--text-secondary);
+}
+
+.teraPillLabel {
+  color: var(--color-badge-tera-text);
+}
+
+.healthSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  padding: var(--spacing-xs) 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.healthMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+}
+
+.hpText {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.expSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  margin-top: var(--spacing-xxs);
+}
+
+.expMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xxs);
+}
+
+.expLabel {
+  color: var(--color-info);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.expText {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.expToNext {
+  color: var(--text-muted);
+}
+
+/* Base modifier badge (Boosts, volatiles, and conditions) */
+.modifierBadge {
+  font-size: var(--font-size-xxs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.boostBadgePositive {
+  font-weight: 700;
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success-border);
+  color: var(--color-success-text);
+}
+
+.boostBadgeNegative {
+  font-weight: 700;
+  background-color: var(--color-danger-bg);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+}
+
+.conditionBadge {
+  background-color: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info-text);
+}
+
+.dynamaxBadge {
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--color-badge-dynamax-bg);
+  border-color: var(--color-badge-dynamax-border);
+  color: var(--color-badge-dynamax-text);
+}
+
+.transformedBadge {
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: var(--color-badge-transformed-bg);
+  border-color: var(--color-badge-transformed-border);
+  color: var(--color-badge-transformed-text);
+}
+
+.natureModifierPlus {
+  color: var(--color-success);
+  margin-left: var(--spacing-xs);
+}
+
+.natureModifierMinus {
+  color: var(--color-danger);
+  margin-left: var(--spacing-xxs);
+}
+
+.movesSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.movesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xs);
+}
+
+.moveTrigger {
+  display: flex;
+  width: 100%;
+}
+
+.moveSlot {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xs);
+  padding: var(--spacing-xs) var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-xxs);
+  overflow: hidden;
+
+  &.moveDisabled {
+    opacity: 0.4;
+  }
+}
+
+.moveName {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moveMeta {
+  font-size: var(--font-size-xxs);
+  color: var(--text-secondary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-xs);
+}
+
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+
+  th {
+    font-size: var(--font-size-xxs);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: right;
+    padding: var(--spacing-xxs) var(--spacing-xs);
+
+    &:first-child {
+      text-align: left;
+    }
+  }
+
+  td {
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    text-align: right;
+    color: var(--text-secondary);
+
+    &:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    &.statVal {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    &.statPlus {
+      color: var(--color-success);
+    }
+
+    &.statMinus {
+      color: var(--color-danger);
+    }
+
+    &.statBoostPos {
+      color: var(--color-success);
+      font-weight: 600;
+    }
+
+    &.statBoostNeg {
+      color: var(--color-danger);
+      font-weight: 600;
+    }
+  }
+}

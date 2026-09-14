@@ -75,6 +75,20 @@ pub fn side_conditions<'s>(
         .map(|s| s.as_str()))
 }
 
+/// The slot conditions on a side of a battle for a given slot.
+pub fn slot_conditions<'s>(
+    state: &'s BattleState,
+    side: usize,
+    slot: usize,
+) -> Result<impl Iterator<Item = &'s str>> {
+    Ok(side_or_else(state, side)?
+        .slot_conditions
+        .get(slot)
+        .into_iter()
+        .flat_map(|conditions| conditions.keys())
+        .map(|s| s.as_str()))
+}
+
 fn side_and_player_or_else<'s>(
     state: &'s BattleState,
     player: &str,
@@ -248,6 +262,18 @@ pub fn mon_item<'s>(
         .filter(|s| !s.is_empty()))
 }
 
+/// The previous item of a Mon.
+pub fn mon_previous_item<'s>(
+    state: &'s BattleState,
+    mon: &MonBattleAppearanceReference,
+) -> Result<Option<&'s str>> {
+    Ok(mon_battle_appearance_or_else(state, mon)?
+        .previous_item
+        .known()
+        .map(|s| s.as_str())
+        .filter(|s| !s.is_empty()))
+}
+
 /// The species of a Mon.
 pub fn mon_species<'s>(
     state: &'s BattleState,
@@ -351,6 +377,14 @@ pub fn mon_is_active(state: &BattleState, mon: &MonBattleAppearanceReference) ->
     Ok(mon_active_position(state, mon)?.is_some())
 }
 
+/// Checks if a Mon is currently Dynamaxed.
+pub fn mon_is_dynamaxed(state: &BattleState, mon: &MonBattleAppearanceReference) -> Result<bool> {
+    Ok(mon_or_else(state, mon)?
+        .volatile_data
+        .conditions
+        .contains_key("Dynamax"))
+}
+
 /// Resolves a side and slot position to a Mon reference.
 pub fn active_mon_by_position(
     state: &BattleState,
@@ -369,6 +403,17 @@ pub fn player_mons<'s>(
     Ok(player_or_else(state, player)?.mons.iter())
 }
 
+/// Returns an iterator of Mons brought to battle by a player.
+pub fn player_brought_mons<'s>(
+    state: &'s BattleState,
+    player: &str,
+) -> Result<impl Iterator<Item = &'s Mon> + 's> {
+    Ok(player_or_else(state, player)?
+        .mons
+        .iter()
+        .filter(|mon| mon.brought))
+}
+
 /// Returns an iterator of all players on a side.
 pub fn side_players<'s>(
     state: &'s BattleState,
@@ -377,7 +422,7 @@ pub fn side_players<'s>(
     Ok(side_or_else(state, side)?.players.values())
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod state_selectors_test {
     use alloc::{
         borrow::ToOwned,
@@ -1221,6 +1266,46 @@ mod state_selectors_test {
                 }
             ),
             Ok(None)
+        );
+    }
+
+    #[test]
+    fn returns_mon_is_dynamaxed() {
+        let state = BattleState {
+            field: Field {
+                sides: Vec::from_iter([Side {
+                    players: BTreeMap::from_iter([(
+                        "player-1".to_owned(),
+                        Player {
+                            mons: Vec::from_iter([Mon {
+                                volatile_data: MonVolatileData {
+                                    conditions: BTreeMap::from_iter([(
+                                        "Dynamax".to_owned(),
+                                        ConditionData::default(),
+                                    )]),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            }]),
+                            ..Default::default()
+                        },
+                    )]),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_matches::assert_matches!(
+            mon_is_dynamaxed(
+                &state,
+                &MonBattleAppearanceReference {
+                    player: "player-1".to_owned(),
+                    mon_index: 0,
+                    battle_appearance_index: 0,
+                }
+            ),
+            Ok(true)
         );
     }
 

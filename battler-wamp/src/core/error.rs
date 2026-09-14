@@ -87,13 +87,27 @@ impl WampError {
 
 impl Into<WampError> for Error {
     fn into(self) -> WampError {
-        WampError::new(uri_for_error(&self), self.to_string())
+        match self.downcast::<WampError>() {
+            Ok(error) => error,
+            Err(err) => {
+                if let Some(error) = err.downcast_ref::<ChannelTransmittableError>() {
+                    return error.error.clone();
+                }
+                WampError::new(uri_for_error(&err), format!("{err:#}"))
+            }
+        }
     }
 }
 
 impl Into<WampError> for &Error {
     fn into(self) -> WampError {
-        WampError::new(uri_for_error(self), self.to_string())
+        if let Some(error) = self.downcast_ref::<WampError>() {
+            return error.clone();
+        }
+        if let Some(error) = self.downcast_ref::<ChannelTransmittableError>() {
+            return error.error.clone();
+        }
+        WampError::new(uri_for_error(self), format!("{self:#}"))
     }
 }
 
@@ -392,7 +406,7 @@ impl From<&Error> for ChannelTransmittableError {
             };
         }
         Self {
-            error: WampError::new(uri_for_error(value), value.to_string()),
+            error: WampError::new(uri_for_error(value), format!("{value:#}")),
             request_id: None,
             arguments: List::default(),
             arguments_keyword: Dictionary::default(),

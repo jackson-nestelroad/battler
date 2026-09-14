@@ -10,7 +10,6 @@ ahash = { workspace = true }
 anyhow = { workspace = true }
 itertools = { workspace = true }
 pretty_assertions = { workspace = true }
-pretty_assertions_sorted = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing-core = { workspace = true }

@@ -1,36 +1,26 @@
-import { EventEmitter } from "events";
 import autobahn from "autobahn";
-import { newBattleState, alterBattleState, BattleState } from "battler-state";
 import {
-  BattlerServiceClient,
   Battle,
-  Request,
+  BattlerServiceClient,
   LogEntry,
-  PlayerValidation,
-  TeamData,
   PlayerBattleData,
+  Request,
+  TeamData,
 } from "battler-service-client";
+import { alterBattleState, BattleState, newBattleState } from "battler-state";
+import { EventEmitter } from "events";
 
 export type Role = { type: "spectator"; side: undefined } | { type: "player"; side: number };
 
 export * from "./choice-builder.js";
 
-export interface BattlerClient {
-  on(event: "update", listener: () => void): this;
-  on(event: "request", listener: (request: Request | null) => void): this;
-  on(event: "end", listener: () => void): this;
-  on(event: "error", listener: (err: any) => void): this;
-
-  once(event: "update", listener: () => void): this;
-  once(event: "request", listener: (request: Request | null) => void): this;
-  once(event: "end", listener: () => void): this;
-  once(event: "error", listener: (err: any) => void): this;
-
-  off(event: "update", listener: () => void): this;
-  off(event: "request", listener: (request: Request | null) => void): this;
-  off(event: "end", listener: () => void): this;
-  off(event: "error", listener: (err: any) => void): this;
-}
+export type BattlerClientEvents = {
+  update: () => void;
+  request: (request: Request | null) => void;
+  end: () => void;
+  deleted: () => void;
+  error: (err: unknown) => void;
+};
 
 export function getRoleForPlayer(battle: Battle, player: string): Role {
   for (let i = 0; i < battle.sides.length; i++) {
@@ -45,7 +35,7 @@ export function getRoleForPlayer(battle: Battle, player: string): Role {
 function isLogFilled(logLines: string[]): boolean {
   if (logLines.length === 0) return true;
   for (let i = 0; i < logLines.length; i++) {
-    if (logLines[i] === undefined || logLines[i] === "") {
+    if (logLines[i] === undefined) {
       return false;
     }
   }
@@ -65,21 +55,26 @@ async function backfillLog(
 }
 
 function updateBattleState(state: BattleState, logLines: string[]): BattleState {
-  const lines: string[] = [];
-  for (let i = 0; i < logLines.length; i++) {
-    lines.push(logLines[i] ?? "");
-  }
-  return alterBattleState(state, lines);
+  const lines = logLines.filter((l) => l !== undefined);
+  return alterBattleState(newBattleState(), lines);
+}
+
+function signalsBattleEnded(entry: string): boolean {
+  return entry === "-battlerservice:done" || entry.startsWith("-battlerservice:dropped");
 }
 
 export class BattlerClient extends EventEmitter {
   private subscription?: autobahn.Subscription;
   private logLines: string[] = [];
   private currentBattleState: BattleState;
-  private role: Role;
+  private _role: Role;
   private isCanceled = false;
-  private lastEmittedRequest: string | null = null;
+  private currentRequest: Request | null = null;
   private stateUpdatePromise: Promise<void> | null = null;
+  private hasDoneSignal = false;
+  private hasEmittedEndSignal = false;
+  private hasDeletedSignal = false;
+  private hasPendingRequestSignal = false;
 
   private constructor(
     public readonly battleId: string,
@@ -89,7 +84,7 @@ export class BattlerClient extends EventEmitter {
     initialLogLines: string[],
   ) {
     super();
-    this.role = role;
+    this._role = role;
     this.logLines = initialLogLines;
     this.currentBattleState = newBattleState();
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
@@ -110,7 +105,8 @@ export class BattlerClient extends EventEmitter {
   }
 
   private async init(): Promise<void> {
-    this.subscription = await this.service.subscribe(this.battleId, this.role.side, (entry) => {
+    const side = this._role.side;
+    this.subscription = await this.service.subscribe(this.battleId, side, (entry) => {
       this.processLogEntry(entry).catch((err) => {
         this.emit("error", err);
       });
@@ -123,6 +119,18 @@ export class BattlerClient extends EventEmitter {
     if (this.isCanceled) return;
 
     this.logLines[entry.index] = entry.content;
+
+    if (entry?.content === "-battlerservice:request") {
+      this.hasPendingRequestSignal = true;
+    }
+
+    if (entry?.content && signalsBattleEnded(entry.content)) {
+      this.hasDoneSignal = true;
+    }
+
+    if (entry.content === "-battlerservice:deleted") {
+      this.hasDeletedSignal = true;
+    }
 
     if (!this.stateUpdatePromise) {
       this.stateUpdatePromise = Promise.resolve().then(async () => {
@@ -140,49 +148,92 @@ export class BattlerClient extends EventEmitter {
     if (this.isCanceled) return;
 
     if (!isLogFilled(this.logLines)) {
-      await backfillLog(this.logLines, this.service, this.battleId, this.role.side);
+      await backfillLog(this.logLines, this.service, this.battleId, this._role.side);
+      if (!isLogFilled(this.logLines)) {
+        throw new Error("Failed to backfill missing battle log entries");
+      }
+      if (this.logLines.some((l) => l === "-battlerservice:request")) {
+        this.hasPendingRequestSignal = true;
+      }
+      if (this.logLines.some((l) => l && signalsBattleEnded(l))) {
+        this.hasDoneSignal = true;
+      }
+      if (this.logLines.some((l) => l === "-battlerservice:deleted")) {
+        this.hasDeletedSignal = true;
+      }
     }
 
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
     this.emit("update");
-
-    if (this.currentBattleState.phase === "finished") {
-      this.emit("end");
-      await this.cancel();
-      return;
+    if (this.hasPendingRequestSignal) {
+      this.hasPendingRequestSignal = false;
+      this.checkAndEmitRequest().catch(() => {});
     }
 
-    const caughtUp = await this.caughtUp();
-    if (caughtUp && this.lastLogIndex() > 0) {
-      await this.checkAndEmitRequest();
+    if (this.hasDoneSignal && !this.hasEmittedEndSignal) {
+      this.hasEmittedEndSignal = true;
+      this.emit("end");
+    }
+
+    if (this.hasDeletedSignal) {
+      this.emit("deleted");
+      await this.cancel();
+      return;
     }
   }
 
   private async ensureCaughtUp(): Promise<void> {
-    await backfillLog(this.logLines, this.service, this.battleId, this.role.side);
+    await backfillLog(this.logLines, this.service, this.battleId, this._role.side);
     this.currentBattleState = updateBattleState(this.currentBattleState, this.logLines);
     this.emit("update");
   }
 
   private async checkAndEmitRequest(): Promise<void> {
-    if (this.role.type === "spectator") return;
-    const request = await this.service.request(this.battleId, this.player);
-    const requestStr = JSON.stringify(request);
-    if (requestStr !== this.lastEmittedRequest) {
-      this.lastEmittedRequest = requestStr;
-      this.emit("request", request);
+    if (this._role.type === "spectator") return;
+    const request = await this.fetchRequest();
+    this.emit("request", request);
+  }
+
+  override on<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.on(event, listener as (...args: unknown[]) => void);
+  }
+
+  override once<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.once(event, listener as (...args: unknown[]) => void);
+  }
+
+  override off<E extends keyof BattlerClientEvents>(event: E, listener: BattlerClientEvents[E]): this {
+    return super.off(event, listener as (...args: unknown[]) => void);
+  }
+
+  override emit<E extends keyof BattlerClientEvents>(
+    event: E,
+    ...args: Parameters<BattlerClientEvents[E]>
+  ): boolean {
+    return super.emit(event, ...args);
+  }
+
+  async sync(): Promise<void> {
+    if (this.subscription) {
+      try {
+        await this.service.unsubscribe(this.subscription);
+      } catch {
+        // Ignore unsubscribe errors if previous session died
+      }
+      this.subscription = undefined;
     }
+    const side = this._role.side;
+    this.subscription = await this.service.subscribe(this.battleId, side, (entry) => {
+      this.processLogEntry(entry).catch((err) => {
+        this.emit("error", err);
+      });
+    });
+    await this.ensureCaughtUp();
+    await this.checkAndEmitRequest();
   }
 
-  async caughtUp(): Promise<boolean> {
-    const lastLogIndex = this.lastLogIndex();
-    const lastEntry = await this.service.lastLogEntry(this.battleId, this.role.side);
-    const lastPossibleLogIndex = lastEntry ? lastEntry[0] : 0;
-    return lastLogIndex === lastPossibleLogIndex;
-  }
-
-  async readyForBattle(): Promise<PlayerValidation> {
-    return this.service.validatePlayer(this.battleId, this.player);
+  getLogs(): string[] {
+    return [...this.logLines];
   }
 
   async updateTeam(team: TeamData): Promise<void> {
@@ -195,14 +246,34 @@ export class BattlerClient extends EventEmitter {
 
   async makeChoice(choice: string): Promise<void> {
     await this.service.makeChoice(this.battleId, this.player, choice);
+    this.currentRequest = null;
   }
 
   async playerData(): Promise<PlayerBattleData> {
     return this.service.playerData(this.battleId, this.player);
   }
 
+  async fetchRequest(): Promise<Request | null> {
+    if (this._role.type === "spectator") return null;
+    try {
+      const request = await this.service.request(this.battleId, this.player);
+      this.currentRequest = request;
+      return request;
+    } catch {
+      return null;
+    }
+  }
+
+  request(): Request | null {
+    return this.currentRequest;
+  }
+
   state(): BattleState {
     return this.currentBattleState;
+  }
+
+  role(): Role {
+    return this._role;
   }
 
   lastLogIndex(): number {

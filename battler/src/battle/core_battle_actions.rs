@@ -326,6 +326,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
             None,
             None,
         )?,
+        None,
         true,
     )?;
     start_item(
@@ -334,6 +335,7 @@ pub fn run_switch_in_events(context: &mut MonContext) -> Result<()> {
             None,
             None,
         )?,
+        None,
         true,
     )?;
 
@@ -437,12 +439,13 @@ pub fn do_move_action(
     z_move: bool,
 ) -> Result<()> {
     if z_move {
+        let item = context
+            .mon()
+            .item
+            .clone()
+            .wrap_expectation("expected mon to be holding a z-crystal")?;
         add_volatile(
-            &mut context.applying_effect_context(
-                EffectHandle::Condition(Id::from_known("playerchoice")),
-                None,
-                None,
-            )?,
+            &mut context.applying_effect_context(EffectHandle::Item(item), None, None)?,
             &Id::from_known("zpower"),
             false,
             None,
@@ -580,6 +583,7 @@ fn do_move_internal(
         core_battle_logs::cant(
             context.as_mon_context_mut(),
             EffectHandle::NonExistent(NonExistentEffect::new(Id::from_known("nopp"))),
+            false,
             None,
         )?;
         return Ok(());
@@ -874,7 +878,7 @@ fn use_active_move_with_using_move_state(
                 .battle_mut()
                 .get_effect_handle_by_id(&Id::from(locked_move.as_str()))?
                 .clone();
-            core_battle_logs::cant(context.as_mon_context_mut(), effect, None)?;
+            core_battle_logs::cant(context.as_mon_context_mut(), effect, true, None)?;
             return Ok(UseActiveMoveResult::new_unused(MoveOutcome::Skipped));
         }
 
@@ -3395,6 +3399,15 @@ fn apply_secondary_effects(
             .secondary_effect_chances(target.handle)
             .collect::<Vec<_>>()
         {
+            if let Some(secondary_effect) = context.active_move().secondary_effect(target.handle, i)
+            {
+                if secondary_effect.data.apply_once
+                    && context.active_move().applied_secondary_effects.contains(&i)
+                {
+                    continue;
+                }
+            }
+
             let secondary_roll = match chance {
                 Some(chance) => rand_util::chance(
                     context.battle_mut().prng.as_mut(),
@@ -3404,6 +3417,11 @@ fn apply_secondary_effects(
                 None => true,
             };
             if secondary_roll {
+                context
+                    .active_move_mut()
+                    .applied_secondary_effects
+                    .insert(i);
+
                 let mut context = context.secondary_active_move_context(target.handle, i);
                 let mut targets = hit_targets_state_from_targets([target.handle]);
 
@@ -4498,17 +4516,17 @@ fn leave_battle(context: &mut PlayerContext) -> Result<()> {
     context.player_mut().escaped = true;
     for mon in context
         .player()
-        .active_mon_handles()
+        .active_or_exited_mon_handles()
         .cloned()
         .collect::<Vec<_>>()
     {
-        switch_out_internal(
-            &mut context.as_battle_context_mut().mon_context(mon)?,
-            false,
-            false,
-            None,
-        )?;
+        let mut context = context.as_battle_context_mut().mon_context(mon)?;
+        context.mon_mut().switch_state.needs_switch = None;
+        if context.mon().active {
+            switch_out_internal(&mut context, false, false, None)?;
+        }
     }
+    context.player_mut().clear_active_positions();
     Ok(())
 }
 
@@ -5163,7 +5181,11 @@ pub fn end_ability_even_if_exiting(
 }
 
 /// Starts the target Mon's ability, if it is not already started.
-pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+pub fn start_ability(
+    context: &mut ApplyingEffectContext,
+    ability_source: Option<MonHandle>,
+    silent: bool,
+) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -5181,7 +5203,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
     }
 
     if !silent {
-        core_battle_logs::ability(context)?;
+        core_battle_logs::ability_start(context, ability_source)?;
     }
 
     core_battle_effects::run_ability_event::<ApplyingEffectContext, _, ()>(
@@ -5202,6 +5224,7 @@ pub fn start_ability(context: &mut ApplyingEffectContext, silent: bool) -> Resul
 pub fn set_ability(
     context: &mut ApplyingEffectContext,
     ability: &Id,
+    ability_source: Option<MonHandle>,
     dry_run: bool,
     force: bool,
     silent: bool,
@@ -5264,7 +5287,7 @@ pub fn set_ability(
         )?,
     };
 
-    start_ability(context, silent)?;
+    start_ability(context, ability_source, silent)?;
 
     core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, ()>(
         context,
@@ -5594,7 +5617,11 @@ pub fn end_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()>
 /// Starts the target Mon's item, if it is not already started.
 ///
 /// The Mon still has the item, but it is not considered active.
-pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<()> {
+pub fn start_item(
+    context: &mut ApplyingEffectContext,
+    item_source: Option<MonHandle>,
+    silent: bool,
+) -> Result<()> {
     let context = &mut scopeguard::guard(context, |context| {
         CoreBattle::invalidate_effect_caches(context.as_battle_context_mut()).ok();
     });
@@ -5611,7 +5638,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
     }
 
     if !silent {
-        core_battle_logs::item(context)?;
+        core_battle_logs::item_start(context, item_source)?;
     }
 
     core_battle_effects::run_item_event::<ApplyingEffectContext, _, ()>(
@@ -5632,6 +5659,7 @@ pub fn start_item(context: &mut ApplyingEffectContext, silent: bool) -> Result<(
 pub fn set_item(
     context: &mut ApplyingEffectContext,
     item: &Id,
+    item_source: Option<MonHandle>,
     dry_run: bool,
 ) -> Result<EventResult> {
     let context = &mut scopeguard::guard(context, |context| {
@@ -5682,7 +5710,7 @@ pub fn set_item(
         source_handle,
     )?;
 
-    start_item(context, false)?;
+    start_item(context, item_source, false)?;
 
     core_battle_effects::run_event_with_input::<ApplyingEffectContext, _, DefaultTrueBool>(
         context,
@@ -6392,7 +6420,11 @@ pub fn can_mega_evolve(context: &mut MonContext) -> Result<Option<MegaEvolution>
         Some(data) => data,
         None => return Ok(None),
     };
-    if Id::from(mega_evolution_data.from) != *species.id() {
+    if !mega_evolution_data
+        .from
+        .iter()
+        .any(|from| Id::from(from.as_str()) == *species.id())
+    {
         return Ok(None);
     }
     return Ok(Some(MegaEvolution {
@@ -6575,7 +6607,7 @@ pub fn transform_into(
         false,
         RecalculateStatsHpPolicy::DoNotUpdate,
     )?;
-    set_ability(context, &ability_id, false, true, true)?;
+    set_ability(context, &ability_id, None, false, true, true)?;
     context.target_mut().volatile_state.move_slots = move_slots;
     context.target_mut().volatile_state.times_attacked = times_attacked;
 
@@ -6703,7 +6735,7 @@ pub fn forme_change(
     if (old_ability != new_ability || forme_change_type.set_ability_even_if_unchanged())
         && context.target().hp != 0
     {
-        set_ability(context, &new_ability, false, true, true)?;
+        set_ability(context, &new_ability, None, false, true, true)?;
     }
 
     if let FormeChangeType::Permanent {

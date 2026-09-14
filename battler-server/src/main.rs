@@ -28,6 +28,10 @@ struct Args {
     #[arg(short, long, default_value = "battle-data/data")]
     data_dir: String,
 
+    /// Path to descriptions directory
+    #[arg(long, default_value = "battle-data/descriptions")]
+    descriptions_dir: String,
+
     /// Name of the WAMP realm
     #[arg(long, default_value = "battler")]
     realm_name: String,
@@ -55,6 +59,7 @@ async fn run_server() -> Result<()> {
         address: args.address,
         port: args.port,
         data_dir: args.data_dir,
+        descriptions_dir: Some(args.descriptions_dir),
         realm_name: args.realm_name.clone(),
         realm_uri: args.realm_uri,
     })
@@ -67,9 +72,26 @@ async fn run_server() -> Result<()> {
         args.realm_name
     );
 
+    #[cfg(unix)]
+    let terminate = async {
+        if let Ok(mut sig) =
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        {
+            sig.recv().await;
+        } else {
+            std::future::pending::<()>().await;
+        }
+    };
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
     let exit_result = tokio::select! {
         _ = tokio::signal::ctrl_c() => {
-            log::info!("Received shutdown signal. Stopping services...");
+            log::info!("Received Ctrl+C signal. Stopping services...");
+            Ok(())
+        }
+        _ = terminate => {
+            log::info!("Received SIGTERM signal. Stopping services...");
             Ok(())
         }
         res = &mut handle.router_join_handle => {
@@ -85,6 +107,10 @@ async fn run_server() -> Result<()> {
 
     handle.shutdown().await?;
     log::info!("Server stopped successfully.");
+
+    if exit_result.is_ok() {
+        std::process::exit(0);
+    }
 
     exit_result
 }

@@ -139,6 +139,7 @@ fn healing_wish_faints_user_and_heals_slot() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Lopunny,player-1,1|name:Healing Wish|target:Lopunny,player-1,1",
+            "slotstart|side:0|slot:0|move:Healing Wish|of:Lopunny,player-1,1",
             "faint|mon:Lopunny,player-1,1",
             "residual",
             "continue",
@@ -162,6 +163,7 @@ fn healing_wish_faints_user_and_heals_slot() {
             "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:125/125",
             "heal|mon:Lopunny,player-1,1|from:move:Healing Wish|health:100/100",
             "curestatus|mon:Lopunny,player-1,1|status:Sleep|from:move:Healing Wish",
+            "slotend|side:0|slot:0|move:Healing Wish",
             "residual",
             "turn|turn:7",
             "continue",

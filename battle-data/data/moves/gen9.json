@@ -321,7 +321,7 @@
           [
             "if $mon.ability == $target.ability or func_call(ability_has_flag: $mon.ability permanent):",
             ["continue"],
-            "$set_ability = func_call(set_ability: $mon $target.ability)",
+            "$set_ability = func_call(set_ability: $mon $target.ability $target)",
             "if $set_ability:",
             ["$success = true"],
             "else if !$success and $set_ability != false:",

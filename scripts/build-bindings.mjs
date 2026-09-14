@@ -11,11 +11,19 @@ console.log("=== Starting TypeScript Bindings Build Pipeline ===");
 
 // 1. Generate TypeScript bindings from Rust crates
 console.log("Generating types from Rust crates...");
-const crates = ["battler-choice", "battler", "battler-service", "battler-multiplayer-service"];
+const crates = [
+  "battler-choice",
+  "battler-data",
+  "battler",
+  "battler-state",
+  "battler-service",
+  "battler-multiplayer-service",
+  "battler-data-service-schema",
+];
 
 for (const crate of crates) {
   console.log(`Running cargo test for ${crate}...`);
-  execSync(`cargo test -p ${crate} --features typescript export_types`, {
+  execSync(`cargo test -p ${crate} --lib --features typescript export_types`, {
     cwd: rootDir,
     stdio: "inherit",
   });
@@ -26,10 +34,13 @@ const coreEngineTypes = new Set();
 const choiceFiles = fs
   .readdirSync(path.resolve(rootDir, "battler-choice/bindings"))
   .filter((f) => f.endsWith(".ts"));
+const dataFiles = fs
+  .readdirSync(path.resolve(rootDir, "battler-data/bindings"))
+  .filter((f) => f.endsWith(".ts"));
 const battlerFiles = fs
   .readdirSync(path.resolve(rootDir, "battler/bindings"))
   .filter((f) => f.endsWith(".ts"));
-for (const f of [...choiceFiles, ...battlerFiles]) {
+for (const f of [...choiceFiles, ...dataFiles, ...battlerFiles]) {
   coreEngineTypes.add(path.basename(f, ".ts"));
 }
 console.log(`Discovered ${coreEngineTypes.size} core engine types.`);
@@ -44,8 +55,17 @@ const multiplayerClientBindingsDir = path.resolve(
   rootDir,
   "js-clients/battler-multiplayer-service-client/src/bindings",
 );
+const dataServiceClientBindingsDir = path.resolve(
+  rootDir,
+  "js-clients/battler-data-service-client/src/bindings",
+);
 
-for (const dir of [battlerTypesDir, serviceClientBindingsDir, multiplayerClientBindingsDir]) {
+for (const dir of [
+  battlerTypesDir,
+  serviceClientBindingsDir,
+  multiplayerClientBindingsDir,
+  dataServiceClientBindingsDir,
+]) {
   if (fs.existsSync(dir)) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -59,23 +79,30 @@ console.log("Copying generated binding files to JS client directories...");
 function copyPattern(srcDir, destDir, pattern = /\.ts$/) {
   const files = fs.readdirSync(srcDir);
   for (const file of files) {
-    if (pattern.test(file)) {
+    const isMatch = typeof pattern === "function" ? pattern(file) : pattern.test(file);
+    if (isMatch) {
       fs.copyFileSync(path.resolve(srcDir, file), path.resolve(destDir, file));
     }
   }
 }
 
-// Core types package gets choice and battler bindings
+// Core types package gets choice, battler-data, and battler bindings
 copyPattern(path.resolve(rootDir, "battler-choice/bindings"), battlerTypesDir);
+copyPattern(path.resolve(rootDir, "battler-data/bindings"), battlerTypesDir);
 copyPattern(path.resolve(rootDir, "battler/bindings"), battlerTypesDir);
 
 // Service Client gets service specific bindings only
-copyPattern(path.resolve(rootDir, "battler-service/bindings"), serviceClientBindingsDir);
+copyPattern(
+  path.resolve(rootDir, "battler-service/bindings"),
+  serviceClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
+);
 
 // Multiplayer Client gets multiplayer service specific bindings and copy of specific service options
 copyPattern(
   path.resolve(rootDir, "battler-multiplayer-service/bindings"),
   multiplayerClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
 );
 fs.copyFileSync(
   path.resolve(rootDir, "battler-service/bindings/BattleServiceOptions.ts"),
@@ -90,6 +117,13 @@ fs.copyFileSync(
   path.resolve(multiplayerClientBindingsDir, "Timer.ts"),
 );
 
+// Data Service Client gets data service schema bindings
+copyPattern(
+  path.resolve(rootDir, "battler-data-service/battler-data-service-schema/bindings"),
+  dataServiceClientBindingsDir,
+  (file) => file.endsWith(".ts") && !coreEngineTypes.has(path.basename(file, ".ts")),
+);
+
 // 5. Post-process to fix relative ESM import extensions & rewrite cross-package dependencies
 console.log("Post-processing generated bindings...");
 
@@ -97,6 +131,7 @@ const directories = [
   { dir: battlerTypesDir, isCore: true },
   { dir: serviceClientBindingsDir, isCore: false },
   { dir: multiplayerClientBindingsDir, isCore: false },
+  { dir: dataServiceClientBindingsDir, isCore: false },
 ];
 
 for (const { dir, isCore } of directories) {
@@ -111,12 +146,25 @@ for (const { dir, isCore } of directories) {
       content = 'import type { Stat } from "./Stat.js";\n' + content;
     }
 
+    // Add missing EventData import to SpeciesData.ts since it has custom Record<string, EventData> type
+    if (file === "SpeciesData.ts") {
+      content = 'import type { EventData } from "./EventData.js";\n' + content;
+    }
+
+    // Add missing model imports to BatchResult.ts
+    if (file === "BatchResult.ts") {
+      content =
+        'import type { AbilityData, ConditionData, ItemData, MoveData, SpeciesData } from "battler-types";\n' +
+        'import type { DescriptionData } from "./DescriptionData.js";\n' +
+        content;
+    }
+
     // Rewrite imports: from "./Side" -> from "./Side.js"
-    content = content.replace(/(from\s+["']\.\/[^"'\.]+)["']/g, '$1.js"');
+    content = content.replace(/(from\s+["']\.\/[^"'.]+)["']/g, '$1.js"');
 
     // Rewrite relative core imports in client packages to point to the NPM "battler-types" package instead
     if (!isCore) {
-      content = content.replace(/from\s+["']\.\/([^"'\.]+)\.js["']/g, (match, importName) => {
+      content = content.replace(/from\s+["']\.\/([^"'.]+)\.js["']/g, (match, importName) => {
         if (coreEngineTypes.has(importName)) {
           return `from "battler-types"`;
         }

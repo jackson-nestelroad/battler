@@ -1,0 +1,35 @@
+{
+  "name": "battler-log-formatter",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run tests",
+    "extract-logs": "tsx tests/scraper.ts",
+    "validate:logs": "tsx scripts/validate-all-logs.ts",
+    "lint:locales": "tsx scripts/validate-locales.ts",
+    "lint": "tsc -b && tsc -p tsconfig.test.json --noEmit && npm run lint:locales && npm run validate:logs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "battler-state": "^0.1.0",
+    "battler-types": "^0.1.0",
+    "i18next": "^23.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

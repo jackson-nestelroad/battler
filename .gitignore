@@ -32,3 +32,5 @@ wamp-integration-tests/.crossbar/key.pub
 
 bindings/
 battler-state/pkg/
+
+battler-dev/

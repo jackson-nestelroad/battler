@@ -62,23 +62,23 @@ fn solar_power_boosts_special_attack_in_sun() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Tropius,player-1,1|name:Flamethrower|target:Tropius,player-2,1",
-            "supereffective|mon:Tropius,player-2,1",
-            "split|side:1",
-            "damage|mon:Tropius,player-2,1|health:40/159",
-            "damage|mon:Tropius,player-2,1|health:26/100",
-            "move|mon:Tropius,player-2,1|name:Flamethrower|target:Tropius,player-1,1",
-            "supereffective|mon:Tropius,player-1,1",
-            "split|side:0",
-            "damage|mon:Tropius,player-1,1|health:67/159",
-            "damage|mon:Tropius,player-1,1|health:43/100",
-            "weather|weather:Harsh Sunlight|residual",
-            "split|side:1",
-            "damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:21/159",
-            "damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:14/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Tropius,player-1,1|name:Flamethrower|target:Tropius,player-2,1",
+                "supereffective|mon:Tropius,player-2,1",
+                "split|side:1",
+                "damage|mon:Tropius,player-2,1|health:40/159",
+                "damage|mon:Tropius,player-2,1|health:26/100",
+                "move|mon:Tropius,player-2,1|name:Flamethrower|target:Tropius,player-1,1",
+                "supereffective|mon:Tropius,player-1,1",
+                "split|side:0",
+                "damage|mon:Tropius,player-1,1|health:67/159",
+                "damage|mon:Tropius,player-1,1|health:43/100",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "split|side:1",
+                "damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:21/159",
+                "damage|mon:Tropius,player-2,1|from:ability:Solar Power|health:14/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);

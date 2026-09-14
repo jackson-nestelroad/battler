@@ -152,29 +152,73 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             problems.append(&mut self.validate_mon(&mut *mon));
         }
 
+        problems.append(&mut self.validate_restricted_mons(team));
+
         problems.append(&mut self.validate_bag(&mut team.bag));
 
+        problems.dedup();
+
         problems
+    }
+
+    fn get_species(
+        &self,
+        species: &str,
+        problems: &mut Vec<String>,
+    ) -> Option<ElementRef<'b, Species>> {
+        match self.dex.species.get(&species) {
+            Ok(species) => Some(species),
+            Err(error) => {
+                if error.is::<NotFoundError>() {
+                    problems.push(format!("Species {species} does not exist."));
+                } else {
+                    problems.push(format!("Failed to look up species {species}: {error}."));
+                }
+                None
+            }
+        }
+    }
+
+    fn validate_restricted_mons(&self, team: &'b TeamData) -> Vec<String> {
+        let mut problems = Vec::new();
+
+        let mut restricted_names = Vec::new();
+        for mon in team.members.iter() {
+            let species = match self.get_species(&mon.species, &mut problems) {
+                Some(species) => species,
+                None => return problems,
+            };
+            match self
+                .check_if_resource_is_restricted(Self::species_validation_ids(&species).iter())
+            {
+                ResourceCheck::Banned => {
+                    restricted_names.push(mon.name.clone());
+                }
+                ResourceCheck::Allowed | ResourceCheck::Unknown => (),
+            }
+        }
+
+        let limit = self.format.rules.numeric_rules.limit_restricted as usize;
+        if restricted_names.len() > limit {
+            problems.push(format!(
+                "You may only bring {limit} restricted Mon{} (you have {}).",
+                if limit == 1 { "" } else { "s" },
+                restricted_names.join(", ")
+            ));
+        }
+
+        return problems;
     }
 
     /// Validates a single Mon for a battle.
     fn validate_mon(&self, mon: &'b mut MonData) -> Vec<String> {
         let mut problems = Vec::new();
 
-        let species = match self.dex.species.get(&mon.species) {
-            Ok(species) => species,
-            Err(error) => {
-                if error.is::<NotFoundError>() {
-                    problems.push(format!("Species {} does not exist.", mon.species));
-                } else {
-                    problems.push(format!(
-                        "Failed to look up species {}: {error}.",
-                        mon.species
-                    ));
-                }
-                return problems;
-            }
+        let species = match self.get_species(&mon.species, &mut problems) {
+            Some(species) => species,
+            None => return problems,
         };
+
         let ability = match self.dex.abilities.get(&mon.ability) {
             Ok(ability) => ability,
             Err(error) => {
@@ -347,26 +391,71 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     fn check_if_resource_is_allowed<'a>(&self, ids: impl Iterator<Item = &'a Id>) -> ResourceCheck {
         let mut check = ResourceCheck::Unknown;
         for id in ids {
-            check = check.and_then(|| self.format.rules.check_resource(id));
+            check = check.chain(|| self.format.rules.check_resource(id));
         }
         check
     }
 
-    fn validate_species(&self, species: &ElementRef<'d, Species>) -> Vec<String> {
-        let mut problems = Vec::new();
+    fn check_if_resource_is_restricted<'a>(
+        &self,
+        ids: impl Iterator<Item = &'a Id>,
+    ) -> ResourceCheck {
+        let mut check = ResourceCheck::Unknown;
+        for id in ids {
+            check = check.chain(|| self.format.rules.check_restricted(id));
+        }
+        check
+    }
 
+    fn should_validate_obtainable_moves(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainablemoves"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_abilities(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableabilities"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_formes(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableformes"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn should_validate_obtainable_events(&self) -> bool {
+        self.format
+            .rules
+            .has_rule(&Id::from_known("obtainableevents"))
+            || self.format.rules.has_rule(&Id::from_known("obtainable"))
+    }
+
+    fn species_validation_ids(species: &ElementRef<'_, Species>) -> Vec<Id> {
         let flags = species
             .data
             .flags
             .iter()
             .map(|tag| Id::from(tag.to_string()))
             .collect::<Vec<_>>();
-        let check = self.check_if_resource_is_allowed(
-            [species.id(), &Id::from(species.data.base_species.as_ref())]
-                .into_iter()
-                .chain(flags.iter())
-                .chain([&Id::from_known("allmons")].into_iter()),
-        );
+        [
+            species.id().clone(),
+            Id::from(species.data.base_species.as_ref()),
+        ]
+        .into_iter()
+        .chain(flags.into_iter())
+        .chain([Id::from_known("allmons")].into_iter())
+        .collect::<Vec<_>>()
+    }
+
+    fn validate_species(&self, species: &ElementRef<'d, Species>) -> Vec<String> {
+        let mut problems = Vec::new();
+
+        let check = self.check_if_resource_is_allowed(Self::species_validation_ids(species).iter());
         match check {
             ResourceCheck::Banned => {
                 problems.push(format!("{} is not allowed.", species.data.display_name()));
@@ -387,25 +476,27 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
     ) -> Vec<String> {
         let mut problems = Vec::new();
 
-        if species.data.battle_only_forme {
-            problems.push(format!(
-                "{} is only available via in-battle transformation, so your team may not start with one.",
-                species.data.display_name()
-            ));
-        }
+        if self.should_validate_obtainable_formes() {
+            if species.data.battle_only_forme {
+                problems.push(format!(
+                    "{} is only available via in-battle transformation, so your team may not start with one.",
+                    species.data.display_name()
+                ));
+            }
 
-        if !species.data.required_items.is_empty()
-            && (item.is_none()
-                || !species
-                    .data
-                    .required_items
-                    .contains(item.as_ref().unwrap().id().as_ref()))
-        {
-            problems.push(format!(
-                "{} is only available when holding one of the following items: {}.",
-                species.data.display_name(),
-                species.data.required_items.iter().join(", ")
-            ));
+            if !species.data.required_items.is_empty()
+                && (item.is_none()
+                    || !species
+                        .data
+                        .required_items
+                        .contains(item.as_ref().unwrap().id().as_ref()))
+            {
+                problems.push(format!(
+                    "{} is only available when holding one of the following items: {}.",
+                    species.data.display_name(),
+                    species.data.required_items.iter().join(", ")
+                ));
+            }
         }
 
         // The item forces this base species into some forme, so modify the Mon's species.
@@ -534,20 +625,22 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ResourceCheck::Unknown => (),
         }
 
-        match self.validate_can_learn(mon, species, mov, state) {
-            MoveLegality::Legal => (),
-            MoveLegality::Illegal(reason) => {
-                problems.push(format!(
-                    "{} cannot learn {}, because {} {reason}",
-                    mon.name, mov.data.name, mov.data.name,
-                ));
-            }
-            // This should not happen.
-            MoveLegality::Unknown => {
-                problems.push(format!(
-                    "It is unknown if {} can learn {}. This is a bug in the validation algorithm.",
-                    mon.name, mov.data.name,
-                ));
+        if self.should_validate_obtainable_moves() {
+            match self.validate_can_learn(mon, species, mov, state) {
+                MoveLegality::Legal => (),
+                MoveLegality::Illegal(reason) => {
+                    problems.push(format!(
+                        "{} cannot learn {}, because {} {reason}",
+                        mon.name, mov.data.name, mov.data.name,
+                    ));
+                }
+                // This should not happen.
+                MoveLegality::Unknown => {
+                    problems.push(format!(
+                        "It is unknown if {} can learn {}. This is a bug in the validation algorithm.",
+                        mon.name, mov.data.name,
+                    ));
+                }
             }
         }
 
@@ -763,6 +856,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
             ResourceCheck::Unknown => (),
         }
 
+        if !self.should_validate_obtainable_abilities() {
+            return problems;
+        }
+
         // Normal ability.
         if species.data.abilities.contains(&ability.data.name) {
             return problems;
@@ -790,6 +887,10 @@ impl<'b, 'd> TeamValidator<'b, 'd> {
         state: &mut MonValidationState<'state>,
     ) -> Vec<String> {
         let mut problems = Vec::new();
+
+        if !self.should_validate_obtainable_events() {
+            return problems;
+        }
 
         // Nothing to check.
         if !state.from_event {

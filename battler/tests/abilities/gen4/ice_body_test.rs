@@ -61,18 +61,18 @@ fn ice_body_heals_in_hail() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Seel,player-1,1|name:Thunderbolt|target:Seel,player-2,1",
-            "supereffective|mon:Seel,player-2,1",
-            "split|side:1",
-            "damage|mon:Seel,player-2,1|health:71/125",
-            "damage|mon:Seel,player-2,1|health:57/100",
-            "weather|weather:Hail|residual",
-            "split|side:1",
-            "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125",
-            "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Seel,player-1,1|name:Thunderbolt|target:Seel,player-2,1",
+                "supereffective|mon:Seel,player-2,1",
+                "split|side:1",
+                "damage|mon:Seel,player-2,1|health:71/125",
+                "damage|mon:Seel,player-2,1|health:57/100",
+                "residual",
+                "weather|weather:Hail|residual",
+                "split|side:1",
+                "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125",
+                "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
@@ -90,18 +90,18 @@ fn ice_body_heals_in_snow() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Seel,player-1,1|name:Thunderbolt|target:Seel,player-2,1",
-            "supereffective|mon:Seel,player-2,1",
-            "split|side:1",
-            "damage|mon:Seel,player-2,1|health:71/125",
-            "damage|mon:Seel,player-2,1|health:57/100",
-            "weather|weather:Snow|residual",
-            "split|side:1",
-            "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125",
-            "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Seel,player-1,1|name:Thunderbolt|target:Seel,player-2,1",
+                "supereffective|mon:Seel,player-2,1",
+                "split|side:1",
+                "damage|mon:Seel,player-2,1|health:71/125",
+                "damage|mon:Seel,player-2,1|health:57/100",
+                "residual",
+                "weather|weather:Snow|residual",
+                "split|side:1",
+                "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:78/125",
+                "heal|mon:Seel,player-2,1|from:ability:Ice Body|health:63/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);

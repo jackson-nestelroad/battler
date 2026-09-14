@@ -18,6 +18,8 @@ use serde::{
 
 /// How the user self destructs after a move.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, type = "true | \"ifhit\""))]
 pub enum SelfDestructType {
     /// The user always self destructs.
     Always,

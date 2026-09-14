@@ -62,26 +62,26 @@ fn knock_off_increases_power_against_target_with_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Sableye,player-1,1|name:Knock Off|target:Sableye,player-2,1",
-            "split|side:1",
-            "damage|mon:Sableye,player-2,1|health:47/110",
-            "damage|mon:Sableye,player-2,1|health:43/100",
-            "itemend|mon:Sableye,player-2,1|item:Rawst Berry|from:move:Knock Off|of:Sableye,player-1,1",
-            "move|mon:Sableye,player-2,1|name:Knock Off|target:Sableye,player-1,1",
-            "split|side:0",
-            "damage|mon:Sableye,player-1,1|health:70/110",
-            "damage|mon:Sableye,player-1,1|health:64/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Sableye,player-1,1|name:Will-O-Wisp|target:Sableye,player-2,1",
-            "status|mon:Sableye,player-2,1|status:Burn",
-            "split|side:1",
-            "damage|mon:Sableye,player-2,1|from:status:Burn|health:41/110",
-            "damage|mon:Sableye,player-2,1|from:status:Burn|health:38/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Sableye,player-1,1|name:Knock Off|target:Sableye,player-2,1",
+                "split|side:1",
+                "damage|mon:Sableye,player-2,1|health:47/110",
+                "damage|mon:Sableye,player-2,1|health:43/100",
+                "itemend|mon:Sableye,player-2,1|item:Rawst Berry|from:move:Knock Off|of:Sableye,player-1,1",
+                "move|mon:Sableye,player-2,1|name:Knock Off|target:Sableye,player-1,1",
+                "split|side:0",
+                "damage|mon:Sableye,player-1,1|health:70/110",
+                "damage|mon:Sableye,player-1,1|health:64/100",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Sableye,player-1,1|name:Will-O-Wisp|target:Sableye,player-2,1",
+                "status|mon:Sableye,player-2,1|status:Burn",
+                "residual",
+                "split|side:1",
+                "damage|mon:Sableye,player-2,1|from:status:Burn|health:41/110",
+                "damage|mon:Sableye,player-2,1|from:status:Burn|health:38/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

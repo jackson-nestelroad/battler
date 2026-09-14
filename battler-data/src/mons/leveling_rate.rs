@@ -7,6 +7,8 @@ use serde_string_enum::{
 #[derive(
     Debug, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum LevelingRate {
     #[string = "Erratic"]
     Erratic,
@@ -14,8 +16,10 @@ pub enum LevelingRate {
     Fast,
     #[string = "Medium Fast"]
     #[alias = "Medium"]
+    #[cfg_attr(feature = "typescript", ts(rename = "Medium Fast"))]
     MediumFast,
     #[string = "Medium Slow"]
+    #[cfg_attr(feature = "typescript", ts(rename = "Medium Slow"))]
     MediumSlow,
     #[string = "Slow"]
     Slow,

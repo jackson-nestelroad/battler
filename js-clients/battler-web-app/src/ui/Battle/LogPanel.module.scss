@@ -1,0 +1,210 @@
+@use "../../styles/breakpoints" as *;
+
+.logPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; // Ensure parent flex container doesn't overflow
+  padding: 0;
+  gap: 0;
+  transition:
+    height var(--transition-duration) var(--transition-timing),
+    flex var(--transition-duration) var(--transition-timing);
+
+  @include tablet {
+    &.collapsed {
+      height: var(--mobile-header-height) !important; /* Force minimum height matching header */
+      flex: 0 0 auto !important; /* Prevent expansion */
+
+      .header {
+        border-bottom: none; /* Hide border when closed */
+      }
+
+      // Hide nested content components from rendering inside minimized container
+      :global(.tabs-row),
+      .scrollArea {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.header {
+  padding: var(--spacing-s) var(--spacing-m); // override default card-header padding
+  margin-bottom: 0; // scrollArea handles padding natively
+}
+
+.collapseToggle {
+  display: none; /* Hidden on desktop */
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: var(--spacing-xxs) var(--spacing-s);
+  border-radius: var(--border-radius-xs);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    background-color: var(--bg-primary);
+  }
+
+  @include tablet {
+    display: inline-block; /* Show on mobile viewports */
+  }
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-s);
+}
+
+.turnHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  margin: var(--spacing-s) 0 var(--spacing-xs) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+}
+
+.continueDivider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: var(--spacing-s) 0;
+}
+
+.residualDivider {
+  border: none;
+  height: var(--spacing-xs);
+  margin: var(--spacing-xs) 0;
+}
+
+.logLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  line-height: 1.4;
+
+  &.primary {
+    font-size: var(--font-size-s);
+    font-weight: 600;
+    margin-top: var(--spacing-xs);
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    .indicator {
+      color: var(--color-primary);
+    }
+
+    .text {
+      color: var(--text-primary);
+    }
+  }
+
+  &.secondary {
+    font-size: var(--font-size-xs);
+    margin-left: var(--spacing-m);
+
+    .indicator {
+      color: var(--text-muted);
+    }
+
+    .text {
+      color: var(--text-secondary);
+    }
+  }
+
+  &.hint {
+    font-size: var(--font-size-xs);
+    font-style: italic;
+    margin-left: var(--spacing-m);
+
+    .indicator {
+      display: none;
+    }
+
+    .text {
+      color: var(--text-muted);
+    }
+  }
+}
+
+.noticeLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  line-height: 1.4;
+  margin-left: var(--spacing-m);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+
+  .text {
+    color: inherit;
+  }
+
+  &.abilityNotice {
+    color: var(--color-info);
+    font-weight: 600;
+  }
+
+  &.itemNotice {
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  &.damageNotice {
+    color: var(--color-danger);
+  }
+
+  &.healNotice {
+    color: var(--color-success);
+  }
+}
+
+.indicator {
+  color: var(--color-primary);
+  font-weight: bold;
+  user-select: none;
+}
+
+.text {
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.tokenHoverTrigger {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: underline dotted var(--text-muted);
+  text-underline-offset: var(--spacing-xxs);
+  transition: text-decoration-color var(--transition-fast);
+
+  &:hover {
+    color: inherit;
+    text-decoration-color: var(--text-secondary);
+  }
+}

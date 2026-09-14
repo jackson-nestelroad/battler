@@ -169,26 +169,26 @@ fn flower_veil_does_not_protect_against_existing_rest() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["switch", "player-1", "Weezing"],
-            ["switch", "player-1", "Weezing"],
-            "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
-            "move|mon:Floette,player-2,1|name:Yawn|target:Chespin,player-1,2",
-            "start|mon:Chespin,player-1,2|move:Yawn|of:Floette,player-2,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "end|mon:Weezing,player-1,1|ability:Neutralizing Gas",
-            "split|side:0",
-            ["switch", "player-1", "Floette"],
-            ["switch", "player-1", "Floette"],
-            "move|mon:Floette,player-2,1|name:Thunder Wave|noanim",
-            "block|mon:Chespin,player-1,2|move:Thunder Wave|from:ability:Flower Veil",
-            "end|mon:Chespin,player-1,2|move:Yawn|silent",
-            "status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "split|side:0",
+                ["switch", "player-1", "Weezing"],
+                ["switch", "player-1", "Weezing"],
+                "ability|mon:Weezing,player-1,1|ability:Neutralizing Gas",
+                "move|mon:Floette,player-2,1|name:Yawn|target:Chespin,player-1,2",
+                "start|mon:Chespin,player-1,2|move:Yawn|of:Floette,player-2,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "end|mon:Weezing,player-1,1|ability:Neutralizing Gas",
+                "split|side:0",
+                ["switch", "player-1", "Floette"],
+                ["switch", "player-1", "Floette"],
+                "move|mon:Floette,player-2,1|name:Thunder Wave|noanim",
+                "block|mon:Chespin,player-1,2|move:Thunder Wave|from:ability:Flower Veil",
+                "residual",
+                "end|mon:Chespin,player-1,2|move:Yawn|silent",
+                "status|mon:Chespin,player-1,2|status:Sleep|from:move:Yawn",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

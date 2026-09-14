@@ -116,21 +116,21 @@ fn fire_grass_combo_doubles() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Serperior,player-1,2|name:Grass Pledge|noanim",
-            "waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1",
-            "move|mon:Emboar,player-1,1|name:Fire Pledge|target:Samurott,player-2,2|from:move:Grass Pledge",
-            "combine",
-            "resisted|mon:Samurott,player-2,2",
-            "split|side:1",
-            "damage|mon:Samurott,player-2,2|health:87/155",
-            "damage|mon:Samurott,player-2,2|health:57/100",
-            "sidestart|side:1|move:Fire Pledge",
-            "split|side:1",
-            "damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:68/155",
-            "damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:44/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Serperior,player-1,2|name:Grass Pledge|noanim",
+                "waiting|mon:Serperior,player-1,2|on:Emboar,player-1,1",
+                "move|mon:Emboar,player-1,1|name:Fire Pledge|target:Samurott,player-2,2|from:move:Grass Pledge",
+                "combine",
+                "resisted|mon:Samurott,player-2,2",
+                "split|side:1",
+                "damage|mon:Samurott,player-2,2|health:87/155",
+                "damage|mon:Samurott,player-2,2|health:57/100",
+                "sidestart|side:1|move:Fire Pledge",
+                "residual",
+                "split|side:1",
+                "damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:68/155",
+                "damage|mon:Samurott,player-2,2|from:move:Fire Pledge|health:44/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&mut battle, 1, &expected_logs);

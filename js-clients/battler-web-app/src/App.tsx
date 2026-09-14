@@ -1,0 +1,95 @@
+import { useState } from "react";
+import { useConnectionCountdown } from "./hooks/useConnectionCountdown";
+import { useHistorySync } from "./hooks/useHistorySync";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { useAppSelector } from "./store/store";
+import BattleScreen from "./ui/Battle/BattleScreen";
+import ConnectionRequired from "./ui/Common/ConnectionRequired";
+import Lobby from "./ui/Lobby/Lobby";
+import ReplaysHome from "./ui/Replays/ReplaysHome";
+import Resources from "./ui/Resources/Resources";
+import Sidebar from "./ui/Sidebar/Sidebar";
+import Teams from "./ui/Teams/Teams";
+import FxLangModalProvider from "./ui/Common/FxLang/FxLangModalProvider";
+import { BREAKPOINT_TABLET_PX } from "./utils/constants";
+
+import styles from "./App.module.scss";
+
+export default function App() {
+  useHistorySync();
+  const isOnline = useOnlineStatus();
+  const connection = useAppSelector((state) => state.connection);
+  const { connectionMessage } = useConnectionCountdown();
+  const isHydrated = connection.isHydrated;
+  const currentView = useAppSelector((state) => state.battles.currentView);
+  const battleId = useAppSelector((state) => state.battles.activeBattleId);
+  const isReplay = useAppSelector((state) =>
+    battleId ? !!state.battles.battles[battleId]?.isReplay : false,
+  );
+
+  const [isCollapsed, setIsCollapsed] = useState(
+    typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
+  );
+
+  const showAutoconnectLoader = connection.autoconnect && connection.status === "connecting";
+
+  if (!isHydrated || showAutoconnectLoader) {
+    return (
+      <div className={styles.loadingScreen}>
+        <div className="spinner"></div>
+        <p>{showAutoconnectLoader ? connectionMessage : "Loading..."}</p>
+      </div>
+    );
+  }
+
+  return (
+    <FxLangModalProvider>
+      <div className={styles.appContainer}>
+        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+
+        {!isCollapsed && <div className={styles.backdrop} onClick={() => setIsCollapsed(true)} />}
+
+        <main className={styles.mainContent}>
+          {!isOnline && (
+            <div className="alert alert-warning">
+              <span className="alert-message">Offline mode</span>
+            </div>
+          )}
+
+          <header className={styles.mobileTopBar}>
+            <button className={styles.menuTrigger} onClick={() => setIsCollapsed(false)}>
+              ☰
+            </button>
+            <span className={styles.viewTitle}>
+              {currentView === "lobby" && "Lobby"}
+              {currentView === "teams" && "Teams"}
+              {(currentView === "battle" || currentView === "proposal") && "Battles"}
+              {currentView === "replays" && "Replays"}
+              {currentView === "resources" && "Resources"}
+            </span>
+          </header>
+
+          <div className={styles.viewWrapper}>
+            {currentView === "lobby" && (
+              <ConnectionRequired>
+                <Lobby />
+              </ConnectionRequired>
+            )}
+            {currentView === "teams" && <Teams />}
+            {(currentView === "battle" || currentView === "proposal") && (
+              <ConnectionRequired bypass={isReplay}>
+                <BattleScreen />
+              </ConnectionRequired>
+            )}
+            {currentView === "replays" && <ReplaysHome />}
+            {currentView === "resources" && (
+              <ConnectionRequired>
+                <Resources />
+              </ConnectionRequired>
+            )}
+          </div>
+        </main>
+      </div>
+    </FxLangModalProvider>
+  );
+}

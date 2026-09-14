@@ -37,6 +37,7 @@ pub struct NumericRules {
     pub players_per_side: Option<u32>,
     pub min_team_size: u32,
     pub max_team_size: u32,
+    pub limit_restricted: u32,
     pub picked_team_size: Option<u32>,
     pub max_move_count: u32,
     pub min_level: u32,
@@ -162,6 +163,9 @@ impl NumericRules {
         rules.max_team_size = ruleset
             .numeric_value(&Id::from_known("maxteamsize"))
             .unwrap_or(6);
+        rules.limit_restricted = ruleset
+            .numeric_value(&Id::from_known("limitrestricted"))
+            .unwrap_or(rules.max_team_size);
         rules.picked_team_size = ruleset.numeric_value(&Id::from_known("pickedteamsize"));
         rules.max_move_count = ruleset
             .numeric_value(&Id::from_known("maxmovecount"))
@@ -208,14 +212,15 @@ pub enum ResourceCheck {
 
 impl ResourceCheck {
     /// Performs the next resource check only if this resource check was inconclusive.
-    pub fn and_then<F>(self, next: F) -> Self
+    ///
+    /// This works because we expect the chain to be ordered from most specific to least specific.
+    pub fn chain<F>(self, next: F) -> Self
     where
         F: Fn() -> Self,
     {
         match self {
-            Self::Banned => Self::Banned,
             Self::Unknown => next(),
-            Self::Allowed => Self::Allowed,
+            _ => self,
         }
     }
 }
@@ -226,6 +231,8 @@ pub struct RuleSet {
     original: SerializedRuleSet,
     bans: HashSet<Id>,
     unbans: HashSet<Id>,
+    restrictions: HashSet<Id>,
+    unrestrictions: HashSet<Id>,
     rules: HashMap<Id, String>,
     pub numeric_rules: NumericRules,
 }
@@ -237,6 +244,8 @@ impl RuleSet {
             original: rules.clone(),
             bans: HashSet::default(),
             unbans: HashSet::default(),
+            restrictions: HashSet::default(),
+            unrestrictions: HashSet::default(),
             rules: HashMap::default(),
             numeric_rules: NumericRules::default(),
         };
@@ -245,6 +254,11 @@ impl RuleSet {
         ruleset.validate_clauses(dex)?;
 
         Ok(ruleset)
+    }
+
+    /// Returns the original serialized ruleset.
+    pub fn original(&self) -> &SerializedRuleSet {
+        &self.original
     }
 
     /// Stores the given rules by flattening all compound rules.
@@ -289,6 +303,12 @@ impl RuleSet {
                         self.rules.insert(name, value);
                     }
                     Rule::Repeal(_) => (),
+                    Rule::Restrict(id) => {
+                        self.restrictions.insert(id);
+                    }
+                    Rule::Unrestrict(id) => {
+                        self.unrestrictions.insert(id);
+                    }
                 }
             }
             unstored_rules = next_layer;
@@ -336,10 +356,25 @@ impl RuleSet {
     pub fn check_resource(&self, id: &Id) -> ResourceCheck {
         let banned = self.bans.contains(id);
         let allowed = self.unbans.contains(id);
-        match (banned, allowed) {
-            (_, true) => ResourceCheck::Allowed,
-            (true, false) => ResourceCheck::Banned,
-            (false, false) => ResourceCheck::Unknown,
+        if allowed {
+            ResourceCheck::Allowed
+        } else if banned {
+            ResourceCheck::Banned
+        } else {
+            ResourceCheck::Unknown
+        }
+    }
+
+    /// Checks if the given resource is restricted.
+    pub fn check_restricted(&self, id: &Id) -> ResourceCheck {
+        let restricted = self.restrictions.contains(id);
+        let unrestricted = self.unrestrictions.contains(id);
+        if unrestricted {
+            ResourceCheck::Allowed
+        } else if restricted {
+            ResourceCheck::Banned
+        } else {
+            ResourceCheck::Unknown
         }
     }
 
@@ -776,15 +811,20 @@ mod rule_set_test {
         .unwrap();
         let want = serde_json::from_str(
             r#"[
+                "Obtainable Moves",
+                "Obtainable Abilities",
+                "Obtainable Formes",
+                "Obtainable Events",
                 "Team Preview",
-                "Sleep Clause",
                 "Species Clause",
+                "Item Clause",
                 "Nickname Clause",
+                "- Move Tag: OHKO",
                 "Endless Battle Clause",
+                "- Move Tag: Evasion Raising",
                 "- Ability Tag: Evasion Raising",
                 "- Item Tag: Evasion Raising",
-                "- Move Tag: Evasion Raising",
-                "- Move Tag: OHKO"
+                "Sleep Clause"
             ]"#,
         )
         .unwrap();

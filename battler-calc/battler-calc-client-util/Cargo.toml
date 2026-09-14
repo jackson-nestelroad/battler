@@ -13,7 +13,6 @@ anyhow = { workspace = true }
 
 battler = { workspace = true }
 battler-calc = { path = ".." }
-battler-client = { path = "../../battler-client" }
 battler-state = { path = "../../battler-state" }
 
 [dev-dependencies]

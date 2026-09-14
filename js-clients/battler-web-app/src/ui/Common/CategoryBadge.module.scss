@@ -1,0 +1,17 @@
+.categoryBadge {
+  /* CategoryBadge marker class */
+}
+
+.categoryBadgeMd {
+  &.fixedWidth {
+    width: var(--category-badge-width-md);
+    min-width: var(--category-badge-width-md);
+  }
+}
+
+.categoryBadgeSm {
+  &.fixedWidth {
+    width: var(--category-badge-width-sm);
+    min-width: var(--category-badge-width-sm);
+  }
+}

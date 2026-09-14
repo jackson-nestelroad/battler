@@ -103,3 +103,25 @@ fn fake_out_only_works_on_first_turn() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn torment_cannot_use_same_move_after_skipping_turn() {
+    let mut battle = make_battle(0, nuzleaf().unwrap(), nuzleaf().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Player 1 uses Torment on Player 2. Player 2 uses Tackle.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 1"), Ok(()));
+
+    // Turn 2: Both pass.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    // Turn 3: Tackle should still be disabled because it was the last move used.
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "move 1"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Nuzleaf's Tackle is disabled")
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+}

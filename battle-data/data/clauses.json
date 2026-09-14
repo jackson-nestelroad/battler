@@ -3,37 +3,42 @@
     "name": "Standard",
     "description": "The standard ruleset for all official singles battles.",
     "rules": [
+      "Obtainable",
       "Team Preview",
-      "Sleep Clause",
       "Species Clause",
+      "Item Clause",
       "Nickname Clause",
       "OHKO Clause",
-      "Evasion Items Clause",
+      "Endless Battle Clause",
       "Evasion Moves Clause",
-      "Endless Battle Clause"
+      "Evasion Items Clause",
+      "Sleep Clause"
     ]
   },
   "standarddoubles": {
     "name": "Standard Doubles",
     "description": "The standard ruleset for all official doubles battles.",
     "rules": [
+      "Obtainable",
       "Team Preview",
       "Species Clause",
+      "Item Clause",
       "Nickname Clause",
       "OHKO Clause",
+      "Endless Battle Clause",
       "Evasion Moves Clause",
-      "Gravity Sleep Clause",
-      "Endless Battle Clause"
+      "Gravity Sleep Clause"
     ]
   },
   "flatrules": {
     "name": "Flat Rules",
     "description": "In-game Flat Rules.",
     "rules": [
+      "Obtainable",
       "Team Preview",
       "Species Clause",
-      "Nickname Clause",
       "Item Clause",
+      "Nickname Clause",
       "Adjust Level Down = 50",
       "Picked Team Size = Auto",
       "- Restricted Legendary",
@@ -79,13 +84,13 @@
     "effect": {
       "callbacks": {
         "on_after_set_ability": [
-          "if !func_call(is_ally: $source $target):",
+          "if $source.is_defined and !func_call(is_ally: $source $target):",
           ["$target.volatile_effect_state.stale = true"],
           "else:",
           ["$target.volatile_effect_state.stale = false"]
         ],
         "on_after_heal": [
-          "if !func_call(is_ally: $source $target) and [healpulse, floralhealing] has $effect.id:",
+          "if $source.is_defined and !func_call(is_ally: $source $target) and [healpulse, floralhealing] has $effect.id:",
           ["$target.effect_state.stale = true"],
           "else:",
           ["$target.effect_state.stale = false"]
@@ -254,6 +259,32 @@
       }
     }
   },
+  "obtainable": {
+    "name": "Obtainable",
+    "description": "Requires Pokémon, moves, abilities, items, and formes to exist and be obtainable in-game.",
+    "rules": [
+      "Obtainable Moves",
+      "Obtainable Abilities",
+      "Obtainable Formes",
+      "Obtainable Events"
+    ]
+  },
+  "obtainablemoves": {
+    "name": "Obtainable Moves",
+    "description": "Requires moves to be learnable by the Pokémon."
+  },
+  "obtainableabilities": {
+    "name": "Obtainable Abilities",
+    "description": "Requires abilities to be obtainable by the Pokémon."
+  },
+  "obtainableformes": {
+    "name": "Obtainable Formes",
+    "description": "Requires formes to be obtainable by the Pokémon."
+  },
+  "obtainableevents": {
+    "name": "Obtainable Events",
+    "description": "Requires event-exclusive moves, abilities, and characteristics to match valid giveaway events."
+  },
   "ohkoclause": {
     "name": "OHKO Clause",
     "description": "Bans all OHKO moves.",
@@ -306,7 +337,7 @@
             "$status_state = func_call(status_effect_state: $mon)",
             "if !$status_state or !$status_state.source or func_call(is_ally: $status_state.source $mon):",
             ["continue"],
-            "log_activate",
+            "log_activate: with_target",
             "return stopfail"
           ]
         ]
@@ -318,6 +349,46 @@
     "description": "Bans all moves that induce sleep.",
     "rule_log": "Sleep Moves Clause: Sleep-inducing moves are banned",
     "rules": ["- Move Tag: Sleep Inducing"]
+  },
+  "gravitysleepclause": {
+    "name": "Gravity Sleep Clause",
+    "description": "Bans low-accuracy sleep-inducing moves alongside Gravity.",
+    "rule_log": "Gravity Sleep Clause: Low-accuracy sleep-inducing moves with Gravity are banned.",
+    "effect": {
+      "callbacks": {
+        "on_validate_team": [
+          "$sleep_move = undefined",
+          "$gravity = false",
+          "$gmax_orbeetle = false",
+          "foreach $mon in $player.team:",
+          [
+            "if $mon.species == orbeetle and $mon.gigantamax_factor:",
+            ["$gmax_orbeetle = true"],
+            "foreach $move_slot in $mon.move_slots:",
+            [
+              "$move = func_call(get_move: $move_slot.id)",
+              "if !$move:",
+              ["continue"],
+              "if func_call(move_has_flag: $move sleepinducing) and ($move.accuracy == exempt or $move.accuracy < 100):",
+              ["$sleep_move = $move.name"],
+              "if $move.id == gravity:",
+              ["$gravity = true"]
+            ]
+          ],
+          "if !$sleep_move:",
+          ["return $problems"],
+          "if $gravity:",
+          [
+            "$problems = func_call(append: $problems str('Low-accuracy sleep moves ({}) cannot be used with Gravity.', $sleep_move))"
+          ],
+          "if $gmax_orbeetle:",
+          [
+            "$problems = func_call(append: $problems str('Low-accuracy sleep moves ({}) cannot be used with G-Max Orbeetle.', $sleep_move))"
+          ],
+          "return $problems"
+        ]
+      }
+    }
   },
   "teampreview": {
     "name": "Team Preview",
@@ -375,6 +446,13 @@
     "description": "Maximum total EVs on each Mon.",
     "requires_value": true,
     "value_type": "NonNegativeInteger"
+  },
+  "limitrestricted": {
+    "name": "Limit Restricted",
+    "description": "Limits number of restricted Mons.",
+    "rule_log": "Limit {} Restricted: Limit {} restricted Mon.",
+    "value_type": "PositiveInteger",
+    "default_value": "1"
   },
   "maxlevel": {
     "name": "Max Level",

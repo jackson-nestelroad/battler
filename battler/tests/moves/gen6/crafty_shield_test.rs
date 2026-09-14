@@ -98,17 +98,17 @@ fn crafty_shield_does_not_protect_against_all_targeting_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Klefki,player-1,1|name:Crafty Shield",
-            "singleturn|mon:Klefki,player-1,1|move:Crafty Shield",
-            "move|mon:Sylveon,player-2,2|name:Perish Song|spread:Klefki,player-2,1;Sylveon,player-2,2;Klefki,player-1,1;Sylveon,player-1,2",
-            "fieldactivate|move:Perish Song",
-            "start|mon:Klefki,player-2,1|move:Perish Song|perish:3",
-            "start|mon:Klefki,player-1,1|move:Perish Song|perish:3",
-            "start|mon:Sylveon,player-2,2|move:Perish Song|perish:3",
-            "start|mon:Sylveon,player-1,2|move:Perish Song|perish:3",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Klefki,player-1,1|name:Crafty Shield",
+                "singleturn|mon:Klefki,player-1,1|move:Crafty Shield",
+                "move|mon:Sylveon,player-2,2|name:Perish Song|spread:Klefki,player-2,1;Sylveon,player-2,2;Klefki,player-1,1;Sylveon,player-1,2",
+                "fieldactivate|move:Perish Song",
+                "residual",
+                "start|mon:Klefki,player-2,1|move:Perish Song|perish:3",
+                "start|mon:Klefki,player-1,1|move:Perish Song|perish:3",
+                "start|mon:Sylveon,player-2,2|move:Perish Song|perish:3",
+                "start|mon:Sylveon,player-1,2|move:Perish Song|perish:3",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

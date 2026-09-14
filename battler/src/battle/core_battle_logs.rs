@@ -336,9 +336,13 @@ pub fn revert_terastallization(context: &mut ApplyingEffectContext) -> Result<()
 pub fn cant(
     context: &mut MonContext,
     effect: EffectHandle,
+    with_move: bool,
     source: Option<MonHandle>,
 ) -> Result<()> {
     let activation = EffectActivationContext {
+        effect: with_move
+            .then(|| context.mon().active_move.map(|handle| handle.into()))
+            .flatten(),
         target: Some(context.mon_handle()),
         source_effect: Some(effect),
         source,
@@ -829,7 +833,6 @@ pub fn type_change(context: &mut ApplyingEffectContext, types: &[Type]) -> Resul
     let types = types.iter().map(|typ| typ.to_string()).join("/");
     let activation = EffectActivationContext {
         target: Some(context.target_handle()),
-        ignore_active_move_source_effect: true,
         source_effect: Some(context.effect_handle().clone()),
         source: context.source_handle(),
         additional: Vec::from_iter([format!("types:{types}")]),
@@ -926,6 +929,41 @@ pub fn ability(context: &mut ApplyingEffectContext) -> Result<()> {
     )
 }
 
+pub fn ability_start(
+    context: &mut ApplyingEffectContext,
+    ability_source: Option<MonHandle>,
+) -> Result<()> {
+    let ability = context
+        .battle()
+        .dex
+        .abilities
+        .get_by_id(&context.target().volatile_state.ability_slot.ability.id)?
+        .data
+        .name
+        .clone();
+    let mut additional = Vec::from_iter([format!("ability:{ability}")]);
+    if let Some(ability_source) = ability_source {
+        let source_str = Mon::position_details(
+            &context
+                .as_battle_context_mut()
+                .mon_context(ability_source)?,
+        )?;
+        additional.push(format!("source:{source_str}"));
+    }
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "abilitystart".to_owned(),
+        activation,
+    )
+}
+
 pub fn ability_end(context: &mut ApplyingEffectContext) -> Result<()> {
     let ability = context
         .battle()
@@ -973,6 +1011,44 @@ pub fn item(context: &mut ApplyingEffectContext) -> Result<()> {
     effect_activation(
         context.as_battle_context_mut(),
         "item".to_owned(),
+        activation,
+    )
+}
+
+pub fn item_start(
+    context: &mut ApplyingEffectContext,
+    item_source: Option<MonHandle>,
+) -> Result<()> {
+    let item = match context.target().item.clone() {
+        Some(item) => item,
+        None => return Err(general_error("target has no item")),
+    };
+    let item = context
+        .battle()
+        .dex
+        .items
+        .get_by_id(&item)?
+        .data
+        .name
+        .clone();
+
+    let mut additional = Vec::from_iter([format!("item:{item}")]);
+    if let Some(item_source) = item_source {
+        let source_str =
+            Mon::position_details(&context.as_battle_context_mut().mon_context(item_source)?)?;
+        additional.push(format!("source:{source_str}"));
+    }
+
+    let activation = EffectActivationContext {
+        target: Some(context.target_handle()),
+        source_effect: Some(context.effect_handle().clone()),
+        source: context.source_handle(),
+        additional,
+        ..Default::default()
+    };
+    effect_activation(
+        context.as_battle_context_mut(),
+        "itemstart".to_owned(),
         activation,
     )
 }

@@ -1,0 +1,108 @@
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-xs);
+  text-align: center;
+
+  th {
+    padding: var(--spacing-xxs);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: var(--font-size-xxs);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: var(--spacing-xxs);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+}
+
+.bstVal {
+  color: var(--color-info);
+  font-weight: 700;
+}
+
+.haTag {
+  color: var(--text-muted);
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+}
+
+.separator {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin: 0 var(--spacing-xs);
+  user-select: none;
+}
+
+.genderWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  width: 8.5rem;
+  max-width: 100%;
+  min-width: 0;
+  padding-top: var(--spacing-xxs);
+}
+
+.genderBar {
+  display: flex;
+  width: 100%;
+  height: calc(var(--spacing-xs) + var(--spacing-xxs));
+  border-radius: var(--border-radius-pill);
+  overflow: hidden;
+  background-color: var(--color-secondary-bg);
+  align-items: stretch;
+}
+
+.genderBarMale {
+  background-color: var(--color-type-water);
+  height: 100%;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.genderBarFemale {
+  background-color: var(--color-type-psychic);
+  height: 100%;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.genderRatioLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.genderMaleLabel {
+  color: var(--color-type-water);
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-xxs);
+  line-height: 1;
+}
+
+.genderFemaleLabel {
+  color: var(--color-type-psychic);
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--spacing-xxs);
+  line-height: 1;
+  margin-left: auto;
+}
+
+.genderSymbol {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  vertical-align: -0.05em;
+}

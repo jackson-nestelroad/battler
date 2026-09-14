@@ -1,0 +1,299 @@
+import type { MonMoveSlotData, PlayerBattleData, Request } from "battler-types";
+import { describe, expect, it } from "vitest";
+import {
+  canSlotSelect,
+  canSlotShift,
+  canSlotSwitch,
+  computeHpPercentage,
+  formatBallName,
+  formatStatusBadge,
+  getActiveSlotPosition,
+  getMonDisplayName,
+  getMonForSlot,
+  getMonTeamPosition,
+  getRequestSlotCount,
+  getSelectReason,
+  getSlotLabel,
+  normalizeStatusCode,
+  resolveActiveMonName,
+} from "./monHelpers";
+
+describe("monHelpers", () => {
+  it("returns mon display name correctly", () => {
+    expect(getMonDisplayName(null)).toBe("");
+    expect(getMonDisplayName({ species: "Pikachu" })).toBe("Pikachu");
+    expect(getMonDisplayName({ summary: { name: "Sparky" }, species: "Pikachu" })).toBe("Sparky");
+  });
+
+  it("returns mon team position with fallbacks", () => {
+    expect(getMonTeamPosition(null, 2)).toBe(2);
+    expect(getMonTeamPosition({ player_team_position: 1 }, 0)).toBe(1);
+    expect(getMonTeamPosition({ team_position: 3 }, 0)).toBe(3);
+  });
+
+  it("formats slot label correctly", () => {
+    expect(getSlotLabel(1, "Pikachu")).toBe("Slot 1: Pikachu");
+    expect(getSlotLabel(2, null)).toBe("Slot 2");
+    expect(getSlotLabel(3, "")).toBe("Slot 3");
+  });
+
+  it("calculates request slot count correctly", () => {
+    expect(getRequestSlotCount(null)).toBe(0);
+    expect(getRequestSlotCount(undefined)).toBe(0);
+    const turnReq = {
+      type: "turn",
+      active: [{ team_position: 0 }, { team_position: 1 }],
+    } as unknown as Request;
+    expect(getRequestSlotCount(turnReq)).toBe(2);
+
+    const switchReq = {
+      type: "switch",
+      needs_switch: [0, 1, 2],
+    } as unknown as Request;
+    expect(getRequestSlotCount(switchReq)).toBe(3);
+
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 0, reason: "Revive" }],
+    } as unknown as Request;
+    expect(getRequestSlotCount(selectReq)).toBe(1);
+  });
+
+  it("resolves mon for slot index correctly", () => {
+    const playerData = {
+      mons: [
+        { species: "Charizard", player_team_position: 0, hp: 0 },
+        { species: "Pikachu", player_team_position: 1, hp: 100, player_active_position: 0 },
+        { species: "Zarude", player_team_position: 5, hp: 0 },
+      ],
+    };
+
+    const turnReq = {
+      type: "turn",
+      active: [{ team_position: 1 }],
+    } as unknown as Request;
+
+    expect(getMonForSlot(playerData, turnReq, 0)?.species).toBe("Pikachu");
+
+    const uturnSwitchReq = {
+      type: "switch",
+      needs_switch: [0],
+    } as unknown as Request;
+
+    expect(getMonForSlot(playerData, uturnSwitchReq, 0)?.species).toBe("Pikachu");
+
+    const faintSwitchReq = {
+      type: "switch",
+      needs_switch: [1],
+    } as unknown as Request;
+
+    expect(getMonForSlot(playerData, faintSwitchReq, 0)).toBeNull();
+
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 0, reason: "Revive" }],
+    } as unknown as Request;
+
+    expect(getMonForSlot(playerData, selectReq, 0)?.species).toBe("Pikachu");
+  });
+
+  it("resolves active slot position and selection reason correctly", () => {
+    const selectReq = {
+      type: "select",
+      positions: [{ position: 1, reason: "Revive" }],
+    } as unknown as Request;
+
+    expect(canSlotSelect(null, 0)).toBe(false);
+    expect(canSlotSelect(undefined, 0)).toBe(false);
+    expect(getSelectReason(null, 0)).toBeNull();
+    expect(getSelectReason(undefined, 0)).toBeNull();
+
+    expect(getActiveSlotPosition(selectReq, 0)).toBe(1);
+    expect(canSlotSelect(selectReq, 0)).toBe(true);
+    expect(canSlotSelect(selectReq, 1)).toBe(false);
+    expect(getSelectReason(selectReq, 0)).toBe("Revive");
+    expect(getSelectReason(selectReq, 1)).toBeNull();
+  });
+
+  it("determines canSlotShift dynamically for any active slot count", () => {
+    // Singles & Doubles (<= 2)
+    expect(canSlotShift(0, 1)).toBe(false);
+    expect(canSlotShift(0, 2)).toBe(false);
+    expect(canSlotShift(1, 2)).toBe(false);
+
+    // Triples (3): Center is slot index 1
+    expect(canSlotShift(0, 3)).toBe(true);
+    expect(canSlotShift(1, 3)).toBe(false); // center cannot shift
+    expect(canSlotShift(2, 3)).toBe(true);
+
+    // Quintuples (5): Center is slot index 2
+    expect(canSlotShift(0, 5)).toBe(true);
+    expect(canSlotShift(1, 5)).toBe(true);
+    expect(canSlotShift(2, 5)).toBe(false); // center cannot shift
+    expect(canSlotShift(3, 5)).toBe(true);
+    expect(canSlotShift(4, 5)).toBe(true);
+
+    // Trapped mon cannot shift
+    expect(canSlotShift(0, 3, true)).toBe(false);
+  });
+
+  it("determines canSlotSwitch correctly including trapped mon attempts", () => {
+    expect(canSlotSwitch(null, 0)).toBe(false);
+    expect(canSlotSwitch(null, 0, null)).toBe(false);
+
+    // Turn request without trapped
+    const normalTurnReq = {
+      type: "turn",
+      active: [{ team_position: 0, trapped: false }],
+    } as unknown as Request;
+    expect(canSlotSwitch(normalTurnReq, 0)).toBe(true);
+    expect(canSlotSwitch(normalTurnReq, 0, null)).toBe(true);
+    // When a move is selected, cannot switch
+    expect(
+      canSlotSwitch(normalTurnReq, 0, {
+        id: "thunderbolt",
+        name: "Thunderbolt",
+        pp: 15,
+        max_pp: 15,
+        disabled: false,
+      } as MonMoveSlotData),
+    ).toBe(false);
+
+    // Turn request WITH trapped mon: should return true to allow user to try switching
+    const trappedTurnReq = {
+      type: "turn",
+      active: [{ team_position: 0, trapped: true }],
+    } as unknown as Request;
+    expect(canSlotSwitch(trappedTurnReq, 0, null)).toBe(true);
+
+    // Switch request
+    const switchReq = {
+      type: "switch",
+      needs_switch: [0],
+    } as unknown as Request;
+    expect(canSlotSwitch(switchReq, 0)).toBe(true);
+    expect(canSlotSwitch(switchReq, 0, null)).toBe(true);
+    expect(canSlotSwitch(switchReq, 1)).toBe(false);
+    expect(canSlotSwitch(switchReq, 1, null)).toBe(false);
+  });
+
+  it("normalizes status codes and condition names into standard badges", () => {
+    // Log condition names
+    expect(formatStatusBadge("Poison")).toEqual({ code: "psn", label: "PSN" });
+    expect(formatStatusBadge("Bad Poison")).toEqual({ code: "tox", label: "TOX" });
+    expect(formatStatusBadge("Burn")).toEqual({ code: "brn", label: "BRN" });
+    expect(formatStatusBadge("Paralysis")).toEqual({ code: "par", label: "PAR" });
+    expect(formatStatusBadge("Sleep")).toEqual({ code: "slp", label: "SLP" });
+    expect(formatStatusBadge("Freeze")).toEqual({ code: "frz", label: "FRZ" });
+    expect(formatStatusBadge("Fainted")).toEqual({ code: "fnt", label: "FNT" });
+
+    // Request engine IDs
+    expect(formatStatusBadge("psn")).toEqual({ code: "psn", label: "PSN" });
+    expect(formatStatusBadge("tox")).toEqual({ code: "tox", label: "TOX" });
+    expect(formatStatusBadge("brn")).toEqual({ code: "brn", label: "BRN" });
+    expect(formatStatusBadge("par")).toEqual({ code: "par", label: "PAR" });
+    expect(formatStatusBadge("slp")).toEqual({ code: "slp", label: "SLP" });
+    expect(formatStatusBadge("frz")).toEqual({ code: "frz", label: "FRZ" });
+    expect(formatStatusBadge("fnt")).toEqual({ code: "fnt", label: "FNT" });
+
+    // Empty / null
+    expect(formatStatusBadge(null)).toBeNull();
+    expect(formatStatusBadge("")).toBeNull();
+  });
+
+  it("formats ball names correctly", () => {
+    expect(formatBallName(null)).toBe("");
+    expect(formatBallName("")).toBe("");
+    expect(formatBallName("pokeball")).toBe("Poké Ball");
+    expect(formatBallName("greatball")).toBe("Great Ball");
+    expect(formatBallName("ultra_ball")).toBe("Ultra Ball");
+    expect(formatBallName("master-ball")).toBe("Master Ball");
+    expect(formatBallName("cherishball")).toBe("Cherish Ball");
+    expect(formatBallName("ball")).toBe("Ball");
+  });
+
+  it("computes clamped integer HP percentage correctly", () => {
+    expect(computeHpPercentage(50, 100)).toBe(50);
+    expect(computeHpPercentage(100, 100)).toBe(100);
+    expect(computeHpPercentage(0, 100)).toBe(0);
+    expect(computeHpPercentage(-10, 100)).toBe(0);
+    expect(computeHpPercentage(150, 100)).toBe(100);
+    expect(computeHpPercentage(1, 3)).toBe(33);
+    expect(computeHpPercentage(2, 3)).toBe(67);
+    expect(computeHpPercentage(0, 0)).toBe(0);
+    expect(computeHpPercentage(50, 0)).toBe(0);
+    expect(computeHpPercentage(10, -5)).toBe(0);
+  });
+
+  it("normalizes status codes correctly", () => {
+    expect(normalizeStatusCode(null)).toBeNull();
+    expect(normalizeStatusCode(undefined)).toBeNull();
+    expect(normalizeStatusCode("")).toBeNull();
+    expect(normalizeStatusCode("brn")).toBe("brn");
+    expect(normalizeStatusCode("Burn")).toBe("brn");
+    expect(normalizeStatusCode("psn")).toBe("psn");
+    expect(normalizeStatusCode("Poison")).toBe("psn");
+    expect(normalizeStatusCode("tox")).toBe("tox");
+    expect(normalizeStatusCode("Toxic")).toBe("tox");
+    expect(normalizeStatusCode("Bad Poison")).toBe("tox");
+    expect(normalizeStatusCode("par")).toBe("par");
+    expect(normalizeStatusCode("Paralysis")).toBe("par");
+    expect(normalizeStatusCode("slp")).toBe("slp");
+    expect(normalizeStatusCode("Sleep")).toBe("slp");
+    expect(normalizeStatusCode("frz")).toBe("frz");
+    expect(normalizeStatusCode("Freeze")).toBe("frz");
+    expect(normalizeStatusCode("fnt")).toBe("fnt");
+    expect(normalizeStatusCode("FNT")).toBe("fnt");
+    expect(normalizeStatusCode("Fainted")).toBe("fnt");
+    expect(normalizeStatusCode("faint")).toBe("fnt");
+    expect(normalizeStatusCode("ok")).toBe("ok");
+    expect(normalizeStatusCode("OK")).toBe("ok");
+  });
+
+  describe("resolveActiveMonName", () => {
+    it("resolves active mon name from playerData when side matches playerData.side (side 0)", () => {
+      const playerData = {
+        side: 0,
+        mons: [{ player_active_position: 0, name: "Sparky", species: "Pikachu" }],
+      } as unknown as PlayerBattleData;
+      expect(resolveActiveMonName(playerData, null, 0, 0, "Fallback")).toBe("Sparky");
+    });
+
+    it("resolves active mon name from playerData when side matches playerData.side (side 1)", () => {
+      const playerData = {
+        side: 1,
+        mons: [{ player_active_position: 0, name: "Blaze", species: "Charizard" }],
+      } as unknown as PlayerBattleData;
+      expect(resolveActiveMonName(playerData, null, 1, 0, "Fallback")).toBe("Blaze");
+    });
+
+    it("resolves active mon name from battleState when querying foe side", () => {
+      const playerData = {
+        side: 0,
+        mons: [{ player_active_position: 0, name: "Sparky" }],
+      } as unknown as PlayerBattleData;
+      const battleState = {
+        field: {
+          sides: [
+            { active: [] },
+            {
+              players: {
+                "foe-1": {
+                  mons: [{ physical_appearance: { name: "Great Tusk" } }],
+                },
+              },
+              active: [{ player: "foe-1", mon_index: 0 }],
+            },
+          ],
+        },
+      } as any;
+
+      expect(resolveActiveMonName(playerData, battleState, 1, 0, "Fallback")).toBe("Great Tusk");
+    });
+
+    it("falls back to fallbackName when mon has no name", () => {
+      expect(resolveActiveMonName(null, null, 0, 0, "Fallback")).toBe("Fallback");
+    });
+  });
+});
+

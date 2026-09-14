@@ -187,7 +187,7 @@
       "callbacks": {
         "on_player_try_use_item": ["require func_call(has_volatile: $target confusion)"],
         "on_player_use": ["eat_given_item: $mon $this.id"],
-        "on_update": ["if func_call(has_volatile: $target confusion):", ["eat_item: $mon"]],
+        "on_update": ["if func_call(has_volatile: $mon confusion):", ["eat_item: $mon"]],
         "on_eat": ["remove_volatile: $mon confusion"]
       }
     }

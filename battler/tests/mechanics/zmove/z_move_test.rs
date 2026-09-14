@@ -5,6 +5,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -141,6 +142,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("gigavolthavoc"),
                     name: "Gigavolt Havoc".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
@@ -155,6 +157,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("gigavolthavoc"),
                     name: "Gigavolt Havoc".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
@@ -181,6 +184,7 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
                 MonMoveSlotData {
                     id: Id::from("hydrovortex"),
                     name: "Hydro Vortex".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 25,
                     max_pp: 25,
                     target: MoveTarget::Normal,
@@ -213,12 +217,12 @@ fn type_based_z_crystal_transforms_moves_of_same_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Electrium Z",
             "move|mon:Pikachu,player-1,1|name:Gigavolt Havoc|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:22/115",
             "damage|mon:Eevee,player-2,1|health:20/100",
-            "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
+            "singleturn|mon:Eevee,player-2,1|condition:Z-Power|from:item:Waterium Z",
             "move|mon:Eevee,player-2,1|name:Hydro Vortex|target:Pikachu,player-1,1",
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:53/95",
@@ -247,6 +251,7 @@ fn species_based_z_crystal_only_allows_single_move_and_user() {
                 MonMoveSlotData {
                     id: Id::from("catastropika"),
                     name: "Catastropika".to_owned(),
+                    category: MoveCategory::Physical,
                     pp: 15,
                     max_pp: 15,
                     target: MoveTarget::Normal,
@@ -294,7 +299,7 @@ fn species_based_z_crystal_only_allows_single_move_and_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Pikanium Z",
             "move|mon:Pikachu,player-1,1|name:Catastropika|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:0",
@@ -348,9 +353,9 @@ fn z_power_boosts_critical_hit_ratio() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Flyinium Z",
             "move|mon:Pikachu,player-1,1|name:Tailwind|zpower",
-            "start|mon:Pikachu,player-1,1|move:Focus Energy",
+            "start|mon:Pikachu,player-1,1|move:Focus Energy|from:Z-Power",
             "sidestart|side:0|move:Tailwind",
             "residual",
             "turn|turn:2"
@@ -372,9 +377,9 @@ fn z_power_clears_negative_boosts() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Swords Dance|target:Pikachu,player-1,1|zpower",
-            "clearnegativeboosts|mon:Pikachu,player-1,1",
+            "clearnegativeboosts|mon:Pikachu,player-1,1|from:Z-Power",
             "boost|mon:Pikachu,player-1,1|stat:atk|by:2",
             "residual",
             "turn|turn:2"
@@ -400,11 +405,11 @@ fn z_power_fully_heals() {
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:58/95",
             "damage|mon:Pikachu,player-1,1|health:62/100",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Belly Drum|target:Pikachu,player-1,1|zpower",
             "split|side:0",
-            "heal|mon:Pikachu,player-1,1|health:95/95",
-            "heal|mon:Pikachu,player-1,1|health:100/100",
+            "heal|mon:Pikachu,player-1,1|from:Z-Power|health:95/95",
+            "heal|mon:Pikachu,player-1,1|from:Z-Power|health:100/100",
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:48/95",
             "damage|mon:Pikachu,player-1,1|health:51/100",
@@ -434,8 +439,9 @@ fn z_power_fully_heals_replacement() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Darkinium Z",
             "move|mon:Pikachu,player-1,1|name:Memento|target:Eevee,player-2,1|zpower",
+            "slotstart|side:0|slot:0|condition:Z-Power|of:Pikachu,player-1,1",
             "unboost|mon:Eevee,player-2,1|stat:atk|by:2",
             "unboost|mon:Eevee,player-2,1|stat:spa|by:2",
             "faint|mon:Pikachu,player-1,1",
@@ -445,8 +451,9 @@ fn z_power_fully_heals_replacement() {
             ["switch", "player-1", "Raichu"],
             ["switch", "player-1", "Raichu"],
             "split|side:0",
-            "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:120/120",
-            "heal|mon:Raichu,player-1,1|from:Heal Replacement|health:100/100",
+            "heal|mon:Raichu,player-1,1|from:Z-Power|health:120/120",
+            "heal|mon:Raichu,player-1,1|from:Z-Power|health:100/100",
+            "slotend|side:0|slot:0|condition:Z-Power",
             "turn|turn:4"
         ]"#,
     )
@@ -472,9 +479,9 @@ fn z_power_redirects_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Ghostium Z",
             "move|mon:Pikachu,player-1,1|name:Destiny Bond|target:Pikachu,player-1,1|zpower",
-            "singleturn|mon:Pikachu,player-1,1|move:Follow Me",
+            "singleturn|mon:Pikachu,player-1,1|move:Follow Me|from:Z-Power",
             "singlemove|mon:Pikachu,player-1,1|move:Destiny Bond",
             "move|mon:Eevee,player-2,1|name:Water Gun|target:Pikachu,player-1,1",
             "split|side:0",
@@ -500,7 +507,7 @@ fn z_power_boosts_stats() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Splash|target:Pikachu,player-1,1|zpower",
             "boost|mon:Pikachu,player-1,1|stat:atk|by:3|from:Z-Power",
             "activate|move:Splash",
@@ -531,7 +538,7 @@ fn z_power_applies_even_if_move_fails() {
             "residual",
             "turn|turn:2",
             "continue",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Psychium Z",
             "move|mon:Pikachu,player-1,1|name:Hypnosis|zpower|noanim",
             "boost|mon:Pikachu,player-1,1|stat:spe|by:1|from:Z-Power",
             "fail|mon:Pikachu,player-1,1",
@@ -555,7 +562,7 @@ fn z_power_applies_even_if_move_fails_due_to_immunity() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
+            "singleturn|mon:Eevee,player-2,1|condition:Z-Power|from:item:Electrium Z",
             "move|mon:Eevee,player-2,1|name:Thunder Wave|zpower|noanim",
             "boost|mon:Eevee,player-2,1|stat:spd|by:1|from:Z-Power",
             "immune|mon:Pikachu,player-1,1",
@@ -584,22 +591,22 @@ fn z_move_changes_based_on_move_with_dynamic_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-1,1|name:Rain Dance",
-            "weather|weather:Rain",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
-            "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|noanim",
-            "move|mon:Pikachu,player-1,1|name:Hydro Vortex|target:Eevee,player-2,1",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|health:61/115",
-            "damage|mon:Eevee,player-2,1|health:54/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Pikachu,player-1,1|name:Rain Dance",
+                "weather|weather:Rain",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2",
+                "continue",
+                "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
+                "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|noanim",
+                "move|mon:Pikachu,player-1,1|name:Hydro Vortex|target:Eevee,player-2,1",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|health:61/115",
+                "damage|mon:Eevee,player-2,1|health:54/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -619,7 +626,7 @@ fn z_move_hits_through_protect() {
         r#"[
             "move|mon:Eevee,player-2,1|name:Protect|target:Eevee,player-2,1",
             "singleturn|mon:Eevee,player-2,1|move:Protect",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Electrium Z",
             "move|mon:Pikachu,player-1,1|name:Gigavolt Havoc|target:Eevee,player-2,1",
             "protectweaken|mon:Eevee,player-2,1",
             "split|side:1",
@@ -645,7 +652,7 @@ fn disable_fails_after_z_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -672,7 +679,7 @@ fn mimic_fails_after_z_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -699,7 +706,7 @@ fn sketch_fails_after_z_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -726,7 +733,7 @@ fn spite_deducts_pp_of_base_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -753,7 +760,7 @@ fn me_first_fails_for_z_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -783,7 +790,7 @@ fn curse_applies_boosts_for_non_ghost_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Ghostium Z",
             "move|mon:Pikachu,player-1,1|name:Curse|target:Pikachu,player-1,1|zpower",
             "boost|mon:Pikachu,player-1,1|stat:atk|by:1|from:Z-Power",
             "boost|mon:Pikachu,player-1,1|stat:atk|by:1",
@@ -811,21 +818,21 @@ fn curse_applies_heal_for_ghost_user() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Mimikyu,player-1,1|condition:Z-Power",
-            "move|mon:Mimikyu,player-1,1|name:Curse|target:Eevee,player-2,1|zpower",
-            "split|side:0",
-            "heal|mon:Mimikyu,player-1,1|health:115/115",
-            "heal|mon:Mimikyu,player-1,1|health:100/100",
-            "start|mon:Eevee,player-2,1|move:Curse",
-            "split|side:0",
-            "damage|mon:Mimikyu,player-1,1|health:58/115",
-            "damage|mon:Mimikyu,player-1,1|health:51/100",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115",
-            "damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "singleturn|mon:Mimikyu,player-1,1|condition:Z-Power|from:item:Ghostium Z",
+                "move|mon:Mimikyu,player-1,1|name:Curse|target:Eevee,player-2,1|zpower",
+                "split|side:0",
+                "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:115/115",
+                "heal|mon:Mimikyu,player-1,1|from:Z-Power|health:100/100",
+                "start|mon:Eevee,player-2,1|move:Curse|of:Mimikyu,player-1,1",
+                "split|side:0",
+                "damage|mon:Mimikyu,player-1,1|health:58/115",
+                "damage|mon:Mimikyu,player-1,1|health:51/100",
+                "residual",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|from:move:Curse|health:87/115",
+                "damage|mon:Eevee,player-2,1|from:move:Curse|health:76/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);
@@ -852,7 +859,7 @@ fn cannot_take_z_crystal() {
             "residual",
             "turn|turn:2",
             "continue",
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Breakneck Blitz|target:Eevee,player-2,1",
             "split|side:1",
             "damage|mon:Eevee,player-2,1|health:65/115",
@@ -884,7 +891,7 @@ fn metronome_upgrades_used_move_to_z_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Metronome|target:Pikachu,player-1,1|zpower",
             "move|mon:Pikachu,player-1,1|name:Bloom Doom|target:Eevee,player-2,1|from:move:Metronome",
             "split|side:1",
@@ -913,7 +920,7 @@ fn metronome_upgrades_used_move_to_z_status_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power",
+            "singleturn|mon:Pikachu,player-1,1|condition:Z-Power|from:item:Normalium Z",
             "move|mon:Pikachu,player-1,1|name:Metronome|target:Pikachu,player-1,1|zpower",
             "move|mon:Pikachu,player-1,1|name:Mist|from:move:Metronome|zpower",
             "sidestart|side:0|move:Mist",
@@ -948,7 +955,7 @@ fn encore_does_not_override_z_move() {
             "continue",
             "move|mon:Pikachu,player-1,1|name:Encore|target:Eevee,player-2,1",
             "start|mon:Eevee,player-2,1|move:Encore",
-            "singleturn|mon:Eevee,player-2,1|condition:Z-Power",
+            "singleturn|mon:Eevee,player-2,1|condition:Z-Power|from:item:Darkinium Z",
             "move|mon:Eevee,player-2,1|name:Black Hole Eclipse|target:Pikachu,player-1,1",
             "split|side:0",
             "damage|mon:Pikachu,player-1,1|health:5/95",

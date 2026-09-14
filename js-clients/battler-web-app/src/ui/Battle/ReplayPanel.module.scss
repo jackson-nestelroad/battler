@@ -1,0 +1,112 @@
+@use "../../styles/breakpoints" as *;
+
+.replayPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-m);
+  padding: var(--spacing-m);
+  text-align: center;
+  width: 100%;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.replaySubtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+  margin: 0;
+}
+
+.scrubberHeader {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+}
+
+.turnScrubber {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+  width: 100%;
+  margin: var(--spacing-m) 0;
+}
+
+.scrubberRange {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: rem(16px);
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: rem(6px);
+    background: linear-gradient(
+      to right,
+      var(--color-primary) 0%,
+      var(--color-primary) var(--range-progress, 0%),
+      var(--bg-input) var(--range-progress, 0%),
+      var(--bg-input) 100%
+    );
+    border-radius: var(--border-radius-xs);
+    border: 1px solid var(--border-color);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: rem(16px);
+    height: rem(16px);
+    border-radius: var(--border-radius-round);
+    background: var(--color-primary);
+    margin-top: rem(-5px);
+    transition:
+      transform 0.1s ease,
+      background-color 0.1s ease;
+    border: none;
+
+    &:hover {
+      background: var(--color-primary-hover);
+      transform: scale(1.15);
+    }
+  }
+
+  &::-moz-range-track {
+    width: 100%;
+    height: rem(6px);
+    background: linear-gradient(
+      to right,
+      var(--color-primary) 0%,
+      var(--color-primary) var(--range-progress, 0%),
+      var(--bg-input) var(--range-progress, 0%),
+      var(--bg-input) 100%
+    );
+    border-radius: var(--border-radius-xs);
+    border: 1px solid var(--border-color);
+  }
+
+  &::-moz-range-thumb {
+    width: rem(16px);
+    height: rem(16px);
+    border-radius: var(--border-radius-round);
+    background: var(--color-primary);
+    transition:
+      transform 0.1s ease,
+      background-color 0.1s ease;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-primary-hover);
+      transform: scale(1.15);
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { Metadata, MemberData } from './types';
+import { Metadata } from './types';
 import { 
     isFxLangContext, 
     isInFxLangProgram,
@@ -288,7 +288,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
             const type = resolveType(chain, symbols, metadata, eventName);
             
             const varName = chain.join('.');
-            const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
+            const wordRange = document.getWordRangeAtPosition(position, /[$a-zA-Z0-9_.]+/);
             
             let items: vscode.CompletionItem[] = [];
             if (type) {
@@ -335,7 +335,6 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
             // Add functions that take this type as an optional first parameter (pseudo-methods)
             if (type) {
                 const varName = chain.join('.');
-                const types = type.split(' | ');
                 for (const [name, data] of Object.entries(metadata.functions)) {
                     const firstParam = data.parameters[0];
                     if (firstParam) {
@@ -347,7 +346,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
                         item.sortText = '3_' + name;
                         item.documentation = new vscode.MarkdownString(data.description);
                         
-                        const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
+                        const wordRange = document.getWordRangeAtPosition(position, /[$a-zA-Z0-9_.]+/);
                         if (wordRange) {
                             item.range = wordRange;
                         }
@@ -360,7 +359,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
                         item.insertText = new vscode.SnippetString(`${name}: ${escapedVarName}${snippetParams ? ' ' + snippetParams : ''}`);
                         
                         const paramsText = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-                        const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
+                        const returnTypeStr = getDisplayType(data.type, data.item_type);
                         item.detail = `(Function) ${name}(${paramsText}) -> ${returnTypeStr}`;
                         items.push(item);
                         }
@@ -422,7 +421,7 @@ class FxCompletionItemProvider implements vscode.CompletionItemProvider {
             item.sortText = ' ' + name;
             item.range = wordRange;
             const params = data.parameters.map(p => p.optional ? `[${p.name}: ${p.type}]` : `${p.name}: ${p.type}`).join(', ');
-            const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
+            const returnTypeStr = getDisplayType(data.type, data.item_type);
             item.detail = `(Function) ${name}(${params}) -> ${returnTypeStr}`;
             item.documentation = new vscode.MarkdownString(data.description);
             
@@ -483,7 +482,7 @@ class FxHoverProvider implements vscode.HoverProvider {
         try {
             if (!isFxLangContext(document, position, metadata)) return undefined;
 
-            const wordRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_]+/);
+            const wordRange = document.getWordRangeAtPosition(position, /[$a-zA-Z0-9_]+/);
             if (!wordRange) return null;
 
             const word = document.getText(wordRange);
@@ -522,7 +521,7 @@ class FxHoverProvider implements vscode.HoverProvider {
                         return new vscode.Hover(new vscode.MarkdownString(`**Variable \`${word}\`** (${origin})\n\nType: \`${type}\`${optional ? ' (optional)' : ''}`));
                     }
                 } else {
-                    const fullRange = document.getWordRangeAtPosition(position, /[\$a-zA-Z0-9_.]+/);
+                    const fullRange = document.getWordRangeAtPosition(position, /[$a-zA-Z0-9_.]+/);
                     if (fullRange) {
                         const fullText = document.getText(fullRange);
                         const chain = fullText.split('.');
@@ -571,7 +570,7 @@ class FxHoverProvider implements vscode.HoverProvider {
                                         
                                         const hoverText = new vscode.MarkdownString();
                                         hoverText.appendMarkdown(`**Pseudo-Method \`${lastMember}\`**\n\n`);
-                                        const returnTypeStr = getDisplayType(fnData.type, (fnData as any).item_type);
+                                        const returnTypeStr = getDisplayType(fnData.type, fnData.item_type);
                                         hoverText.appendCodeblock(`${lastMember}(${params}) -> ${returnTypeStr}`, 'fxlang');
                                         hoverText.appendMarkdown(`\n\n${fnData.description}`);
                                         if (paramDetails) hoverText.appendMarkdown(`\n\n**Parameters:**\n${paramDetails}`);
@@ -617,7 +616,7 @@ class FxHoverProvider implements vscode.HoverProvider {
                     
                     const hoverText = new vscode.MarkdownString();
                     hoverText.appendMarkdown(`**Function \`${word2}\`**\n\n`);
-                    const returnTypeStr = getDisplayType(data.type, (data as any).item_type);
+                    const returnTypeStr = getDisplayType(data.type, data.item_type);
                     hoverText.appendCodeblock(`${word2}(${params}) -> ${returnTypeStr}`, 'fxlang');
                     hoverText.appendMarkdown(`\n\n${data.description}`);
                     if (paramDetails) {
@@ -643,7 +642,7 @@ class FxHoverProvider implements vscode.HoverProvider {
             try {
                 const logPath = path.join(__dirname, '..', 'error_log.txt');
                 fs.appendFileSync(logPath, `${new Date().toISOString()} - ${err instanceof Error ? err.stack : String(err)}\n`);
-            } catch (e) {
+            } catch {
                 // Suppress
             }
             return undefined;
@@ -685,7 +684,7 @@ class FxEventCompletionItemProvider implements vscode.CompletionItemProvider {
             }
             
             if (braceDepth < 0) {
-                const keyMatch = l.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[\{\[]/);
+                const keyMatch = l.match(/^"([a-zA-Z0-9_]+)"\s*:\s*[{[]/);
                 if (keyMatch && keyMatch[1] !== 'callbacks') {
                     insideEvent = true;
                     break;

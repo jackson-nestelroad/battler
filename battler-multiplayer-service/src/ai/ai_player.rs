@@ -4,6 +4,7 @@ use std::{
         Arc,
         Weak,
     },
+    time::Duration,
 };
 
 use ahash::HashSet;
@@ -72,8 +73,10 @@ impl<'d> AiPlayerHandle<'d> {
     /// Joins the task.
     #[allow(unused)]
     pub async fn join(mut self) -> Result<(), JoinError> {
-        // SAFETY: `join_handle` is set
-        self.join_handle.take().unwrap().await
+        match self.join_handle.take() {
+            Some(handle) => handle.await,
+            None => Ok(()),
+        }
     }
 
     /// The error receiver channel.
@@ -339,6 +342,29 @@ impl<'d> AiPlayer<'d> {
         Ok(())
     }
 
+    async fn list_proposed_battles(&self, player: &str) -> Result<Vec<ProposedBattleUpdate>> {
+        let mut updates = Vec::new();
+        let mut offset = 0;
+        loop {
+            let battles = self
+                .battler_multiplayer_service_client
+                .proposed_battles_for_player(player, 100, offset)
+                .await?;
+            if battles.is_empty() {
+                break;
+            }
+            offset += battles.len();
+            for battle in battles {
+                updates.push(ProposedBattleUpdate {
+                    proposed_battle: battle,
+                    rejection: None,
+                    deletion_reason: None,
+                });
+            }
+        }
+        Ok(updates)
+    }
+
     async fn watch_proposed_battle_updates(
         &self,
         player: &str,
@@ -352,7 +378,28 @@ impl<'d> AiPlayer<'d> {
         loop {
             tokio::select! {
                 update = proposed_battle_update_rx.recv() => {
-                    self.handle_proposed_battle_update(player, &update?).await?;
+                    let updates = match update {
+                        Ok(update) => Vec::from_iter([update]),
+                        Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("AI {} proposed battle update receiver for {player} lagged by {skipped} messages", self.id);
+                            while let Ok(_) = proposed_battle_update_rx.try_recv() {}
+                            match self.list_proposed_battles(player).await {
+                                Ok(updates) => updates,
+                                Err(err) => {
+                                    log::error!("AI {} failed to list proposed battles for {player} after lag: {err:?}", self.id);
+                                    continue;
+                                }
+                            }
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            break;
+                        }
+                    };
+                    for update in updates {
+                        if let Err(err) = self.handle_proposed_battle_update(player, &update).await {
+                            log::warn!("AI {} failed handling proposed battle update for {player}: {err:?}", self.id);
+                        }
+                    }
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -373,8 +420,8 @@ impl<'d> AiPlayer<'d> {
     ) -> Result<()> {
         self.respond_to_proposed_battle(player, &update.proposed_battle)
             .await?;
-        if let Some(battle) = update.proposed_battle.battle {
-            self.handle_battle(player, battle).await;
+        if let Some(battle_uuid) = update.proposed_battle.battle {
+            self.handle_battle(player, battle_uuid).await;
         }
         Ok(())
     }
@@ -400,6 +447,10 @@ impl<'d> AiPlayer<'d> {
                 Arc<Box<dyn BattlerServiceClient + 'static>>,
             >(self.battler_service_client.clone())
         };
+        let task_tx = match self.task_tx.clone() {
+            Some(tx) => tx,
+            None => return,
+        };
         self.battle_tasks.lock().await.spawn(AiPlayer::watch_battle(
             self.id.clone(),
             battle,
@@ -409,9 +460,7 @@ impl<'d> AiPlayer<'d> {
             self.options.clone(),
             Arc::downgrade(&self.state),
             self.error_tx.clone(),
-            // SAFETY: task_tx is None only when dropping this object, which cannot happen in
-            // parallel because this method takes requires a mutable borrow.
-            self.task_tx.clone().unwrap(),
+            task_tx,
         ));
     }
 
@@ -420,6 +469,22 @@ impl<'d> AiPlayer<'d> {
             AiPlayerType::Random(_) => Box::new(Random::default()),
             AiPlayerType::Gemini(_) => Box::new(Gemini::default()),
         }
+    }
+
+    fn is_battle_not_found(err: &Error) -> bool {
+        if let Some(err) = err.downcast_ref::<battler_wamp::core::error::WampError>() {
+            if let Ok(err) = battler_service_schema::BattlerServiceError::try_from(err.clone()) {
+                match err {
+                    battler_service_schema::BattlerServiceError::BattleNotFound => return true,
+                }
+            }
+        }
+        if let Some(err) = err.downcast_ref::<battler_service::BattleError>() {
+            match err {
+                battler_service::BattleError::NotFound => return true,
+            }
+        }
+        false
     }
 
     async fn watch_battle(
@@ -434,6 +499,8 @@ impl<'d> AiPlayer<'d> {
         #[allow(unused)] task_tx: mpsc::Sender<()>,
     ) {
         log::info!("AI {id} is watching battle {battle} for {player}");
+        let mut retries = 0;
+        const MAX_RETRIES: usize = 3;
         while let Err(err) = Self::watch_battle_internal(
             battle,
             player.clone(),
@@ -451,6 +518,27 @@ impl<'d> AiPlayer<'d> {
                     "Error watching battle {battle} for {player}: {err}"
                 ))
                 .ok();
+            if Self::is_battle_not_found(&err) {
+                break;
+            }
+            if let Ok(b) = service.battle(battle).await {
+                if b.state == battler_service::BattleState::Finished {
+                    log::warn!(
+                        "AI {id} stopping watch on battle {battle} for {player} due to battle state: {:?}, drop_reason: {:?}",
+                        b.state,
+                        b.drop_reason
+                    );
+                    break;
+                }
+            }
+            retries += 1;
+            if retries >= MAX_RETRIES {
+                log::error!(
+                    "AI {id} reached max retries ({MAX_RETRIES}) watching battle {battle} for {player}; aborting"
+                );
+                break;
+            }
+            tokio::time::sleep(Duration::from_secs(1 << (retries - 1))).await;
         }
         log::info!("AI {id} finished watching battle {battle} for {player}");
         if let Some(state) = state.upgrade() {

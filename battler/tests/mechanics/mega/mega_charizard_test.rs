@@ -64,23 +64,23 @@ fn charizard_mega_evolves_based_on_item() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:0",
-            ["specieschange", "player-1", "species:Charizard-Mega-X"],
-            ["specieschange", "player-1", "species:Charizard-Mega-X"],
-            "mega|mon:Charizard,player-1,1|species:Charizard-Mega-X|from:item:Charizardite X",
-            "split|side:1",
-            ["specieschange", "player-2", "species:Charizard-Mega-Y"],
-            ["specieschange", "player-2", "species:Charizard-Mega-Y"],
-            "mega|mon:Charizard,player-2,1|species:Charizard-Mega-Y|from:item:Charizardite Y",
-            "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1",
-            "move|mon:Charizard,player-1,1|name:Splash|target:Charizard,player-1,1",
-            "activate|move:Splash",
-            "move|mon:Charizard,player-2,1|name:Splash|target:Charizard,player-2,1",
-            "activate|move:Splash",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:0",
+                ["specieschange", "player-1", "species:Charizard-Mega-X"],
+                ["specieschange", "player-1", "species:Charizard-Mega-X"],
+                "mega|mon:Charizard,player-1,1|species:Charizard-Mega-X|from:item:Charizardite X",
+                "split|side:1",
+                ["specieschange", "player-2", "species:Charizard-Mega-Y"],
+                ["specieschange", "player-2", "species:Charizard-Mega-Y"],
+                "mega|mon:Charizard,player-2,1|species:Charizard-Mega-Y|from:item:Charizardite Y",
+                "weather|weather:Harsh Sunlight|from:ability:Drought|of:Charizard,player-2,1",
+                "move|mon:Charizard,player-1,1|name:Splash|target:Charizard,player-1,1",
+                "activate|move:Splash",
+                "move|mon:Charizard,player-2,1|name:Splash|target:Charizard,player-2,1",
+                "activate|move:Splash",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

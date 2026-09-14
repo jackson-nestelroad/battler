@@ -278,6 +278,8 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     "hp": 1,
                     "friendship": 0,
                     "experience": 156,
+                    "level_experience": 156,
+                    "next_level_experience": 270,
                     "stats": {
                         "hp": 17,
                         "atk": 6,
@@ -305,16 +307,22 @@ fn level_5_magikarp_caught_in_poke_ball() {
                     "moves": [
                         {
                             "name": "Splash",
-                            "pp": 38
+                            "pp": 38,
+                            "max_pp": 40,
+                            "typ": "Normal"
                         },
                         {
                             "name": "Bounce",
-                            "pp": 5
+                            "pp": 5,
+                            "max_pp": 5,
+                            "typ": "Flying"
                         }
                     ],
                     "ability": "Swift Swim",
                     "item": null,
-                    "hidden_power_type": "Fighting"
+                    "hidden_power_type": "Fighting",
+                    "tera_type": "Water",
+                    "weight": 100
                 }
             ]"#
         )
@@ -491,6 +499,8 @@ fn level_100_metagross_caught_in_master_ball() {
                     "hp": 270,
                     "friendship": 0,
                     "experience": 1250000,
+                    "level_experience": 1250000,
+                    "next_level_experience": null,
                     "stats": {
                         "hp": 270,
                         "atk": 275,
@@ -518,7 +528,9 @@ fn level_100_metagross_caught_in_master_ball() {
                     "moves": [],
                     "ability": "Clear Body",
                     "item": null,
-                    "hidden_power_type": "Fighting"
+                    "hidden_power_type": "Fighting",
+                    "tera_type": "Steel",
+                    "weight": 5500
                 }
             ]"#
         )

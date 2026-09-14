@@ -60,23 +60,23 @@ fn sparkling_aria_heals_burn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Primarina,player-1,1|name:Will-O-Wisp|target:Primarina,player-2,1",
-            "status|mon:Primarina,player-2,1|status:Burn",
-            "split|side:1",
-            "damage|mon:Primarina,player-2,1|from:status:Burn|health:254/270",
-            "damage|mon:Primarina,player-2,1|from:status:Burn|health:95/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Primarina,player-1,1|name:Sparkling Aria",
-            "resisted|mon:Primarina,player-2,1",
-            "split|side:1",
-            "damage|mon:Primarina,player-2,1|health:195/270",
-            "damage|mon:Primarina,player-2,1|health:73/100",
-            "curestatus|mon:Primarina,player-2,1|status:Burn",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Primarina,player-1,1|name:Will-O-Wisp|target:Primarina,player-2,1",
+                "status|mon:Primarina,player-2,1|status:Burn",
+                "residual",
+                "split|side:1",
+                "damage|mon:Primarina,player-2,1|from:status:Burn|health:254/270",
+                "damage|mon:Primarina,player-2,1|from:status:Burn|health:95/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Primarina,player-1,1|name:Sparkling Aria",
+                "resisted|mon:Primarina,player-2,1",
+                "split|side:1",
+                "damage|mon:Primarina,player-2,1|health:195/270",
+                "damage|mon:Primarina,player-2,1|health:73/100",
+                "curestatus|mon:Primarina,player-2,1|status:Burn",
+                "residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

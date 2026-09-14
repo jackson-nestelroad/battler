@@ -112,7 +112,7 @@ impl Connection {
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
         let session_id = context.router().id_allocator.generate_id().await;
-        let (message_tx, message_rx) = mpsc::unbounded_channel();
+        let (message_tx, message_rx) = mpsc::channel(4096);
         let session = Session::new(session_id, connection_type, message_tx, service_message_tx);
 
         info!(
@@ -128,7 +128,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Session,
-        message_rx: mpsc::UnboundedReceiver<Message>,
+        message_rx: mpsc::Receiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         end_rx: broadcast::Receiver<()>,
     ) -> bool {
@@ -172,21 +172,12 @@ impl Connection {
         context: RouterContext<S>,
         session: Arc<Session>,
         message: Message,
-        handle_message_result_tx: mpsc::Sender<ChannelTransmittableResult<()>>,
-    ) {
+    ) -> Result<()> {
         let message_name = message.message_name();
-        handle_message_result_tx
-            .send(
-                session
-                    .handle_message(context.clone(), message)
-                    .await
-                    .map_err(|err| {
-                        err.context(format!("failed to handle {message_name} message"))
-                            .into()
-                    }),
-            )
+        session
+            .handle_message(context.clone(), message)
             .await
-            .ok();
+            .map_err(|err| err.context(format!("failed to handle {message_name} message")))
     }
 
     async fn publish_loop<S>(
@@ -310,7 +301,7 @@ impl Connection {
         &self,
         context: &RouterContext<S>,
         session: Arc<Session>,
-        mut message_rx: mpsc::UnboundedReceiver<Message>,
+        mut message_rx: mpsc::Receiver<Message>,
         service_message_rx: &mut broadcast::Receiver<Message>,
         mut end_rx: broadcast::Receiver<()>,
         session_loop_done_rx: broadcast::Receiver<()>,
@@ -354,7 +345,9 @@ impl Connection {
                         Err(err) => return Err(Error::context(err.into(), "failed to receive message")),
                     };
 
-                    Self::handle_message(context.clone(), session.clone(), message, handle_message_result_tx.clone()).await;
+                    if let Err(err) = Self::handle_message(context.clone(), session.clone(), message).await {
+                        return Err(err.into());
+                    }
                 }
                 // Finished handling a message.
                 result = handle_message_result_rx.recv() => {

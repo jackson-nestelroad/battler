@@ -1,0 +1,106 @@
+import type { Dispatch, Middleware, UnknownAction } from "@reduxjs/toolkit";
+import { configureStore, createAsyncThunk } from "@reduxjs/toolkit";
+import type { MonData } from "battler-types";
+import type { TypedUseSelectorHook } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { LocalStoragePersistentStorage } from "../core/storage";
+import battlesReducer, {
+  addSpectatingBattle,
+  removeSpectatingBattle,
+  setSpectatingBattles,
+} from "./battlesSlice";
+import connectionReducer, { setConnectionError, setIsHydrated } from "./connectionSlice";
+import proposalsReducer from "./proposalsSlice";
+import teamsReducer, { teamsLoaded } from "./teamsSlice";
+
+const storage = new LocalStoragePersistentStorage();
+
+const teamsPersistenceMiddleware: Middleware = (storeApi) => {
+  let lastSavedTeams: ReturnType<typeof teamsReducer> | null = null;
+  return (next) => (action: unknown) => {
+    const result = next(action);
+    const state = storeApi.getState() as {
+      teams: ReturnType<typeof teamsReducer>;
+      connection: ReturnType<typeof connectionReducer>;
+    };
+
+    const actionObj = action as UnknownAction;
+    if (actionObj.type === teamsLoaded.type) {
+      lastSavedTeams = state.teams;
+    } else if (state.connection.isHydrated && state.teams !== lastSavedTeams) {
+      lastSavedTeams = state.teams;
+      Promise.all([
+        storage.setItem("battler_teams", state.teams.teams),
+        storage.setItem("battler_default_team", state.teams.defaultTeam),
+        storage.setItem("battler_team_order", state.teams.teamOrder),
+      ]).catch((e) => {
+        (storeApi.dispatch as (action: UnknownAction | ((dispatch: Dispatch) => void)) => void)(
+          setConnectionError(
+            "Failed to persist teams to storage. Please check disk space or browser settings.",
+            e,
+          ),
+        );
+      });
+    }
+    return result;
+  };
+};
+
+const spectatingBattlesPersistenceMiddleware: Middleware = (storeApi) => {
+  return (next) => (action: unknown) => {
+    const result = next(action);
+    const actionObj = action as UnknownAction;
+    if (
+      actionObj.type === addSpectatingBattle.type ||
+      actionObj.type === removeSpectatingBattle.type ||
+      actionObj.type === setSpectatingBattles.type
+    ) {
+      const state = storeApi.getState() as {
+        battles: ReturnType<typeof battlesReducer>;
+      };
+      storage
+        .setItem("battler_spectating_battles", state.battles.spectatingBattleIds)
+        .catch(() => {});
+    }
+    return result;
+  };
+};
+
+export const store = configureStore({
+  reducer: {
+    connection: connectionReducer,
+    proposals: proposalsReducer,
+    battles: battlesReducer,
+    teams: teamsReducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      teamsPersistenceMiddleware,
+      spectatingBattlesPersistenceMiddleware,
+    ),
+});
+
+// Async hydration thunk triggered on mount
+export const hydrateStore = createAsyncThunk<void, void, { dispatch: AppDispatch }>(
+  "store/hydrate",
+  async (_, { dispatch }) => {
+    try {
+      const teams = (await storage.getItem<Record<string, MonData[]>>("battler_teams")) || {};
+      const defaultTeam = (await storage.getItem<string | null>("battler_default_team")) || null;
+      const teamOrder =
+        (await storage.getItem<string[]>("battler_team_order")) || Object.keys(teams);
+      dispatch(teamsLoaded({ teams, defaultTeam, teamOrder }));
+    } catch (e) {
+      dispatch(setConnectionError("Failed to load saved teams from browser storage.", e));
+    } finally {
+      dispatch(setIsHydrated(true));
+    }
+  },
+);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

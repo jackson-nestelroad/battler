@@ -489,27 +489,27 @@ fn cannot_escape_partially_trapping_move() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Jolteon,protagonist,1|name:Bind|target:Primeape,wild,1",
-            "split|side:1",
-            "damage|mon:Primeape,wild,1|health:117/125",
-            "damage|mon:Primeape,wild,1|health:94/100",
-            "activate|mon:Primeape,wild,1|move:Bind|of:Jolteon,protagonist,1",
-            "split|side:1",
-            "damage|mon:Primeape,wild,1|from:move:Bind|health:102/125",
-            "damage|mon:Primeape,wild,1|from:move:Bind|health:82/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Primeape,wild,1|name:Tackle|target:Jolteon,protagonist,1",
-            "split|side:0",
-            "damage|mon:Jolteon,protagonist,1|health:97/125",
-            "damage|mon:Jolteon,protagonist,1|health:78/100",
-            "split|side:1",
-            "damage|mon:Primeape,wild,1|from:move:Bind|health:87/125",
-            "damage|mon:Primeape,wild,1|from:move:Bind|health:70/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Jolteon,protagonist,1|name:Bind|target:Primeape,wild,1",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|health:117/125",
+                "damage|mon:Primeape,wild,1|health:94/100",
+                "activate|mon:Primeape,wild,1|move:Bind|of:Jolteon,protagonist,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:102/125",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:82/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Primeape,wild,1|name:Tackle|target:Jolteon,protagonist,1",
+                "split|side:0",
+                "damage|mon:Jolteon,protagonist,1|health:97/125",
+                "damage|mon:Jolteon,protagonist,1|health:78/100",
+                "residual",
+                "split|side:1",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:87/125",
+                "damage|mon:Primeape,wild,1|from:move:Bind|health:70/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

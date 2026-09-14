@@ -69,7 +69,7 @@ fn shed_shell_allows_holder_to_switch_out_when_trapped() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Pikachu,player-2,1|name:Mean Look|target:Pikachu,player-1,1",
-            "activate|mon:Pikachu,player-1,1|condition:Trapped",
+            "activate|mon:Pikachu,player-1,1|condition:Trapped|of:Pikachu,player-2,1",
             "residual",
             "turn|turn:2",
             "continue",

@@ -62,7 +62,7 @@ fn mat_block_protects_from_non_status_moves() {
             "move|mon:Greninja,player-1,1|name:Mat Block",
             "singleturn|mon:Greninja,player-1,1|move:Mat Block",
             "move|mon:Greninja,player-2,1|name:Tackle|noanim",
-            "activate|mon:Greninja,player-1,1|move:Mat Block",
+            "activate|mon:Greninja,player-1,1|move:Mat Block|from:move:Tackle|of:Greninja,player-2,1",
             "residual",
             "turn|turn:2"
         ]"#,

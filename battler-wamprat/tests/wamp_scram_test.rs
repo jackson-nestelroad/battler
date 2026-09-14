@@ -23,6 +23,7 @@ use battler_wamp::{
         new_web_socket_peer,
     },
     router::{
+        EmptyConnectionPolicies,
         EmptyPubSubPolicies,
         EmptyRpcPolicies,
         RealmAuthenticationConfig,
@@ -72,6 +73,7 @@ async fn start_router(
             }]),
             ..Default::default()
         },
+        Box::new(EmptyConnectionPolicies::default()),
         Box::new(EmptyPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;

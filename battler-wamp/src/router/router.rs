@@ -52,6 +52,7 @@ use crate::{
     router::{
         acceptor::acceptor::AcceptorFactory,
         app::{
+            connection::ConnectionPolicies,
             pub_sub::PubSubPolicies,
             rpc::RpcPolicies,
         },
@@ -175,6 +176,9 @@ pub struct Router<S> {
     /// The router configuration when created.
     pub(crate) config: RouterConfig,
 
+    /// Policies for connection functionality.
+    pub(crate) connection_policies: Box<dyn ConnectionPolicies<S>>,
+
     /// Policies for pub/sub functionality.
     pub(crate) pub_sub_policies: Box<dyn PubSubPolicies<S>>,
 
@@ -212,6 +216,7 @@ where
     /// Creates a new [`Router`].
     pub fn new(
         config: RouterConfig,
+        connection_policies: Box<dyn ConnectionPolicies<S>>,
         pub_sub_policies: Box<dyn PubSubPolicies<S>>,
         rpc_policies: Box<dyn RpcPolicies<S>>,
         acceptor_factory: Box<dyn AcceptorFactory<S>>,
@@ -225,6 +230,7 @@ where
         let (end_tx, end_rx) = broadcast::channel(1);
         Ok(Self {
             config,
+            connection_policies,
             pub_sub_policies,
             rpc_policies,
             realm_manager,
@@ -441,8 +447,8 @@ where
     }
 
     fn direct_connect(context: &RouterContext<S>) -> DirectConnection {
-        let (router_to_peer_tx, router_to_peer_rx) = mpsc::unbounded_channel();
-        let (peer_to_router_tx, peer_to_router_rx) = mpsc::unbounded_channel();
+        let (router_to_peer_tx, router_to_peer_rx) = mpsc::channel(4096);
+        let (peer_to_router_tx, peer_to_router_rx) = mpsc::channel(4096);
         let router_stream = DirectMessageStream::new(router_to_peer_tx, peer_to_router_rx);
         let peer_stream = DirectMessageStream::new(peer_to_router_tx, router_to_peer_rx);
         let uuid = Self::start_connection_over_stream(context, Box::new(router_stream));

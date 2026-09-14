@@ -11,10 +11,13 @@ use serde_string_enum::{
 
 /// The type of a condition.
 #[derive(Debug, Clone, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum ConditionType {
     /// A condition that is built into the battle engine.
     #[string = "Built-in"]
     #[alias = "BuiltIn"]
+    #[cfg_attr(feature = "typescript", ts(rename = "Built-in"))]
     BuiltIn,
     /// An ordinary condition that can be applied to anything in a battle.
     #[string = "Condition"]
@@ -42,6 +45,8 @@ pub enum ConditionType {
 ///
 /// Conditions can be applied to Mons as the result of moves or abilities.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct ConditionData {
     /// Condition name.
     pub name: String,
@@ -55,6 +60,7 @@ pub struct ConditionData {
 
     /// Dynamic battle effects.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub condition: serde_json::Value,
 }
 

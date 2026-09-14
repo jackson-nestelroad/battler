@@ -60,26 +60,26 @@ fn hydro_steam_boosted_in_sunlight() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
-            "resisted|mon:Walking Wake,player-2,1",
-            "split|side:1",
-            "damage|mon:Walking Wake,player-2,1|health:272/308",
-            "damage|mon:Walking Wake,player-2,1|health:89/100",
-            "move|mon:Walking Wake,player-2,1|name:Sunny Day",
-            "weather|weather:Harsh Sunlight",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
-            "resisted|mon:Walking Wake,player-2,1",
-            "split|side:1",
-            "damage|mon:Walking Wake,player-2,1|health:221/308",
-            "damage|mon:Walking Wake,player-2,1|health:72/100",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
+                "resisted|mon:Walking Wake,player-2,1",
+                "split|side:1",
+                "damage|mon:Walking Wake,player-2,1|health:272/308",
+                "damage|mon:Walking Wake,player-2,1|health:89/100",
+                "move|mon:Walking Wake,player-2,1|name:Sunny Day",
+                "weather|weather:Harsh Sunlight",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
+                "resisted|mon:Walking Wake,player-2,1",
+                "split|side:1",
+                "damage|mon:Walking Wake,player-2,1|health:221/308",
+                "damage|mon:Walking Wake,player-2,1|health:72/100",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -99,26 +99,26 @@ fn hydro_steam_not_boosted_when_holding_utility_umbrella() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
-            "resisted|mon:Walking Wake,player-2,1",
-            "split|side:1",
-            "damage|mon:Walking Wake,player-2,1|health:272/308",
-            "damage|mon:Walking Wake,player-2,1|health:89/100",
-            "move|mon:Walking Wake,player-2,1|name:Sunny Day",
-            "weather|weather:Harsh Sunlight",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
-            "resisted|mon:Walking Wake,player-2,1",
-            "split|side:1",
-            "damage|mon:Walking Wake,player-2,1|health:256/308",
-            "damage|mon:Walking Wake,player-2,1|health:84/100",
-            "weather|weather:Harsh Sunlight|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
+                "resisted|mon:Walking Wake,player-2,1",
+                "split|side:1",
+                "damage|mon:Walking Wake,player-2,1|health:272/308",
+                "damage|mon:Walking Wake,player-2,1|health:89/100",
+                "move|mon:Walking Wake,player-2,1|name:Sunny Day",
+                "weather|weather:Harsh Sunlight",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Walking Wake,player-1,1|name:Hydro Steam|target:Walking Wake,player-2,1",
+                "resisted|mon:Walking Wake,player-2,1",
+                "split|side:1",
+                "damage|mon:Walking Wake,player-2,1|health:256/308",
+                "damage|mon:Walking Wake,player-2,1|health:84/100",
+                "residual",
+                "weather|weather:Harsh Sunlight|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

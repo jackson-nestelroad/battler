@@ -120,3 +120,20 @@ fn instruct_allows_gigaton_hammer_to_be_used_twice() {
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
 }
+
+#[test]
+fn gigaton_hammer_cannot_be_used_twice_after_skipping_turn() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot move: Tinkaton's Gigaton Hammer is disabled")
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 1"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+}

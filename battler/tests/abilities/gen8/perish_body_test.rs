@@ -57,16 +57,16 @@ fn perish_body_activates_perish_song_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Cursola,player-1,1|name:Fire Punch|target:Cursola,player-2,1",
-            "split|side:1",
-            "damage|mon:Cursola,player-2,1|health:115/230",
-            "damage|mon:Cursola,player-2,1|health:50/100",
-            "ability|mon:Cursola,player-2,1|ability:Perish Body",
-            "start|mon:Cursola,player-1,1|move:Perish Song|perish:3",
-            "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Cursola,player-1,1|name:Fire Punch|target:Cursola,player-2,1",
+                "split|side:1",
+                "damage|mon:Cursola,player-2,1|health:115/230",
+                "damage|mon:Cursola,player-2,1|health:50/100",
+                "ability|mon:Cursola,player-2,1|ability:Perish Body",
+                "residual",
+                "start|mon:Cursola,player-1,1|move:Perish Song|perish:3",
+                "start|mon:Cursola,player-2,1|move:Perish Song|perish:3",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -96,7 +96,7 @@ export class DocumentContextManager {
         const cached = this.cache.get(uri)?.blockTypeCache.get(key);
         if (cached) return cached;
 
-        const parseResult = this.getContext(document);
+        this.getContext(document);
         
         // Fast path
         if (this.isInFxLangProgram(document, position)) {

@@ -79,6 +79,40 @@ where
         export_proposed_battle(output.0)
     }
 
+    async fn propose_special_battle(
+        &self,
+        options: battler_multiplayer_service::ProposedSpecialBattleOptions,
+    ) -> Result<ProposedBattle> {
+        let output = self
+            .consumer
+            .propose_special_battle(
+                battler_multiplayer_service_schema::ProposeSpecialBattleInput(
+                    battler_multiplayer_service_schema::ProposeSpecialBattleInputArgs {
+                        proposed_special_battle_options_json: serde_json::to_string(&options)?,
+                    },
+                ),
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        export_proposed_battle(output.0)
+    }
+
+    async fn proposed_battle(&self, uuid: Uuid) -> Result<ProposedBattle> {
+        let output = self
+            .consumer
+            .proposed_battle(
+                battler_multiplayer_service_schema::ProposedBattlePattern(uuid.to_string()),
+                battler_multiplayer_service_schema::ProposedBattleInput,
+                CallOptions::default(),
+            )
+            .await?
+            .result()
+            .await?;
+        export_proposed_battle(output.0)
+    }
+
     async fn proposed_battles_for_player(
         &self,
         player: &str,
@@ -136,12 +170,10 @@ where
 
     async fn proposed_battle_updates(
         &self,
-        player: &str,
+        _player: &str,
     ) -> Result<broadcast::Receiver<ProposedBattleUpdate>> {
         let (update_tx, update_rx) = broadcast::channel(48);
-        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern {
-            player: player.to_owned(),
-        };
+        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern;
 
         struct Subscription<S> {
             update_tx: broadcast::Sender<ProposedBattleUpdate>,
