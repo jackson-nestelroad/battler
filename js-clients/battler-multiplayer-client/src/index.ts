@@ -16,6 +16,8 @@ export class BattlerMultiplayerClient {
     private readonly service: BattlerServiceClient,
   ) {}
 
+  private pendingStarts = new Map<string, Promise<string>>();
+
   async proposeBattle(options: ProposedBattleOptions): Promise<ProposedBattle> {
     return this.multiplayerService.proposeBattle(options);
   }
@@ -40,11 +42,13 @@ export class BattlerMultiplayerClient {
         accept,
       },
     );
+    let finalResult = result;
     if (accept && team) {
       const battleId = result.battle ?? (await this.waitForBattleStart(proposedBattleId));
+      finalResult = { ...result, battle: battleId };
       await this.service.updateTeam(battleId, this.player, team);
     }
-    return result;
+    return finalResult;
   }
 
   async proposedBattles(count: number, offset: number): Promise<ProposedBattle[]> {
@@ -58,6 +62,21 @@ export class BattlerMultiplayerClient {
   }
 
   async waitForBattleStart(proposedBattleId: string): Promise<string> {
+    const existing = this.pendingStarts.get(proposedBattleId);
+    if (existing) {
+      return existing;
+    }
+
+    const promise = this.waitForBattleStartInternal(proposedBattleId);
+    this.pendingStarts.set(proposedBattleId, promise);
+    try {
+      return await promise;
+    } finally {
+      this.pendingStarts.delete(proposedBattleId);
+    }
+  }
+
+  private async waitForBattleStartInternal(proposedBattleId: string): Promise<string> {
     const initial = await this.multiplayerService
       .proposedBattle(proposedBattleId)
       .catch(() => null);
