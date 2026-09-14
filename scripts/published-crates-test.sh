@@ -20,10 +20,11 @@ test_utility_crates=(
 # List of crates with their specific versions and flags.
 # Formatted as: "crate_name|version|test_flags|add_crates_policy"
 crates_config=(
-    "battler|0.9|--no-default-features|all"
-    "battler-choice|0.3|--no-default-features|none"
-    "battler-data|0.3|--no-default-features|none"
-    "battler-local-data|0.1|--no-default-features|all"
+    "battler|0.10|--no-default-features|all"
+    "battler-choice|0.4|--no-default-features|none"
+    "battler-data|0.4|--no-default-features|none"
+    "battler-data-service-schema|0.1||none"
+    "battler-local-data|0.2|--no-default-features|all"
     "battler-prng|0.3|--no-default-features --features alloc|none"
     "battler-wamp|0.5||testonly"
     "battler-wamp-uri|0.1||none"
