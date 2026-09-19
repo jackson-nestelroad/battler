@@ -1,5 +1,5 @@
 # Multi-stage build for battler-server
-FROM rust:1.85-bookworm AS builder
+FROM rustlang/rust:nightly-bookworm AS builder
 
 WORKDIR /usr/src/battler
 
