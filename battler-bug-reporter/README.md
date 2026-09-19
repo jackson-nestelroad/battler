@@ -23,6 +23,11 @@ Settings can be provided via environment variables or `appsettings.json`:
 | `GITHUB_REPO_OWNER` | `GitHub:RepoOwner` | `jackson-nestelroad` | Owner / Organization of target repository. |
 | `GITHUB_REPO_NAME` | `GitHub:RepoName` | `battler` | Name of target repository. |
 | `REPORTS_DIRECTORY` | `ReportsDirectory` | `./reports` | Local storage directory for soft-launch reports and diagnostics. |
+| `RATE_LIMIT_GLOBAL_PERMIT_LIMIT` | `RateLimiting:GlobalPermitLimit` | `30` | Max total bug submissions allowed per hour across all clients combined. |
+| `RATE_LIMIT_GLOBAL_WINDOW_HOURS` | `RateLimiting:GlobalWindowHours` | `1` | Sliding window duration in hours for global rate limiting. |
+| `RATE_LIMIT_GLOBAL_CONCURRENCY_LIMIT` | `RateLimiting:GlobalConcurrencyLimit` | `2` | Max concurrent in-flight bug report requests to prevent GitHub abuse bursts. |
+| `RATE_LIMIT_IP_PERMIT_LIMIT` | `RateLimiting:IpPermitLimit` | `10` | Max submissions allowed per hour per individual client IP. |
+| `RATE_LIMIT_IP_WINDOW_HOURS` | `RateLimiting:IpWindowHours` | `1` | Sliding window duration in hours for per-IP rate limiting. |
 
 ---
 
@@ -67,10 +72,21 @@ Content-Type: application/json
 }
 ```
 
-* **Validation**:
+* **Validation & Abuse Protection**:
   * `title`: Required, maximum 250 characters. Newlines stripped and normalized to `[Bug]: <Title>`.
   * `description`: Required, maximum 65,536 characters.
-  * `rate-limiting`: 10 requests per hour per client IP (sliding window). Supports `X-Forwarded-For` for reverse proxies.
+  * **Layered Rate Limiting**:
+    1. **Global Concurrency Limiter**: Caps simultaneous in-flight requests (default: 2) to protect against GitHub secondary abuse bursts.
+    2. **Global Sliding Window**: Caps total submissions across all clients combined (default: 30 / hour) to defend against distributed IP botnets.
+    3. **Per-IP Sliding Window**: Caps requests per individual client IP (default: 10 / hour). Supports `X-Forwarded-For` for reverse proxies.
+  * **Rejection Response**: Returns `HTTP 429 Too Many Requests` with a structured JSON payload:
+    ```json
+    {
+      "error": "Too Many Requests",
+      "detail": "Bug reporting rate limit exceeded. Please slow down and try again later."
+    }
+    ```
+  * **GitHub Secondary Abuse Handling**: Catches Octokit `AbuseException` and `RateLimitExceededException` to return clean `429` responses rather than server crashes.
 
 **Response (Soft-Launch Mode):**
 ```json
@@ -138,7 +154,8 @@ curl -X POST http://localhost:5000/api/report-bug \
 
 ```
 battler-bug-reporter/
-├── Program.cs                  # ASP.NET Core Minimal API routing, CORS, and rate limiting
+├── Program.cs                  # ASP.NET Core Minimal API routing, CORS, and endpoint registration
+├── RateLimiterConfig.cs        # Layered rate limiting (global concurrency, global sliding window, per-IP)
 ├── Models.cs                   # Strongly-typed records (BugReportRequest, StoredBugReport, etc.)
 ├── IssueBuilder.cs             # Pure domain logic (title normalization, tag heuristics, markdown template)
 ├── ReportStore.cs              # Safe local report persistence with path traversal guards
@@ -150,16 +167,35 @@ battler-bug-reporter/
 
 ---
 
-## Deployment to Google Cloud Run
+## Production Deployment & Security Hardening
 
-Deploy directly from source using the GCP CLI:
+Deploy directly from source using the Google Cloud CLI with defensive autoscaling guardrails:
+
 ```bash
 gcloud run deploy battler-bug-reporter \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
+  --max-instances 2 \
+  --concurrency 40 \
+  --cpu-throttling \
+  --memory 512Mi \
+  --cpu 1 \
   --set-secrets GITHUB_TOKEN=battler-github-token:latest
 ```
 
-* The container automatically handles `ForwardedHeaders` (`X-Forwarded-For`, `X-Forwarded-Proto`) behind Google Cloud Run load balancers.
-* Injecting `GITHUB_TOKEN` automatically enables Live GitHub filing mode.
+### Production Security Checklist
+
+1. **Denial-of-Wallet & Horizontal Scaling Protection**:
+   * `--max-instances 2`: Prevents rogue traffic from spinning up dozens of containers and inflating GCP billing.
+   * `--cpu-throttling`: Ensures CPU is only allocated during request processing, keeping idle costs at $0.
+2. **Reverse Proxy & Forwarded Headers**:
+   * The container automatically processes `X-Forwarded-For` and `X-Forwarded-Proto` behind Google Cloud Run load balancers.
+3. **Edge WAF & Reverse Proxy (Recommended for Public Production)**:
+   * Route public traffic through **Cloudflare** (or GCP Cloud Armor) with an edge rate-limiting rule (e.g. 5 req/min on `/api/report-bug`).
+   * Edge filtering prevents unauthorized volumetric requests from ever reaching Cloud Run instances.
+4. **GitHub Token Permissions**:
+   * When creating the `GITHUB_TOKEN` secret in Google Secret Manager, use a dedicated Personal Access Token (fine-grained) or GitHub App token restricted strictly to:
+     * **Repository**: `jackson-nestelroad/battler`
+     * **Permissions**: `Issues: Read and Write`, `Gists: Read and Write`
+     * No administration, code write, or workflow access.

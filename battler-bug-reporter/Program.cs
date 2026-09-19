@@ -22,7 +22,13 @@ var repoName = (builder.Configuration["GitHub:RepoName"]
     ?? builder.Configuration["GITHUB_REPO_NAME"]
     ?? "battler").Trim();
 
-// 2. Services
+// 2. Server & Services
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    // Limit max request body size to 512 KB to prevent memory exhaustion attacks
+    serverOptions.Limits.MaxRequestBodySize = 512 * 1024;
+});
+
 // Support reverse proxies (e.g. Google Cloud Run load balancers)
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -41,27 +47,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Sliding-window rate limiter per client IP (10 requests per hour)
+// Layered rate limiting (Global Concurrency, Global Sliding Window, Per-IP Sliding Window)
 builder.Services.AddRateLimiter(options =>
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("ip-limiter", httpContext =>
-    {
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
-        if (string.IsNullOrEmpty(ip))
-        {
-            ip = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim();
-        }
-        ip ??= "unknown";
-
-        return RateLimitPartition.GetSlidingWindowLimiter(ip, _ => new SlidingWindowRateLimiterOptions
-        {
-            PermitLimit = 10,
-            Window = TimeSpan.FromHours(1),
-            SegmentsPerWindow = 6,
-            QueueLimit = 0
-        });
-    });
+    RateLimiterConfig.Configure(options, builder.Configuration);
 });
 
 var reportsDirectory = builder.Configuration["REPORTS_DIRECTORY"]
@@ -223,6 +212,11 @@ app.MapPost("/api/report-bug", async (
         }
         catch (Exception gistEx)
         {
+            if (gistEx is AbuseException or RateLimitExceededException)
+            {
+                throw;
+            }
+
             app.Logger.LogWarning(gistEx, "Could not create Gist attachment for report {ReportId}. Using inline fallback.", reportId);
             attachmentFileName = "Diagnostics Attachment Unavailable (Gist Failed)";
             attachmentUrl = "#";
@@ -255,6 +249,24 @@ app.MapPost("/api/report-bug", async (
             labels,
             softLaunch = false
         });
+    }
+    catch (AbuseException abuseEx)
+    {
+        app.Logger.LogWarning(abuseEx, "GitHub secondary abuse rate limit triggered while creating issue.");
+        return Results.Problem(
+            detail: "GitHub secondary rate limit reached. Please wait a few minutes before submitting another report.",
+            statusCode: StatusCodes.Status429TooManyRequests,
+            title: "GitHub Rate Limit Exceeded"
+        );
+    }
+    catch (RateLimitExceededException rateEx)
+    {
+        app.Logger.LogWarning(rateEx, "GitHub primary API rate limit exceeded.");
+        return Results.Problem(
+            detail: "GitHub API quota exhausted. Please try again later.",
+            statusCode: StatusCodes.Status429TooManyRequests,
+            title: "GitHub Rate Limit Exceeded"
+        );
     }
     catch (Exception ex)
     {
