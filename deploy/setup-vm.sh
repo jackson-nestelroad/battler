@@ -24,9 +24,18 @@ else
     echo "   ℹ️ Swapfile already active."
 fi
 
+# Determine the target user for permissions (handles GCP root startup-scripts)
+CURRENT_USER="${USER:-$(id -un)}"
+
 # 2. Install Docker & Docker Compose if not already installed
 if ! command -v docker &>/dev/null; then
     echo "=> Installing Docker..."
+    # Wait for apt lock if background unattended-upgrades is running on first boot
+    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
+        echo "   Waiting for background apt processes to finish..."
+        sleep 3
+    done
+
     sudo apt-get update
     sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
@@ -43,7 +52,9 @@ if ! command -v docker &>/dev/null; then
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo systemctl enable docker
     sudo systemctl start docker
-    sudo usermod -aG docker "$USER" || true
+    if [ "$CURRENT_USER" != "root" ]; then
+        sudo usermod -aG docker "$CURRENT_USER" || true
+    fi
     echo "   ✅ Docker installed successfully."
 else
     echo "   ℹ️ Docker is already installed."
@@ -52,7 +63,7 @@ fi
 # 3. Create deploy directory
 DEPLOY_DIR="/opt/battler"
 sudo mkdir -p "$DEPLOY_DIR"
-sudo chown -R "$USER:$USER" "$DEPLOY_DIR"
+sudo chown -R "$CURRENT_USER:$CURRENT_USER" "$DEPLOY_DIR"
 
 echo "=> Copying deployment configuration files to $DEPLOY_DIR..."
 # If run from repository clone, copy files; otherwise download from raw github
