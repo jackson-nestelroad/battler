@@ -4,7 +4,7 @@ FROM rust:1.85-bookworm AS builder
 WORKDIR /usr/src/battler
 
 # Copy source workspace
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml Cargo.lock* ./
 COPY battler ./battler
 COPY battler-ai ./battler-ai
 COPY battler-calc ./battler-calc
