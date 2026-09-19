@@ -1,6 +1,7 @@
 mod acceptor;
 mod app;
 mod connection;
+mod connection_tracker;
 mod context;
 mod procedure;
 mod realm;
@@ -33,6 +34,7 @@ pub use router::{
     Router,
     RouterConfig,
     RouterHandle,
+    RouterLimitsConfig,
 };
 pub use session::SessionHandle;
 pub use web_socket_router::{

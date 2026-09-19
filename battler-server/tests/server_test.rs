@@ -287,6 +287,7 @@ async fn test_server_matchmaking_and_battle_lifecycle() {
         descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await
     .unwrap();
@@ -488,6 +489,7 @@ async fn test_server_multi_battle_lifecycle() {
         descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await
     .unwrap();
@@ -667,6 +669,7 @@ async fn test_server_multi_battle_fulfillment_and_subsequent_proposals() {
         descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await
     .unwrap();
@@ -838,6 +841,7 @@ async fn test_server_stress_concurrent_battle_fulfillment_and_queries() {
         descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await
     .unwrap();
@@ -898,6 +902,7 @@ async fn test_server_stress_concurrent_live_battles_and_timers() -> Result<()> {
         descriptions_dir: None,
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await?;
 
@@ -967,6 +972,7 @@ async fn test_server_data_service_queries() {
         descriptions_dir: Some(descriptions_dir()),
         realm_name: "battler".to_owned(),
         realm_uri: "com.battler".to_owned(),
+        limits: None,
     })
     .await
     .unwrap();

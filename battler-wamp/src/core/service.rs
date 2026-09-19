@@ -12,7 +12,10 @@ use futures_util::{
     SinkExt,
     StreamExt,
 };
-use log::error;
+use log::{
+    error,
+    warn,
+};
 use tokio::{
     sync::{
         broadcast,
@@ -25,6 +28,10 @@ use crate::{
     core::{
         error::InteractionError,
         peer_info::ConnectionType,
+        rate_limiter::{
+            RateLimitError,
+            TokenBucketRateLimiter,
+        },
         stream::{
             MessageStream,
             StreamMessage,
@@ -100,24 +107,13 @@ impl ServiceHandle {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
 
-    /// The message transmission channel.
+    /// The message sender channel.
     pub fn message_tx(&self) -> mpsc::Sender<Message> {
         self.message_tx.clone()
     }
 }
 
-/// The core asynchronous service that sends and receives WAMP messages over an underlying
-/// transport.
-///
-/// The goal of this module is to provide a common layer for WAMP messaging. Received messages are
-/// passed to a channel for higher layers (such as a single session on a router or a peer) to
-/// process.
-///
-/// This type assumes that errors are handled higher up in the stack. In other words, canceling the
-/// operation of this service *will not* inject an ABORT message. If a router wishes to cancel a
-/// session, the session object itself should be canceled, and it's expected that the session sends
-/// ABORT before canceling the service. The same applies for peers: the peer should inject an ABORT
-/// message when canceled before canceling the service.
+/// An abstraction over a message stream for sending and receiving messages.
 pub struct Service {
     name: String,
     stream: Box<dyn MessageStream>,
@@ -129,11 +125,18 @@ pub struct Service {
 
     user_message_tx: mpsc::Sender<Message>,
     user_message_rx: mpsc::Receiver<Message>,
+    rate_limiter: TokenBucketRateLimiter,
+    idle_timeout: Option<Duration>,
 }
 
 impl Service {
     /// Creates a new service over a message stream.
-    pub fn new(name: String, stream: Box<dyn MessageStream>) -> Self {
+    pub(crate) fn new(
+        name: String,
+        stream: Box<dyn MessageStream>,
+        rate_limiter: Option<TokenBucketRateLimiter>,
+        idle_timeout: Option<Duration>,
+    ) -> Self {
         let (message_tx, _) = broadcast::channel(4096);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
@@ -148,6 +151,8 @@ impl Service {
             cancel_rx,
             user_message_tx,
             user_message_rx,
+            rate_limiter: rate_limiter.unwrap_or_default(),
+            idle_timeout,
         }
     }
 
@@ -182,6 +187,9 @@ impl Service {
     }
 
     async fn run(self) {
+        let mut rate_limiter = self.rate_limiter;
+        let idle_timeout = self.idle_timeout.unwrap_or(Duration::from_secs(300));
+
         let wrapper = StreamWrapper { inner: self.stream };
         let (mut stream_sink, mut stream_stream) = wrapper.split();
         let (write_tx, mut write_rx) = mpsc::channel(4096);
@@ -217,6 +225,16 @@ impl Service {
                             }
                         },
                         Some(Ok(StreamMessage::Message(message))) => {
+                            if !rate_limiter.try_acquire() {
+                                warn!(
+                                    "Service {}: message rate limit exceeded, terminating connection",
+                                    self.name
+                                );
+                                let abort_msg = abort_message_for_error(&RateLimitError.into());
+                                let _ = write_tx.send(StreamMessage::Message(abort_msg)).await;
+                                result = Err(RateLimitError.into());
+                                break;
+                            }
                             // Send the message out for handling.
                             if message_tx.send(message).is_err() {
                                 break;
@@ -257,7 +275,7 @@ impl Service {
                 }
                 // Timeout is implemented at this layer so that ping messages are considered
                 // for keeping the connection alive.
-                _ = tokio::time::sleep(Duration::from_secs(300)) => {
+                _ = tokio::time::sleep(idle_timeout) => {
                     result = Err(Error::msg("timed out"));
                     break;
                 }

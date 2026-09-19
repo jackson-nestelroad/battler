@@ -27,6 +27,7 @@ use crate::{
     },
     message::message::Message,
     router::{
+        connection_tracker::ConnectionGuard,
         context::RouterContext,
         session::{
             ProcedureMessage,
@@ -41,25 +42,27 @@ use crate::{
 /// send and receive messages on an underlying transport. Messages are used to set up and manage a
 /// [`Session`], which handles all interactions with the router.
 #[derive(Debug)]
-pub struct Connection {
+pub(crate) struct Connection {
     uuid: Uuid,
+    _guard: Option<ConnectionGuard>,
 }
 
 impl Connection {
-    /// Creates a new connection.
-    pub fn new() -> Self {
+    /// Creates a new connection, optionally associating a connection tracking guard.
+    pub(crate) fn new(guard: Option<ConnectionGuard>) -> Self {
         Self {
             uuid: Uuid::new_v4(),
+            _guard: guard,
         }
     }
 
     /// The unique identifier of the connection.
-    pub fn uuid(&self) -> Uuid {
+    pub(crate) fn uuid(&self) -> Uuid {
         self.uuid
     }
 
     // Starts the connection on the runtime.
-    pub fn start<S>(self, context: RouterContext<S>, service: Service) {
+    pub(crate) fn start<S>(self, context: RouterContext<S>, service: Service) {
         tokio::spawn(self.run(context, service));
     }
 

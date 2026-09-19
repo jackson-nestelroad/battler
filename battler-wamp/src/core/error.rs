@@ -13,6 +13,7 @@ use battler_wamp_values::{
 };
 use thiserror::Error;
 
+pub use crate::core::rate_limiter::RateLimitError;
 use crate::{
     core::id::Id,
     message::message::Message,
@@ -287,6 +288,7 @@ fn error_from_uri_reason_and_message(
         "wamp.error.no_available_callee" => InteractionError::NoAvailableCallee.into(),
         "wamp.error.invalid_uri" => InvalidUri.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
+        "com.battler_wamp.rate_limit_error" => RateLimitError.into(),
         _ => WampError::new_with_payload(reason, message, arguments, arguments_keyword).into(),
     }
 }
@@ -439,6 +441,8 @@ pub(crate) fn uri_for_error(error: &Error) -> Uri {
         Uri::from_known("com.battler_wamp.recv_error")
     } else if error.is::<PeerNotConnectedError>() {
         Uri::from_known("com.battler_wamp.peer_not_connected")
+    } else if error.is::<RateLimitError>() {
+        Uri::from_known("com.battler_wamp.rate_limit_error")
     } else if let Some(error) = error.downcast_ref::<ChannelTransmittableError>() {
         error.error.reason.clone()
     } else if let Some(error) = error.downcast_ref::<WampError>() {

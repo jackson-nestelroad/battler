@@ -539,7 +539,7 @@ where
         self.end_active_connection_tx.send(()).ok();
 
         // Start the service and message handler.
-        let service = Service::new(self.config.name.clone(), stream);
+        let service = Service::new(self.config.name.clone(), stream, None, None);
         let (message_tx, message_rx) = mpsc::channel(4096);
         let service_message_rx = service.message_rx();
         let end_rx = service.end_rx();

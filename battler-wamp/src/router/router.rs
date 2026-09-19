@@ -5,6 +5,7 @@ use std::{
         SocketAddr,
     },
     sync::Arc,
+    time::Duration,
 };
 
 use anyhow::{
@@ -17,6 +18,7 @@ use log::{
     debug,
     error,
     info,
+    warn,
 };
 use tokio::{
     net::{
@@ -41,6 +43,7 @@ use crate::{
             IdAllocator,
             RandomIdAllocator,
         },
+        rate_limiter::TokenBucketRateLimiter,
         roles::RouterRole,
         service::Service,
         stream::{
@@ -57,6 +60,10 @@ use crate::{
             rpc::RpcPolicies,
         },
         connection::Connection,
+        connection_tracker::{
+            ConnectionGuard,
+            ConnectionTracker,
+        },
         context::RouterContext,
         realm::{
             Realm,
@@ -72,6 +79,45 @@ use crate::{
 };
 
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION"));
+
+/// Limits and protection configuration for a [`Router`].
+#[derive(Clone, Debug)]
+pub struct RouterLimitsConfig {
+    /// Maximum concurrent network connections across the server.
+    pub max_connections: Option<usize>,
+    /// Maximum concurrent network connections allowed per client IP.
+    pub max_connections_per_ip: Option<usize>,
+    /// Whether loopback addresses (127.0.0.1, ::1) are exempt from per-IP limits.
+    pub exempt_loopback: bool,
+    /// Maximum incoming message size in bytes.
+    pub max_message_size_bytes: usize,
+    /// Maximum incoming frame size in bytes.
+    pub max_frame_size_bytes: usize,
+    /// Maximum burst of incoming messages allowed in a token bucket.
+    pub rate_limit_burst: u32,
+    /// Sustained message refill rate (tokens/second) per connection.
+    pub rate_limit_refill_per_sec: u32,
+    /// Idle timeout duration before disconnecting inactive connections.
+    pub idle_timeout: Option<Duration>,
+    /// Maximum allowed duration to complete the WebSocket upgrade handshake.
+    pub handshake_timeout: Duration,
+}
+
+impl Default for RouterLimitsConfig {
+    fn default() -> Self {
+        Self {
+            max_connections: Some(10_000),
+            max_connections_per_ip: Some(10),
+            exempt_loopback: true,
+            max_message_size_bytes: 64 * 1024,
+            max_frame_size_bytes: 16 * 1024,
+            rate_limit_burst: 30,
+            rate_limit_refill_per_sec: 10,
+            idle_timeout: Some(Duration::from_secs(60)),
+            handshake_timeout: Duration::from_secs(10),
+        }
+    }
+}
 
 /// Configuration for a [`Router`].
 #[derive(Debug)]
@@ -90,6 +136,8 @@ pub struct RouterConfig {
     pub serializers: HashSet<SerializerType>,
     /// Realms available on the router.
     pub realms: Vec<RealmConfig>,
+    /// Limits and DDoS protection configuration.
+    pub limits: RouterLimitsConfig,
 }
 
 impl Default for RouterConfig {
@@ -101,6 +149,7 @@ impl Default for RouterConfig {
             roles: HashSet::from_iter([RouterRole::Broker, RouterRole::Dealer]),
             serializers: HashSet::from_iter([SerializerType::Json, SerializerType::MessagePack]),
             realms: Vec::default(),
+            limits: RouterLimitsConfig::default(),
         }
     }
 }
@@ -196,6 +245,9 @@ pub struct Router<S> {
     /// Allocator for global IDs.
     pub(crate) id_allocator: Box<dyn IdAllocator>,
 
+    /// Connection tracker for global and per-IP connection limits.
+    pub(crate) connection_tracker: ConnectionTracker,
+
     cancel_tx: broadcast::Sender<()>,
     cancel_rx: broadcast::Receiver<()>,
     end_tx: broadcast::Sender<()>,
@@ -228,6 +280,11 @@ where
         }
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
         let (end_tx, end_rx) = broadcast::channel(1);
+        let connection_tracker = ConnectionTracker::new(
+            config.limits.max_connections,
+            config.limits.max_connections_per_ip,
+            config.limits.exempt_loopback,
+        );
         Ok(Self {
             config,
             connection_policies,
@@ -237,6 +294,7 @@ where
             acceptor_factory: Mutex::new(acceptor_factory),
             transport_factory: Mutex::new(transport_factory),
             id_allocator: Box::new(RandomIdAllocator::default()),
+            connection_tracker,
             cancel_tx,
             cancel_rx,
             end_tx,
@@ -320,12 +378,24 @@ where
                 accept = listener.accept() => {
                     let (stream, addr) = match accept {
                         Ok((stream, addr)) => (stream, addr),
-                        Err(_) => break,
+                        Err(err) => {
+                            error!("Failed to accept incoming TCP connection: {err}");
+                            tokio::time::sleep(Duration::from_millis(50)).await;
+                            continue;
+                        }
+                    };
+                    let guard = match context.router().connection_tracker.try_acquire(addr.ip()) {
+                        Ok(guard) => guard,
+                        Err(err) => {
+                            warn!("Rejected TCP connection from {addr}: {err}");
+                            continue;
+                        }
                     };
                     tokio::spawn(Self::handle_connection(
                         context.clone(),
                         addr,
                         MaybeTlsStream::Plain(stream),
+                        guard,
                     ));
                 }
                 control_message = control_rx.recv() => {
@@ -344,9 +414,25 @@ where
         context: RouterContext<S>,
         addr: SocketAddr,
         stream: MaybeTlsStream<TcpStream>,
+        guard: ConnectionGuard,
     ) {
-        if let Err(err) = Self::start_connection(&context, addr, stream).await {
-            error!("Failed to start handling connection from {addr}: {err}");
+        let handshake_timeout = context.router().config.limits.handshake_timeout;
+        let start_res = tokio::time::timeout(
+            handshake_timeout,
+            Self::start_connection(&context, addr, stream, guard),
+        )
+        .await;
+
+        match start_res {
+            Ok(Ok(())) => (),
+            Ok(Err(err)) => {
+                debug!("Failed to start handling connection from {addr}: {err}");
+            }
+            Err(_) => {
+                warn!(
+                    "Terminating connection from {addr}: WebSocket handshake timed out after {handshake_timeout:?}"
+                );
+            }
         }
     }
 
@@ -354,6 +440,7 @@ where
         context: &RouterContext<S>,
         addr: SocketAddr,
         stream: MaybeTlsStream<TcpStream>,
+        guard: ConnectionGuard,
     ) -> Result<()> {
         debug!("Incoming TCP connection from {addr}");
         let acceptor = context
@@ -362,7 +449,7 @@ where
             .lock()
             .await
             .new_acceptor();
-        let acceptance = acceptor.accept(&context, stream).await?;
+        let acceptance = acceptor.accept(context, stream).await?;
         debug!("WAMP connection established with {addr}");
 
         let serializer = new_serializer(acceptance.serializer);
@@ -376,6 +463,7 @@ where
         Self::start_connection_over_stream(
             context,
             Box::new(TransportMessageStream::new(transport, serializer)),
+            Some(guard),
         );
         Ok(())
     }
@@ -383,15 +471,31 @@ where
     fn start_connection_over_stream(
         context: &RouterContext<S>,
         stream: Box<dyn MessageStream>,
+        guard: Option<ConnectionGuard>,
     ) -> Uuid {
-        let connection = Connection::new();
+        let is_network_connection = guard.is_some();
+        let connection = Connection::new(guard);
         let uuid = connection.uuid();
         info!(
             "Created connection {uuid} over {}",
             stream.message_stream_type()
         );
 
-        let service = Service::new(connection.uuid().to_string(), stream);
+        let (rate_limiter, idle_timeout) = if is_network_connection {
+            let limits = &context.router().config.limits;
+            (
+                Some(TokenBucketRateLimiter::new(
+                    limits.rate_limit_burst,
+                    limits.rate_limit_refill_per_sec,
+                )),
+                limits.idle_timeout,
+            )
+        } else {
+            (None, None)
+        };
+
+        let service = Service::new(uuid.to_string(), stream, rate_limiter, idle_timeout);
+
         connection.start(context.clone(), service);
         uuid
     }
@@ -451,7 +555,7 @@ where
         let (peer_to_router_tx, peer_to_router_rx) = mpsc::channel(4096);
         let router_stream = DirectMessageStream::new(router_to_peer_tx, peer_to_router_rx);
         let peer_stream = DirectMessageStream::new(peer_to_router_tx, router_to_peer_rx);
-        let uuid = Self::start_connection_over_stream(context, Box::new(router_stream));
+        let uuid = Self::start_connection_over_stream(context, Box::new(router_stream), None);
         DirectConnection {
             uuid,
             stream: Box::new(peer_stream),

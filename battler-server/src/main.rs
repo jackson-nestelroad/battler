@@ -5,6 +5,7 @@ use anyhow::{
     Result,
 };
 use battler_server::{
+    RouterLimitsConfig,
     ServerConfig,
     start_server,
 };
@@ -39,6 +40,14 @@ struct Args {
     /// URI of the WAMP realm
     #[arg(long, default_value = "com.battler")]
     realm_uri: String,
+
+    /// Maximum total active connections to allow
+    #[arg(long, default_value_t = 10_000)]
+    max_connections: usize,
+
+    /// Maximum active connections allowed per client IP address
+    #[arg(long, default_value_t = 10)]
+    max_connections_per_ip: usize,
 }
 
 #[tokio::main]
@@ -54,6 +63,20 @@ async fn main() {
 async fn run_server() -> Result<()> {
     let args = Args::parse();
 
+    let limits = RouterLimitsConfig {
+        max_connections: if args.max_connections > 0 {
+            Some(args.max_connections)
+        } else {
+            None
+        },
+        max_connections_per_ip: if args.max_connections_per_ip > 0 {
+            Some(args.max_connections_per_ip)
+        } else {
+            None
+        },
+        ..Default::default()
+    };
+
     log::info!("Starting Battler Server...");
     let mut handle = start_server(ServerConfig {
         address: args.address,
@@ -62,6 +85,7 @@ async fn run_server() -> Result<()> {
         descriptions_dir: Some(args.descriptions_dir),
         realm_name: args.realm_name.clone(),
         realm_uri: args.realm_uri,
+        limits: Some(limits),
     })
     .await?;
 

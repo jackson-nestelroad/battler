@@ -41,6 +41,7 @@ use battler_service_producer::{
     authorize_player_or_side,
     authorize_side,
 };
+pub use battler_wamp::router::RouterLimitsConfig;
 use battler_wamp::{
     core::{
         error::BasicError,
@@ -411,6 +412,7 @@ pub struct ServerConfig {
     pub descriptions_dir: Option<String>,
     pub realm_name: String,
     pub realm_uri: String,
+    pub limits: Option<RouterLimitsConfig>,
 }
 
 pub struct ServerHandle {
@@ -448,9 +450,12 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     };
 
     // 2. Setup WAMP router config
-    let mut router_config = RouterConfig::default();
-    router_config.address = config.address;
-    router_config.port = config.port;
+    let mut router_config = RouterConfig {
+        address: config.address,
+        port: config.port,
+        limits: config.limits.unwrap_or_default(),
+        ..Default::default()
+    };
     router_config.realms.push(RealmConfig {
         name: config.realm_name,
         uri: Uri::try_from(config.realm_uri.as_str())?,
@@ -462,9 +467,9 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
 
     let router = new_web_socket_router(
         router_config,
-        Box::new(BattlerConnectionPolicies::default()),
-        Box::new(BattlerPubSubPolicies::default()),
-        Box::new(BattlerRpcPolicies::default()),
+        Box::new(BattlerConnectionPolicies),
+        Box::new(BattlerPubSubPolicies),
+        Box::new(BattlerRpcPolicies),
     )?;
     let (router_handle, router_join_handle) = router.start().await?;
 

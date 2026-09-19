@@ -8,6 +8,7 @@ pub mod invocation_policy;
 pub mod match_style;
 pub mod peer_info;
 pub mod publish_options;
+pub(crate) mod rate_limiter;
 pub mod roles;
 pub mod service;
 pub mod stream;
