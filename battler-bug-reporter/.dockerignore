@@ -1,0 +1,6 @@
+bin/
+obj/
+reports/
+.git/
+.vs/
+.idea/
