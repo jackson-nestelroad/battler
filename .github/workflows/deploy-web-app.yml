@@ -1,0 +1,47 @@
+name: Deploy Web App to Vercel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - 'js-clients/battler-web-app/**'
+      - 'js-clients/battler-log-formatter/**'
+      - 'js-clients/team-converter/**'
+      - 'js-clients/battler-types/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.base.json'
+      - '.github/workflows/deploy-web-app.yml'
+
+jobs:
+  deploy:
+    name: Build & Deploy to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build WASM and TS Bindings
+        uses: ./.github/actions/build-wasm-and-bindings
+
+      - name: Build Web App Dependencies
+        run: npm run build:web-app-deps
+
+      - name: Build battler-web-app
+        run: npm run build:web-app
+        env:
+          VITE_SERVER_URL: "wss://ws.battler.live/ws"
+          VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: js-clients/battler-web-app
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
