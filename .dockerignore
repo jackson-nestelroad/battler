@@ -1,0 +1,15 @@
+target/
+node_modules/
+.git/
+.venv/
+.cargo/
+.debug/
+.gemini/
+.gemini-battler-debug/
+.battler-debug-test-runs/
+dist/
+bindings/
+js-clients/
+battler-bug-reporter/
+wamp-integration-tests/
+fxlang-ext/

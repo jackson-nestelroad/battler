@@ -73,3 +73,18 @@ jobs:
         run: npm run test:web-app
       - name: Build battler-web-app
         run: npm run build:web-app
+        env:
+          VITE_SERVER_URL: "wss://ws.battler.live/ws"
+          VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
+
+      - name: Deploy to Vercel
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deployment' || github.event_name == 'workflow_dispatch') && env.VERCEL_TOKEN != ''
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: js-clients/battler-web-app
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
