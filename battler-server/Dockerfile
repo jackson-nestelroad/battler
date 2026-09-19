@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
+    libpython3.11 \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/battler
@@ -54,6 +56,7 @@ FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    libpython3.11 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
