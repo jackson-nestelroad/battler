@@ -29,12 +29,8 @@ CURRENT_USER="${USER:-$(id -un)}"
 
 # 2. Install Docker & Docker Compose if not already installed
 if ! command -v docker &>/dev/null; then
-    echo "=> Installing Docker..."
-    # Wait for apt lock if background unattended-upgrades / cloud-init is running on first boot
-    while pgrep -f "apt-get|dpkg|unattended-upgrade" >/dev/null 2>&1; do
-        echo "   Waiting for background apt processes to finish..."
-        sleep 5
-    done
+    # Temporarily stop unattended-upgrades so it releases any locks during setup
+    sudo systemctl stop unattended-upgrades 2>/dev/null || true
 
     APT_OPTS="-o DPkg::Lock::Timeout=300"
     sudo apt-get $APT_OPTS update
@@ -56,6 +52,7 @@ if ! command -v docker &>/dev/null; then
     if [ "$CURRENT_USER" != "root" ]; then
         sudo usermod -aG docker "$CURRENT_USER" || true
     fi
+    sudo systemctl start unattended-upgrades 2>/dev/null || true
     echo "   ✅ Docker installed successfully."
 else
     echo "   ℹ️ Docker is already installed."
