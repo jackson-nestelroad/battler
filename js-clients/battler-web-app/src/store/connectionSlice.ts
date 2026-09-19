@@ -20,6 +20,7 @@ const getSavedItem = (key: string): string | null => {
 };
 
 const initialAutoconnect = getSavedItem("battler_autoconnect") === "true";
+const initialSavedPlayerId = getSavedItem("battler_username");
 const defaultServerUrl = import.meta.env?.VITE_SERVER_URL || "ws://localhost:8080/ws";
 const initialSavedServerUrl = getSavedItem("battler_server_url") || defaultServerUrl;
 
