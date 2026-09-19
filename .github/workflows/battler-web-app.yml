@@ -80,7 +80,7 @@ jobs:
           VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
 
       - name: Deploy to Vercel
-        if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && secrets.VERCEL_TOKEN != ''
+        if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && env.VERCEL_TOKEN != ''
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
