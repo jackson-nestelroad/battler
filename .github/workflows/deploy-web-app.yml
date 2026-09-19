@@ -3,16 +3,7 @@ name: Deploy Web App to Vercel
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
-    paths:
-      - 'js-clients/battler-web-app/**'
-      - 'js-clients/battler-log-formatter/**'
-      - 'js-clients/team-converter/**'
-      - 'js-clients/battler-types/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.base.json'
-      - '.github/workflows/deploy-web-app.yml'
+    tags: ["v*"]
 
 jobs:
   deploy:
