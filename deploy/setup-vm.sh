@@ -30,14 +30,15 @@ CURRENT_USER="${USER:-$(id -un)}"
 # 2. Install Docker & Docker Compose if not already installed
 if ! command -v docker &>/dev/null; then
     echo "=> Installing Docker..."
-    # Wait for apt lock if background unattended-upgrades is running on first boot
-    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
+    # Wait for apt lock if background unattended-upgrades / cloud-init is running on first boot
+    while pgrep -f "apt-get|dpkg|unattended-upgrade" >/dev/null 2>&1; do
         echo "   Waiting for background apt processes to finish..."
-        sleep 3
+        sleep 5
     done
 
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg lsb-release
+    APT_OPTS="-o DPkg::Lock::Timeout=300"
+    sudo apt-get $APT_OPTS update
+    sudo apt-get $APT_OPTS install -y ca-certificates curl gnupg lsb-release
 
     sudo install -m 0755 -d /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -48,8 +49,8 @@ if ! command -v docker &>/dev/null; then
       $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
       sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo apt-get $APT_OPTS update
+    sudo apt-get $APT_OPTS install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo systemctl enable docker
     sudo systemctl start docker
     if [ "$CURRENT_USER" != "root" ]; then
