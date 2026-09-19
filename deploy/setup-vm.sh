@@ -69,14 +69,22 @@ fi
 # 4. Pull pre-built image and start containers
 echo "=> Pulling latest battler-server and caddy containers..."
 cd "$DEPLOY_DIR"
-docker compose -f docker-compose.prod.yml pull || true
-docker compose -f docker-compose.prod.yml up -d
+
+# Ensure docker compose works even if newly added docker group is not yet active in current session
+DOCKER_COMPOSE="docker compose"
+if ! docker info &>/dev/null; then
+    DOCKER_COMPOSE="sudo docker compose"
+fi
+
+$DOCKER_COMPOSE -f docker-compose.prod.yml pull || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml up -d
 
 echo ""
 echo "===================================================="
 echo "🎉 Battler services launched successfully!"
 echo "===================================================="
-docker compose -f docker-compose.prod.yml ps
+$DOCKER_COMPOSE -f docker-compose.prod.yml ps
 echo ""
 echo "Check logs anytime with:"
-echo "   docker compose -f $DEPLOY_DIR/docker-compose.prod.yml logs -f"
+echo "   $DOCKER_COMPOSE -f $DEPLOY_DIR/docker-compose.prod.yml logs -f"
+

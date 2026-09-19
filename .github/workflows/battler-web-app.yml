@@ -61,6 +61,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_web_app == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - name: Build WASM and TS Bindings
@@ -78,7 +80,7 @@ jobs:
           VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
 
       - name: Deploy to Vercel
-        if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && env.VERCEL_TOKEN != ''
+        if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && secrets.VERCEL_TOKEN != ''
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -88,3 +90,4 @@ jobs:
           working-directory: js-clients/battler-web-app
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
