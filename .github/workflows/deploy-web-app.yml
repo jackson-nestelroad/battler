@@ -29,7 +29,7 @@ jobs:
       - name: Deploy to Vercel
         run: |
           cp js-clients/battler-web-app/vercel.json js-clients/battler-web-app/dist/vercel.json
-          npx --yes vercel deploy js-clients/battler-web-app/dist --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+          npx --yes vercel deploy --cwd js-clients/battler-web-app/dist --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
