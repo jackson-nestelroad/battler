@@ -23,17 +23,17 @@ crates_config=(
     "battler|0.10|--no-default-features|all"
     "battler-choice|0.4|--no-default-features|none"
     "battler-data|0.4|--no-default-features|none"
-    "battler-data-service-schema|0.1||none"
+    "battler-data-service-schema|0.2||none"
     "battler-local-data|0.2|--no-default-features|all"
     "battler-prng|0.3|--no-default-features --features alloc|none"
-    "battler-wamp|0.5||testonly"
+    "battler-wamp|0.6||testonly"
     "battler-wamp-uri|0.1||none"
     "battler-wamp-values|~0.2.2||none"
-    "battler-wamprat|0.7||testonly"
+    "battler-wamprat|0.8||testonly"
     "battler-wamprat-error|0.2||none"
     "battler-wamprat-message|~0.1.3||none"
-    "battler-wamprat-schema|0.4||testonly"
-    "battler-wamprat-uri|0.5||none"
+    "battler-wamprat-schema|0.5||testonly"
+    "battler-wamprat-uri|0.6||none"
     "serde-struct-tuple|~0.1.3||none"
     "serde-struct-tuple-enum|0.1||none"
 )
@@ -44,7 +44,7 @@ echo "📂 Created temporary test directory at: $TMP_DIR"
 echo "------------------------------------------------"
 
 # Copy environment and configuration of our repository.
-[[ -f "$REPO_ROOT/.cargo" ]] && cp -r "$REPO_ROOT/.cargo" "$TMP_DIR/.cargo"
+[[ -d "$REPO_ROOT/.cargo" ]] && cp -r "$REPO_ROOT/.cargo" "$TMP_DIR/.cargo"
 
 # Clone all crates.
 for item in "${crates_config[@]}"; do
