@@ -13,3 +13,8 @@ js-clients/
 battler-bug-reporter/
 wamp-integration-tests/
 fxlang-ext/
+battler-ai-gemini-py/build/
+battler-ai-gemini-py/.venv/
+battler-ai-gemini-py/.debug/
+battler-ai-gemini-py/.env
+

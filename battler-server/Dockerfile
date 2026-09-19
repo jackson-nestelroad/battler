@@ -1,7 +1,21 @@
 # Multi-stage build for battler-server
 FROM rustlang/rust:nightly-bookworm AS builder
 
+# Install Python and venv for battler-ai PyInstaller build step
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /usr/src/battler
+
+# Set up Python virtual environment with PyInstaller for battler-ai
+COPY battler-ai-gemini-py ./battler-ai-gemini-py
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir -r battler-ai-gemini-py/requirements.txt
+
+ENV GEMINI_PYTHON_VENV=/opt/venv
 
 # Copy source workspace
 COPY Cargo.toml Cargo.lock* ./
@@ -46,6 +60,9 @@ WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /usr/src/battler/target/release/battler-server /usr/local/bin/battler-server
+
+# Copy pyinstaller bundle for battler-ai (matches compile-time embedded path)
+COPY --from=builder /usr/src/battler/target/release/build /usr/src/battler/target/release/build
 
 # Copy game data and descriptions
 COPY battle-data ./battle-data
