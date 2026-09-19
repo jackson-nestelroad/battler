@@ -1,4 +1,5 @@
 use std::{
+    path::PathBuf,
     sync::{
         Arc,
         Weak,
@@ -121,14 +122,14 @@ use crate::{
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION"));
 
 /// PEM file paths for establishing an mTLS connection, set via [`WebSocketConfig::mutual_tls`].
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClientMutualTlsPaths {
     /// Path to the CA certificate used to verify the router's certificate.
-    pub ca_cert_path: String,
+    pub ca_cert_path: PathBuf,
     /// Path to the certificate presented to the router.
-    pub client_cert_path: String,
+    pub client_cert_path: PathBuf,
     /// Path to the private key for [`Self::client_cert_path`].
-    pub client_key_path: String,
+    pub client_key_path: PathBuf,
 }
 
 /// Configuration for WebSocket-specific WAMP connections.

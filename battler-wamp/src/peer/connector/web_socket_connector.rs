@@ -6,7 +6,6 @@ use anyhow::{
     Result,
 };
 use async_trait::async_trait;
-use log::warn;
 use rustls::pki_types::{
     CertificateDer,
     PrivateKeyDer,
@@ -73,11 +72,10 @@ impl Connector<WebSocketStream<MaybeTlsStream<TcpStream>>> for WebSocketConnecto
                         mutual_tls,
                     )?));
                 } else {
-                    warn!(
-                        "peer {} is configured for mutual TLS, but {uri} is not a wss URI; the \
-                         connection will not be encrypted",
+                    return Err(Error::msg(format!(
+                        "peer {} is configured for mutual TLS, but {uri} is not a wss URI",
                         config.name
-                    );
+                    )));
                 }
             }
         }
@@ -136,7 +134,10 @@ fn build_rustls_client_config(
 #[cfg(test)]
 mod tls_test {
     use crate::peer::{
-        connector::web_socket_connector::build_rustls_client_config,
+        PeerConfig, WebSocketConfig,
+        connector::web_socket_connector::{
+            Connector, WebSocketConnector, build_rustls_client_config,
+        },
         peer::ClientMutualTlsPaths,
     };
 
@@ -144,12 +145,35 @@ mod tls_test {
     fn build_rustls_client_config_fails_for_missing_ca_cert() {
         assert_matches::assert_matches!(
             build_rustls_client_config(&ClientMutualTlsPaths {
-                ca_cert_path: "/bogus/ca.pem".to_owned(),
-                client_cert_path: "/bogus/client.pem".to_owned(),
-                client_key_path: "/bogus/client-key.pem".to_owned(),
+                ca_cert_path: "/bogus/ca.pem".into(),
+                client_cert_path: "/bogus/client.pem".into(),
+                client_key_path: "/bogus/client-key.pem".into(),
             }),
             Err(err) => {
                 assert!(err.to_string().contains("failed to read CA certificate file"));
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn connect_fails_for_ws_uri_with_mutual_tls() {
+        let connector = WebSocketConnector::default();
+        let config = PeerConfig {
+            name: "test-peer".to_owned(),
+            web_socket: Some(WebSocketConfig {
+                mutual_tls: Some(ClientMutualTlsPaths {
+                    ca_cert_path: "/bogus/ca.pem".into(),
+                    client_cert_path: "/bogus/client.pem".into(),
+                    client_key_path: "/bogus/client-key.pem".into(),
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        assert_matches::assert_matches!(
+            connector.connect(&config, "ws://localhost:8080").await.err(),
+            Some(err) => {
+                assert!(err.to_string().contains("peer test-peer is configured for mutual TLS, but ws://localhost:8080 is not a wss URI"));
             }
         );
     }
