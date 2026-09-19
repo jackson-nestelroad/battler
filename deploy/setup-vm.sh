@@ -61,8 +61,9 @@ if [[ -f "$SCRIPT_DIR/Caddyfile" && -f "$SCRIPT_DIR/docker-compose.prod.yml" ]];
     cp "$SCRIPT_DIR/Caddyfile" "$DEPLOY_DIR/Caddyfile"
     cp "$SCRIPT_DIR/docker-compose.prod.yml" "$DEPLOY_DIR/docker-compose.prod.yml"
 else
-    curl -fsSL https://raw.githubusercontent.com/jackson-nestelroad/battler/deployment/deploy/Caddyfile -o "$DEPLOY_DIR/Caddyfile"
-    curl -fsSL https://raw.githubusercontent.com/jackson-nestelroad/battler/deployment/deploy/docker-compose.prod.yml -o "$DEPLOY_DIR/docker-compose.prod.yml"
+    BRANCH="${BRANCH:-main}"
+    curl -fsSL "https://raw.githubusercontent.com/jackson-nestelroad/battler/${BRANCH}/deploy/Caddyfile" -o "$DEPLOY_DIR/Caddyfile"
+    curl -fsSL "https://raw.githubusercontent.com/jackson-nestelroad/battler/${BRANCH}/deploy/docker-compose.prod.yml" -o "$DEPLOY_DIR/docker-compose.prod.yml"
 fi
 
 # 4. Pull pre-built image and start containers
