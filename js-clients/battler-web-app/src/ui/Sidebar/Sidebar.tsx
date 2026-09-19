@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { closeBattleSession, disconnectWamp } from "../../core/wamp";
 import type { ActiveView, SerializedBattleSession } from "../../store/battlesSlice";
 import { isSpectatorSession, selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import BugReportModal from "../Common/BugReportModal/BugReportModal";
 import { getBattleTitle } from "../../utils/battle";
 import { getBattleStateLabel } from "../../utils/battleState";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
@@ -15,6 +17,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const dispatch = useAppDispatch();
+  const [showBugReportModal, setShowBugReportModal] = useState(false);
   const connection = useAppSelector((state) => state.connection);
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
@@ -302,6 +305,24 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             })}
           </div>
         </div>
+      )}
+
+      <div className={`${styles.sidebarFooter} flex-row align-center`}>
+        <button
+          type="button"
+          className={styles.reportBugBtn}
+          onClick={() => setShowBugReportModal(true)}
+          title={isCollapsed ? "Report bug" : undefined}
+        >
+          {isCollapsed ? "Bug" : "Report bug"}
+        </button>
+      </div>
+
+      {showBugReportModal && (
+        <BugReportModal
+          isOpen={showBugReportModal}
+          onClose={() => setShowBugReportModal(false)}
+        />
       )}
     </aside>
   );
