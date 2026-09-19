@@ -42,6 +42,7 @@ battler-wamp-uri = { workspace = true }
 [dev-dependencies]
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
+tempfile = { workspace = true }
 
 test-utils = { path = "test-utils" }
 

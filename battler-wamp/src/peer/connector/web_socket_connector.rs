@@ -116,11 +116,19 @@ fn build_rustls_client_config(
     {
         root_cert_store.add(cert.context("failed to parse CA certificate")?)?;
     }
+    if root_cert_store.is_empty() {
+        return Err(Error::msg("no CA certificates found in CA certificate file"));
+    }
 
     let client_certs = CertificateDer::pem_file_iter(&mutual_tls.client_cert_path)
         .context("failed to read client certificate file")?
         .collect::<Result<Vec<_>, _>>()
         .context("failed to parse client certificate")?;
+    if client_certs.is_empty() {
+        return Err(Error::msg(
+            "no client certificates found in client certificate file",
+        ));
+    }
     let client_key = PrivateKeyDer::from_pem_file(&mutual_tls.client_key_path)
         .context("failed to read client private key file")?;
 
@@ -151,6 +159,23 @@ mod tls_test {
             }),
             Err(err) => {
                 assert!(err.to_string().contains("failed to read CA certificate file"));
+            }
+        );
+    }
+
+    #[test]
+    fn build_rustls_client_config_fails_for_empty_ca_cert() {
+        let temp_ca = tempfile::NamedTempFile::new().unwrap();
+        assert_matches::assert_matches!(
+            build_rustls_client_config(&ClientMutualTlsPaths {
+                ca_cert_path: temp_ca.path().into(),
+                client_cert_path: "/bogus/client.pem".into(),
+                client_key_path: "/bogus/client-key.pem".into(),
+            }),
+            Err(err) => {
+                assert!(err
+                    .to_string()
+                    .contains("no CA certificates found in CA certificate file"));
             }
         );
     }
