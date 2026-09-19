@@ -20,8 +20,8 @@ const getSavedItem = (key: string): string | null => {
 };
 
 const initialAutoconnect = getSavedItem("battler_autoconnect") === "true";
-const initialSavedPlayerId = getSavedItem("battler_username");
-const initialSavedServerUrl = getSavedItem("battler_server_url") || "ws://localhost:8080/ws";
+const defaultServerUrl = import.meta.env?.VITE_SERVER_URL || "ws://localhost:8080/ws";
+const initialSavedServerUrl = getSavedItem("battler_server_url") || defaultServerUrl;
 
 const initialState: ConnectionState = {
   status: initialAutoconnect && initialSavedPlayerId ? "connecting" : "disconnected",

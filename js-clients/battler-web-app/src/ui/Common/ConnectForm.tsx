@@ -14,8 +14,9 @@ export default function ConnectForm() {
   const connection = useAppSelector((state) => state.connection);
   const { connectionMessage } = useConnectionCountdown();
 
+  const defaultServerUrl = import.meta.env?.VITE_SERVER_URL || "ws://localhost:8080/ws";
   const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
-  const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || "ws://localhost:8080/ws");
+  const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || defaultServerUrl);
   const [autoconnect, setAutoconnect] = useState(connection.autoconnect);
 
   const handleConnect = (e: React.FormEvent) => {
@@ -64,7 +65,7 @@ export default function ConnectForm() {
               type="text"
               value={serverUrl}
               onChange={(e) => setServerUrl(e.target.value)}
-              placeholder="ws://localhost:8080/ws"
+              placeholder={defaultServerUrl}
               disabled={isDisabled}
               required
             />
