@@ -45,3 +45,7 @@
 1. [`team-converter`](./js-clients/team-converter/) - Utilities for converting Pokémon Showdown teams to and from `battler` format.
 1. [`js-clients-integration-tests`](./js-clients/integration-tests/) - Integration tests for `js-clients`.
 1. [`fxlang-vscode`](./fxlang-ext/) - Visual Studio Code extension for `fxlang` DSL scripts.
+
+## .NET Microservices
+
+1. [`battler-bug-reporter`](./battler-bug-reporter/) - Diagnostic bug reporting service for submitting structured GitHub issues and diagnostic payloads.

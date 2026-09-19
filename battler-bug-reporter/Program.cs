@@ -1,8 +1,11 @@
 using System.Text.Json;
 using System.Threading.RateLimiting;
+
 using BugReporter;
+
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+
 using Octokit;
 
 var builder = WebApplication.CreateBuilder(args);

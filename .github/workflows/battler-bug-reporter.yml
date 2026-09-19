@@ -19,8 +19,22 @@ jobs:
         uses: ./.github/actions/detect-changes
         id: detector
 
+  formatting:
+    name: Check formatting
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_bug_reporter == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: ./.github/actions/dotnet
+      - name: Check formatting
+        run: dotnet format BugReporter.slnx --verify-no-changes
+        working-directory: battler-bug-reporter
+
   test-and-build-battler-bug-reporter:
-    name: Test, Lint and Build battler-bug-reporter
+    name: Test and Build battler-bug-reporter
     needs: detect-changes
     if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_bug_reporter == 'true'
     runs-on: ubuntu-latest
@@ -30,13 +44,13 @@ jobs:
       - name: Set up .NET
         uses: ./.github/actions/dotnet
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore BugReporter.slnx
         working-directory: battler-bug-reporter
       - name: Build with warnings as errors
-        run: dotnet build --no-restore -c Release -warnaserror
+        run: dotnet build BugReporter.slnx --no-restore -c Release -warnaserror
         working-directory: battler-bug-reporter
-      - name: Verify code formatting
-        run: dotnet format --verify-no-changes
+      - name: Run unit tests
+        run: dotnet test BugReporter.slnx --no-build -c Release
         working-directory: battler-bug-reporter
       - name: Build Docker image
         run: docker build -t battler-bug-reporter:ci .

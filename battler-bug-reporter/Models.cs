@@ -45,4 +45,3 @@ public record StoredBugReport(
     string CreatedAt,
     BugReportRequest Request
 );
-
