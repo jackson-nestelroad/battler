@@ -1,0 +1,43 @@
+name: battler-bug-reporter
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_battler_bug_reporter: ${{ steps.detector.outputs.run_battler_bug_reporter }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
+  test-and-build-battler-bug-reporter:
+    name: Test, Lint and Build battler-bug-reporter
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_bug_reporter == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: ./.github/actions/dotnet
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: battler-bug-reporter
+      - name: Build with warnings as errors
+        run: dotnet build --no-restore -c Release -warnaserror
+        working-directory: battler-bug-reporter
+      - name: Verify code formatting
+        run: dotnet format --verify-no-changes
+        working-directory: battler-bug-reporter
+      - name: Build Docker image
+        run: docker build -t battler-bug-reporter:ci .
+        working-directory: battler-bug-reporter
