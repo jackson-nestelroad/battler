@@ -1,4 +1,4 @@
-name: Publish Server Docker Image
+name: Publish battler-server
 
 on:
   workflow_dispatch:
@@ -8,7 +8,9 @@ on:
         type: boolean
         default: false
   push:
-    tags: ["v*"]
+    tags:
+      - "battler-live-v*"
+      - "battler-server-v*"
 
 env:
   REGISTRY: ghcr.io
@@ -43,8 +45,9 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=true
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=battler-live-v(.*),group=1
+            type=match,pattern=battler-server-v(.*),group=1
+            type=raw,value=${{ github.ref_name }}
             type=sha,format=long
             type=sha,format=short
             type=raw,value=prod,enable=${{ inputs.promote_to_prod == true }}

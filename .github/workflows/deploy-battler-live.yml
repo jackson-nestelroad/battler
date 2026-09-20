@@ -1,10 +1,10 @@
-name: Deploy Release to Production
+name: Deploy battler.live
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Release tag to deploy (e.g. v0.2.0)"
+        description: "Release tag to deploy (e.g. battler-live-v0.2.0)"
         required: true
         type: string
 
@@ -103,12 +103,29 @@ jobs:
           echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
 
           WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://battler.live || echo "Error")
-          echo "| **Frontend** | https://battler.live | HTTP ${WEB_STATUS} ✅ |" >> $GITHUB_STEP_SUMMARY
+          if [ "$WEB_STATUS" = "200" ]; then
+            WEB_RESULT="HTTP 200 ✅"
+          else
+            WEB_RESULT="HTTP ${WEB_STATUS} ⚠️"
+          fi
+          echo "| **Frontend** | https://battler.live | ${WEB_RESULT} |" >> $GITHUB_STEP_SUMMARY
 
           WS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ws.battler.live || echo "Error")
-          echo "| **Game Server** | wss://ws.battler.live | TLS OK (HTTP ${WS_STATUS}) ✅ |" >> $GITHUB_STEP_SUMMARY
+          if [ "$WS_STATUS" = "400" ] || [ "$WS_STATUS" = "426" ] || [ "$WS_STATUS" = "200" ]; then
+            WS_RESULT="Active ✅ (HTTP ${WS_STATUS})"
+          elif [ "$WS_STATUS" = "502" ]; then
+            WS_RESULT="Starting up ⏳ (HTTP 502 - Watchtower pulling :prod)"
+          else
+            WS_RESULT="Warning ⚠️ (HTTP ${WS_STATUS})"
+          fi
+          echo "| **Game Server** | wss://ws.battler.live | ${WS_RESULT} |" >> $GITHUB_STEP_SUMMARY
 
-          BUG_HEALTH=$(curl -s https://bugs.battler.live/health || echo "{}")
-          echo "| **Bug Reporter** | https://bugs.battler.live/health | Active ✅ |" >> $GITHUB_STEP_SUMMARY
+          BUG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bugs.battler.live/health || echo "Error")
+          if [ "$BUG_STATUS" = "200" ]; then
+            BUG_RESULT="Active ✅"
+          else
+            BUG_RESULT="Warning ⚠️ (HTTP ${BUG_STATUS})"
+          fi
+          echo "| **Bug Reporter** | https://bugs.battler.live/health | ${BUG_RESULT} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "VM Watchtower will pick up the updated \`:prod\` image within 120s." >> $GITHUB_STEP_SUMMARY

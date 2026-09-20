@@ -47,11 +47,11 @@ graph TD
 ## 2. Software Architecture & Services
 
 ### Game Server Stack
-* **Containers** (orchestrated via [deploy/docker-compose.prod.yml](deploy/docker-compose.prod.yml)):
+* **Containers** (orchestrated via [`docker-compose.prod.yml`](docker-compose.prod.yml)):
   * `battler-server`: Rust WAMP game engine running on host port `8080`, tracking the **`:prod`** container image tag.
   * `caddy`: Reverse proxy providing automated TLS termination on ports 80/443, forwarding traffic to `127.0.0.1:8080`.
   * `watchtower`: Automated update daemon polling GHCR every 120s for new digests of **`:prod`** and restarting `battler-server`.
-* **Host Provisioning**: [deploy/setup-vm.sh](deploy/setup-vm.sh) installs dependencies and launches the Compose stack.
+* **Host Provisioning**: [`setup-vm.sh`](setup-vm.sh) installs dependencies and launches the Compose stack.
 
 ### Bug Reporter Service (`battler-bug-reporter`)
 * **Application**: ASP.NET Core (.NET 10) Minimal API deployed to Google Cloud Run.
@@ -70,10 +70,10 @@ graph TD
 
 | Workflow | File | Triggers | Description |
 | :--- | :--- | :--- | :--- |
-| **Deploy Release to Production** | [`.github/workflows/deploy-release.yml`](file:///Users/jackson/Code/GitHub/pokemon/.github/workflows/deploy-release.yml) | `workflow_dispatch` | **Single-Button Production Release**: Promotes server image to `:prod`, deploys Cloud Run, deploys Vercel, and runs smoke checks. |
-| **Publish Server Docker Image** | [`.github/workflows/docker-publish-server.yml`](file:///Users/jackson/Code/GitHub/pokemon/.github/workflows/docker-publish-server.yml) | `push: tags: ["v*"]`, `workflow_dispatch` | Builds and pushes server images (`:v*`, `:latest`, `:sha-...`). Only tags `:prod` if explicitly requested. |
-| **Publish & Deploy Bug Reporter** | [`.github/workflows/docker-publish-bug-reporter.yml`](file:///Users/jackson/Code/GitHub/pokemon/.github/workflows/docker-publish-bug-reporter.yml) | `push: tags: ["v*"]`, `workflow_dispatch` | Builds and pushes bug reporter images (`:v*`, `:latest`, `:sha-...`). Only deploys if explicitly requested. |
-| **Deploy Web App to Vercel** | [`.github/workflows/deploy-web-app.yml`](file:///Users/jackson/Code/GitHub/pokemon/.github/workflows/deploy-web-app.yml) | `workflow_dispatch` | Builds WASM engine and deploys web app to Vercel. |
+| **Deploy battler.live** | [`.github/workflows/deploy-battler-live.yml`](../.github/workflows/deploy-battler-live.yml) | `workflow_dispatch` (Input: `release_tag`) | **Single-Button Production Rollout**: Promotes server image to `:prod`, deploys Cloud Run, deploys Vercel, and runs smoke checks. |
+| **Deploy battler-web-app** | [`.github/workflows/deploy-web-app.yml`](../.github/workflows/deploy-web-app.yml) | `push: tags: ["battler-web-app-v*"]`, `workflow_dispatch` | Builds WASM engine and deploys web app UI directly to Vercel (instant, zero server downtime). |
+| **Publish battler-server** | [`.github/workflows/docker-publish-server.yml`](../.github/workflows/docker-publish-server.yml) | `push: tags: ["battler-live-v*", "battler-server-v*"]`, `workflow_dispatch` | Compiles server image and pushes to GHCR. Has an optional `promote_to_prod` toggle. |
+| **Publish battler-bug-reporter** | [`.github/workflows/docker-publish-bug-reporter.yml`](../.github/workflows/docker-publish-bug-reporter.yml) | `push: tags: ["battler-live-v*", "battler-bug-reporter-v*"]`, `workflow_dispatch` | Compiles bug reporter image and pushes to GHCR. Has an optional `deploy` toggle. |
 
 ### Required Repository Secrets
 Configure under **Settings** $\rightarrow$ **Secrets and variables** $\rightarrow$ **Actions**:
@@ -87,18 +87,18 @@ Configure under **Settings** $\rightarrow$ **Secrets and variables** $\rightarro
 
 ## 4. Release Process
 
-Battler uses a decoupled, two-phase release model:
+Battler uses an unambiguous, component-namespaced tagging model to prevent collisions across the monorepo's crates and packages:
 
 ```
 [ Phase 1: Tag & Build Ahead of Time ]
-  git tag v0.2.0 && git push origin v0.2.0
+  git tag battler-live-v0.2.0 && git push origin battler-live-v0.2.0
       │
       ▼
-  Builds & pushes container images to GHCR (:v0.2.0)
+  Builds & pushes containers to GHCR (:battler-live-v0.2.0)
   (Production is completely untouched. Games continue.)
 
 [ Phase 2: Production Maintenance Window ]
-  GitHub Actions ➔ "Deploy Release to Production" ➔ Run "v0.2.0"
+  GitHub Actions ➔ "Deploy battler.live" ➔ Run "battler-live-v0.2.0"
       │
       ├─► Deploys Web App to Vercel (~45s)
       ├─► Deploys Bug Reporter to Cloud Run (~15s)
@@ -120,14 +120,14 @@ Battler uses a decoupled, two-phase release model:
 2. **Cut Release Tag (Pre-Build)**:
    ```bash
    git checkout main && git pull origin main
-   git tag v0.2.0 -m "Release v0.2.0"
-   git push origin v0.2.0
+   git tag battler-live-v0.2.0 -m "Release battler.live v0.2.0"
+   git push origin battler-live-v0.2.0
    ```
-   *Compiles all Docker containers and pushes `:v0.2.0` to GHCR. Production remains active.*
+   *Compiles all Docker containers and pushes `:battler-live-v0.2.0` to GHCR. Production remains active.*
 
 3. **Deploy to Production (Maintenance Window)**:
-   * In GitHub Actions, select **"Deploy Release to Production"**.
-   * Click **Run workflow**, enter `v0.2.0`, and run.
+   * In GitHub Actions, select **"Deploy battler.live"**.
+   * Click **Run workflow**, enter `battler-live-v0.2.0`, and run.
 
 4. **Verify Smoke Endpoints**:
    ```bash
@@ -136,11 +136,11 @@ Battler uses a decoupled, two-phase release model:
    curl -s https://bugs.battler.live/health
    ```
 
-### Ad-Hoc / Single-Service Deployments
-You do not need to cut a full release tag to patch an individual service:
-* **Server only**: Run **"Publish Server Docker Image"** with `promote_to_prod = true`.
-* **Bug Reporter only**: Run **"Publish & Deploy Bug Reporter"** with `deploy = true`.
-* **Web App only**: Run **"Deploy Web App to Vercel"**.
+### Component-Specific Deployments
+You do not need to trigger a full platform release for individual component updates:
+* **Frontend only**: Push tag `battler-web-app-v*` (or run **"Deploy battler-web-app"**).
+* **Game Server only**: Push tag `battler-server-v*` (or run **"Publish battler-server"** with `promote_to_prod = true`).
+* **Bug Reporter only**: Push tag `battler-bug-reporter-v*` (or run **"Publish battler-bug-reporter"** with `deploy = true`).
 
 ---
 
@@ -168,6 +168,7 @@ curl -sSL https://raw.githubusercontent.com/jackson-nestelroad/battler/main/depl
 ```
 
 ### Rollback Procedures
-* **Web App**: Go to **Vercel Dashboard** $\rightarrow$ `battler-web-app` $\rightarrow$ **Deployments** $\rightarrow$ select previous deployment $\rightarrow$ **Instant Rollback**.
-* **Bug Reporter**: Go to **GCP Console** $\rightarrow$ **Cloud Run** $\rightarrow$ `battler-bug-reporter` $\rightarrow$ **Revisions** $\rightarrow$ route 100% of traffic to previous revision.
-* **Game Server (Zero-SSH)**: In GitHub Actions $\rightarrow$ run **"Publish Server Docker Image"** on the previous working tag (e.g. `v0.1.9`) with `promote_to_prod = true`. Watchtower rolls back the VM automatically.
+* **Full Platform Rollback**: In GitHub Actions $\rightarrow$ run **"Deploy battler.live"** with the previous release tag (e.g. `battler-live-v0.1.9`). This instantly retags the previous server image to `:prod`, rolls Cloud Run back to that release, and redeploys the matching web app to Vercel.
+* **Frontend only**: Go to **Vercel Dashboard** $\rightarrow$ `battler-web-app` $\rightarrow$ **Deployments** $\rightarrow$ select previous deployment $\rightarrow$ **Instant Rollback**.
+* **Bug Reporter only**: Go to **GCP Console** $\rightarrow$ **Cloud Run** $\rightarrow$ `battler-bug-reporter` $\rightarrow$ **Revisions** $\rightarrow$ route 100% of traffic to previous revision.
+* **Game Server only (Zero-SSH)**: In GitHub Actions $\rightarrow$ run **"Publish battler-server"** on the previous working tag (e.g. `battler-server-v0.1.9` or `battler-live-v0.1.9`) with `promote_to_prod = true`. Watchtower rolls back the VM automatically.

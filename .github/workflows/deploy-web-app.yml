@@ -1,7 +1,9 @@
-name: Deploy Web App to Vercel
+name: Deploy battler-web-app
 
 on:
   workflow_dispatch:
+  push:
+    tags: ["battler-web-app-v*"]
 
 jobs:
   deploy:

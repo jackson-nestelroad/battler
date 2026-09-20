@@ -1,4 +1,4 @@
-name: Publish & Deploy Bug Reporter
+name: Publish battler-bug-reporter
 
 on:
   workflow_dispatch:
@@ -8,7 +8,9 @@ on:
         type: boolean
         default: false
   push:
-    tags: ["v*"]
+    tags:
+      - "battler-live-v*"
+      - "battler-bug-reporter-v*"
 
 env:
   REGISTRY: ghcr.io
@@ -43,8 +45,9 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=true
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=battler-live-v(.*),group=1
+            type=match,pattern=battler-bug-reporter-v(.*),group=1
+            type=raw,value=${{ github.ref_name }}
             type=sha,format=long
             type=sha,format=short
 
@@ -60,13 +63,13 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Authenticate to Google Cloud
-        if: inputs.deploy == true
+        if: inputs.deploy == true || startsWith(github.ref, 'refs/tags/battler-bug-reporter-v')
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Deploy to Cloud Run
-        if: inputs.deploy == true
+        if: inputs.deploy == true || startsWith(github.ref, 'refs/tags/battler-bug-reporter-v')
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: battler-bug-reporter
