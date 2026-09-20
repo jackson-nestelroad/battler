@@ -82,9 +82,8 @@ function MonCardContent({
   };
 
   const infoButton = hasMonData ? (
-    <span
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       className="info-btn"
       aria-label={`View ${name} details`}
       title={`View ${name} details`}
@@ -92,16 +91,9 @@ function MonCardContent({
         e.stopPropagation();
         monTooltip?.toggle(e.currentTarget);
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          e.stopPropagation();
-          monTooltip?.toggle(e.currentTarget);
-        }
-      }}
     >
       <InfoIcon />
-    </span>
+    </button>
   ) : null;
 
   if (variant === "row") {

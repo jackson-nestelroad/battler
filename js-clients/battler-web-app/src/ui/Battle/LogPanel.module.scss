@@ -22,8 +22,7 @@
       .header {
         border-bottom: none;
         margin: 0 !important;
-        padding: var(--spacing-xs) var(--spacing-m) !important;
-        min-height: rem(36px);
+        padding: var(--spacing-s) var(--spacing-m) !important;
       }
 
       // Hide nested content components from rendering inside minimized container
