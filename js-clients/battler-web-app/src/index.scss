@@ -18,13 +18,23 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-accent: #8b5cf6;
+  --color-primary: #1f94f6;
+  --color-primary-hover: #1579cc;
+  --color-accent: #863bff;
   --color-success: #10b981;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
-  --color-info: #06b6d4;
+  --color-info: #00d4ff;
+
+  /* Brand Gradient Tokens (Matched to logo.svg) */
+  --brand-purple: #863bff;
+  --brand-indigo: #674aff;
+  --brand-blue: #1f94f6;
+  --brand-cyan: #00d4ff;
+
+  --gradient-brand: linear-gradient(135deg, var(--brand-cyan) 0%, var(--brand-blue) 40%, var(--brand-purple) 100%);
+  --gradient-btn-primary: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-indigo) 50%, var(--brand-purple) 100%);
+  --gradient-btn-primary-hover: linear-gradient(135deg, var(--brand-cyan) 0%, var(--brand-blue) 35%, var(--brand-purple) 100%);
 
   /* Theme Base Neutrals */
   --color-white: #ffffff;
@@ -438,7 +448,7 @@ input[type="checkbox"] {
 
   &:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 3px var(--border-glow);
   }
 
   &:focus-visible {
@@ -447,7 +457,7 @@ input[type="checkbox"] {
   }
 
   &:checked {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    background: var(--gradient-brand);
     border-color: transparent;
 
     &::before {
@@ -557,15 +567,16 @@ input[type="checkbox"] {
 
 /* Primary Button (Gradient) */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--gradient-btn-primary);
   color: var(--color-white);
+  font-weight: 600;
   border: none;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 25%, transparent);
-  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-accent));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand-blue) 30%, transparent);
+  background: var(--gradient-btn-primary-hover);
 }
 
 /* Secondary Button (Outline/Default) */

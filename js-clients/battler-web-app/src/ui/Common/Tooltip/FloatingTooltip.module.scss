@@ -3,6 +3,9 @@
   z-index: 9999;
   pointer-events: none;
   max-width: calc(100vw - var(--spacing-l) * 2);
+  max-height: calc(100vh - var(--spacing-l) * 2);
+  display: flex;
+  flex-direction: column;
 }
 
 .bridgeTop::after,

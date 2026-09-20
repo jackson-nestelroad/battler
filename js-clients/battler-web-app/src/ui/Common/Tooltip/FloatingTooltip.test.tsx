@@ -140,6 +140,44 @@ describe("calculateFloatingCoords", () => {
     expect(coords.top).toBe(500 - 320 - 8); // 172
     expect(coords.top + 320).toBeLessThanOrEqual(768 - 12);
   });
+
+  it("falls back to left when preferredPlacement is top but vertical space is constrained and left room allows", () => {
+    const target = createMockRect({
+      left: 600,
+      right: 800,
+      top: 400,
+      bottom: 470,
+      width: 200,
+      height: 70,
+    });
+
+    // Space above: 400 - 8 - 12 = 380 (< 550)
+    // Space below: 700 - 470 - 8 - 12 = 210 (< 550)
+    // Space left: 600 - 8 - 12 = 580 (>= 350)
+    const coords = calculateFloatingCoords(target, 350, 550, "top", 1000, 700);
+    expect(coords.placement).toBe("left");
+    expect(coords.left + 350).toBeLessThanOrEqual(target.left);
+    expect(coords.left).toBe(600 - 350 - 8);
+  });
+
+  it("falls back to right when preferredPlacement is top but vertical space is constrained and right room allows", () => {
+    const target = createMockRect({
+      left: 100,
+      right: 300,
+      top: 400,
+      bottom: 470,
+      width: 200,
+      height: 70,
+    });
+
+    // Space above: 380 (< 550), Space below: 210 (< 550)
+    // Space left: 100 - 8 - 12 = 80 (< 350)
+    // Space right: 1000 - 300 - 8 - 12 = 680 (>= 350)
+    const coords = calculateFloatingCoords(target, 350, 550, "top", 1000, 700);
+    expect(coords.placement).toBe("right");
+    expect(coords.left).toBeGreaterThanOrEqual(target.right);
+    expect(coords.left).toBe(300 + 8);
+  });
 });
 
 describe("FloatingTooltip", () => {

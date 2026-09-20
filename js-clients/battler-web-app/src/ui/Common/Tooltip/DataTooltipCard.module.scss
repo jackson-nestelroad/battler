@@ -11,6 +11,8 @@
   flex-direction: column;
   gap: var(--spacing-s);
   backdrop-filter: blur(var(--spacing-s));
+  max-height: calc(100vh - var(--spacing-l) * 2);
+  overflow-y: auto;
 }
 
 .cardFixed {

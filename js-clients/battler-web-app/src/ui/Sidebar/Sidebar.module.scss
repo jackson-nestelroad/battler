@@ -23,7 +23,7 @@
     font-size: var(--font-size-xl);
     font-weight: 700;
     letter-spacing: -0.025em;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    background: var(--gradient-brand);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
