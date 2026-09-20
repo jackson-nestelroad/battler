@@ -117,7 +117,9 @@ fn build_rustls_client_config(
         root_cert_store.add(cert.context("failed to parse CA certificate")?)?;
     }
     if root_cert_store.is_empty() {
-        return Err(Error::msg("no CA certificates found in CA certificate file"));
+        return Err(Error::msg(
+            "no CA certificates found in CA certificate file",
+        ));
     }
 
     let client_certs = CertificateDer::pem_file_iter(&mutual_tls.client_cert_path)
@@ -142,9 +144,12 @@ fn build_rustls_client_config(
 #[cfg(test)]
 mod tls_test {
     use crate::peer::{
-        PeerConfig, WebSocketConfig,
+        PeerConfig,
+        WebSocketConfig,
         connector::web_socket_connector::{
-            Connector, WebSocketConnector, build_rustls_client_config,
+            Connector,
+            WebSocketConnector,
+            build_rustls_client_config,
         },
         peer::ClientMutualTlsPaths,
     };
