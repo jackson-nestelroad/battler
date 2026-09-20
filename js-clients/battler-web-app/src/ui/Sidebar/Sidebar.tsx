@@ -3,7 +3,9 @@ import { closeBattleSession, disconnectWamp } from "../../core/wamp";
 import type { ActiveView, SerializedBattleSession } from "../../store/battlesSlice";
 import { isSpectatorSession, selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import AboutModal from "../Common/AboutModal/AboutModal";
 import BugReportModal from "../Common/BugReportModal/BugReportModal";
+import InfoIcon from "../Common/InfoIcon";
 import { getBattleSessionTitle } from "../../utils/battle";
 import { getBattleSessionStateLabel, isBattleFinished } from "../../utils/battleState";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
@@ -18,6 +20,7 @@ interface SidebarProps {
 export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const dispatch = useAppDispatch();
   const [showBugReportModal, setShowBugReportModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const connection = useAppSelector((state) => state.connection);
   const { battles, activeBattleId, currentView } = useAppSelector((state) => state.battles);
   const proposalsMap = useAppSelector((state) => state.proposals.proposals);
@@ -264,22 +267,63 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </div>
       )}
 
-      <div className={`${styles.sidebarFooter} flex-row align-center`}>
-        <button
-          type="button"
-          className={styles.reportBugBtn}
-          onClick={() => setShowBugReportModal(true)}
-          title={isCollapsed ? "Report bug" : undefined}
-          aria-label="Report bug"
-        >
-          {isCollapsed ? "🐞" : "Report bug"}
-        </button>
+      <div className={styles.sidebarFooter}>
+        {isCollapsed ? (
+          <div className="flex-col align-center gap-xs">
+            <button
+              type="button"
+              className={styles.footerIconBtn}
+              onClick={() => setShowAboutModal(true)}
+              title="About"
+              aria-label="About"
+            >
+              <InfoIcon size={14} />
+            </button>
+            <button
+              type="button"
+              className={styles.footerIconBtn}
+              onClick={() => setShowBugReportModal(true)}
+              title="Report bug"
+              aria-label="Report bug"
+            >
+              🐞
+            </button>
+          </div>
+        ) : (
+          <div className="flex-row align-center justify-between gap-xs">
+            <button
+              type="button"
+              className={styles.reportBugBtn}
+              onClick={() => setShowBugReportModal(true)}
+              aria-label="Report bug"
+            >
+              🐞 Report bug
+            </button>
+            <button
+              type="button"
+              className={styles.aboutBtn}
+              onClick={() => setShowAboutModal(true)}
+              title="About"
+              aria-label="About"
+            >
+              <InfoIcon size={13} />
+              <span>About</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {showBugReportModal && (
         <BugReportModal
           isOpen={showBugReportModal}
           onClose={() => setShowBugReportModal(false)}
+        />
+      )}
+
+      {showAboutModal && (
+        <AboutModal
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
         />
       )}
     </aside>
