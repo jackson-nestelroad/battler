@@ -1,0 +1,63 @@
+import type { Battle } from "battler-service-client";
+import type { BattleState } from "battler-state";
+import type { ActiveTimerState } from "../../store/battlesSlice";
+import { getBattleSessionStateLabel } from "../../utils/battleState";
+import BattleConditionsBar from "./BattleConditionsBar";
+import BattleTimers from "./BattleTimers";
+import styles from "./Field.module.scss";
+
+interface FieldProps {
+  battleState: BattleState | null;
+  activeTimers?: Record<string, ActiveTimerState>;
+  playerId?: string;
+  serviceBattle?: Battle | null;
+  isReplay?: boolean;
+}
+
+export default function Field({
+  battleState,
+  activeTimers,
+  playerId,
+  serviceBattle,
+  isReplay = false,
+}: FieldProps) {
+  if (!battleState) {
+    return (
+      <div className={styles.arena}>
+        <div className={styles.battleground}>
+          <div className={styles.placeholderText}>
+            <p>None</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.arena}>
+      <div className={styles.fieldHeader}>
+        <div className={styles.fieldConditions}>
+          <BattleConditionsBar battleState={battleState} playerId={playerId} />
+          {activeTimers && (
+            <BattleTimers
+              activeTimers={activeTimers}
+              playerId={playerId}
+              battleState={battleState}
+              serviceBattle={serviceBattle}
+              isReplay={isReplay}
+            />
+          )}
+        </div>
+        <span className={styles.turnLabel}>
+          {getBattleSessionStateLabel({ battleState, serviceBattle, isReplay })}
+        </span>
+      </div>
+
+      <div className={styles.battleground}>
+        <div className={styles.placeholderText}>
+          <h4>Arena</h4>
+        </div>
+      </div>
+    </div>
+  );
+}

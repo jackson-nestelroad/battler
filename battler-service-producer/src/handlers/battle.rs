@@ -4,6 +4,8 @@ use anyhow::Result;
 use battler_service::BattlerService;
 use uuid::Uuid;
 
+use crate::common::error::map_battle_error;
+
 pub(crate) struct Handler<'d> {
     pub service: Arc<BattlerService<'d>>,
 }
@@ -22,12 +24,23 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         _: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        let battle = self.service.battle(Uuid::try_parse(&procedure.0)?).await?;
-        Ok(battler_service_schema::BattleOutput(
-            battler_service_schema::Battle {
-                battle_json: serde_json::to_string(&battle)?,
-            },
-        ))
+        crate::log_procedure!(
+            "Battle",
+            &procedure.0,
+            async {
+                let battle = self
+                    .service
+                    .battle(Uuid::try_parse(&procedure.0)?)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::BattleOutput(
+                    battler_service_schema::Battle {
+                        battle_json: serde_json::to_string(&battle)?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

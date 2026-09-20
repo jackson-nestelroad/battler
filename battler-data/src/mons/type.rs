@@ -181,7 +181,13 @@ pub type TypeTable<T> = HashMap<Type, HashMap<T, TypeEffectiveness>>;
 ///
 /// The key here is the attacking type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct TypeChart {
+    #[cfg_attr(
+        feature = "typescript",
+        ts(type = "Record<string, Record<string, number>>")
+    )]
     pub types: TypeTable<Type>,
 }
 

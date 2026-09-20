@@ -13,6 +13,7 @@ use battler_wamp_values::{
 };
 use thiserror::Error;
 
+pub use crate::core::rate_limiter::RateLimitError;
 use crate::{
     core::id::Id,
     message::message::Message,
@@ -87,13 +88,27 @@ impl WampError {
 
 impl Into<WampError> for Error {
     fn into(self) -> WampError {
-        WampError::new(uri_for_error(&self), self.to_string())
+        match self.downcast::<WampError>() {
+            Ok(error) => error,
+            Err(err) => {
+                if let Some(error) = err.downcast_ref::<ChannelTransmittableError>() {
+                    return error.error.clone();
+                }
+                WampError::new(uri_for_error(&err), format!("{err:#}"))
+            }
+        }
     }
 }
 
 impl Into<WampError> for &Error {
     fn into(self) -> WampError {
-        WampError::new(uri_for_error(self), self.to_string())
+        if let Some(error) = self.downcast_ref::<WampError>() {
+            return error.clone();
+        }
+        if let Some(error) = self.downcast_ref::<ChannelTransmittableError>() {
+            return error.error.clone();
+        }
+        WampError::new(uri_for_error(self), format!("{self:#}"))
     }
 }
 
@@ -273,6 +288,7 @@ fn error_from_uri_reason_and_message(
         "wamp.error.no_available_callee" => InteractionError::NoAvailableCallee.into(),
         "wamp.error.invalid_uri" => InvalidUri.into(),
         "com.battler_wamp.peer_not_connected" => PeerNotConnectedError.into(),
+        "com.battler_wamp.rate_limit_error" => RateLimitError.into(),
         _ => WampError::new_with_payload(reason, message, arguments, arguments_keyword).into(),
     }
 }
@@ -392,7 +408,7 @@ impl From<&Error> for ChannelTransmittableError {
             };
         }
         Self {
-            error: WampError::new(uri_for_error(value), value.to_string()),
+            error: WampError::new(uri_for_error(value), format!("{value:#}")),
             request_id: None,
             arguments: List::default(),
             arguments_keyword: Dictionary::default(),
@@ -425,6 +441,8 @@ pub(crate) fn uri_for_error(error: &Error) -> Uri {
         Uri::from_known("com.battler_wamp.recv_error")
     } else if error.is::<PeerNotConnectedError>() {
         Uri::from_known("com.battler_wamp.peer_not_connected")
+    } else if error.is::<RateLimitError>() {
+        Uri::from_known("com.battler_wamp.rate_limit_error")
     } else if let Some(error) = error.downcast_ref::<ChannelTransmittableError>() {
         error.error.reason.clone()
     } else if let Some(error) = error.downcast_ref::<WampError>() {

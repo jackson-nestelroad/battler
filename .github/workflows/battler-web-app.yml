@@ -1,0 +1,76 @@
+name: battler-web-app
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_battler_web_app: ${{ steps.detector.outputs.run_battler_web_app }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: detector
+
+  test-team-converter:
+    name: Test team-converter
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_web_app == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build WASM and TS Bindings
+        uses: ./.github/actions/build-wasm-and-bindings
+      - name: Build team-converter
+        run: npm run build --workspace=battler-types --workspace=team-converter
+      - name: Run team-converter tests
+        run: npm run test:team-converter
+
+  test-battler-log-formatter:
+    name: Test and Lint battler-log-formatter
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_web_app == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build WASM and TS Bindings
+        uses: ./.github/actions/build-wasm-and-bindings
+      - name: Build battler-log-formatter
+        run: npm run build --workspace=battler-types --workspace=battler-log-formatter
+      - name: Lint battler-log-formatter
+        run: npm run lint:log-formatter
+      - name: Run battler-log-formatter tests
+        run: npm run test:log-formatter
+
+  test-and-build-battler-web-app:
+    name: Test, Lint and Build battler-web-app
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_web_app == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build WASM and TS Bindings
+        uses: ./.github/actions/build-wasm-and-bindings
+      - name: Build Web App Dependencies
+        run: npm run build:web-app-deps
+      - name: Lint battler-web-app
+        run: npm run lint:web-app
+      - name: Run battler-web-app tests
+        run: npm run test:web-app
+      - name: Build battler-web-app
+        run: npm run build:web-app
+

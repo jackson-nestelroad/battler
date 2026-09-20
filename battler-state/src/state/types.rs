@@ -133,7 +133,7 @@ impl MonPhysicalAppearance {
 #[derive(Debug, Default, Clone)]
 pub struct MonBattleAppearanceFromSwitchIn {
     pub level: u64,
-    pub health: (u64, u64),
+    pub health: Option<(u64, u64)>,
     pub status: String,
     pub terastallization: String,
 }
@@ -151,6 +151,7 @@ pub struct MonBattleAppearance {
     pub status: DiscoveryRequired<String>,
     pub ability: DiscoveryRequired<String>,
     pub item: DiscoveryRequired<String>,
+    pub previous_item: DiscoveryRequired<String>,
     pub terastallization: DiscoveryRequired<String>,
 
     pub moves: DiscoveryRequiredSet<String>,
@@ -167,6 +168,11 @@ impl MonBattleAppearance {
                 || self.status.known().is_some_and(|status| status.is_empty()))
             && self.ability.is_empty()
             && self.item.is_empty()
+            && (self.previous_item.is_empty()
+                || self
+                    .previous_item
+                    .known()
+                    .is_some_and(|item| item.is_empty()))
             && (self.terastallization.is_empty()
                 || self
                     .terastallization
@@ -181,6 +187,7 @@ impl MonBattleAppearance {
         self.status = self.status.make_ambiguous();
         self.ability = self.ability.make_ambiguous();
         self.item = self.item.make_ambiguous();
+        self.previous_item = self.previous_item.make_ambiguous();
         self.terastallization = self.terastallization.make_ambiguous();
         self.moves = self.moves.make_ambiguous();
         self
@@ -242,6 +249,18 @@ impl MonBattleAppearance {
         };
     }
 
+    pub(crate) fn record_previous_item(
+        &mut self,
+        previous_item: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.previous_item = if ambiguity == Ambiguity::Ambiguous {
+            self.previous_item.take().merge(previous_item)
+        } else {
+            self.previous_item.take().record(previous_item)
+        };
+    }
+
     pub(crate) fn record_terastallization(
         &mut self,
         terastallization: DiscoveryRequired<String>,
@@ -284,6 +303,7 @@ impl MonBattleAppearance {
         self.record_status(other.status, Ambiguity::Precise);
         self.record_ability(other.ability, Ambiguity::Precise);
         self.record_item(other.item, Ambiguity::Precise);
+        self.record_previous_item(other.previous_item, Ambiguity::Precise);
         self.record_terastallization(other.terastallization, Ambiguity::Precise);
 
         for mov in other.moves.known().iter().cloned() {
@@ -303,7 +323,9 @@ impl From<&MonBattleAppearanceFromSwitchIn> for MonBattleAppearance {
     fn from(value: &MonBattleAppearanceFromSwitchIn) -> Self {
         let mut data = MonBattleAppearance::default();
         data.record_level(value.level.into(), Ambiguity::Precise);
-        data.record_health(value.health.into(), Ambiguity::Precise);
+        if let Some(health) = value.health {
+            data.record_health(health.into(), Ambiguity::Precise);
+        }
         data.record_status(value.status.clone().into(), Ambiguity::Precise);
         data.record_terastallization(value.terastallization.clone().into(), Ambiguity::Precise);
         data
@@ -457,6 +479,16 @@ impl MonBattleAppearanceWithRecovery {
         });
     }
 
+    pub(crate) fn record_previous_item(
+        &mut self,
+        previous_item: DiscoveryRequired<String>,
+        ambiguity: Ambiguity,
+    ) {
+        self.apply_for_each_battle_appearance(|appearance| {
+            appearance.record_previous_item(previous_item.clone(), ambiguity);
+        });
+    }
+
     pub(crate) fn record_terastallization(
         &mut self,
         terastallization: DiscoveryRequired<String>,
@@ -517,6 +549,8 @@ pub struct Mon {
     pub battle_appearances: VecDeque<MonBattleAppearanceWithRecovery>,
     pub fainted: bool,
     pub volatile_data: MonVolatileData,
+    pub team_preview: bool,
+    pub brought: bool,
 }
 
 impl Mon {
@@ -551,10 +585,20 @@ impl Mon {
 
     pub(crate) fn faint(&mut self) {
         self.fainted = true;
+        for battle_appearance in &mut self.battle_appearances {
+            battle_appearance.record_status("fnt".to_owned().into(), Ambiguity::Precise);
+            if let Some((_, max)) = battle_appearance.primary().health.known().copied() {
+                battle_appearance
+                    .record_health(DiscoveryRequired::Known((0, max)), Ambiguity::Precise);
+            }
+        }
     }
 
     pub(crate) fn revive(&mut self) {
         self.fainted = false;
+        for battle_appearance in &mut self.battle_appearances {
+            battle_appearance.record_status(String::default().into(), Ambiguity::Precise);
+        }
     }
 
     pub(crate) fn push_battle_appearance(&mut self) -> usize {
@@ -598,6 +642,7 @@ pub struct Player {
     pub team_size: usize,
     pub mons: Vec<Mon>,
     pub left_battle: bool,
+    pub wild: bool,
 }
 
 impl Player {
@@ -627,6 +672,9 @@ pub struct Side {
     pub conditions: BTreeMap<String, ConditionData>,
     pub slot_conditions: Vec<BTreeMap<String, ConditionData>>,
     pub active: Vec<Option<MonBattleAppearanceReference>>,
+    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
+    #[cfg_attr(feature = "typescript", ts(skip))]
+    pub switched_out: HashSet<usize>,
 }
 
 impl Side {
@@ -705,11 +753,11 @@ impl Side {
         self.active.get(position).cloned().flatten()
     }
 
-    pub(crate) fn mon_index_is_active(&self, index: usize) -> bool {
+    pub(crate) fn mon_index_is_active(&self, player: &str, index: usize) -> bool {
         self.active.iter().any(|active| {
             active
                 .as_ref()
-                .is_some_and(|active| active.mon_index == index)
+                .is_some_and(|active| active.player == player && active.mon_index == index)
         })
     }
 
@@ -752,15 +800,17 @@ impl Side {
         battle_appearance: Option<&MonBattleAppearanceFromSwitchIn>,
     ) -> Result<MonBattleAppearanceReference> {
         let player = self.player_or_else(player_id)?;
-        let player_has_seen_all_mons = player.mons.len() >= player.team_size;
+        let brought_mons_count = player.mons.iter().filter(|mon| mon.brought).count();
+        let player_has_seen_all_mons = brought_mons_count >= player.team_size;
         let mons_by_appearance = player
             .mons
             .iter()
             .enumerate()
             .filter(|(mon_index, mon)| {
-                mon.physical_appearance.matches(&physical_appearance)
+                mon.brought
+                    && mon.physical_appearance.matches(&physical_appearance)
                     && (player_has_seen_all_mons
-                        || (!mon.fainted && !self.mon_index_is_active(*mon_index)))
+                        || (!mon.fainted && !self.mon_index_is_active(player_id, *mon_index)))
             })
             .map(|(i, _)| i)
             .collect::<Vec<_>>();
@@ -785,12 +835,44 @@ impl Side {
             })
             .collect::<Vec<_>>();
 
-        // If we matched some Mon battle appearance directly, just use the first one.
+        // If we matched some Mon battle appearance directly among brought Mons, use it.
         if let Some(mon_reference) = inactive_mon_references_by_battle_appearance
             .into_iter()
             .next()
         {
             return Ok(mon_reference);
+        }
+
+        // If no brought Mon matched and we have not brought all Mons yet, look for an unbrought
+        // Mon (e.g. from Team Preview) that matches.
+        if !player_has_seen_all_mons {
+            let unbrought_index = player
+                .mons
+                .iter()
+                .enumerate()
+                .find(|(_, mon)| {
+                    !mon.brought
+                        && mon.physical_appearance.matches(&physical_appearance)
+                        && match battle_appearance {
+                            Some(battle_appearance) => mon
+                                .battle_appearances
+                                .iter()
+                                .any(|ba| ba.matches_switch_in(battle_appearance)),
+                            None => true,
+                        }
+                })
+                .map(|(i, _)| i);
+
+            if let Some(mon_index) = unbrought_index {
+                let player = self.player_mut_or_else(player_id)?;
+                let mon = player.mons.get_mut(mon_index).unwrap();
+                mon.brought = true;
+                return Ok(MonBattleAppearanceReference {
+                    player: player.id.to_owned(),
+                    mon_index,
+                    battle_appearance_index: 0,
+                });
+            }
         }
 
         // If we matched some Mon by appearance, and we do not have room for any more unique Mons,
@@ -825,7 +907,10 @@ impl Side {
             Some(replace_index) => replace_index,
             None => {
                 let player = self.player_mut_or_else(player_id)?;
-                player.mons.push(Mon::default());
+                player.mons.push(Mon {
+                    brought: true,
+                    ..Mon::default()
+                });
                 player.mons.len() - 1
             }
         };
@@ -835,6 +920,7 @@ impl Side {
         let mon = player.mons.get_mut(replace_index).unwrap();
 
         mon.physical_appearance = physical_appearance.clone();
+        mon.brought = true;
         let battle_appearance_index = mon.push_battle_appearance();
 
         Ok(MonBattleAppearanceReference {
@@ -868,6 +954,9 @@ impl Side {
         }
 
         let mon = self.mon_mut_by_reference_or_else(&reference)?;
+        if !physical_appearance.name.is_empty() {
+            mon.physical_appearance.name = physical_appearance.name.clone();
+        }
         mon.switch_in();
 
         let mon_battle_appearance =
@@ -948,7 +1037,7 @@ impl Side {
             }
 
             // Cannot merge into an active Mon.
-            if self.mon_index_is_active(mon_index) {
+            if self.mon_index_is_active(player_id, mon_index) {
                 continue;
             }
 
@@ -963,7 +1052,7 @@ impl Side {
                         && other_mon
                             .physical_appearance
                             .matches(&mon.physical_appearance)
-                        && !self.mon_index_is_active(*i)
+                        && !self.mon_index_is_active(player_id, *i)
                 })
                 .map(|(i, mon)| (i, mon.fainted))
                 .collect::<Vec<_>>();
@@ -1026,6 +1115,9 @@ pub struct Field {
     pub conditions: BTreeMap<String, ConditionData>,
     pub rules: Vec<String>,
     pub max_side_length: usize,
+    #[serde(default, skip_serializing_if = "HashSet::is_empty")]
+    #[cfg_attr(feature = "typescript", ts(skip))]
+    pub swapped_side_conditions: HashSet<(usize, usize, String)>,
 }
 
 impl Field {

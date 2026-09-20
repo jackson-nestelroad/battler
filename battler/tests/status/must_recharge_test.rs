@@ -81,6 +81,7 @@ fn recharge_moves_require_recharge_turn() {
                     "max_pp": 0,
                     "target": "User",
                     "type": "None",
+                    "category": "Status",
                     "disabled": false
                 }
             ],

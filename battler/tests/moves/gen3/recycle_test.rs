@@ -78,7 +78,7 @@ fn recycle_recovers_consumed_berry() {
             "turn|turn:3",
             "continue",
             "move|mon:Snorlax,player-1,1|name:Recycle|target:Snorlax,player-1,1",
-            "item|mon:Snorlax,player-1,1|item:Rawst Berry|from:move:Recycle",
+            "itemstart|mon:Snorlax,player-1,1|item:Rawst Berry|from:move:Recycle",
             "residual",
             "turn|turn:4",
             "continue",

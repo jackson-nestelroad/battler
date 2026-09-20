@@ -41,6 +41,16 @@ pub enum Rule {
     ///
     /// Compound and single rules can be repealed. Bans and unbans cannot be repealed.
     Repeal(Id),
+    /// Restricts something, such as a Mon, item, move, or ability. Serialized as `* ID`.
+    ///
+    /// A restriction is used to limit how much of a specific effect is used. It is most notably
+    /// used for Mons.
+    Restrict(Id),
+    /// Unrestricts something, such as a Mon, item, move, or ability. Serialized as `!* ID`.
+    ///
+    /// An unrestriction is used to remove a previous restriction. For example, `* Restricted
+    /// Legendary, ! * Giratina` would prevent the Mon `Giratina` from being restricted.
+    Unrestrict(Id),
 }
 
 impl Rule {
@@ -74,6 +84,8 @@ impl Display for Rule {
                 }
             }
             Self::Repeal(id) => write!(f, "!{id}"),
+            Self::Restrict(id) => write!(f, "*{id}"),
+            Self::Unrestrict(id) => write!(f, "!*{id}"),
         }
     }
 }
@@ -84,7 +96,15 @@ impl FromStr for Rule {
         match &s[0..1] {
             "-" => Ok(Self::Ban(Id::from(s[1..].trim()))),
             "+" => Ok(Self::Unban(Id::from(s[1..].trim()))),
-            "!" => Ok(Self::Repeal(Id::from(s[1..].trim()))),
+            "*" => Ok(Self::Restrict(Id::from(s[1..].trim()))),
+            "!" => {
+                let rest = s[1..].trim();
+                if rest.starts_with('*') {
+                    Ok(Self::Unrestrict(Id::from(rest[1..].trim())))
+                } else {
+                    Ok(Self::Repeal(Id::from(rest)))
+                }
+            }
             _ => match s.split_once('=') {
                 None => Ok(Self::Value {
                     name: Id::from(s.trim()),
@@ -106,6 +126,8 @@ impl Hash for Rule {
             Self::Unban(id) => id.hash(state),
             Self::Value { name, .. } => name.hash(state),
             Self::Repeal(id) => id.hash(state),
+            Self::Restrict(id) => id.hash(state),
+            Self::Unrestrict(id) => id.hash(state),
         }
     }
 }
@@ -130,6 +152,14 @@ impl PartialEq for Rule {
             },
             Self::Repeal(id) => match other {
                 Self::Repeal(other) => id.eq(other),
+                _ => false,
+            },
+            Self::Restrict(id) => match other {
+                Self::Restrict(other) => id.eq(other),
+                _ => false,
+            },
+            Self::Unrestrict(id) => match other {
+                Self::Unrestrict(other) => id.eq(other),
                 _ => false,
             },
         }

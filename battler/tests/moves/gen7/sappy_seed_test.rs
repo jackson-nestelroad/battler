@@ -75,17 +75,17 @@ fn sappy_seed_applies_leech_seed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Eevee,player-1,1|name:Sappy Seed|target:Eevee,player-2,1",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|health:152/240",
-            "damage|mon:Eevee,player-2,1|health:64/100",
-            "start|mon:Eevee,player-2,1|move:Leech Seed",
-            "split|side:1",
-            "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:122/240",
-            "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:51/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Eevee,player-1,1|name:Sappy Seed|target:Eevee,player-2,1",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|health:152/240",
+                "damage|mon:Eevee,player-2,1|health:64/100",
+                "start|mon:Eevee,player-2,1|move:Leech Seed",
+                "residual",
+                "split|side:1",
+                "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:122/240",
+                "damage|mon:Eevee,player-2,1|from:move:Leech Seed|health:51/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

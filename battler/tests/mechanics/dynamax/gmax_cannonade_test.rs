@@ -85,23 +85,23 @@ fn gmax_cannonade_damages_non_water_types_at_end_of_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "gigantamax|mon:Blastoise,player-1,1|species:Blastoise-Gmax",
-            "dynamax|mon:Blastoise,player-1,1",
-            "split|side:0",
-            "sethp|mon:Blastoise,player-1,1|health:208/208",
-            "sethp|mon:Blastoise,player-1,1|health:100/100",
-            "move|mon:Blastoise,player-1,1|name:G-Max Cannonade|target:Venusaur,player-2,1",
-            "resisted|mon:Venusaur,player-2,1",
-            "split|side:1",
-            "damage|mon:Venusaur,player-2,1|health:102/140",
-            "damage|mon:Venusaur,player-2,1|health:73/100",
-            "sidestart|side:1|move:G-Max Cannonade",
-            "split|side:1",
-            "damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:79/140",
-            "damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:57/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "gigantamax|mon:Blastoise,player-1,1|species:Blastoise-Gmax",
+                "dynamax|mon:Blastoise,player-1,1",
+                "split|side:0",
+                "sethp|mon:Blastoise,player-1,1|health:208/208",
+                "sethp|mon:Blastoise,player-1,1|health:100/100",
+                "move|mon:Blastoise,player-1,1|name:G-Max Cannonade|target:Venusaur,player-2,1",
+                "resisted|mon:Venusaur,player-2,1",
+                "split|side:1",
+                "damage|mon:Venusaur,player-2,1|health:102/140",
+                "damage|mon:Venusaur,player-2,1|health:73/100",
+                "sidestart|side:1|move:G-Max Cannonade",
+                "residual",
+                "split|side:1",
+                "damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:79/140",
+                "damage|mon:Venusaur,player-2,1|from:move:G-Max Cannonade|health:57/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -71,26 +71,26 @@ fn magic_bounce_reflects_status_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Seviper,player-2,2|name:Will-O-Wisp|noanim",
-            "activate|mon:Grumpig,player-1,1|ability:Magic Bounce",
-            "move|mon:Grumpig,player-1,1|name:Will-O-Wisp|target:Seviper,player-2,2|from:ability:Magic Bounce",
-            "status|mon:Seviper,player-2,2|status:Burn",
-            "split|side:1",
-            "damage|mon:Seviper,player-2,2|from:status:Burn|health:125/133",
-            "damage|mon:Seviper,player-2,2|from:status:Burn|health:94/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Seviper,player-2,2|name:Spikes|noanim",
-            "activate|mon:Grumpig,player-1,1|ability:Magic Bounce",
-            "move|mon:Grumpig,player-1,1|name:Spikes|from:ability:Magic Bounce",
-            "sidestart|side:1|move:Spikes|count:1",
-            "split|side:1",
-            "damage|mon:Seviper,player-2,2|from:status:Burn|health:117/133",
-            "damage|mon:Seviper,player-2,2|from:status:Burn|health:88/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Seviper,player-2,2|name:Will-O-Wisp|noanim",
+                "activate|mon:Grumpig,player-1,1|ability:Magic Bounce",
+                "move|mon:Grumpig,player-1,1|name:Will-O-Wisp|target:Seviper,player-2,2|from:ability:Magic Bounce",
+                "status|mon:Seviper,player-2,2|status:Burn",
+                "residual",
+                "split|side:1",
+                "damage|mon:Seviper,player-2,2|from:status:Burn|health:125/133",
+                "damage|mon:Seviper,player-2,2|from:status:Burn|health:94/100",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Seviper,player-2,2|name:Spikes|noanim",
+                "activate|mon:Grumpig,player-1,1|ability:Magic Bounce",
+                "move|mon:Grumpig,player-1,1|name:Spikes|from:ability:Magic Bounce",
+                "sidestart|side:1|move:Spikes|count:1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Seviper,player-2,2|from:status:Burn|health:117/133",
+                "damage|mon:Seviper,player-2,2|from:status:Burn|health:88/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

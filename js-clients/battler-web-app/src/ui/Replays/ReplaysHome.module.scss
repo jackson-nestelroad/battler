@@ -1,0 +1,21 @@
+@use "../../styles/breakpoints" as *;
+
+.replaysHome {
+  max-width: rem(800px); /* Bounded width so list directory is balanced on wide screens */
+}
+
+.replayHelpText {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+}
+
+.fileInputLabel {
+  input[type="file"] {
+    display: none;
+  }
+}
+
+.replayErrorText {
+  color: var(--color-danger);
+  font-size: var(--font-size-s);
+}

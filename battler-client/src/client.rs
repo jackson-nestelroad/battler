@@ -1,4 +1,8 @@
-use std::sync::Arc;
+use std::{
+    pin::Pin,
+    sync::Arc,
+    time::Duration,
+};
 
 use anyhow::{
     Context,
@@ -58,6 +62,18 @@ impl BattleClientEvent {
     }
 }
 
+/// Checks if a log entry signals that the battle has ended for the client.
+///
+/// Note that while `-battlerservice:done` and `-battlerservice:dropped` signal that battle gameplay
+/// has concluded (normally or abnormally), only `-battlerservice:deleted` represents the truly
+/// terminal destruction of the battle resource on the server. All three indicate to the client that
+/// no further requests or actions will occur.
+fn signals_battle_ended(entry: &str) -> bool {
+    entry == "-battlerservice:done"
+        || entry == "-battlerservice:deleted"
+        || entry.starts_with("-battlerservice:dropped")
+}
+
 fn role_for_player(battle: &Battle, player: &str) -> Role {
     battle
         .sides
@@ -85,6 +101,7 @@ struct BattlerClientInternal<'b> {
 
     log: Mutex<Log>,
     state: Mutex<BattleState>,
+    has_end_signal: Mutex<bool>,
 
     service: Arc<Box<dyn BattlerServiceClient + 'b>>,
 
@@ -108,6 +125,7 @@ impl<'b> BattlerClientInternal<'b> {
         let (cancel_tx, _) = broadcast::channel(1);
 
         let log = service.full_log(battle.uuid, role.side()).await?;
+        let has_end_signal = log.iter().any(|entry| signals_battle_ended(entry));
         let log = Log::new(log)?;
 
         // Start with an empty battle state and request.
@@ -123,6 +141,7 @@ impl<'b> BattlerClientInternal<'b> {
             role,
             log: Mutex::new(log),
             state: Mutex::new(state),
+            has_end_signal: Mutex::new(has_end_signal),
             service,
             cancel_tx,
             battle_event_tx,
@@ -163,10 +182,17 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log and battle state are caught up.
         self.ensure_caught_up().await?;
 
+        let mut safety_timeout: Option<Pin<Box<tokio::time::Sleep>>> = None;
+
         loop {
             if *self.battle_event_rx.borrow() == BattleClientEvent::End {
                 break;
             }
+            if *self.has_end_signal.lock().await {
+                self.battle_event_tx.send(BattleClientEvent::End)?;
+                break;
+            }
+
             // If we are caught up and are a player, propagate a request.
             if let Role::Player { .. } = self.role
                 && self.caught_up().await?
@@ -183,16 +209,46 @@ impl<'b> BattlerClientInternal<'b> {
                     .send(BattleClientEvent::Request(request))?;
             }
 
+            if self.state.lock().await.phase == BattlePhase::Finished && safety_timeout.is_none() {
+                safety_timeout = Some(Box::pin(tokio::time::sleep(Duration::from_secs(5))));
+            }
+
             tokio::select! {
                 log_entry = log_entry_rx.recv() => {
-                    self.process_log_entry(log_entry?).await?;
+                    let log_entry = match log_entry {
+                        Ok(entry) => entry,
+                        Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("Log entry receiver for player {} in battle {} lagged by {} entries, backfilling", self.player, self.battle, skipped);
+                            self.ensure_caught_up().await.ok();
+                            continue;
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            break;
+                        }
+                    };
+                    self.process_log_entry(log_entry).await?;
                     // Consume any other buffered logs in this tick (batching)
                     while let Ok(next_entry) = log_entry_rx.try_recv() {
                         self.process_log_entry(next_entry).await?;
                     }
+                    if *self.has_end_signal.lock().await {
+                        self.battle_event_tx.send(BattleClientEvent::End)?;
+                        break;
+                    }
                     if *self.battle_event_rx.borrow() != BattleClientEvent::End {
                         self.battle_event_tx.send(BattleClientEvent::Update)?;
                     }
+                }
+                _ = async {
+                    if let Some(sleep) = safety_timeout.as_mut() {
+                        sleep.await;
+                    } else {
+                        futures_util::future::pending::<()>().await;
+                    }
+                } => {
+                    log::warn!("Client safety timeout triggered: forcing end event");
+                    self.battle_event_tx.send(BattleClientEvent::End)?;
+                    break;
                 }
                 _ = cancel_rx.recv() => {
                     break;
@@ -207,11 +263,7 @@ impl<'b> BattlerClientInternal<'b> {
         // Ensure the log is filled and update the state accordingly.
         self.backfill_log(&mut log).await?;
         self.update_battle_state(&log).await?;
-        if self.state.lock().await.phase == BattlePhase::Finished {
-            self.battle_event_tx.send(BattleClientEvent::End)?;
-        } else {
-            self.battle_event_tx.send(BattleClientEvent::Update)?;
-        }
+        self.battle_event_tx.send(BattleClientEvent::Update)?;
         Ok(())
     }
 
@@ -221,18 +273,10 @@ impl<'b> BattlerClientInternal<'b> {
             self.player,
             self.battle
         );
-        self.update_battle_state_for_log_entry(log_entry).await?;
-
-        // Check if the battle ended.
-        if self.state.lock().await.phase == BattlePhase::Finished {
-            log::info!(
-                "Client {} in battle {} detected battle finished",
-                self.player,
-                self.battle
-            );
-            self.battle_event_tx.send(BattleClientEvent::End)?;
-            return Ok(());
+        if signals_battle_ended(&log_entry.content) {
+            *self.has_end_signal.lock().await = true;
         }
+        self.update_battle_state_for_log_entry(log_entry).await?;
 
         Ok(())
     }
@@ -240,6 +284,9 @@ impl<'b> BattlerClientInternal<'b> {
     async fn backfill_log(&self, log: &mut Log) -> Result<()> {
         let full_log = self.service.full_log(self.battle, self.role.side()).await?;
         for (i, entry) in full_log.into_iter().enumerate() {
+            if signals_battle_ended(&entry) {
+                *self.has_end_signal.lock().await = true;
+            }
             log.add(i, entry)?;
         }
         log::info!(
@@ -275,12 +322,6 @@ impl<'b> BattlerClientInternal<'b> {
         Ok(())
     }
 
-    async fn ready_for_battle(&self) -> Result<battler_service::PlayerValidation> {
-        self.service
-            .validate_player(self.battle, &self.player)
-            .await
-    }
-
     async fn update_team(&self, team: battler::TeamData) -> Result<()> {
         self.service
             .update_team(self.battle, &self.player, team)
@@ -299,6 +340,10 @@ impl<'b> BattlerClientInternal<'b> {
 
     async fn player_data(&self) -> Result<battler::PlayerBattleData> {
         self.service.player_data(self.battle, &self.player).await
+    }
+
+    async fn player_data_for(&self, player: &str) -> Result<battler::PlayerBattleData> {
+        self.service.player_data(self.battle, player).await
     }
 
     fn battle_event_rx(&self) -> watch::Receiver<BattleClientEvent> {
@@ -388,13 +433,6 @@ impl<'b> BattlerClient<'b> {
         self.watch_tasks.lock().await.shutdown().await;
     }
 
-    /// Checks if the player is ready for the battle to start.
-    ///
-    /// If not, [`Self::update_team`] should be used to prepare the player for battle.
-    pub async fn ready_for_battle(&self) -> Result<battler_service::PlayerValidation> {
-        self.client.ready_for_battle().await
-    }
-
     /// Updates the player's team.
     pub async fn update_team(&self, team: battler::TeamData) -> Result<()> {
         self.client.update_team(team).await
@@ -413,6 +451,11 @@ impl<'b> BattlerClient<'b> {
     /// Reads the player's current battle data.
     pub async fn player_data(&self) -> Result<battler::PlayerBattleData> {
         self.client.player_data().await
+    }
+
+    /// Reads battle data for a player on the same side.
+    pub async fn player_data_for(&self, player: &str) -> Result<battler::PlayerBattleData> {
+        self.client.player_data_for(player).await
     }
 
     /// Receiver for battle events for the player.

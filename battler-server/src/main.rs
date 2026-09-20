@@ -5,6 +5,7 @@ use anyhow::{
     Result,
 };
 use battler_server::{
+    RouterLimitsConfig,
     ServerConfig,
     start_server,
 };
@@ -28,6 +29,10 @@ struct Args {
     #[arg(short, long, default_value = "battle-data/data")]
     data_dir: String,
 
+    /// Path to descriptions directory
+    #[arg(long, default_value = "battle-data/descriptions")]
+    descriptions_dir: String,
+
     /// Name of the WAMP realm
     #[arg(long, default_value = "battler")]
     realm_name: String,
@@ -35,6 +40,22 @@ struct Args {
     /// URI of the WAMP realm
     #[arg(long, default_value = "com.battler")]
     realm_uri: String,
+
+    /// Maximum total active connections to allow
+    #[arg(long, default_value_t = 10_000)]
+    max_connections: usize,
+
+    /// Maximum active connections allowed per client IP address
+    #[arg(long, default_value_t = 10)]
+    max_connections_per_ip: usize,
+
+    /// Maximum burst of incoming messages allowed per connection
+    #[arg(long, default_value_t = 150)]
+    rate_limit_burst: u32,
+
+    /// Sustained message refill rate (tokens/second) per connection
+    #[arg(long, default_value_t = 30)]
+    rate_limit_refill_per_sec: u32,
 }
 
 #[tokio::main]
@@ -50,13 +71,31 @@ async fn main() {
 async fn run_server() -> Result<()> {
     let args = Args::parse();
 
+    let limits = RouterLimitsConfig {
+        max_connections: if args.max_connections > 0 {
+            Some(args.max_connections)
+        } else {
+            None
+        },
+        max_connections_per_ip: if args.max_connections_per_ip > 0 {
+            Some(args.max_connections_per_ip)
+        } else {
+            None
+        },
+        rate_limit_burst: args.rate_limit_burst,
+        rate_limit_refill_per_sec: args.rate_limit_refill_per_sec,
+        ..Default::default()
+    };
+
     log::info!("Starting Battler Server...");
     let mut handle = start_server(ServerConfig {
         address: args.address,
         port: args.port,
         data_dir: args.data_dir,
+        descriptions_dir: Some(args.descriptions_dir),
         realm_name: args.realm_name.clone(),
         realm_uri: args.realm_uri,
+        limits: Some(limits),
     })
     .await?;
 
@@ -67,9 +106,26 @@ async fn run_server() -> Result<()> {
         args.realm_name
     );
 
+    #[cfg(unix)]
+    let terminate = async {
+        if let Ok(mut sig) =
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        {
+            sig.recv().await;
+        } else {
+            std::future::pending::<()>().await;
+        }
+    };
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
     let exit_result = tokio::select! {
         _ = tokio::signal::ctrl_c() => {
-            log::info!("Received shutdown signal. Stopping services...");
+            log::info!("Received Ctrl+C signal. Stopping services...");
+            Ok(())
+        }
+        _ = terminate => {
+            log::info!("Received SIGTERM signal. Stopping services...");
             Ok(())
         }
         res = &mut handle.router_join_handle => {
@@ -85,6 +141,10 @@ async fn run_server() -> Result<()> {
 
     handle.shutdown().await?;
     log::info!("Server stopped successfully.");
+
+    if exit_result.is_ok() {
+        std::process::exit(0);
+    }
 
     exit_result
 }

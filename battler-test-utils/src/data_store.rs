@@ -1,4 +1,7 @@
-use std::sync::LazyLock;
+use std::{
+    env,
+    sync::LazyLock,
+};
 
 use ahash::{
     HashMap,
@@ -13,10 +16,24 @@ use battler::{
     Id,
     ItemData,
     MoveData,
+    ResourceType,
     SpeciesData,
     TypeChart,
 };
-use battler_local_data::LocalDataStore;
+use battler_local_data::{
+    LocalDataStore,
+    LocalDescriptionStore,
+};
+
+/// Returns the path to the battle data directory from the environment.
+pub fn data_dir() -> String {
+    env::var("DATA_DIR").expect("DATA_DIR not defined")
+}
+
+/// Returns the path to the battle descriptions directory from the environment.
+pub fn descriptions_dir() -> String {
+    env::var("DESCRIPTIONS_DIR").expect("DESCRIPTIONS_DIR not defined")
+}
 
 /// A [`LocalDataStore`] created from the environment.
 pub fn local_data_store() -> LocalDataStore {
@@ -25,8 +42,19 @@ pub fn local_data_store() -> LocalDataStore {
 
 /// A static [`LocalDataStore`], created from the environment.
 pub fn static_local_data_store() -> &'static LocalDataStore {
-    static DATA_STORE: LazyLock<LocalDataStore> = LazyLock::new(|| local_data_store());
-    &*DATA_STORE
+    static DATA_STORE: LazyLock<LocalDataStore> = LazyLock::new(local_data_store);
+    &DATA_STORE
+}
+
+/// A [`LocalDescriptionStore`] created from the environment.
+pub fn local_description_store() -> LocalDescriptionStore {
+    LocalDescriptionStore::new_from_env("DESCRIPTIONS_DIR").unwrap()
+}
+
+/// A static [`LocalDescriptionStore`], created from the environment.
+pub fn static_local_description_store() -> &'static LocalDescriptionStore {
+    static DESC_STORE: LazyLock<LocalDescriptionStore> = LazyLock::new(local_description_store);
+    &DESC_STORE
 }
 
 /// Wrapper around a battle's [`LocalDataStore`] for testing.
@@ -53,6 +81,14 @@ impl TestDataStore {
 }
 
 impl DataStore for TestDataStore {
+    fn all_ability_ids(&self, filter: &dyn Fn(&AbilityData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_ability_ids(filter)
+    }
+
+    fn all_item_ids(&self, filter: &dyn Fn(&ItemData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_item_ids(filter)
+    }
+
     fn all_move_ids(&self, filter: &dyn Fn(&MoveData) -> bool) -> Result<Vec<Id>> {
         let mut all_moves = self.local.all_move_ids(filter)?;
         let mut fake_moves = self
@@ -64,12 +100,16 @@ impl DataStore for TestDataStore {
         Ok(all_moves)
     }
 
+    fn all_species_ids(&self, filter: &dyn Fn(&SpeciesData) -> bool) -> Result<Vec<Id>> {
+        self.local.all_species_ids(filter)
+    }
+
     fn get_type_chart(&self) -> Result<TypeChart> {
         self.local.get_type_chart()
     }
 
-    fn translate_alias(&self, id: &Id) -> Result<Option<Id>> {
-        self.local.translate_alias(id)
+    fn translate_alias(&self, resource_type: ResourceType, id: &Id) -> Result<Option<Id>> {
+        self.local.translate_alias(resource_type, id)
     }
 
     fn get_ability(&self, id: &Id) -> Result<Option<AbilityData>> {

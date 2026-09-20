@@ -92,68 +92,68 @@ fn baton_pass_switches_user_out_and_passes_volatiles() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Espeon,player-2,1|name:Baton Pass|target:Espeon,player-2,1",
-            "switchout|mon:Espeon,player-2,1|copyvolatile",
-            "continue",
-            "split|side:1",
-            ["switch", "player-2", "Umbreon"],
-            ["switch", "player-2", "Umbreon"],
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Espeon,player-1,1|name:Growth|target:Espeon,player-1,1",
-            "boost|mon:Espeon,player-1,1|stat:atk|by:1",
-            "boost|mon:Espeon,player-1,1|stat:spa|by:1",
-            "move|mon:Umbreon,player-2,1|name:Mud-Slap|target:Espeon,player-1,1",
-            "split|side:0",
-            "damage|mon:Espeon,player-1,1|health:119/125",
-            "damage|mon:Espeon,player-1,1|health:96/100",
-            "unboost|mon:Espeon,player-1,1|stat:acc|by:1",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Espeon,player-1,1|name:Agility|target:Espeon,player-1,1",
-            "boost|mon:Espeon,player-1,1|stat:spe|by:2",
-            "residual",
-            "turn|turn:4",
-            "continue",
-            "move|mon:Espeon,player-1,1|name:Focus Energy|target:Espeon,player-1,1",
-            "start|mon:Espeon,player-1,1|move:Focus Energy",
-            "residual",
-            "turn|turn:5",
-            "continue",
-            "move|mon:Espeon,player-1,1|name:Substitute|target:Espeon,player-1,1",
-            "start|mon:Espeon,player-1,1|move:Substitute",
-            "split|side:0",
-            "damage|mon:Espeon,player-1,1|health:88/125",
-            "damage|mon:Espeon,player-1,1|health:71/100",
-            "move|mon:Umbreon,player-2,1|name:Perish Song|spread:Umbreon,player-2,1;Espeon,player-1,1",
-            "fieldactivate|move:Perish Song",
-            "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
-            "start|mon:Umbreon,player-2,1|move:Perish Song|perish:3",
-            "residual",
-            "turn|turn:6",
-            "continue",
-            "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
-            "switchout|mon:Espeon,player-1,1|copyvolatile",
-            "continue",
-            "split|side:0",
-            ["switch", "player-1", "Umbreon"],
-            ["switch", "player-1", "Umbreon"],
-            "start|mon:Umbreon,player-1,1|move:Perish Song|perish:2",
-            "start|mon:Umbreon,player-2,1|move:Perish Song|perish:2",
-            "residual",
-            "turn|turn:7",
-            "continue",
-            "move|mon:Umbreon,player-1,1|name:Tackle|noanim",
-            "miss|mon:Umbreon,player-2,1",
-            "move|mon:Umbreon,player-2,1|name:Tackle|target:Umbreon,player-1,1",
-            "activate|mon:Umbreon,player-1,1|move:Substitute|damage",
-            "start|mon:Umbreon,player-1,1|move:Perish Song|perish:1",
-            "start|mon:Umbreon,player-2,1|move:Perish Song|perish:1",
-            "residual",
-            "turn|turn:8"
-        ]"#,
+                "move|mon:Espeon,player-2,1|name:Baton Pass|target:Espeon,player-2,1",
+                "switchout|mon:Espeon,player-2,1|copyvolatile",
+                "continue",
+                "split|side:1",
+                ["switch", "player-2", "Umbreon"],
+                ["switch", "player-2", "Umbreon"],
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Espeon,player-1,1|name:Growth|target:Espeon,player-1,1",
+                "boost|mon:Espeon,player-1,1|stat:atk|by:1",
+                "boost|mon:Espeon,player-1,1|stat:spa|by:1",
+                "move|mon:Umbreon,player-2,1|name:Mud-Slap|target:Espeon,player-1,1",
+                "split|side:0",
+                "damage|mon:Espeon,player-1,1|health:119/125",
+                "damage|mon:Espeon,player-1,1|health:96/100",
+                "unboost|mon:Espeon,player-1,1|stat:acc|by:1",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Espeon,player-1,1|name:Agility|target:Espeon,player-1,1",
+                "boost|mon:Espeon,player-1,1|stat:spe|by:2",
+                "residual",
+                "turn|turn:4",
+                "continue",
+                "move|mon:Espeon,player-1,1|name:Focus Energy|target:Espeon,player-1,1",
+                "start|mon:Espeon,player-1,1|move:Focus Energy",
+                "residual",
+                "turn|turn:5",
+                "continue",
+                "move|mon:Espeon,player-1,1|name:Substitute|target:Espeon,player-1,1",
+                "start|mon:Espeon,player-1,1|move:Substitute",
+                "split|side:0",
+                "damage|mon:Espeon,player-1,1|health:88/125",
+                "damage|mon:Espeon,player-1,1|health:71/100",
+                "move|mon:Umbreon,player-2,1|name:Perish Song|spread:Umbreon,player-2,1;Espeon,player-1,1",
+                "fieldactivate|move:Perish Song",
+                "residual",
+                "start|mon:Espeon,player-1,1|move:Perish Song|perish:3",
+                "start|mon:Umbreon,player-2,1|move:Perish Song|perish:3",
+                "turn|turn:6",
+                "continue",
+                "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
+                "switchout|mon:Espeon,player-1,1|copyvolatile",
+                "continue",
+                "split|side:0",
+                ["switch", "player-1", "Umbreon"],
+                ["switch", "player-1", "Umbreon"],
+                "residual",
+                "start|mon:Umbreon,player-1,1|move:Perish Song|perish:2",
+                "start|mon:Umbreon,player-2,1|move:Perish Song|perish:2",
+                "turn|turn:7",
+                "continue",
+                "move|mon:Umbreon,player-1,1|name:Tackle|noanim",
+                "miss|mon:Umbreon,player-2,1",
+                "move|mon:Umbreon,player-2,1|name:Tackle|target:Umbreon,player-1,1",
+                "activate|mon:Umbreon,player-1,1|move:Substitute|damage",
+                "residual",
+                "start|mon:Umbreon,player-1,1|move:Perish Song|perish:1",
+                "start|mon:Umbreon,player-2,1|move:Perish Song|perish:1",
+                "turn|turn:8"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -191,6 +191,74 @@ fn baton_pass_does_not_activate_pursuit() {
             "damage|mon:Umbreon,player-1,1|health:95/100",
             "residual",
             "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn baton_pass_cannot_switch_to_mon_that_just_switched_out() {
+    let mut battle = make_battle(0, team().unwrap(), team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "switch 0"),
+        Err(err) => assert_eq!(format!("{err:#}"), "invalid choice 0: cannot switch: you cannot switch to an active mon")
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 1"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Espeon,player-1,1|name:Baton Pass|target:Espeon,player-1,1",
+            "switchout|mon:Espeon,player-1,1|copyvolatile",
+            "continue",
+            "split|side:0",
+            ["switch", "player-1", "Umbreon"],
+            ["switch", "player-1", "Umbreon"],
+            "residual",
+            "turn|turn:2"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+
+    // On turn 2, switching back to Espeon (slot 0) should now succeed.
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "switch 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "split|side:0",
+            ["switch", "player-1", "Espeon"],
+            ["switch", "player-1", "Espeon"],
+            "residual",
+            "turn|turn:3"
+        ]"#,
+    )
+    .unwrap();
+    assert_logs_since_turn_eq(&battle, 2, &expected_logs);
+}
+
+#[test]
+fn baton_pass_fails_if_no_switchable_mons() {
+    let mut team_1 = team().unwrap();
+    team_1.members.truncate(1);
+    let mut battle = make_battle(0, team_1, team().unwrap()).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+
+    let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
+        r#"[
+            "move|mon:Espeon,player-1,1|name:Baton Pass|noanim",
+            "fail|mon:Espeon,player-1,1",
+            "residual",
+            "turn|turn:2"
         ]"#,
     )
     .unwrap();

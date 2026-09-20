@@ -65,23 +65,23 @@ fn poison_puppeteer_inflicts_confusion_with_poison() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:1",
-            ["switch", "player-2", "Terapagos"],
-            ["switch", "player-2", "Terapagos"],
-            "activate|mon:Terapagos,player-2,1|ability:Tera Shift",
-            "split|side:1",
-            ["specieschange", "player-2", "Terapagos-Terastal"],
-            ["specieschange", "player-2", "Terapagos-Terastal"],
-            "formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift",
-            "move|mon:Pecharunt,player-1,1|name:Toxic|target:Terapagos,player-2,1",
-            "status|mon:Terapagos,player-2,1|status:Bad Poison",
-            "start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1",
-            "split|side:1",
-            "damage|mon:Terapagos,player-2,1|from:status:Bad Poison|health:146/155",
-            "damage|mon:Terapagos,player-2,1|from:status:Bad Poison|health:95/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "split|side:1",
+                ["switch", "player-2", "Terapagos"],
+                ["switch", "player-2", "Terapagos"],
+                "activate|mon:Terapagos,player-2,1|ability:Tera Shift",
+                "split|side:1",
+                ["specieschange", "player-2", "Terapagos-Terastal"],
+                ["specieschange", "player-2", "Terapagos-Terastal"],
+                "formechange|mon:Terapagos,player-2,1|species:Terapagos-Terastal|from:ability:Tera Shift",
+                "move|mon:Pecharunt,player-1,1|name:Toxic|target:Terapagos,player-2,1",
+                "status|mon:Terapagos,player-2,1|status:Bad Poison",
+                "start|mon:Terapagos,player-2,1|condition:Confusion|from:ability:Poison Puppeteer|of:Pecharunt,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Terapagos,player-2,1|from:status:Bad Poison|health:146/155",
+                "damage|mon:Terapagos,player-2,1|from:status:Bad Poison|health:95/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

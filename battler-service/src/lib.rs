@@ -1,9 +1,11 @@
 mod api;
+mod error;
 mod log;
 mod service;
 mod timer;
 
 pub use api::*;
+pub use error::BattleError;
 pub use log::{
     GlobalLogEntry,
     Log,
@@ -12,6 +14,7 @@ pub use log::{
 pub use service::{
     BattleServiceOptions,
     BattlerService,
+    WatchdogOptions,
 };
 pub use timer::{
     Timer,
@@ -27,10 +30,10 @@ mod typescript_tests {
     #[test]
     fn export_types() {
         PlayerState::export().unwrap();
-        PlayerValidation::export().unwrap();
         Player::export().unwrap();
         Side::export().unwrap();
         BattleState::export().unwrap();
+        DropReason::export().unwrap();
         BattleStatus::export().unwrap();
         BattleMetadata::export().unwrap();
         Battle::export().unwrap();

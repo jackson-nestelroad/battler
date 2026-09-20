@@ -73,7 +73,7 @@ where
 
 pub async fn run_multiplayer_battler_service_producer_over_service<S>(
     service: Arc<BattlerMultiplayerService<'static>>,
-    global_update_rx: mpsc::UnboundedReceiver<ProposedBattleUpdate>,
+    global_update_rx: mpsc::Receiver<ProposedBattleUpdate>,
     peer_config: battler_wamprat_schema::PeerConfig,
     peer: battler_wamp::peer::Peer<S>,
     modules: Modules,
@@ -88,6 +88,10 @@ where
     let authorizer = Arc::new(modules.authorizer);
 
     builder.register_propose_battle(handlers::propose_battle::Handler {
+        service: service.clone(),
+        authorizer: authorizer.clone(),
+    })?;
+    builder.register_propose_special_battle(handlers::propose_special_battle::Handler {
         service: service.clone(),
         authorizer: authorizer.clone(),
     })?;
@@ -123,7 +127,7 @@ where
 async fn run_multiplayer_battler_service_producer_internal<S>(
     producer: battler_multiplayer_service_schema::BattlerMultiplayerServiceProducer<S>,
     mut stop_rx: Option<broadcast::Receiver<()>>,
-    mut global_update_rx: mpsc::UnboundedReceiver<ProposedBattleUpdate>,
+    mut global_update_rx: mpsc::Receiver<ProposedBattleUpdate>,
 ) -> Result<()>
 where
     S: Send + 'static,
@@ -137,10 +141,14 @@ where
         };
         tokio::select! {
             update = global_update_rx.recv() => {
-                publish_update(
-                    &producer,
-                    update.ok_or_else(|| Error::msg("global update channel unexpectedly closed"))?,
-                ).await?;
+                let update = match update {
+                    Some(update) => update,
+                    None => break,
+                };
+                log::info!("Multiplayer producer received update from channel for proposed battle {}", update.proposed_battle.uuid);
+                if let Err(err) = publish_update(&producer, update).await {
+                    log::warn!("Failed to publish proposed battle update: {err:?}");
+                }
             },
             _ = stop_recv => {
                 producer.stop().await?;
@@ -169,21 +177,17 @@ where
         .iter()
         .flat_map(|side| side.players.iter())
         .map(|player| player.id.clone())
-        .collect::<Vec<_>>();
-    for player in players {
-        let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern {
-            player: player.clone(),
-        };
-        producer
-            .publish_proposed_battle_updates(
-                pattern,
-                event.clone(),
-                battler_wamprat::peer::PublishOptions {
-                    eligible_authid: Some(HashSet::from_iter([player.clone()])),
-                    ..Default::default()
-                },
-            )
-            .await?;
-    }
+        .collect::<HashSet<_>>();
+    let pattern = battler_multiplayer_service_schema::ProposedBattleUpdatesPattern;
+    producer
+        .publish_proposed_battle_updates(
+            pattern,
+            event,
+            battler_wamprat::peer::PublishOptions {
+                eligible_authid: Some(players),
+                ..Default::default()
+            },
+        )
+        .await?;
     Ok(())
 }

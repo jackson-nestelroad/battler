@@ -132,11 +132,21 @@ impl Realm {
     /// If sessions cannot be cleaned up properly, everything will be dropped anyway.
     pub async fn shut_down(&self, close_reason: CloseReason) -> Result<()> {
         let mut futures = Vec::default();
-        for session in self.sessions.read().await.values().cloned() {
+        let sessions = self
+            .sessions
+            .read()
+            .await
+            .values()
+            .cloned()
+            .collect::<Vec<_>>();
+        for session in sessions {
             futures.push((async |session: Arc<RealmSession>| {
                 session.session.closed_session_rx().recv().await
             })(session.clone()));
-            session.session.close(close_reason).await.ok();
+            let session_clone = session.clone();
+            tokio::spawn(async move {
+                session_clone.session.close(close_reason.clone()).await.ok();
+            });
         }
 
         tokio::select! {

@@ -1,0 +1,151 @@
+[
+  {
+    "condition": {
+      "hasSourceEffectType": "Ability",
+      "titleNotIn": ["abilitystart"]
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasSourceEffectType": "Ability",
+      "titleIn": ["abilitystart"],
+      "hasOf": true
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasSourceEffectType": "Item",
+      "titleNotIn": ["itemstart", "itemend"]
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasSourceEffectType": "Item",
+      "titleIn": ["itemstart", "itemend"],
+      "hasOf": true
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "source_effect.name",
+      "monResolution": "sourceFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["abilitystart"],
+      "hasContext": "ABILITY",
+      "hasSource": true
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromContext": "ABILITY",
+      "monResolution": "sourceOnly"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["itemstart", "itemend"],
+      "hasContext": "ITEM",
+      "hasSource": true
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM",
+      "monResolution": "sourceOnly"
+    }
+  },
+  {
+    "condition": {
+      "hasEffectType": "Ability"
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromPath": "effect.name",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["ability", "abilitystart", "abilityend", "activate"],
+      "hasContext": "ABILITY"
+    },
+    "notice": {
+      "type": "Ability",
+      "nameFromContext": "ABILITY",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "hasEffectType": "Item",
+      "titleNotIn": ["itemend"]
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromPath": "effect.name",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["item", "itemstart", "activate"],
+      "hasContext": "ITEM"
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["itemend"],
+      "hasContext": "ITEM",
+      "hasSource": false
+    },
+    "notice": {
+      "type": "Item",
+      "nameFromContext": "ITEM",
+      "monResolution": "targetFirst"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["damage"],
+      "hasContext": "DAMAGE"
+    },
+    "notice": {
+      "type": "Damage",
+      "nameFromContext": "DAMAGE",
+      "monResolution": "fromContext",
+      "monFromContext": "MON"
+    }
+  },
+  {
+    "condition": {
+      "titleIn": ["heal"],
+      "hasContext": "HEAL"
+    },
+    "notice": {
+      "type": "Heal",
+      "nameFromContext": "HEAL",
+      "monResolution": "fromContext",
+      "monFromContext": "MON"
+    }
+  }
+]

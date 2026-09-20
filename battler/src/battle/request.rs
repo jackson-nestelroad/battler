@@ -12,7 +12,6 @@ use serde_string_enum::{
 use crate::battle::{
     MonLearnMoveRequest,
     MonMoveRequest,
-    PlayerBattleData,
 };
 
 /// Type type of [`Request`] that should be requested from a player.
@@ -48,9 +47,6 @@ pub struct TeamPreviewRequest {
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct TurnRequest {
     pub active: Vec<MonMoveRequest>,
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub allies: Vec<PlayerBattleData>,
 }
 
 /// A request for a Mon to be switched in.

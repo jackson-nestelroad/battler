@@ -70,6 +70,7 @@ fn thrash_locks_move_and_confuses_user() {
                     "max_pp": 0,
                     "target": "Scripted",
                     "type": "Normal",
+                    "category": "Physical",
                     "disabled": false
                 }
             ],

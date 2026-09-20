@@ -58,17 +58,17 @@ fn leftovers_restores_hp_at_end_of_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Totodile,player-2,1|name:Thunderbolt|target:Totodile,player-1,1",
-            "supereffective|mon:Totodile,player-1,1",
-            "split|side:0",
-            "damage|mon:Totodile,player-1,1|health:38/110",
-            "damage|mon:Totodile,player-1,1|health:35/100",
-            "split|side:0",
-            "heal|mon:Totodile,player-1,1|from:item:Leftovers|health:44/110",
-            "heal|mon:Totodile,player-1,1|from:item:Leftovers|health:40/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Totodile,player-2,1|name:Thunderbolt|target:Totodile,player-1,1",
+                "supereffective|mon:Totodile,player-1,1",
+                "split|side:0",
+                "damage|mon:Totodile,player-1,1|health:38/110",
+                "damage|mon:Totodile,player-1,1|health:35/100",
+                "residual",
+                "split|side:0",
+                "heal|mon:Totodile,player-1,1|from:item:Leftovers|health:44/110",
+                "heal|mon:Totodile,player-1,1|from:item:Leftovers|health:40/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -15,7 +15,6 @@ fn make_battle_builder() -> TestBattleBuilder {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
-        .with_team_validation(false)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
 }
@@ -101,19 +100,9 @@ fn enforces_shared_type() {
         .build(static_local_data_store())
         .unwrap();
 
-    assert_matches::assert_matches!(
-        battle.update_team("player-1", three_starters().unwrap()),
-        Ok(())
-    );
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", three_starters().unwrap()), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Your team does not share a common type to satisfy Same Type Clause."), "{err:?}");
-        });
-    });
-    assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
-            assert!(err.problems().contains(&"Validation failed for Player 1: Your team does not share a common type to satisfy Same Type Clause."), "{err:?}");
         });
     });
 
@@ -126,6 +115,5 @@ fn enforces_shared_type() {
         Ok(())
     );
 
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
     assert_matches::assert_matches!(battle.start(), Ok(()));
 }

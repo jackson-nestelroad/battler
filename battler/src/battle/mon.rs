@@ -14,7 +14,6 @@ use core::{
     },
     iter,
     ops::Mul,
-    u8,
 };
 
 use anyhow::Result;
@@ -26,6 +25,7 @@ use battler_data::{
     Gender,
     Id,
     Identifiable,
+    MoveCategory,
     MoveTarget,
     Nature,
     PartialStatTable,
@@ -251,6 +251,7 @@ pub struct MonMoveSlotData {
     pub target: MoveTarget,
     #[serde(rename = "type")]
     pub typ: Type,
+    pub category: MoveCategory,
     pub disabled: bool,
 }
 
@@ -260,6 +261,7 @@ impl MonMoveSlotData {
         let mov = context.battle().dex.moves.get_by_id(&move_slot.id)?;
         let name = mov.data.name.clone();
         let id = mov.id().clone();
+        let category = mov.data.category;
         // Some moves may have a special target, depending on the user's type (e.g., Curse).
         let (target, typ) = core_battle_actions::run_in_using_move_state(context, |context| {
             let target =
@@ -287,6 +289,7 @@ impl MonMoveSlotData {
         Ok(Self {
             name,
             id,
+            category,
             pp: move_slot.pp,
             max_pp: move_slot.max_pp,
             target,
@@ -303,6 +306,10 @@ impl MonMoveSlotData {
 pub struct MonPersistentMoveData {
     pub name: String,
     pub pp: u8,
+    #[serde(default)]
+    pub max_pp: u8,
+    #[serde(default)]
+    pub typ: Type,
 }
 
 /// Data about a single [`Mon`]'s summary, which is its out-of-battle state.
@@ -320,6 +327,10 @@ pub struct MonSummaryData {
     pub hp: u16,
     pub friendship: u8,
     pub experience: u32,
+    #[serde(default)]
+    pub level_experience: u32,
+    #[serde(default)]
+    pub next_level_experience: Option<u32>,
     pub stats: StatTable,
     pub evs: StatTable,
     pub ivs: StatTable,
@@ -328,6 +339,10 @@ pub struct MonSummaryData {
     pub item: Option<String>,
     pub status: Option<String>,
     pub hidden_power_type: Type,
+    #[serde(default)]
+    pub tera_type: Type,
+    #[serde(default)]
+    pub weight: u32,
 }
 
 /// Data about a single [`Mon`]'s battle state.
@@ -353,6 +368,8 @@ pub struct MonBattleData {
     pub ability: String,
     pub item: Option<String>,
     pub status: Option<String>,
+    #[serde(default)]
+    pub weight: u32,
 }
 
 /// Request for a single [`Mon`] to move.
@@ -1602,7 +1619,16 @@ impl Mon {
 impl Mon {
     /// Generates battle request data.
     pub fn battle_request_data(context: &mut MonContext) -> Result<MonBattleData> {
-        let side_position = Self::position_on_side(context);
+        let player_active_position = if context.mon().active {
+            context.mon().active_position
+        } else {
+            context
+                .player()
+                .active_or_exited_position(&context.mon_handle())
+        };
+        let active = player_active_position.is_some();
+        let side_position = player_active_position
+            .map(|position| Self::position_on_side_by_active_position(context, position));
         let species = context
             .battle()
             .dex
@@ -1633,6 +1659,7 @@ impl Mon {
         } else {
             None
         };
+        let weight = Self::get_weight(context);
         Ok(MonBattleData {
             summary: Self::summary_request_data(context)?,
             species,
@@ -1640,10 +1667,10 @@ impl Mon {
             max_hp: context.mon().max_hp,
             health: context.mon().actual_health_string(),
             types: context.mon().volatile_state.types.clone(),
-            active: context.mon().active,
+            active,
             player_team_position: context.mon().team_position,
             player_effective_team_position: context.mon().effective_team_position,
-            player_active_position: context.mon().active_position,
+            player_active_position,
             side_position,
             stats: context.mon().volatile_state.stats.without_hp(),
             boosts: context.mon().volatile_state.boosts.clone(),
@@ -1662,6 +1689,7 @@ impl Mon {
                 .status
                 .as_ref()
                 .map(|status| status.to_string()),
+            weight,
         })
     }
 
@@ -1671,10 +1699,17 @@ impl Mon {
             .battle()
             .dex
             .species
-            .get_by_id(&context.mon().original_base_species)?
-            .data
-            .name
-            .clone();
+            .get_by_id(&context.mon().original_base_species)?;
+        let species_name = species.data.name.clone();
+        let leveling_rate = species.data.leveling_rate;
+        let weight = species.data.weight;
+        let level = context.mon().level;
+        let level_experience = leveling_rate.exp_at_level(level);
+        let next_level_experience = if level < 100 {
+            Some(leveling_rate.exp_at_level(level + 1))
+        } else {
+            None
+        };
         let ability = context
             .battle()
             .dex
@@ -1683,7 +1718,7 @@ impl Mon {
             .data
             .name
             .clone();
-        let item = match &context.mon().item {
+        let item = match &context.mon().original_item {
             Some(item) => Some(
                 context
                     .battle()
@@ -1711,15 +1746,17 @@ impl Mon {
         };
         Ok(MonSummaryData {
             name: context.mon().name.clone(),
-            species,
+            species: species_name,
             level: context.mon().level,
             gender: context.mon().gender,
             nature: context.mon().nature,
             shiny: context.mon().shiny,
             ball,
-            hp: context.mon().hp,
+            hp: context.mon().undynamaxed_hp(),
             friendship: context.mon().friendship,
             experience: context.mon().experience,
+            level_experience,
+            next_level_experience,
             stats: context.mon().base_stored_stats.clone(),
             evs: context.mon().evs.clone(),
             ivs: context.mon().ivs.clone(),
@@ -1731,6 +1768,8 @@ impl Mon {
                 .map(|move_slot| MonPersistentMoveData {
                     name: move_slot.name.clone(),
                     pp: move_slot.pp,
+                    max_pp: move_slot.max_pp,
+                    typ: move_slot.typ,
                 })
                 .collect::<Vec<_>>(),
             ability,
@@ -1741,6 +1780,8 @@ impl Mon {
                 .as_ref()
                 .map(|status| status.to_string()),
             hidden_power_type: context.mon().hidden_power_type,
+            tera_type: context.mon().tera_type,
+            weight,
         })
     }
 
@@ -1753,6 +1794,7 @@ impl Mon {
             moves = Vec::from_iter([MonMoveSlotData {
                 name: "Struggle".to_owned(),
                 id: Id::from_known("struggle"),
+                category: MoveCategory::Physical,
                 pp: 1,
                 max_pp: 1,
                 target: MoveTarget::RandomNormal,
@@ -2016,9 +2058,9 @@ impl Mon {
             .get_by_id(&context.mon().volatile_state.species)?;
 
         let new_max_hp = if species.data.max_hp.is_none() && context.mon().dynamaxed {
-            let ratio =
-                Fraction::new(3, 2) + Fraction::new(1, 20) * context.mon().dynamax_level as u16;
-            (ratio * context.mon().base_max_hp).floor()
+            let ratio = Fraction::new(3u64, 2u64)
+                + Fraction::new(1u64, 20u64) * context.mon().dynamax_level as u64;
+            (ratio * context.mon().base_max_hp as u64).floor() as u16
         } else {
             context.mon().base_max_hp
         };
@@ -2083,8 +2125,8 @@ impl Mon {
 
     /// Calculates the un-Dynamaxed HP for a given value.
     pub fn undynamaxed_hp_calculation(&self, hp: u16) -> u16 {
-        if self.dynamaxed {
-            (Fraction::new(self.base_max_hp, self.max_hp) * hp).ceil()
+        if self.dynamaxed && self.max_hp > 0 {
+            (Fraction::new(self.base_max_hp as u64, self.max_hp as u64) * hp as u64).ceil() as u16
         } else {
             hp
         }
@@ -2219,6 +2261,7 @@ impl Mon {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Recharge".to_owned(),
                     id: Id::from_known("recharge"),
+                    category: MoveCategory::Status,
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
@@ -2229,6 +2272,7 @@ impl Mon {
                 return Ok(Vec::from_iter([MonMoveSlotData {
                     name: "Pass".to_owned(),
                     id: Id::from_known("pass"),
+                    category: MoveCategory::Status,
                     pp: 0,
                     max_pp: 0,
                     target: MoveTarget::User,
@@ -2242,6 +2286,7 @@ impl Mon {
             return Ok(Vec::from_iter([MonMoveSlotData {
                 name: locked_move.data.name.clone(),
                 id: locked_move.id().clone(),
+                category: locked_move.data.category,
                 pp: 0,
                 max_pp: 0,
                 target: MoveTarget::Scripted,

@@ -20,13 +20,15 @@ pub(crate) enum TimerType {
     Player(String),
     /// Timer per player per action.
     Action(String),
+    /// Timer for team preview.
+    TeamPreview,
 }
 
 impl TimerType {
     /// Should the timer be reset when resumed?
     pub(crate) fn reset_on_resume(&self) -> bool {
         match self {
-            Self::Action(_) => true,
+            Self::Action(_) | Self::TeamPreview => true,
             _ => false,
         }
     }
@@ -67,7 +69,7 @@ impl From<Timer> for TimerState {
 }
 
 /// Configuration for a single timer.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct Timer {
@@ -79,7 +81,7 @@ pub struct Timer {
 }
 
 /// Configuration for battle timers.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct Timers {
@@ -96,6 +98,10 @@ pub struct Timers {
     ///
     /// When this timer runs out, the player is forced to make a random action.
     pub action: Option<Timer>,
+    /// Timer for each player during team preview.
+    ///
+    /// When this timer runs out, the player is forced to make a random selection.
+    pub team_preview: Option<Timer>,
 }
 
 impl Timers {
@@ -124,6 +130,9 @@ impl Timers {
                     .iter()
                     .map(|player| (TimerType::Action(player.to_string()), timer.clone().into())),
             );
+        }
+        if let Some(timer) = self.team_preview {
+            state.insert(TimerType::TeamPreview, timer.into());
         }
         state
     }

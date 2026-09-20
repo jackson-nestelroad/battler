@@ -1,0 +1,6 @@
+# Caddy reverse proxy for battler.live services
+# Automatic HTTPS / WSS via Let's Encrypt
+
+ws.battler.live {
+    reverse_proxy localhost:8080
+}

@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     BattleAuthorizer,
-    PlayerOperation,
+    common::error::map_battle_error,
 };
 
 pub(crate) struct Handler<'d> {
@@ -28,22 +28,28 @@ impl<'d> battler_wamprat::procedure::TypedPatternMatchedProcedure for Handler<'d
         input: Self::Input,
         procedure: Self::Pattern,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::PlayerData,
-            )
-            .await?;
-        let player_data = self
-            .service
-            .player_data(Uuid::try_parse(&procedure.0)?, &input.0.player)
-            .await?;
-        Ok(battler_service_schema::PlayerDataOutput(
-            battler_service_schema::PlayerDataOutputArgs {
-                player_data_json: serde_json::to_string(&player_data)?,
-            },
-        ))
+        crate::log_procedure!(
+            "PlayerData",
+            format!("battle={}, player={}", procedure.0, input.0.player),
+            async {
+                let uuid = Uuid::try_parse(&procedure.0)?;
+                let battle = self.service.battle(uuid).await.map_err(map_battle_error)?;
+                self.authorizer
+                    .authorize_player_data_access(&invocation.peer_info, &battle, &input.0.player)
+                    .await?;
+                let player_data = self
+                    .service
+                    .player_data(uuid, &input.0.player)
+                    .await
+                    .map_err(map_battle_error)?;
+                Ok(battler_service_schema::PlayerDataOutput(
+                    battler_service_schema::PlayerDataOutputArgs {
+                        player_data_json: serde_json::to_string(&player_data)?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

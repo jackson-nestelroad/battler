@@ -210,7 +210,7 @@
     "condition_type": "Type",
     "condition": {
       "callbacks": {
-        "on_immunity": ["if [psn, tox] has $effect.id:", ["return false"]]
+        "on_immunity": ["if [psn, tox, sandstormweather] has $effect.id:", ["return false"]]
       }
     }
   },
@@ -442,7 +442,7 @@
   },
   "partiallytrapped": {
     "name": "Partially Trapped",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "callbacks": {
         "on_duration": ["return func_call(random: 5 7)"],
@@ -496,7 +496,7 @@
   },
   "flinch": {
     "name": "Flinch",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "duration": 1,
       "callbacks": {
@@ -509,7 +509,7 @@
   },
   "mustrecharge": {
     "name": "Must Recharge",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "duration": 2,
       "callbacks": {
@@ -524,12 +524,12 @@
   },
   "trapped": {
     "name": "Trapped",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "no_copy": true,
       "callbacks": {
         "on_trap_mon": ["return true"],
-        "on_start": ["log_activate: with_target"],
+        "on_start": ["log_activate: with_target use_effect_state_source_as_source with_source"],
         "on_any_exit": [
           "if $mon == $effect_state.source:",
           ["remove_volatile: $effect_state.target $this.id"]
@@ -568,18 +568,20 @@
         "on_residual": {
           "order": 3
         },
-        "on_slot_start": ["log_start: use_effect_state_source_effect with_source"],
+        "on_slot_start": ["log_slot_start: $slot use_effect_state_source_effect with_source"],
         "on_slot_end": [
-          "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id $effect_state.source)",
           "$target = func_call(mon_in_position: $side $slot)",
-          "require $target.is_defined else return",
-          "require $target.active else return",
-          "require $target != $effect_state.source else return",
-          "$effect_state.target = $target",
-          "log_end: with_target use_effect_state_target use_effect_state_source_effect with_source use_effect_state_source_as_source",
-          "remove_volatile: $target protect",
-          "remove_volatile: $target endure",
-          "use_active_move: $effect_state.source $move $target indirect"
+          "if $target.is_defined and $target.active and $target != $effect_state.source:",
+          [
+            "log_activate: $target with_target use_effect_state_source_effect",
+            "log_slot_end: $slot use_effect_state_source_effect",
+            "remove_volatile: $target protect",
+            "remove_volatile: $target endure",
+            "$move = func_call(new_active_move_from_local_data: $effect_state.source_effect $this.id $effect_state.source)",
+            "use_active_move: $effect_state.source $move $target indirect",
+            "return"
+          ],
+          "log_slot_end: $slot use_effect_state_source_effect"
         ]
       }
     }
@@ -609,7 +611,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -635,7 +637,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -664,7 +666,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -691,7 +693,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -717,7 +719,7 @@
           "program": ["run_event: Weather"]
         },
         "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -740,7 +742,7 @@
           "program": ["run_event: Weather"]
         },
         "on_weather": ["damage: $target expr($target.base_max_hp / 16)"],
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -766,7 +768,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -793,7 +795,7 @@
           "order": 1,
           "program": ["run_event: Weather"]
         },
-        "on_field_end": ["log_weather"]
+        "on_field_end": ["log_weather: $this.name clear"]
       }
     }
   },
@@ -853,7 +855,7 @@
   },
   "choicelock": {
     "name": "Choice Lock",
-    "condition_type": "Volatile",
+    "condition_type": "Built-in",
     "condition": {
       "callbacks": {
         "on_start": [
@@ -939,10 +941,16 @@
       "duration": 2,
       "callbacks": {
         "on_start": [
+          "log_start: use_effect_state_source_effect silent",
           "$effect_state.move = $source_effect.id",
           "add_volatile: $target $effect_state.move use_source_effect link"
         ],
-        "on_end": ["log_end: use_effect_state_source_effect"],
+        "on_end": [
+          "if $effect_state.hit:",
+          ["log_end: use_effect_state_source_effect silent"],
+          "else:",
+          ["log_end: use_effect_state_source_effect"]
+        ],
         "on_drag_out": ["return false"],
         "on_trap_mon": {
           "order": 1,
@@ -1119,10 +1127,14 @@
     "condition_type": "Built-in",
     "condition": {
       "callbacks": {
-        "on_start": ["log_activate: with_target use_source"],
+        "on_slot_start": ["log_slot_start: $slot use_effect_state_source_effect with_source"],
+        "on_slot_end": ["log_slot_end: $slot use_effect_state_source_effect"],
         "on_switch_in": [
           "if !$mon.fainted:",
-          ["heal: $mon $mon.max_hp", "remove_slot_condition: $mon.side $mon.position $this.id"]
+          [
+            "heal: $mon $mon.max_hp use_effect_state_source_effect",
+            "remove_slot_condition: $mon.side $mon.position $this.id"
+          ]
         ]
       }
     }
@@ -1134,7 +1146,7 @@
       "duration": 1,
       "no_copy": true,
       "callbacks": {
-        "on_start": ["log_single_turn: with_target"],
+        "on_start": ["log_single_turn: with_target with_source_effect"],
         "on_upgrade_move": [
           "$z_move_id = func_call(z_move: $user $move)",
           "require $z_move_id.is_defined else return",
@@ -1169,7 +1181,7 @@
           "if $move.z_power_boosts.is_defined:",
           ["boost: $user $move.z_power_boosts"],
           "else if $move.z_power_effect.is_defined:",
-          ["activate_applying_effect: $move.z_power_effect"]
+          ["activate_applying_effect: $move.z_power_effect use_effect_as_source_effect"]
         ]
       }
     }
@@ -1270,13 +1282,13 @@
           "$allies = func_call(is_ally: $target $source)",
           "if $allies:",
           [
-            "set_ability: $source $target_ability use_source_effect no_forward silent",
-            "set_ability: $target $source_ability use_source_effect no_forward silent"
+            "set_ability: $source $target_ability $target use_source_effect no_forward silent",
+            "set_ability: $target $source_ability $source use_source_effect no_forward silent"
           ],
           "else:",
           [
-            "set_ability: $source $target_ability use_source_effect no_forward",
-            "set_ability: $target $source_ability use_source_effect no_forward"
+            "set_ability: $source $target_ability $target use_source_effect no_forward",
+            "set_ability: $target $source_ability $source use_source_effect no_forward"
           ]
         ]
       }

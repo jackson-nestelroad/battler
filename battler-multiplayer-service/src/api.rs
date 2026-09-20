@@ -7,8 +7,16 @@ use ahash::{
     HashMap,
     HashSet,
 };
-use battler::CoreBattleOptions;
-use battler_service::BattleServiceOptions;
+use battler::{
+    BattleType,
+    CoreBattleOptions,
+    PlayerData,
+    SideData,
+};
+use battler_service::{
+    BattleServiceOptions,
+    Timers,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -58,6 +66,102 @@ pub struct AiPlayers {
     pub players: HashMap<String, AiPlayerOptions>,
 }
 
+/// Supported modes for a Chaos Battle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub enum ChaosBattleMode {
+    #[serde(rename = "singles_3v3")]
+    Singles3v3,
+    #[serde(rename = "singles_6v6")]
+    Singles6v6,
+    #[serde(rename = "doubles_4v4")]
+    Doubles4v4,
+    #[serde(rename = "doubles_6v6")]
+    Doubles6v6,
+}
+
+impl ChaosBattleMode {
+    pub fn battle_type(&self) -> BattleType {
+        match self {
+            Self::Singles3v3 | Self::Singles6v6 => BattleType::Singles,
+            Self::Doubles4v4 | Self::Doubles6v6 => BattleType::Doubles,
+        }
+    }
+
+    pub fn team_size(&self) -> usize {
+        match self {
+            Self::Singles3v3 => 3,
+            Self::Doubles4v4 => 4,
+            Self::Singles6v6 | Self::Doubles6v6 => 6,
+        }
+    }
+}
+
+impl std::fmt::Display for ChaosBattleMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Singles3v3 => write!(f, "Singles 3v3"),
+            Self::Singles6v6 => write!(f, "Singles 6v6"),
+            Self::Doubles4v4 => write!(f, "Doubles 4v4"),
+            Self::Doubles6v6 => write!(f, "Doubles 6v6"),
+        }
+    }
+}
+
+/// Options for configuring a Chaos Battle.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub struct ChaosBattleOptions {
+    pub mode: ChaosBattleMode,
+    #[serde(default)]
+    pub true_chaos: bool,
+}
+
+/// A Special Battle format.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+#[serde(tag = "type", content = "options")]
+pub enum SpecialBattle {
+    #[serde(rename = "chaos")]
+    Chaos(ChaosBattleOptions),
+}
+
+impl std::fmt::Display for SpecialBattle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Chaos(opts) => {
+                let prefix = if opts.true_chaos {
+                    "True Chaos"
+                } else {
+                    "Chaos"
+                };
+                write!(f, "{prefix} ({})", opts.mode)
+            }
+        }
+    }
+}
+
+/// Options for proposing a Special Battle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub struct ProposedSpecialBattleOptions {
+    /// The special battle format and configuration.
+    pub special_battle: SpecialBattle,
+    /// Side 1 configuration (Side 1 Player 1 is the creator).
+    pub side_1: SideData,
+    /// Side 2 configuration (Opponents).
+    pub side_2: SideData,
+    /// Service options.
+    pub service_options: BattleServiceOptions,
+    /// Timeout, after which the proposed battle will be deleted.
+    #[cfg_attr(feature = "typescript", ts(type = "{ secs: number; nanos: number }"))]
+    pub timeout: Duration,
+}
+
 /// Options for a proposed battle.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -96,6 +200,16 @@ pub struct Player {
     pub status: Option<PlayerStatus>,
 }
 
+impl From<&PlayerData> for Player {
+    fn from(player: &PlayerData) -> Self {
+        Self {
+            id: player.id.clone(),
+            name: player.name.clone(),
+            status: None,
+        }
+    }
+}
+
 /// A side in a proposed battle.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
@@ -105,6 +219,15 @@ pub struct Side {
     pub name: String,
     /// Players on the side.
     pub players: Vec<Player>,
+}
+
+impl From<&SideData> for Side {
+    fn from(side: &SideData) -> Self {
+        Self {
+            name: side.name.clone(),
+            players: side.players.iter().map(Player::from).collect(),
+        }
+    }
 }
 
 /// A proposed battle, which has not yet started because all players have not accepted.
@@ -128,6 +251,17 @@ pub struct ProposedBattle {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[cfg_attr(feature = "typescript", ts(as = "Option<String>", optional))]
     pub battle: Option<Uuid>,
+    /// The type of the battle format.
+    pub battle_type: BattleType,
+    /// The rules of the battle.
+    pub rules: Vec<String>,
+    /// Timer configuration.
+    pub timers: Timers,
+    /// Special battle format type.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(feature = "typescript", ts(optional))]
+    pub special: Option<String>,
 }
 
 /// A player's response to a proposed battle.

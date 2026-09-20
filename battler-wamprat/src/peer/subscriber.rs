@@ -4,7 +4,10 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::Result;
+use anyhow::{
+    Error,
+    Result,
+};
 use async_trait::async_trait;
 use battler_wamp::{
     core::{
@@ -12,10 +15,7 @@ use battler_wamp::{
         id::Id,
         match_style::MatchStyle,
     },
-    peer::{
-        ReceivedEvent,
-        SubscriptionOptions,
-    },
+    peer::ReceivedEvent,
 };
 use battler_wamp_uri::{
     Uri,
@@ -47,7 +47,7 @@ pub(crate) struct PersistentSubscription {
 ///
 /// Subscriptions can be created and removed during at any point in a peer's lifetime.
 pub(crate) struct Subscriber<S> {
-    peer: Arc<battler_wamp::peer::Peer<S>>,
+    _peer: PhantomData<S>,
     subscriptions: ahash::HashMap<WildcardUri, PersistentSubscription>,
 }
 
@@ -56,16 +56,15 @@ where
     S: Send + 'static,
 {
     /// Creates a new subscriber.
-    pub fn new(peer: Arc<battler_wamp::peer::Peer<S>>) -> Self {
+    pub fn new(_peer: Arc<battler_wamp::peer::Peer<S>>) -> Self {
         Self {
-            peer,
+            _peer: PhantomData,
             subscriptions: ahash::HashMap::default(),
         }
     }
 
-    /// Adds a new strongly-typed subscription, which will be created on every new connection to a
-    /// router.
-    pub async fn subscribe<T, Event>(&mut self, topic: Uri, subscription: T) -> Result<()>
+    /// Adds a new strongly-typed subscription entry without making network calls.
+    pub fn add_subscription<T, Event>(&mut self, topic: Uri, subscription: T) -> Result<WildcardUri>
     where
         T: TypedSubscription<Event = Event> + 'static,
         Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
@@ -111,52 +110,31 @@ where
             }
         }
 
-        match self.subscriptions.entry(topic.clone().into()) {
+        let wildcard_topic: WildcardUri = topic.clone().into();
+        match self.subscriptions.entry(wildcard_topic.clone()) {
             Entry::Occupied(_) => Err(AlreadySubscribedError::new(format!(
                 "already actively subscribed to {topic}"
             ))
             .into()),
             Entry::Vacant(entry) => {
-                let subscription = entry.insert(PersistentSubscription {
+                entry.insert(PersistentSubscription {
                     subscription: Arc::new(Box::new(SubscriptionWrapper::new(subscription))),
                     match_style: None,
                     current_id: None,
                 });
-                Self::restore_subscription(&self.peer, &topic.into(), subscription).await
+                Ok(wildcard_topic)
             }
         }
     }
 
-    /// Adds a new strongly-typed, pattern-matched subscription, which will be created on every new
-    /// connection to a router.
-    pub async fn subscribe_pattern_matched<T, Pattern, Event>(
-        &mut self,
-        subscription: T,
-    ) -> Result<()>
-    where
-        T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
-        Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
-        Event: battler_wamprat_message::WampApplicationMessage + Send + Sync + 'static,
-    {
-        self.subscribe_pattern_matched_with_uri(
-            Pattern::uri_for_router(),
-            Pattern::match_style(),
-            subscription,
-        )
-        .await
-    }
-
-    /// Adds a new strongly-typed, pattern-matched subscription with a specific URI, which will be
-    /// created on every new connection to a router.
-    ///
-    /// Use carefully; the URI passed in must properly overlap with the `Pattern` type parameter for
-    /// the subscription handler to work as expected.
-    pub async fn subscribe_pattern_matched_with_uri<T, Pattern, Event>(
+    /// Adds a new strongly-typed, pattern-matched subscription entry with a specific URI without
+    /// making network calls.
+    pub fn add_subscription_pattern_matched_with_uri<T, Pattern, Event>(
         &mut self,
         topic: WildcardUri,
         match_style: Option<MatchStyle>,
         subscription: T,
-    ) -> Result<()>
+    ) -> Result<WildcardUri>
     where
         T: TypedPatternMatchedSubscription<Pattern = Pattern, Event = Event> + 'static,
         Pattern: battler_wamprat_uri::WampUriMatcher + Send + Sync + 'static,
@@ -233,68 +211,73 @@ where
             ))
             .into()),
             Entry::Vacant(entry) => {
-                let subscription = entry.insert(PersistentSubscription {
+                entry.insert(PersistentSubscription {
                     subscription: Arc::new(Box::new(SubscriptionWrapper::new(subscription))),
                     match_style,
                     current_id: None,
                 });
-                Self::restore_subscription(&self.peer, &topic, subscription).await
+                Ok(topic)
             }
         }
     }
 
-    /// Removes a subscription by topic.
-    pub async fn unsubscribe(&mut self, topic: &WildcardUri) -> Result<()> {
-        let id = match self
-            .subscriptions
-            .remove(&topic)
-            .map(|subscription| subscription.current_id)
-            .flatten()
-        {
-            Some(id) => id,
-            None => return Ok(()),
-        };
-        self.peer.unsubscribe(id).await
-    }
-
-    async fn event_loop(
-        subscription: Arc<Box<dyn Subscription>>,
-        mut event_rx: broadcast::Receiver<ReceivedEvent>,
-    ) {
-        while let Ok(event) = event_rx.recv().await {
-            subscription.handle_event(event).await;
-        }
-    }
-
-    async fn restore_subscription(
-        peer: &battler_wamp::peer::Peer<S>,
+    /// Activates a subscription by recording its active subscription ID and spawning its event
+    /// loop.
+    pub fn activate_subscription(
+        &mut self,
         topic: &WildcardUri,
-        persistent_subscription: &mut PersistentSubscription,
+        id: Id,
+        event_rx: broadcast::Receiver<ReceivedEvent>,
     ) -> Result<()> {
-        let subscription = peer
-            .subscribe_with_options(
-                topic.clone(),
-                SubscriptionOptions {
-                    match_style: persistent_subscription.match_style,
-                },
-            )
-            .await?;
-        persistent_subscription.current_id = Some(subscription.id);
+        let persistent_subscription = self
+            .subscriptions
+            .get_mut(topic)
+            .ok_or_else(|| Error::msg(format!("subscription for {topic} missing")))?;
+        persistent_subscription.current_id = Some(id);
         tokio::spawn(Self::event_loop(
             persistent_subscription.subscription.clone(),
-            subscription.event_rx,
+            event_rx,
         ));
         Ok(())
     }
 
-    /// Restores all subscriptions.
-    pub async fn restore_subscriptions(&mut self) -> Result<()> {
-        for (topic, persistent_subscription) in &mut self.subscriptions {
-            Self::restore_subscription(&self.peer, topic, persistent_subscription)
-                .await
-                .map_err(|err| err.context(format!("failed to resubscribe to {topic}")))?;
-        }
+    /// Removes a subscription by topic.
+    pub fn remove_subscription(&mut self, topic: &WildcardUri) -> Option<Id> {
+        self.subscriptions
+            .remove(topic)
+            .and_then(|subscription| subscription.current_id)
+    }
 
-        Ok(())
+    /// Removes a subscription by topic.
+    pub fn unsubscribe(&mut self, topic: &WildcardUri) -> Option<Id> {
+        self.remove_subscription(topic)
+    }
+
+    /// Returns a list of all subscriptions and their match styles, suitable for persistence.
+    pub fn subscriptions_for_restoration(&self) -> Vec<(WildcardUri, Option<MatchStyle>)> {
+        self.subscriptions
+            .iter()
+            .map(|(topic, sub)| (topic.clone(), sub.match_style))
+            .collect()
+    }
+
+    /// Event loop that processes received events and dispatches them to the subscription.
+    pub(crate) async fn event_loop(
+        subscription: Arc<Box<dyn Subscription>>,
+        mut event_rx: broadcast::Receiver<ReceivedEvent>,
+    ) {
+        loop {
+            match event_rx.recv().await {
+                Ok(event) => {
+                    subscription.handle_event(event).await;
+                }
+                Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                    log::warn!("Subscriber event loop lagged by {skipped} events");
+                }
+                Err(broadcast::error::RecvError::Closed) => {
+                    break;
+                }
+            }
+        }
     }
 }

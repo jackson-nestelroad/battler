@@ -64,7 +64,7 @@ fn entrainment_changes_ability() {
         r#"[
             "move|mon:Leavanny,player-1,1|name:Entrainment|target:Leavanny,player-2,1",
             "abilityend|mon:Leavanny,player-2,1|ability:Inner Focus|from:move:Entrainment|of:Leavanny,player-1,1",
-            "ability|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1",
+            "abilitystart|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -180,7 +180,7 @@ fn entrainment_works_on_wonder_guard() {
         r#"[
             "move|mon:Leavanny,player-1,1|name:Entrainment|target:Leavanny,player-2,1",
             "abilityend|mon:Leavanny,player-2,1|ability:Wonder Guard|from:move:Entrainment|of:Leavanny,player-1,1",
-            "ability|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1",
+            "abilitystart|mon:Leavanny,player-2,1|ability:Swarm|from:move:Entrainment|of:Leavanny,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

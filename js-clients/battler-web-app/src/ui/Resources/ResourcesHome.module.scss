@@ -1,0 +1,41 @@
+.resourcesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--spacing-m);
+  width: 100%;
+}
+
+.resourceCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--spacing-m);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  background-color: var(--bg-card);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  color: inherit;
+  font: inherit;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background-color: var(--bg-input);
+  }
+}
+
+.cardTitle {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.cardDescription {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}

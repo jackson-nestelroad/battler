@@ -14,7 +14,6 @@ use battler_service::{
     BattleServiceOptions,
     BattlerService,
     LogEntry,
-    PlayerValidation,
 };
 use tokio::sync::broadcast;
 use uuid::Uuid;
@@ -37,8 +36,6 @@ pub trait BattlerServiceClient: Send + Sync {
     ) -> Result<Battle>;
     /// Updates a player's team for a battle.
     async fn update_team(&self, battle: Uuid, player: &str, team: TeamData) -> Result<()>;
-    /// Validates a player in a battle.
-    async fn validate_player(&self, battle: Uuid, player: &str) -> Result<PlayerValidation>;
     /// Starts a battle.
     async fn start(&self, battle: Uuid) -> Result<()>;
     /// Returns the player data for a player in a battle.

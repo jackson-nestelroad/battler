@@ -1,0 +1,161 @@
+import { describe, expect, it } from "vitest";
+import { formatTurnChoice } from "./choiceFormatter";
+import { parseChoiceString } from "./choiceParser";
+import { resolveTargetLabel } from "./targeting";
+
+describe("choiceFormatter utility", () => {
+  describe("parseChoiceString", () => {
+    it("parses move action without target or modifiers", () => {
+      const parsed = parseChoiceString("move 0");
+      expect(parsed).toEqual({
+        type: "move",
+        moveIndex: 0,
+        targetVal: null,
+        modifiers: {},
+      });
+    });
+
+    it("parses move action with target and mega modifier", () => {
+      const parsed = parseChoiceString("move 1, 2, mega");
+      expect(parsed).toEqual({
+        type: "move",
+        moveIndex: 1,
+        targetVal: 2,
+        modifiers: {
+          mega: true,
+        },
+      });
+    });
+
+    it("parses move action with target and multiple modifiers", () => {
+      const parsed = parseChoiceString("move 0, -1, tera, mega");
+      expect(parsed).toEqual({
+        type: "move",
+        moveIndex: 0,
+        targetVal: -1,
+        modifiers: {
+          mega: true,
+          tera: true,
+        },
+      });
+    });
+
+    it("parses switch action", () => {
+      const parsed = parseChoiceString("switch 3");
+      expect(parsed).toEqual({
+        type: "switch",
+        switchPosition: 3,
+      });
+    });
+
+    it("parses select action", () => {
+      const parsed = parseChoiceString("select 1");
+      expect(parsed).toEqual({
+        type: "select",
+        selectPosition: 1,
+      });
+    });
+
+    it("parses pass action", () => {
+      const parsed = parseChoiceString("pass");
+      expect(parsed).toEqual({
+        type: "pass",
+      });
+    });
+
+    it("parses shift action", () => {
+      const parsed = parseChoiceString("shift");
+      expect(parsed).toEqual({
+        type: "shift",
+      });
+    });
+  });
+
+  describe("resolveTargetLabel", () => {
+    it("returns null for null target", () => {
+      expect(resolveTargetLabel(null, 0)).toBeNull();
+    });
+
+    it("formats foe target correctly", () => {
+      const targetName = resolveTargetLabel(1, 0);
+      expect(targetName).toContain("Foe 1");
+    });
+
+    it("formats self target correctly", () => {
+      const targetName = resolveTargetLabel(-1, 0);
+      expect(targetName).toContain("Self");
+    });
+  });
+
+  describe("formatTurnChoice", () => {
+    it("formats move choice summary cleanly", () => {
+      const formatted = formatTurnChoice("move 0, 1, mega", 0, {
+        type: "turn",
+        active: [
+          {
+            team_position: 0,
+            moves: [{ id: "flamethrower", name: "Flamethrower", category: "Special", type: "Fire", pp: 15, max_pp: 15, disabled: false, target: "Normal" }],
+            z_moves: [],
+            max_moves: [],
+            trapped: false,
+            can_mega_evolve: true,
+            can_z_move: false,
+            can_ultra_burst: false,
+            can_dynamax: false,
+            can_terastallize: false,
+            locked_into_move: false,
+          },
+        ],
+      });
+
+      expect(formatted.actionName).toBe("Flamethrower");
+      expect(formatted.modifiers).toContain("Mega");
+    });
+
+    it("formats forced switch pass choice summary cleanly", () => {
+      const formatted = formatTurnChoice("pass", 2, {
+        type: "switch",
+        needs_switch: [0, 1, 2],
+      });
+
+      expect(formatted.actionType).toBe("pass");
+    });
+
+    it("formats select choice summary cleanly", () => {
+      const formatted = formatTurnChoice(
+        "select 1",
+        0,
+        {
+          type: "select",
+          positions: [{ position: 0, reason: "Revive" }],
+        },
+        {
+          side: 0,
+          player_index: 0,
+          position: 0,
+          mons: [
+            {
+              species: "Pawmot",
+              player_active_position: 0,
+              player_team_position: 0,
+              hp: 250,
+              max_hp: 250,
+              active: true,
+            },
+            {
+              species: "Quaxly",
+              player_team_position: 1,
+              hp: 0,
+              max_hp: 115,
+              active: false,
+            },
+          ],
+        } as any,
+      );
+
+      expect(formatted.actionType).toBe("select");
+      expect(formatted.actionName).toBe("Select");
+      expect(formatted.targetName).toBe("Quaxly");
+    });
+  });
+});

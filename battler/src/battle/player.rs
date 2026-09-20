@@ -8,10 +8,7 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::{
-    cmp,
-    usize,
-};
+use core::cmp;
 
 use anyhow::Result;
 use battler_choice::{
@@ -94,6 +91,7 @@ use crate::{
         fxlang,
     },
     error::{
+        ValidationError,
         WrapOptionError,
         WrapResultError,
         general_error,
@@ -300,6 +298,7 @@ pub struct PlayerOptions {
     pub cannot_dynamax: bool,
 
     /// If the player cannot Terastallize, assuming Terastallization is allowed.
+    #[serde(default)]
     pub cannot_terastallize: bool,
 }
 
@@ -367,6 +366,8 @@ pub struct ChoiceState {
     pub forced_passes_left: usize,
     /// Mons chosen to switch in.
     pub switch_ins: HashSet<usize>,
+    /// Mons chosen to select.
+    pub selections: HashSet<usize>,
     /// Did the Player choose to Mega Evolve?
     pub mega: bool,
     /// Did the Player choose to Z-Move?
@@ -392,6 +393,7 @@ impl ChoiceState {
             forced_selections_left: 0,
             forced_passes_left: 0,
             switch_ins: HashSet::default(),
+            selections: HashSet::default(),
             mega: false,
             z_move: false,
             ultra: false,
@@ -464,6 +466,8 @@ pub struct Player {
     pub bag: HashMap<Id, u16>,
     pub dex: PlayerDex,
     pub caught: Vec<MonHandle>,
+
+    pub validation_status: Option<Result<(), ValidationError>>,
 }
 
 // Construction and initialization logic.
@@ -522,6 +526,7 @@ impl Player {
             bag: HashMap::default(),
             dex: player_dex,
             caught: Vec::new(),
+            validation_status: None,
         };
         player.update_team(data.team, dex, registry)?;
         Ok(player)
@@ -582,6 +587,7 @@ impl Player {
 
         self.mons = mons;
         self.bag = bag;
+        self.validation_status = None;
 
         Ok(())
     }
@@ -625,6 +631,16 @@ impl Player {
         Ok(())
     }
 
+    /// Clears all active and exited positions for the player.
+    pub fn clear_active_positions(&mut self) {
+        for slot in &mut self.active {
+            *slot = None;
+        }
+        for slot in &mut self.active_or_exited {
+            *slot = None;
+        }
+    }
+
     /// The active [`MonHandle`] for the player's position.
     pub fn active_mon_handle(&self, position: usize) -> Option<MonHandle> {
         self.active.get(position).cloned().flatten()
@@ -643,6 +659,13 @@ impl Player {
     /// The active or exited [`MonHandle`] for the player's position.
     pub fn active_or_exited_mon_handle(&self, position: usize) -> Option<MonHandle> {
         self.active_or_exited.get(position).cloned().flatten()
+    }
+
+    /// Finds the active or exited position for the given [`MonHandle`].
+    pub fn active_or_exited_position(&self, mon_handle: &MonHandle) -> Option<usize> {
+        self.active_or_exited
+            .iter()
+            .position(|mon| mon.as_ref() == Some(mon_handle))
     }
 
     /// Creates an iterator over all active or exited Mons owned by the player.
@@ -702,7 +725,13 @@ impl Player {
         context.player().mons.iter().filter_map(|mon_handle| {
             context
                 .mon(*mon_handle)
-                .is_ok_and(|mon| !mon.active)
+                .is_ok_and(|mon| {
+                    !mon.active
+                        && !context
+                            .player()
+                            .active_or_exited
+                            .contains(&Some(*mon_handle))
+                })
                 .then_some(mon_handle)
         })
     }
@@ -715,6 +744,18 @@ impl Player {
             context
                 .mon(**mon_handle)
                 .is_ok_and(|mon| mon.exited.is_none())
+        })
+    }
+
+    /// Creates an iterator over all Mons that can be selected for the given reason.
+    pub fn selectable_mon_handles<'p, 'c, 'b, 'd>(
+        context: &'p PlayerContext<'_, 'c, 'b, 'd>,
+        reason: SelectReason,
+    ) -> impl Iterator<Item = &'p MonHandle> + Captures<'d> + Captures<'b> + Captures<'c> {
+        context.player().mon_handles().filter(move |mon_handle| {
+            context.mon(**mon_handle).is_ok_and(|mon| match reason {
+                SelectReason::Revive => mon.exited == Some(MonExitType::Fainted),
+            })
         })
     }
 
@@ -807,6 +848,8 @@ impl Player {
     /// Clears the player's team.
     pub fn clear_team(&mut self) {
         self.mons.clear();
+        self.bag.clear();
+        self.validation_status = None;
     }
 
     /// Adds a Mon to the player's team.
@@ -863,6 +906,34 @@ impl Player {
             .count()
     }
 
+    /// Counts the number of Mons that can be selected.
+    pub fn count_can_select(context: &mut PlayerContext) -> usize {
+        let reasons = context
+            .player()
+            .active_or_exited_mon_handles()
+            .filter_map(|mon_handle| {
+                context
+                    .mon(*mon_handle)
+                    .ok()
+                    .and_then(|mon| mon.volatile_state.select.clone())
+            })
+            .collect::<Vec<_>>();
+        if reasons.is_empty() {
+            return 0;
+        }
+        let mut count = 0;
+        for mon_handle in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+            if let Ok(mon) = context.mon(mon_handle) {
+                if reasons.iter().any(|reason| match reason {
+                    SelectReason::Revive => mon.exited == Some(MonExitType::Fainted),
+                }) {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
+
     /// Clears any active choice.
     pub fn clear_choice(context: &mut PlayerContext) {
         let mut choice = ChoiceState::new();
@@ -877,7 +948,11 @@ impl Player {
             }
             Some(RequestType::Select) => {
                 let must_select = Self::count_must_select(context);
-                choice.forced_selections_left = must_select;
+                let can_select = Self::count_can_select(context);
+                let selections = must_select.min(can_select);
+                let passes = must_select - selections;
+                choice.forced_selections_left = selections;
+                choice.forced_passes_left = passes;
             }
             _ => (),
         }
@@ -1094,15 +1169,6 @@ impl Player {
             .wrap_expectation_with_format(format_args!(
                 "you do not have a mon in slot {slot} to switch to"
             ))?;
-        if context.player().active.contains(&Some(target_mon_handle)) {
-            return Err(general_error("you cannot switch to an active mon"));
-        }
-        if context.player().choice.switch_ins.contains(&slot) {
-            return Err(general_error(format!(
-                "the mon in slot {slot} can only switch in once",
-            )));
-        }
-
         let target_context = context
             .as_battle_context_mut()
             .mon_context(target_mon_handle)?;
@@ -1115,6 +1181,19 @@ impl Player {
                 return Err(general_error("you cannot switch to a caught mon"));
             }
             None => (),
+        }
+
+        if context
+            .player()
+            .active_or_exited
+            .contains(&Some(target_mon_handle))
+        {
+            return Err(general_error("you cannot switch to an active mon"));
+        }
+        if context.player().choice.switch_ins.contains(&slot) {
+            return Err(general_error(format!(
+                "the mon in slot {slot} can only switch in once",
+            )));
         }
 
         let active_mon = context.mon(active_mon_handle)?;
@@ -1233,7 +1312,7 @@ impl Player {
         let position = Self::get_position_for_next_choice(context, !chosen_by_player)?;
         match context.player().request_type() {
             Some(RequestType::Switch) => {
-                if let Some(mon) = context.player().active_mon_handle(position) {
+                if let Some(mon) = context.player().active_or_exited_mon_handle(position) {
                     let mut context = context.mon_context(mon)?;
                     if context.mon().switch_state.needs_switch.is_some() {
                         if context.player().choice.forced_passes_left == 0 {
@@ -1260,7 +1339,20 @@ impl Player {
                 }
             }
             Some(RequestType::LearnMove) => (),
-            Some(RequestType::Select) => (),
+            Some(RequestType::Select) => {
+                if let Some(mon) = context.player().active_or_exited_mon_handle(position) {
+                    let mut context = context.mon_context(mon)?;
+                    if context.mon().volatile_state.select.is_some() {
+                        if context.player().choice.forced_passes_left == 0 {
+                            return Err(general_error(format!(
+                                "you must select a mon for {}",
+                                context.mon().name,
+                            )));
+                        }
+                        context.player_mut().choice.forced_passes_left -= 1;
+                    }
+                }
+            }
             _ => {
                 return Err(general_error("only a move or switch can be passed"));
             }
@@ -1484,7 +1576,7 @@ impl Player {
         if choice.dyna {
             context.player_mut().choice.dyna = true;
         }
-        if choice.dyna {
+        if choice.tera {
             context.player_mut().choice.tera = true;
         }
 
@@ -1584,8 +1676,8 @@ impl Player {
             _ => return Err(general_error("you cannot forfeit out of turn")),
         }
 
-        if Self::get_position_for_next_choice(context, false)? >= context.player().active.len() {
-            return Err(general_error("you sent more choices than active mons"));
+        if context.player().choice.forfeiting {
+            return Err(general_error("you are already forfeiting"));
         }
 
         let action = Action::Forfeit(ForfeitAction {
@@ -1811,11 +1903,23 @@ impl Player {
         let slot = match choice.mon {
             Some(mon) => mon,
             None => {
-                // Choose a random Mon.
+                // Choose a random Mon to select, excluding Mons we have already selected.
                 let player = context.player().index;
-                let switch_to = CoreBattle::random_mon(context.as_battle_context_mut(), player)?
-                    .wrap_expectation("no mons can be switched in at random")?;
-                context.mon(switch_to)?.team_position
+                let exclude = context
+                    .player()
+                    .choice
+                    .selections
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>();
+                let select = CoreBattle::random_selectable_excluding_team_positions(
+                    context.as_battle_context_mut(),
+                    player,
+                    reason.clone(),
+                    exclude,
+                )?
+                .wrap_expectation("no mons can be selected at random")?;
+                context.mon(select)?.team_position
             }
         };
         let target_mon_handle = context
@@ -1842,6 +1946,12 @@ impl Player {
             }
         }
 
+        if context.player().choice.selections.contains(&slot) {
+            return Err(general_error(format!(
+                "the mon in slot {slot} can only be selected once",
+            )));
+        }
+
         match context.player().request_type() {
             Some(RequestType::Select) => {
                 let player = context.player_mut();
@@ -1853,6 +1963,7 @@ impl Player {
             _ => (),
         }
 
+        context.player_mut().choice.selections.insert(slot);
         context
             .player_mut()
             .choice
@@ -1874,9 +1985,49 @@ impl Player {
                 },
             ),
             // Randomly switch in a Mon.
-            Some(RequestType::Switch) => Self::choose_switch(context, SwitchChoice::default()),
+            Some(RequestType::Switch) => {
+                let passes = context.player().choice.forced_passes_left;
+                let switches = context.player().choice.forced_switches_left;
+                let should_pass = if switches == 0 {
+                    true
+                } else if passes == 0 {
+                    false
+                } else {
+                    rand_util::chance(
+                        context.battle_mut().prng.as_mut(),
+                        passes as u64,
+                        (passes + switches) as u64,
+                    )
+                };
+
+                if should_pass {
+                    Self::choose_pass(context, false)
+                } else {
+                    Self::choose_switch(context, SwitchChoice::default())
+                }
+            }
             // Randomly select in a Mon.
-            Some(RequestType::Select) => Self::choose_select(context, SelectChoice::default()),
+            Some(RequestType::Select) => {
+                let passes = context.player().choice.forced_passes_left;
+                let selections = context.player().choice.forced_selections_left;
+                let should_pass = if selections == 0 {
+                    true
+                } else if passes == 0 {
+                    false
+                } else {
+                    rand_util::chance(
+                        context.battle_mut().prng.as_mut(),
+                        passes as u64,
+                        (passes + selections) as u64,
+                    )
+                };
+
+                if should_pass {
+                    Self::choose_pass(context, false)
+                } else {
+                    Self::choose_select(context, SelectChoice::default())
+                }
+            }
             // Auto-select first Mons.
             Some(RequestType::TeamPreview) => {
                 Self::choose_team(context, TeamSelectionChoice::default())
@@ -1948,6 +2099,9 @@ impl Player {
 
     /// Checks if the player needs to switch a Mon out.
     pub fn needs_switch(context: &PlayerContext) -> Result<bool> {
+        if context.player().escaped {
+            return Ok(false);
+        }
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.switch_state.needs_switch.is_some() {
                 return Ok(true);
@@ -1958,9 +2112,24 @@ impl Player {
 
     /// Checks if the player needs to select a Mon.
     pub fn needs_select(context: &PlayerContext) -> Result<bool> {
+        if context.player().escaped {
+            return Ok(false);
+        }
         for mon in context.player().active_or_exited_mon_handles() {
             if context.mon(*mon)?.volatile_state.select.is_some() {
                 return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Checks if the player can select.
+    pub fn can_select(context: &PlayerContext) -> Result<bool> {
+        for mon_handle in context.player().active_or_exited_mon_handles() {
+            if let Some(reason) = &context.mon(*mon_handle)?.volatile_state.select {
+                if Self::selectable_mon_handles(context, reason.clone()).count() > 0 {
+                    return Ok(true);
+                }
             }
         }
         Ok(false)

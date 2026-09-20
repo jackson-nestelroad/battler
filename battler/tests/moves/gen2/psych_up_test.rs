@@ -70,8 +70,8 @@ fn psych_up_copies_target_boosts() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Espeon,player-1,1|name:Psych Up|target:Espeon,player-2,1",
-            "copyboosts|mon:Espeon,player-1,1|of:Espeon,player-2,1",
-            "start|mon:Espeon,player-1,1|move:Focus Energy",
+            "copyboosts|mon:Espeon,player-1,1|source:Espeon,player-2,1",
+            "start|mon:Espeon,player-1,1|move:Focus Energy|silent",
             "residual",
             "turn|turn:5",
             "continue",

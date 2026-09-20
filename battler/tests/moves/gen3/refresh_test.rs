@@ -62,24 +62,24 @@ fn refresh_heals_user_status() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Swablu,player-1,1|name:Refresh|noanim",
-            "fail|mon:Swablu,player-1,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Swablu,player-2,1|name:Toxic|target:Swablu,player-1,1",
-            "status|mon:Swablu,player-1,1|status:Bad Poison",
-            "split|side:0",
-            "damage|mon:Swablu,player-1,1|from:status:Bad Poison|health:99/105",
-            "damage|mon:Swablu,player-1,1|from:status:Bad Poison|health:95/100",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Swablu,player-1,1|name:Refresh|target:Swablu,player-1,1",
-            "curestatus|mon:Swablu,player-1,1|status:Bad Poison",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "move|mon:Swablu,player-1,1|name:Refresh|noanim",
+                "fail|mon:Swablu,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Swablu,player-2,1|name:Toxic|target:Swablu,player-1,1",
+                "status|mon:Swablu,player-1,1|status:Bad Poison",
+                "residual",
+                "split|side:0",
+                "damage|mon:Swablu,player-1,1|from:status:Bad Poison|health:99/105",
+                "damage|mon:Swablu,player-1,1|from:status:Bad Poison|health:95/100",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Swablu,player-1,1|name:Refresh|target:Swablu,player-1,1",
+                "curestatus|mon:Swablu,player-1,1|status:Bad Poison",
+                "residual",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 const BOOST_RS = '/Users/jackson/Code/GitHub/pokemon/battler-data/src/moves/boost.rs';
 const TYPE_RS = '/Users/jackson/Code/GitHub/pokemon/battler-data/src/mons/type.rs';
@@ -53,7 +52,7 @@ const allVariants = [...new Set([...boostVariants, ...typeVariants])];
 console.log('Extracted variants:', allVariants);
 
 // Escape variants for regex
-const escapedVariants = allVariants.map(v => v.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
+const escapedVariants = allVariants.map(v => v.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
 
 // Read grammar
 const grammar = JSON.parse(fs.readFileSync(GRAMMAR_JSON, 'utf8'));

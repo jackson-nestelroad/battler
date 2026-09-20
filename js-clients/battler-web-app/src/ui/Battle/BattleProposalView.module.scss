@@ -1,0 +1,29 @@
+@use "../../styles/breakpoints" as *;
+
+.proposalCardWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  width: 100%;
+  padding: var(--spacing-l) 0;
+
+  & > :global(.card) {
+    max-width: rem(640px);
+    width: 100%;
+  }
+}
+
+.actionRow {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-m);
+}
+
+.detailsSection {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--spacing-m);
+  margin-top: var(--spacing-m);
+}

@@ -298,9 +298,13 @@ impl ProcedureManager {
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<()>>,
     {
+        let mut activated = false;
         if let Some(procedure) = context.procedure(procedure).await {
             let mut state = procedure.state.lock().await;
             state.active = true;
+            activated = true;
+        }
+        if activated {
             after_activation().await?;
         }
         Ok(())

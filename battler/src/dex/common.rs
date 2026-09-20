@@ -5,6 +5,7 @@ use anyhow::Result;
 use battler_data::{
     DataStore,
     Id,
+    ResourceType,
 };
 use zone_alloc::{
     BorrowError,
@@ -32,6 +33,9 @@ pub struct LookupAliasOutput<T> {
 /// Lookup methods are only called once for a given input ID. Afterwards, the created resource
 /// instance is cached for future lookups.
 pub trait ResourceLookup<'d, T> {
+    /// The resource type for alias resolution.
+    const RESOURCE_TYPE: ResourceType;
+
     /// Creates a new instance of the [`ResourceLookup`] implementation.
     ///
     /// The lookup instance can store the [`DataStore`] reference for looking up data.
@@ -152,7 +156,7 @@ where
 
     fn resolve_alias(&self, mut id: Id) -> Result<Id> {
         loop {
-            match self.data.translate_alias(&id) {
+            match self.data.translate_alias(L::RESOURCE_TYPE, &id) {
                 Ok(Some(alias)) => id = alias,
                 Ok(None) => return Ok(id),
                 Err(error) => {
@@ -245,6 +249,7 @@ mod dex_test {
     use battler_data::{
         DataStore,
         Id,
+        ResourceType,
     };
     use battler_test_utils::{
         local_data_store,
@@ -276,6 +281,8 @@ mod dex_test {
     }
 
     impl<'d> ResourceLookup<'d, TestData> for TestDataLookup {
+        const RESOURCE_TYPE: ResourceType = ResourceType::Move;
+
         fn new(_: &'d dyn DataStore) -> Self {
             Self {
                 lookup_calls: RefCell::new(HashMap::default()),
@@ -322,9 +329,15 @@ mod dex_test {
     #[test]
     fn resolves_alias() {
         let mut data = local_data_store();
-        data.aliases.insert(Id::from("alias3"), Id::from("alias2"));
-        data.aliases.insert(Id::from("alias2"), Id::from("alias1"));
-        data.aliases.insert(Id::from("alias1"), Id::from("native"));
+        data.aliases
+            .moves
+            .insert(Id::from("alias3"), Id::from("alias2"));
+        data.aliases
+            .moves
+            .insert(Id::from("alias2"), Id::from("alias1"));
+        data.aliases
+            .moves
+            .insert(Id::from("alias1"), Id::from("native"));
         let dex = TestDex::new(&data);
         let a = dex.get("alias3");
         let b = dex.get("alias3");

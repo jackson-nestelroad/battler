@@ -149,7 +149,7 @@ fn no_retreat_can_be_used_multiple_times_if_already_trapped() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Falinks,player-2,1|name:Mean Look|target:Falinks,player-1,1",
-            "activate|mon:Falinks,player-1,1|condition:Trapped",
+            "activate|mon:Falinks,player-1,1|condition:Trapped|of:Falinks,player-2,1",
             "residual",
             "turn|turn:2",
             "continue",

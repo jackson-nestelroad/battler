@@ -23,7 +23,13 @@ async fn completes_battle() {
 async fn participates_in_fuzz_test_battle() {
     battler_test_utils::collect_logs();
     let store = battler_test_utils::static_local_data_store();
-    let options = battler_fuzz_test_generator::generate_random_battle(store, None).unwrap();
+    let options = battler_fuzz_test_generator::generate_random_battle(
+        store,
+        battler::BattleType::Doubles,
+        4,
+        None,
+    )
+    .unwrap();
     let seed = options.seed.unwrap_or(0);
     log::info!(
         "Fuzz test {} started with seed: {seed}",

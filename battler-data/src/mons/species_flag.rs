@@ -8,6 +8,8 @@ use serde_string_enum::{
 #[derive(
     Debug, Clone, PartialEq, Eq, Hash, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum SpeciesFlag {
     #[string = "SubLegendary"]
     #[alias = "Sub-Legendary"]

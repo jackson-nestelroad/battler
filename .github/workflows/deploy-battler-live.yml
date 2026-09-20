@@ -1,0 +1,131 @@
+name: Deploy battler.live
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to deploy (e.g. battler-live-v0.2.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy-game-server:
+    name: Promote Game Server to Production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Retag Server Image to :prod in GHCR
+        run: |
+          echo "Promoting ghcr.io/${{ github.repository }}-server:${{ inputs.release_tag }} to :prod..."
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}-server:prod \
+            ghcr.io/${{ github.repository }}-server:${{ inputs.release_tag }}
+          echo "Successfully promoted to :prod. Watchtower on the VM will detect and update."
+
+  deploy-bug-reporter:
+    name: Deploy Bug Reporter to Cloud Run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: battler-bug-reporter
+          region: us-central1
+          image: ghcr.io/${{ github.repository }}-bug-reporter:${{ inputs.release_tag }}
+
+  deploy-web-app:
+    name: Build & Deploy Web App to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+
+      - name: Build WASM and TS Bindings
+        uses: ./.github/actions/build-wasm-and-bindings
+
+      - name: Build Web App Dependencies
+        run: npm run build:web-app-deps
+
+      - name: Build battler-web-app
+        run: npm run build:web-app
+        env:
+          VITE_SERVER_URL: "ws.battler.live"
+          VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
+
+      - name: Deploy to Vercel
+        run: |
+          cp js-clients/battler-web-app/vercel.json js-clients/battler-web-app/dist/vercel.json
+          npx --yes vercel deploy --cwd js-clients/battler-web-app/dist --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  verify-production:
+    name: Post-Deployment Smoke Verification
+    runs-on: ubuntu-latest
+    needs: [deploy-game-server, deploy-bug-reporter, deploy-web-app]
+
+    steps:
+      - name: Verify Web App & Services
+        run: |
+          echo "### 🚀 Release ${{ inputs.release_tag }} Deployed to Production!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Endpoint | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+
+          WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://battler.live || echo "Error")
+          if [ "$WEB_STATUS" = "200" ]; then
+            WEB_RESULT="HTTP 200 ✅"
+          else
+            WEB_RESULT="HTTP ${WEB_STATUS} ⚠️"
+          fi
+          echo "| **Frontend** | https://battler.live | ${WEB_RESULT} |" >> $GITHUB_STEP_SUMMARY
+
+          WS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ws.battler.live || echo "Error")
+          if [ "$WS_STATUS" = "400" ] || [ "$WS_STATUS" = "426" ] || [ "$WS_STATUS" = "200" ]; then
+            WS_RESULT="Active ✅ (HTTP ${WS_STATUS})"
+          elif [ "$WS_STATUS" = "502" ]; then
+            WS_RESULT="Starting up ⏳ (HTTP 502 - Watchtower pulling :prod)"
+          else
+            WS_RESULT="Warning ⚠️ (HTTP ${WS_STATUS})"
+          fi
+          echo "| **Game Server** | wss://ws.battler.live | ${WS_RESULT} |" >> $GITHUB_STEP_SUMMARY
+
+          BUG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bugs.battler.live/health || echo "Error")
+          if [ "$BUG_STATUS" = "200" ]; then
+            BUG_RESULT="Active ✅"
+          else
+            BUG_RESULT="Warning ⚠️ (HTTP ${BUG_STATUS})"
+          fi
+          echo "| **Bug Reporter** | https://bugs.battler.live/health | ${BUG_RESULT} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "VM Watchtower will pick up the updated \`:prod\` image within 120s." >> $GITHUB_STEP_SUMMARY

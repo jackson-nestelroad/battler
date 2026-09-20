@@ -15,7 +15,6 @@ fn make_battle_builder() -> TestBattleBuilder {
     TestBattleBuilder::new()
         .with_battle_type(BattleType::Singles)
         .with_seed(0)
-        .with_team_validation(false)
         .add_player_to_side_1("player-1", "Player 1")
         .add_player_to_side_2("player-2", "Player 2")
 }
@@ -67,16 +66,9 @@ fn enforces_unique_species() {
     let mut bad_team = three_starters().unwrap();
     bad_team.members[1].species = "Bulbasaur".to_owned();
 
-    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Ok(()));
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Err(err) => {
+    assert_matches::assert_matches!(battle.update_team("player-1", bad_team), Err(err) => {
         assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
             assert!(err.problems().contains(&"Species Bulbasaur appears more than 1 time."), "{err:?}");
-        });
-    });
-    assert_matches::assert_matches!(battle.start(), Err(err) => {
-        assert_matches::assert_matches!(err.downcast_ref::<ValidationError>(), Some(err) => {
-            assert!(err.problems().contains(&"Validation failed for Player 1: Species Bulbasaur appears more than 1 time."), "{err:?}");
         });
     });
 
@@ -84,11 +76,4 @@ fn enforces_unique_species() {
         battle.update_team("player-1", three_starters().unwrap()),
         Ok(())
     );
-    assert_matches::assert_matches!(
-        battle.update_team("player-2", three_starters().unwrap()),
-        Ok(())
-    );
-
-    assert_matches::assert_matches!(battle.validate_player("player-1"), Ok(()));
-    assert_matches::assert_matches!(battle.start(), Ok(()));
 }

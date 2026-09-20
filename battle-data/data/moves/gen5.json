@@ -240,7 +240,7 @@
       "callbacks": {
         "on_try_use_move": [
           "if func_call(has_pseudo_weather: gravity):",
-          ["log_cant", "return stopfail"]
+          ["log_cant: with_move", "return stopfail"]
         ]
       }
     },
@@ -950,6 +950,9 @@
             "# Ensure we are targeting the original target.",
             "$immobilizing_effect_state = func_call(volatile_status_effect_state: $source immobilizingmove)",
             "require $immobilizing_effect_state.is_defined and $target == $immobilizing_effect_state.source",
+            "$target_immobilized_effect_state = func_call(volatile_status_effect_state: $target immobilized)",
+            "if $target_immobilized_effect_state.is_defined:",
+            ["$target_immobilized_effect_state.hit = true"],
             "remove_volatile: $source immobilizingmove"
           ],
           "else:",
@@ -1134,7 +1137,7 @@
         ],
         "on_hit": [
           "require !!assign($item = func_call(take_item: $source))",
-          "return func_call(set_item: $target $item)"
+          "return func_call(set_item: $target $item $source)"
         ]
       }
     }

@@ -77,18 +77,18 @@ fn swift_swim_boosts_speed_in_rain() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Psyduck,player-1,1|name:Tackle|target:Poliwag,player-2,1",
-            "split|side:1",
-            "damage|mon:Poliwag,player-2,1|health:77/100",
-            "damage|mon:Poliwag,player-2,1|health:77/100",
-            "move|mon:Poliwag,player-2,1|name:Tackle|target:Psyduck,player-1,1",
-            "split|side:0",
-            "damage|mon:Psyduck,player-1,1|health:92/110",
-            "damage|mon:Psyduck,player-1,1|health:84/100",
-            "weather|weather:Rain|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Psyduck,player-1,1|name:Tackle|target:Poliwag,player-2,1",
+                "split|side:1",
+                "damage|mon:Poliwag,player-2,1|health:77/100",
+                "damage|mon:Poliwag,player-2,1|health:77/100",
+                "move|mon:Poliwag,player-2,1|name:Tackle|target:Psyduck,player-1,1",
+                "split|side:0",
+                "damage|mon:Psyduck,player-1,1|health:92/110",
+                "damage|mon:Psyduck,player-1,1|health:84/100",
+                "residual",
+                "weather|weather:Rain|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

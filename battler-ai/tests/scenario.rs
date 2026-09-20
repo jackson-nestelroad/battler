@@ -31,7 +31,6 @@ use battler_service::{
     BattlePreview,
     BattleServiceOptions,
     BattlerService,
-    PlayerValidation,
 };
 use battler_service_client::BattlerServiceClient;
 use battler_test_utils::static_local_data_store;
@@ -172,11 +171,24 @@ impl<'d> Scenario<'d> {
             .player_data(self.battle.uuid, player.as_ref())
             .await?;
         let state = client.state().await;
+        let mut allies = Vec::new();
+        if let Some(side) = state.field.sides.get(player_data.side) {
+            for (player_id, _) in &side.players {
+                if player_id != player.as_ref() {
+                    allies.push(
+                        self.service
+                            .player_data(self.battle.uuid, player_id)
+                            .await?,
+                    );
+                }
+            }
+        }
         Ok(AiContext {
             data: self.data_store,
             battle: client.battle(),
             state,
             player_data,
+            allies,
             choice_failures: HashSet::default(),
             make_choice_failures: Vec::default(),
         })
@@ -314,9 +326,7 @@ impl<'a> BattlerServiceClient for ChoiceRecordingServiceClient<'a> {
     ) -> Result<()> {
         self.inner.update_team(battle, player, team).await
     }
-    async fn validate_player(&self, battle: uuid::Uuid, player: &str) -> Result<PlayerValidation> {
-        self.inner.validate_player(battle, player).await
-    }
+
     async fn start(&self, battle: uuid::Uuid) -> Result<()> {
         self.inner.start(battle).await
     }

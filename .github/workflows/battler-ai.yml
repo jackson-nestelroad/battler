@@ -10,6 +10,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   DATA_DIR: ${{ github.workspace }}/battle-data/data
+  DESCRIPTIONS_DIR: ${{ github.workspace }}/battle-data/descriptions
   CRATE_ROOT: ${{ github.workspace }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 

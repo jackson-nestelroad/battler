@@ -3,6 +3,7 @@ use battler_data::{
     DataStore,
     Id,
     MoveData,
+    ResourceType,
 };
 
 use crate::{
@@ -22,6 +23,8 @@ pub struct MoveLookup<'d> {
 }
 
 impl<'d> ResourceLookup<'d, MoveData> for MoveLookup<'d> {
+    const RESOURCE_TYPE: ResourceType = ResourceType::Move;
+
     fn new(data: &'d dyn DataStore) -> Self {
         Self { data }
     }

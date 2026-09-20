@@ -1,4 +1,8 @@
-use std::time::Duration;
+use std::{
+    pin::Pin,
+    task,
+    time::Duration,
+};
 
 use anyhow::{
     Error,
@@ -8,7 +12,10 @@ use futures_util::{
     SinkExt,
     StreamExt,
 };
-use log::error;
+use log::{
+    error,
+    warn,
+};
 use tokio::{
     sync::{
         broadcast,
@@ -21,6 +28,10 @@ use crate::{
     core::{
         error::InteractionError,
         peer_info::ConnectionType,
+        rate_limiter::{
+            RateLimitError,
+            TokenBucketRateLimiter,
+        },
         stream::{
             MessageStream,
             StreamMessage,
@@ -31,6 +42,50 @@ use crate::{
         message::Message,
     },
 };
+
+struct StreamWrapper {
+    inner: Box<dyn MessageStream>,
+}
+
+impl futures_util::Stream for StreamWrapper {
+    type Item = Result<StreamMessage>;
+
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Option<Self::Item>> {
+        Pin::new(&mut *self.inner).poll_next(cx)
+    }
+}
+
+impl futures_util::Sink<StreamMessage> for StreamWrapper {
+    type Error = Error;
+
+    fn poll_ready(
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.inner).poll_ready(cx)
+    }
+
+    fn start_send(mut self: Pin<&mut Self>, item: StreamMessage) -> Result<(), Self::Error> {
+        Pin::new(&mut *self.inner).start_send(item)
+    }
+
+    fn poll_flush(
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.inner).poll_flush(cx)
+    }
+
+    fn poll_close(
+        mut self: Pin<&mut Self>,
+        cx: &mut task::Context<'_>,
+    ) -> task::Poll<Result<(), Self::Error>> {
+        Pin::new(&mut *self.inner).poll_close(cx)
+    }
+}
 
 /// A handle to an asynchronously-running [`Service`].
 pub struct ServiceHandle {
@@ -52,24 +107,13 @@ impl ServiceHandle {
         self.cancel_tx.send(()).map(|_| ()).map_err(Error::new)
     }
 
-    /// The message transmission channel.
+    /// The message sender channel.
     pub fn message_tx(&self) -> mpsc::Sender<Message> {
         self.message_tx.clone()
     }
 }
 
-/// The core asynchronous service that sends and receives WAMP messages over an underlying
-/// transport.
-///
-/// The goal of this module is to provide a common layer for WAMP messaging. Received messages are
-/// passed to a channel for higher layers (such as a single session on a router or a peer) to
-/// process.
-///
-/// This type assumes that errors are handled higher up in the stack. In other words, canceling the
-/// operation of this service *will not* inject an ABORT message. If a router wishes to cancel a
-/// session, the session object itself should be canceled, and it's expected that the session sends
-/// ABORT before canceling the service. The same applies for peers: the peer should inject an ABORT
-/// message when canceled before canceling the service.
+/// An abstraction over a message stream for sending and receiving messages.
 pub struct Service {
     name: String,
     stream: Box<dyn MessageStream>,
@@ -81,15 +125,22 @@ pub struct Service {
 
     user_message_tx: mpsc::Sender<Message>,
     user_message_rx: mpsc::Receiver<Message>,
+    rate_limiter: TokenBucketRateLimiter,
+    idle_timeout: Option<Duration>,
 }
 
 impl Service {
     /// Creates a new service over a message stream.
-    pub fn new(name: String, stream: Box<dyn MessageStream>) -> Self {
-        let (message_tx, _) = broadcast::channel(48);
+    pub(crate) fn new(
+        name: String,
+        stream: Box<dyn MessageStream>,
+        rate_limiter: Option<TokenBucketRateLimiter>,
+        idle_timeout: Option<Duration>,
+    ) -> Self {
+        let (message_tx, _) = broadcast::channel(4096);
         let (end_tx, end_rx) = broadcast::channel(1);
         let (cancel_tx, cancel_rx) = broadcast::channel(1);
-        let (user_message_tx, user_message_rx) = mpsc::channel(48);
+        let (user_message_tx, user_message_rx) = mpsc::channel(4096);
         Self {
             name,
             stream,
@@ -100,6 +151,8 @@ impl Service {
             cancel_rx,
             user_message_tx,
             user_message_rx,
+            rate_limiter: rate_limiter.unwrap_or_default(),
+            idle_timeout,
         }
     }
 
@@ -133,27 +186,59 @@ impl Service {
         }
     }
 
-    async fn run(mut self) {
-        if let Err(err) = self.service_loop().await {
-            error!("Service {} failed: {err}", self.name);
-        }
-        if let Err(err) = self.end().await {
-            error!("Failed to end service {}: {err}", self.name);
-        }
-    }
+    async fn run(self) {
+        let mut rate_limiter = self.rate_limiter;
+        let idle_timeout = self.idle_timeout;
 
-    async fn service_loop(&mut self) -> Result<()> {
+        let wrapper = StreamWrapper { inner: self.stream };
+        let (mut stream_sink, mut stream_stream) = wrapper.split();
+        let (write_tx, mut write_rx) = mpsc::channel(4096);
+
+        // Spawn the writer task to handle sending asynchronously.
+        let name_clone = self.name.clone();
+        let writer_handle = tokio::spawn(async move {
+            while let Some(msg) = write_rx.recv().await {
+                if let Err(err) = stream_sink.send(msg).await {
+                    error!("Service {name_clone} writer error: {err:#}");
+                    break;
+                }
+            }
+            // Close the sink cleanly on exit.
+            tokio::time::timeout(Duration::from_millis(500), stream_sink.close())
+                .await
+                .ok();
+        });
+
+        let mut result = Ok(());
+        let mut cancel_rx = self.cancel_rx;
+        let mut user_message_rx = self.user_message_rx;
+        let message_tx = self.message_tx.clone();
+
         loop {
             tokio::select! {
-                message = self.stream.next() => {
+                message = stream_stream.next() => {
                     match message {
                         Some(Ok(StreamMessage::Ping(data))) => {
                             // Ping the message back.
-                            self.stream.send(StreamMessage::Ping(data)).await?;
+                            if write_tx.send(StreamMessage::Ping(data)).await.is_err() {
+                                break;
+                            }
                         },
                         Some(Ok(StreamMessage::Message(message))) => {
+                            if !rate_limiter.try_acquire() {
+                                warn!(
+                                    "Service {}: message rate limit exceeded, terminating connection",
+                                    self.name
+                                );
+                                let abort_msg = abort_message_for_error(&RateLimitError.into());
+                                let _ = write_tx.send(StreamMessage::Message(abort_msg)).await;
+                                result = Err(RateLimitError.into());
+                                break;
+                            }
                             // Send the message out for handling.
-                            self.message_tx.send(message)?;
+                            if message_tx.send(message).is_err() {
+                                break;
+                            }
                         }
                         Some(Err(err)) => {
                             // Failed to parse the message.
@@ -161,47 +246,55 @@ impl Service {
                             // Inject an ABORT message at this layer, since the stream will be abruptly closed, and we have no way of determining what the downstream intent was.
                             //
                             // Ignore the error because the stream may be closed.
-                            self.stream.send(StreamMessage::Message(abort_message_for_error(&InteractionError::ProtocolViolation("stream abruptly closed".to_owned()).into()))).await.ok();
-                            return Err(err);
+                            let abort_msg = abort_message_for_error(&InteractionError::ProtocolViolation("stream abruptly closed".to_owned()).into());
+                            let _ = write_tx.send(StreamMessage::Message(abort_msg)).await;
+                            result = Err(err);
+                            break;
                         }
                         None => {
-                            return Ok(());
+                            break;
                         }
                     }
                 }
-                message = self.user_message_rx.recv() => {
+                message = user_message_rx.recv() => {
                     match message {
                         Some(message) => {
-                            self.stream.send(StreamMessage::Message(message)).await?;
+                            if write_tx.send(StreamMessage::Message(message)).await.is_err() {
+                                break;
+                            }
                         }
                         None => {
-                            return Err(Error::msg("user message stream closed"));
+                            result = Err(Error::msg("user message stream closed"));
+                            break;
                         }
                     }
                 }
                 // We expect that cancellation is the correct way to cleanly exit the service.
-                _ = self.cancel_rx.recv() => {
-                    return Ok(());
+                _ = cancel_rx.recv() => {
+                    break;
                 }
                 // Timeout is implemented at this layer so that ping messages are considered
                 // for keeping the connection alive.
-                //
-                // Notice that we do not close the connection nicely.
-                _ = tokio::time::sleep(Duration::from_secs(300)) => {
-                    return Err(Error::msg("timed out"));
+                _ = async {
+                    match idle_timeout {
+                        Some(timeout) => tokio::time::sleep(timeout).await,
+                        None => std::future::pending().await,
+                    }
+                } => {
+                    result = Err(Error::msg("timed out"));
+                    break;
                 }
             }
         }
-    }
 
-    async fn end(&mut self) -> Result<()> {
-        // Ignore error with the stream, since it may already be closed.
-        // Set a short timeout on the close handshake to prevent deadlocks if the peer is
-        // dead/unresponsive.
-        tokio::time::timeout(Duration::from_millis(500), self.stream.close())
-            .await
-            .ok();
-        self.end_tx.send(())?;
-        Ok(())
+        // Clean up: drop write_tx so that the writer task terminates, then wait for the writer task
+        // to exit.
+        drop(write_tx);
+        let _ = writer_handle.await;
+
+        if let Err(err) = result {
+            error!("Service {} failed: {err}", self.name);
+        }
+        let _ = self.end_tx.send(());
     }
 }

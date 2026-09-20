@@ -57,15 +57,15 @@ fn toxic_thread_poistons_and_lowers_speed() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Incineroar,player-1,1|name:Toxic Thread|target:Incineroar,player-2,1",
-            "unboost|mon:Incineroar,player-2,1|stat:spe|by:1",
-            "status|mon:Incineroar,player-2,1|status:Poison",
-            "split|side:1",
-            "damage|mon:Incineroar,player-2,1|from:status:Poison|health:263/300",
-            "damage|mon:Incineroar,player-2,1|from:status:Poison|health:88/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Incineroar,player-1,1|name:Toxic Thread|target:Incineroar,player-2,1",
+                "unboost|mon:Incineroar,player-2,1|stat:spe|by:1",
+                "status|mon:Incineroar,player-2,1|status:Poison",
+                "residual",
+                "split|side:1",
+                "damage|mon:Incineroar,player-2,1|from:status:Poison|health:263/300",
+                "damage|mon:Incineroar,player-2,1|from:status:Poison|health:88/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

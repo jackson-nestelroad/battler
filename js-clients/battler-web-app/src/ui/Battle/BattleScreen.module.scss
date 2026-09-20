@@ -1,0 +1,103 @@
+@use "../../styles/breakpoints" as *;
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: var(--font-size-l);
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  gap: var(--spacing-s);
+
+  @include mobile {
+    gap: var(--spacing-xs);
+  }
+}
+
+.debugJsonContainer {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  overflow: auto;
+  min-height: 0;
+}
+
+.debugJson {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-info);
+  white-space: pre;
+  margin: 0;
+}
+
+.debugContainer {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Note: debugTabs and debugTabBtn styles have been removed in favor of global .tabs-row and .tab-btn */
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 1fr rem(360px);
+  gap: var(--spacing-l);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  @include tablet {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+
+.leftColumn {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs);
+}
+
+.rightColumn {
+  height: 100%;
+  min-height: 0;
+}
+
+.detailsToggle {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: none;
+  }
+}
+
+.detailsDropdown {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  padding: var(--spacing-m);
+  margin-bottom: var(--spacing-m);
+  box-shadow: var(--shadow-md);
+}
+
+.errorCard {
+  max-width: rem(480px);
+  width: 100%;
+}
+

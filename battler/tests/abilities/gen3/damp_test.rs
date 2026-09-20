@@ -61,7 +61,7 @@ fn damp_prevents_self_destruct_moves() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Squirtle,player-2,1|name:Explosion|noanim",
-            "cant|mon:Squirtle,player-2,1|from:ability:Damp|of:Squirtle,player-1,1",
+            "cant|mon:Squirtle,player-2,1|move:Explosion|from:ability:Damp|of:Squirtle,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

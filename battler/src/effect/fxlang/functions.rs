@@ -269,6 +269,8 @@ pub fn run_function(
         "log_side_start" => log_side_start(context).map(|()| None),
         "log_single_move" => log_single_move(context).map(|()| None),
         "log_single_turn" => log_single_turn(context).map(|()| None),
+        "log_slot_end" => log_slot_end(context).map(|()| None),
+        "log_slot_start" => log_slot_start(context).map(|()| None),
         "log_start" => log_start(context).map(|()| None),
         "log_status" => log_status(context).map(|()| None),
         "log_use_move" => log_use_move(context).map(|()| None),
@@ -350,6 +352,7 @@ pub fn run_function(
         "set_item" => set_item(context).map(|val| Some(val)),
         "set_needs_switch" => set_needs_switch(context).map(|()| None),
         "set_pp" => set_pp(context).map(|val| Some(val)),
+        "set_stat" => set_stat(context).map(|val| Some(val)),
         "set_status" => set_status(context).map(|val| Some(val)),
         "set_types" => set_types(context).map(|val| Some(val)),
         "set_terrain" => set_terrain(context).map(|val| Some(val)),
@@ -632,6 +635,10 @@ impl<'eval, 'effect, 'context, 'battle, 'data>
 
     fn set_use_target_as_source(&mut self, val: bool) {
         self.set_flag("use_target_as_source", val)
+    }
+
+    fn with_move(&mut self) -> bool {
+        self.has_flag("with_move")
     }
 
     fn with_source(&mut self) -> bool {
@@ -1040,6 +1047,7 @@ fn log(mut context: FunctionContext) -> Result<()> {
 #[derive(Default)]
 struct LogEffectActivationBaseContext {
     include_side: bool,
+    slot: Option<usize>,
     additional: Vec<String>,
 }
 
@@ -1065,8 +1073,9 @@ fn log_effect_activation_base(
         } else {
             None
         },
+        slot: activation_base_context.slot,
         target,
-        ignore_active_move_source_effect: true,
+        ignore_active_move_source_effect: !context.has_flag("no_ignore_active_move_source_effect"),
         ignore_source_effect_equal_to_effect: true,
         source_effect: if context.with_source_effect() {
             context.set_with_source(true);
@@ -1257,6 +1266,48 @@ fn log_side_end(context: FunctionContext) -> Result<()> {
     )
 }
 
+/// Logs the start of a slot condition to the battle log.
+///
+/// @param {[`ValueType::UFraction`]} slot The slot index.
+/// @param {[`ValueType::String`]} ... Additional log entries.
+fn log_slot_start(mut context: FunctionContext) -> Result<()> {
+    let slot = context
+        .pop_front()
+        .wrap_expectation("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    log_effect_activation_base(
+        context,
+        "slotstart",
+        LogEffectActivationBaseContext {
+            include_side: true,
+            slot: Some(slot),
+            ..Default::default()
+        },
+    )
+}
+
+/// Logs the end of a slot condition to the battle log.
+///
+/// @param {[`ValueType::UFraction`]} slot The slot index.
+/// @param {[`ValueType::String`]} ... Additional log entries.
+fn log_slot_end(mut context: FunctionContext) -> Result<()> {
+    let slot = context
+        .pop_front()
+        .wrap_expectation("missing slot")?
+        .integer_usize()
+        .wrap_error_with_message("invalid slot")?;
+    log_effect_activation_base(
+        context,
+        "slotend",
+        LogEffectActivationBaseContext {
+            include_side: true,
+            slot: Some(slot),
+            ..Default::default()
+        },
+    )
+}
+
 /// Logs the start of a field effect to the battle log.
 ///
 /// @param {[`ValueType::String`]} ... Additional log entries.
@@ -1314,12 +1365,13 @@ fn log_prepare_move(mut context: FunctionContext) -> Result<()> {
 /// @param {[`ValueType::String`]} ... Additional log entries.
 fn log_cant(mut context: FunctionContext) -> Result<()> {
     let effect = context.effect_handle()?;
+    let with_move = context.with_move();
     let source = if context.with_source() {
         context.source_handle_no_forwarding()
     } else {
         None
     };
-    core_battle_logs::cant(&mut context.target_context()?, effect, source)
+    core_battle_logs::cant(&mut context.target_context()?, effect, with_move, source)
 }
 
 /// Logs a status change to the battle log.
@@ -1350,16 +1402,22 @@ fn log_status(mut context: FunctionContext) -> Result<()> {
 ///
 /// @param {[`ValueType::String`]} [weather] The weather ID.
 fn log_weather(mut context: FunctionContext) -> Result<()> {
-    let (title, mut additional) = match context.pop_front() {
-        Some(value) => (
-            "weather",
-            Vec::from_iter([format!(
-                "weather:{}",
-                value.string().wrap_error_with_message("invalid weather")?
-            )]),
-        ),
-        None => ("clearweather", Vec::default()),
-    };
+    let mut title = "weather";
+    let mut additional = Vec::new();
+
+    if let Some(value) = context.pop_front() {
+        additional.push(format!(
+            "weather:{}",
+            value.string().wrap_error_with_message("invalid weather")?
+        ));
+    } else {
+        title = "clearweather";
+    }
+
+    if context.has_flag("clear") {
+        title = "clearweather";
+    }
+
     if context.has_flag("residual") {
         additional.push("residual".to_owned());
     }
@@ -2452,10 +2510,10 @@ fn get_boost(mut context: FunctionContext) -> Result<Value> {
 
 /// Sets a boost value in a boost table.
 ///
-/// @param {[`ValueType::Object`]} boosts The boost table.
-/// @param {[`ValueType::Stat`]} boost The stat to boost.
+/// @param {[`ValueType::BoostTable`]} boosts The boost table.
+/// @param {[`ValueType::Boost`]} boost The stat to boost.
 /// @param {[`ValueType::Fraction`]} value The boost value.
-/// @returns {[`ValueType::Object`]} The modified boost table.
+/// @returns {[`ValueType::BoostTable`]} The modified boost table.
 fn set_boost(mut context: FunctionContext) -> Result<Value> {
     let mut boosts = context
         .pop_front()
@@ -2474,6 +2532,32 @@ fn set_boost(mut context: FunctionContext) -> Result<Value> {
         .wrap_error_with_message("invalid boost value")?;
     boosts.set(boost, value);
     Ok(Value::BoostTable(boosts))
+}
+
+/// Sets a stat value in a stat table.
+///
+/// @param {[`ValueType::StatTable`]} stats The stat table.
+/// @param {[`ValueType::Stat`]} stat The stat to modify.
+/// @param {[`ValueType::Fraction`]} value The stat value.
+/// @returns {[`ValueType::StatTable`]} The modified stat table.
+fn set_stat(mut context: FunctionContext) -> Result<Value> {
+    let mut stats = context
+        .pop_front()
+        .wrap_expectation("missing stats")?
+        .stat_table()
+        .wrap_error_with_message("invalid stats")?;
+    let stat = context
+        .pop_front()
+        .wrap_expectation("missing stat")?
+        .stat()
+        .wrap_error_with_message("invalid stat")?;
+    let value = context
+        .pop_front()
+        .wrap_expectation("missing stat value")?
+        .integer_u16()
+        .wrap_error_with_message("invalid stat value")?;
+    stats.set(stat, value);
+    Ok(Value::StatTable(stats))
 }
 
 /// Checks if a Mon has a specific type.
@@ -4542,11 +4626,19 @@ fn set_item(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing item")?
         .item_id()
         .wrap_error_with_message("invalid item")?;
+    let item_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     let dry_run = context.has_flag("dry_run");
 
     core_battle_actions::set_item(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &item,
+        item_source,
         dry_run,
     )
     .map(|val| Value::EventResult(val))
@@ -4677,6 +4769,7 @@ fn valid_target(mut context: FunctionContext) -> Result<Value> {
 ///
 /// @param {[`ValueType::Mon`]} [mon] The Mon to modify.
 /// @param {[`ValueType::String`] | [`ValueType::Effect`]} ability The new ability ID.
+/// @param {[`ValueType::Mon`]} [source] The source of the copied ability.
 /// @flag dry_run If set, the ability is not actually changed.
 /// @flag silent If set, no message is displayed.
 /// @returns {[`ValueType::EventResult`]} Whether the ability was successfully set.
@@ -4689,9 +4782,17 @@ fn set_ability(mut context: FunctionContext) -> Result<Value> {
         .wrap_expectation("missing ability")?
         .ability_id()
         .wrap_error_with_message("invalid ability")?;
+    let ability_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     core_battle_actions::set_ability(
         &mut context.forward_to_applying_effect_context_with_target(mon)?,
         &ability_id,
+        ability_source,
         dry_run,
         false,
         silent,
@@ -5316,6 +5417,7 @@ fn start_ability(mut context: FunctionContext) -> Result<()> {
     let silent = context.silent();
     core_battle_actions::start_ability(
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        None,
         silent,
     )
 }
@@ -5338,8 +5440,16 @@ fn end_ability(mut context: FunctionContext) -> Result<()> {
 fn start_item(mut context: FunctionContext) -> Result<()> {
     let target_handle = context.target_handle_positional()?;
     let silent = context.silent();
+    let item_source = match context.front() {
+        Some(val) if val.value_type() == ValueType::Mon => context
+            .pop_front()
+            .map(|val| val.mon_handle().ok())
+            .flatten(),
+        _ => None,
+    };
     core_battle_actions::start_item(
         &mut context.forward_to_applying_effect_context_with_target(target_handle)?,
+        item_source,
         silent,
     )
 }

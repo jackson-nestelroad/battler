@@ -3,6 +3,7 @@ use battler_data::{
     DataStore,
     Id,
     ItemData,
+    ResourceType,
 };
 
 use crate::{
@@ -22,6 +23,8 @@ pub struct ItemLookup<'d> {
 }
 
 impl<'d> ResourceLookup<'d, ItemData> for ItemLookup<'d> {
+    const RESOURCE_TYPE: ResourceType = ResourceType::Item;
+
     fn new(data: &'d dyn DataStore) -> Self {
         Self { data }
     }

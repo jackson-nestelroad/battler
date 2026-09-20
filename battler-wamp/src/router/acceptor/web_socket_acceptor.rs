@@ -103,7 +103,17 @@ impl Acceptor<WebSocketStream<MaybeTlsStream<TcpStream>>> for WebSocketAcceptor 
         stream: MaybeTlsStream<TcpStream>,
     ) -> Result<Acceptance<WebSocketStream<MaybeTlsStream<TcpStream>>>> {
         let mut negotiator = WebSocketWampNegotiator::new(&context.router().config);
-        let stream = tokio_tungstenite::accept_hdr_async(stream, negotiator.callback()).await?;
+        let limits = &context.router().config.limits;
+        let mut ws_config = tokio_tungstenite::tungstenite::protocol::WebSocketConfig::default();
+        ws_config.max_message_size = Some(limits.max_message_size_bytes);
+        ws_config.max_frame_size = Some(limits.max_frame_size_bytes);
+
+        let stream = tokio_tungstenite::accept_hdr_async_with_config(
+            stream,
+            negotiator.callback(),
+            Some(ws_config),
+        )
+        .await?;
         let protocol = match negotiator.selected_protocol {
             Some(protocol) => protocol,
             None => return Err(Error::msg("expected protocol after negotiation")),

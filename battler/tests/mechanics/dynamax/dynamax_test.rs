@@ -5,6 +5,7 @@ use battler::{
     CoreBattleEngineSpeedSortTieResolution,
     Id,
     MonMoveSlotData,
+    MoveCategory,
     MoveTarget,
     PublicCoreBattle,
     Request,
@@ -129,6 +130,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("tackle"),
                 name: "Tackle".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::Normal,
@@ -138,6 +140,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("toxic"),
                 name: "Toxic".to_owned(),
+                category: MoveCategory::Status,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::Normal,
@@ -147,6 +150,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("dynamaxcannon"),
                 name: "Dynamax Cannon".to_owned(),
+                category: MoveCategory::Special,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::Normal,
@@ -158,6 +162,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxstrike"),
                 name: "Max Strike".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 35,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
@@ -167,6 +172,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 10,
                 max_pp: 10,
                 target: MoveTarget::User,
@@ -176,6 +182,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxwyrmwind"),
                 name: "Max Wyrmwind".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
@@ -234,6 +241,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("tackle"),
                 name: "Tackle".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::Normal,
@@ -243,6 +251,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("toxic"),
                 name: "Toxic".to_owned(),
+                category: MoveCategory::Status,
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::Normal,
@@ -252,6 +261,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("dynamaxcannon"),
                 name: "Dynamax Cannon".to_owned(),
+                category: MoveCategory::Special,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::Normal,
@@ -263,6 +273,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxstrike"),
                 name: "Max Strike".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 34,
                 max_pp: 35,
                 target: MoveTarget::AdjacentFoe,
@@ -272,6 +283,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxguard"),
                 name: "Max Guard".to_owned(),
+                category: MoveCategory::Status,
                 pp: 9,
                 max_pp: 10,
                 target: MoveTarget::User,
@@ -281,6 +293,7 @@ fn one_mon_can_dynamax_and_use_max_moves() {
             MonMoveSlotData {
                 id: Id::from("maxwyrmwind"),
                 name: "Max Wyrmwind".to_owned(),
+                category: MoveCategory::Physical,
                 pp: 5,
                 max_pp: 5,
                 target: MoveTarget::AdjacentFoe,
@@ -389,28 +402,28 @@ fn dynamax_ends_after_three_turns() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "dynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:210/210",
-            "sethp|mon:Venusaur,player-1,1|health:100/100",
-            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
-            "split|side:1",
-            "damage|mon:Venusaur,player-2,1|health:99/140",
-            "damage|mon:Venusaur,player-2,1|health:71/100",
-            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "revertdynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:140/140",
-            "sethp|mon:Venusaur,player-1,1|health:100/100",
-            "residual",
-            "turn|turn:4"
-        ]"#,
+                "dynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:210/210",
+                "sethp|mon:Venusaur,player-1,1|health:100/100",
+                "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+                "split|side:1",
+                "damage|mon:Venusaur,player-2,1|health:99/140",
+                "damage|mon:Venusaur,player-2,1|health:71/100",
+                "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "residual",
+                "revertdynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:140/140",
+                "sethp|mon:Venusaur,player-1,1|health:100/100",
+                "turn|turn:4"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -519,39 +532,39 @@ fn hp_ratio_stays_the_same_before_and_after_dynamax() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:121/140",
-            "damage|mon:Venusaur,player-1,1|health:87/100",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "dynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:181/210",
-            "sethp|mon:Venusaur,player-1,1|health:87/100",
-            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
-            "split|side:1",
-            "damage|mon:Venusaur,player-2,1|health:99/140",
-            "damage|mon:Venusaur,player-2,1|health:71/100",
-            "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
-            "split|side:0",
-            "damage|mon:Venusaur,player-1,1|health:162/210",
-            "damage|mon:Venusaur,player-1,1|health:78/100",
-            "residual",
-            "turn|turn:4",
-            "continue",
-            "revertdynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:108/140",
-            "sethp|mon:Venusaur,player-1,1|health:78/100",
-            "residual",
-            "turn|turn:5"
-        ]"#,
+                "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:121/140",
+                "damage|mon:Venusaur,player-1,1|health:87/100",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "dynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:181/210",
+                "sethp|mon:Venusaur,player-1,1|health:87/100",
+                "move|mon:Venusaur,player-1,1|name:Max Strike|target:Venusaur,player-2,1",
+                "split|side:1",
+                "damage|mon:Venusaur,player-2,1|health:99/140",
+                "damage|mon:Venusaur,player-2,1|health:71/100",
+                "unboost|mon:Venusaur,player-2,1|stat:spe|by:1",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Venusaur,player-2,1|name:Tackle|target:Venusaur,player-1,1",
+                "split|side:0",
+                "damage|mon:Venusaur,player-1,1|health:162/210",
+                "damage|mon:Venusaur,player-1,1|health:78/100",
+                "residual",
+                "turn|turn:4",
+                "continue",
+                "residual",
+                "revertdynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:108/140",
+                "sethp|mon:Venusaur,player-1,1|health:78/100",
+                "turn|turn:5"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -775,34 +788,34 @@ fn dynamax_immune_to_destiny_bond() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "split|side:1",
-            ["switch", "player-2", "Chansey"],
-            ["switch", "player-2", "Chansey"],
-            "dynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:210/210",
-            "sethp|mon:Venusaur,player-1,1|health:100/100",
-            "move|mon:Venusaur,player-1,1|name:Max Guard|noanim",
-            "fail|mon:Venusaur,player-1,1",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Chansey,player-2,1|name:Destiny Bond|target:Chansey,player-2,1",
-            "singlemove|mon:Chansey,player-2,1|move:Destiny Bond",
-            "residual",
-            "turn|turn:3",
-            "continue",
-            "move|mon:Venusaur,player-1,1|name:Max Strike|target:Chansey,player-2,1",
-            "split|side:1",
-            "damage|mon:Chansey,player-2,1|health:0",
-            "damage|mon:Chansey,player-2,1|health:0",
-            "faint|mon:Chansey,player-2,1",
-            "revertdynamax|mon:Venusaur,player-1,1",
-            "split|side:0",
-            "sethp|mon:Venusaur,player-1,1|health:140/140",
-            "sethp|mon:Venusaur,player-1,1|health:100/100",
-            "residual"
-        ]"#,
+                "split|side:1",
+                ["switch", "player-2", "Chansey"],
+                ["switch", "player-2", "Chansey"],
+                "dynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:210/210",
+                "sethp|mon:Venusaur,player-1,1|health:100/100",
+                "move|mon:Venusaur,player-1,1|name:Max Guard|noanim",
+                "fail|mon:Venusaur,player-1,1",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Chansey,player-2,1|name:Destiny Bond|target:Chansey,player-2,1",
+                "singlemove|mon:Chansey,player-2,1|move:Destiny Bond",
+                "residual",
+                "turn|turn:3",
+                "continue",
+                "move|mon:Venusaur,player-1,1|name:Max Strike|target:Chansey,player-2,1",
+                "split|side:1",
+                "damage|mon:Chansey,player-2,1|health:0",
+                "damage|mon:Chansey,player-2,1|health:0",
+                "faint|mon:Chansey,player-2,1",
+                "residual",
+                "revertdynamax|mon:Venusaur,player-1,1",
+                "split|side:0",
+                "sethp|mon:Venusaur,player-1,1|health:140/140",
+                "sethp|mon:Venusaur,player-1,1|health:100/100"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -912,4 +925,29 @@ fn dynamax_cannon_deals_double_damage_to_dynamax() {
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
+}
+
+#[test]
+fn player_data_for_dynamaxed_mon_calculates_undynamaxed_hp_without_overflow() {
+    let mut team_1 = team().unwrap();
+    team_1.members[0].level = 100;
+    let mut team_2 = team().unwrap();
+    team_2.members[0].level = 100;
+
+    let mut battle = make_battle(100, team_1, team_2).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 0,dyna"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "move 0"), Ok(()));
+
+    // PlayerData calculates un-Dynamaxed HP for all mons in summary.
+    // For Level 100 Venusaur, base max HP is 270 and Dynamax HP is 405.
+    // Base max HP (270) * HP (405) = 109,350, which overflows u16 (max 65,535).
+    let player_data = battle.player_data("player-1").unwrap();
+    let mon = &player_data.mons[0];
+    assert!(mon.active, "mon should be active, but was not");
+    assert_eq!(mon.max_hp, 405);
+    assert_eq!(mon.summary.stats.hp, 270);
+    let expected = ((270u64 * mon.hp as u64 + 404) / 405) as u16;
+    assert_eq!(mon.summary.hp, expected);
 }

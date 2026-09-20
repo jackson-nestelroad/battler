@@ -97,19 +97,19 @@ fn mycelium_might_ignores_abilities_for_status_moves() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toedscruel,player-1,1|name:Flamethrower|noanim",
-            "boost|mon:Toedscruel,player-2,1|stat:def|by:2|from:ability:Well-Baked Body",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Toedscruel,player-1,1|name:Will-O-Wisp|target:Toedscruel,player-2,1",
-            "status|mon:Toedscruel,player-2,1|status:Burn",
-            "split|side:1",
-            "damage|mon:Toedscruel,player-2,1|from:status:Burn|health:132/140",
-            "damage|mon:Toedscruel,player-2,1|from:status:Burn|health:95/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Toedscruel,player-1,1|name:Flamethrower|noanim",
+                "boost|mon:Toedscruel,player-2,1|stat:def|by:2|from:ability:Well-Baked Body",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Toedscruel,player-1,1|name:Will-O-Wisp|target:Toedscruel,player-2,1",
+                "status|mon:Toedscruel,player-2,1|status:Burn",
+                "residual",
+                "split|side:1",
+                "damage|mon:Toedscruel,player-2,1|from:status:Burn|health:132/140",
+                "damage|mon:Toedscruel,player-2,1|from:status:Burn|health:95/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

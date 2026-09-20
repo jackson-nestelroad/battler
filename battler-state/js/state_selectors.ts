@@ -208,6 +208,15 @@ export function monItem(state: BattleState, monRef: MonBattleAppearanceReference
   return val && val !== "" ? val : null;
 }
 
+export function monPreviousItem(
+  state: BattleState,
+  monRef: MonBattleAppearanceReference,
+): string | null {
+  const app = monBattleAppearanceOrElse(state, monRef);
+  const val = knownValue(app.previous_item);
+  return val && val !== "" ? val : null;
+}
+
 export function monSpecies(state: BattleState, monRef: MonBattleAppearanceReference): string {
   const m = monOrElse(state, monRef);
   if (m.volatile_data.transformed) {
@@ -299,6 +308,10 @@ export function monIsActive(state: BattleState, monRef: MonBattleAppearanceRefer
   return monActivePosition(state, monRef) !== null;
 }
 
+export function monIsDynamaxed(state: BattleState, monRef: MonBattleAppearanceReference): boolean {
+  return monConditions(state, monRef).includes("Dynamax");
+}
+
 export function activeMonByPosition(
   state: BattleState,
   sideIndex: number,
@@ -311,6 +324,11 @@ export function activeMonByPosition(
 export function playerMons(state: BattleState, playerName: string): Mon[] {
   const p = playerOrElse(state, playerName);
   return p.mons;
+}
+
+export function playerBroughtMons(state: BattleState, playerName: string): Mon[] {
+  const p = playerOrElse(state, playerName);
+  return p.mons.filter((m) => m.brought);
 }
 
 export function sidePlayers(state: BattleState, sideIndex: number): Player[] {

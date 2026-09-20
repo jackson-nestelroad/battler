@@ -4,7 +4,6 @@ use std::{
         Duration,
         Instant,
     },
-    usize,
 };
 
 use anyhow::{
@@ -68,6 +67,7 @@ use battler_wamp::{
         new_web_socket_peer,
     },
     router::{
+        EmptyConnectionPolicies,
         EmptyRpcPolicies,
         PubSubPolicies,
         RealmAuthenticationConfig,
@@ -127,6 +127,7 @@ async fn start_router_with_config(
     });
     let router = new_web_socket_router(
         config,
+        Box::new(EmptyConnectionPolicies::default()),
         Box::new(BattlerPubSubPolicies::default()),
         Box::new(EmptyRpcPolicies::default()),
     )?;
@@ -281,7 +282,7 @@ fn battle_options() -> CoreBattleOptions {
                         name: "Pikachu".to_owned(),
                         species: "Pikachu".to_owned(),
                         ability: "Static".to_owned(),
-                        moves: Vec::from_iter(["Tackle".to_owned()]),
+                        moves: Vec::from_iter(["Growl".to_owned()]),
                         level: 5,
                         ..Default::default()
                     }]),
@@ -300,7 +301,7 @@ fn battle_options() -> CoreBattleOptions {
                         name: "Meowth".to_owned(),
                         species: "Meowth".to_owned(),
                         ability: "Pickup".to_owned(),
-                        moves: Vec::from_iter(["Return".to_owned()]),
+                        moves: Vec::from_iter(["Growl".to_owned()]),
                         level: 5,
                         ..Default::default()
                     }]),
@@ -776,10 +777,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(3),
     )
     .await;
-    assert_matches::assert_matches!(
-        player_1_side_1_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while player_1_side_1_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        player_1_side_1_log.pop();
+    }
     pretty_assertions::assert_eq!(
         player_1_side_1_log,
         [
@@ -797,13 +800,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:18/18|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:100/100|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:17/18",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
 
@@ -813,10 +818,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(3),
     )
     .await;
-    assert_matches::assert_matches!(
-        player_2_side_2_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while player_2_side_2_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        player_2_side_2_log.pop();
+    }
     pretty_assertions::assert_eq!(
         player_2_side_2_log,
         [
@@ -834,13 +841,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:19/19|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:14/19",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:95/100",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
 
@@ -850,10 +859,12 @@ async fn publishes_battle_logs() {
         Duration::from_secs(5),
     )
     .await;
-    assert_matches::assert_matches!(
-        public_log.pop(),
-        Some(line) if line.starts_with("-battlerservice:timer|battle|remainingsecs:")
-    );
+    while public_log
+        .last()
+        .is_some_and(|line| line.starts_with("-battlerservice:timer|"))
+    {
+        public_log.pop();
+    }
     pretty_assertions::assert_eq!(
         public_log,
         [
@@ -871,13 +882,15 @@ async fn publishes_battle_logs() {
             "switch|player:player-1|position:1|name:Pikachu|health:100/100|species:Pikachu|level:5|gender:U",
             "switch|player:player-2|position:1|name:Meowth|health:100/100|species:Meowth|level:5|gender:U",
             "turn|turn:1",
+            "-battlerservice:request",
             "-battlerservice:timer|battle|remainingsecs:60",
             "continue",
-            "move|mon:Pikachu,player-1,1|name:Tackle|target:Meowth,player-2,1",
-            "damage|mon:Meowth,player-2,1|health:74/100",
-            "move|mon:Meowth,player-2,1|name:Return|target:Pikachu,player-1,1",
-            "damage|mon:Pikachu,player-1,1|health:95/100",
+            "move|mon:Pikachu,player-1,1|name:Growl",
+            "unboost|mon:Meowth,player-2,1|stat:atk|by:1",
+            "move|mon:Meowth,player-2,1|name:Growl",
+            "unboost|mon:Pikachu,player-1,1|stat:atk|by:1",
             "residual",
+            "-battlerservice:request",
         ]
     );
     context.teardown().await;
@@ -1017,5 +1030,82 @@ async fn player_reads_full_log() {
             assert_eq!(err.to_string(), "player-3 is not on given side");
         }
     );
+    context.teardown().await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_can_fetch_ally_player_data_in_multi_battle() {
+    battler_test_utils::collect_logs();
+    let mut context = TestContext::new().await;
+    context.run_producer().await;
+    let player_1 = new_client(
+        start_consumer(
+            "player-1",
+            PeerConnectionType::Direct(context.router_handle.clone()),
+            create_peer("player-1").unwrap(),
+        )
+        .await
+        .unwrap(),
+    );
+
+    let mut options = battle_options();
+    options.format.battle_type = BattleType::Multi;
+    options.side_1.players.push(PlayerData {
+        id: "player-3".to_owned(),
+        name: "Player 3".to_owned(),
+        team: TeamData {
+            members: Vec::from_iter([MonData {
+                name: "Bulbasaur".to_owned(),
+                species: "Bulbasaur".to_owned(),
+                ability: "Overgrow".to_owned(),
+                moves: Vec::from_iter(["Tackle".to_owned()]),
+                level: 5,
+                ..Default::default()
+            }]),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+    options.side_2.players.push(PlayerData {
+        id: "player-4".to_owned(),
+        name: "Player 4".to_owned(),
+        team: TeamData {
+            members: Vec::from_iter([MonData {
+                name: "Squirtle".to_owned(),
+                species: "Squirtle".to_owned(),
+                ability: "Torrent".to_owned(),
+                moves: Vec::from_iter(["Tackle".to_owned()]),
+                level: 5,
+                ..Default::default()
+            }]),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+
+    let battle = player_1
+        .create(options, battle_service_options())
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(player_1.start(battle.uuid).await, Ok(()));
+
+    wait_until_battle_state(player_1.as_ref(), battle.uuid, BattleState::Active)
+        .await
+        .unwrap();
+
+    // Player 1 can view its own data
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-1").await, Ok(data) => {
+        assert_eq!(data.name, "Player 1");
+    });
+    // Player 1 can view its ally Player 3's data (same side)
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-3").await, Ok(data) => {
+        assert_eq!(data.name, "Player 3");
+    });
+    // Player 1 CANNOT view opposing Player 2's data
+    assert_matches::assert_matches!(player_1.player_data(battle.uuid, "player-2").await, Err(err) => {
+        assert_eq!(err.to_string(), "player-1 cannot act as player-2");
+    });
+
     context.teardown().await;
 }

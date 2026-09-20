@@ -10,8 +10,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
   DATA_DIR: ${{ github.workspace }}/battle-data/data
+  DESCRIPTIONS_DIR: ${{ github.workspace }}/battle-data/descriptions
   CRATE_ROOT: ${{ github.workspace }}
   TOKIO_WORKER_THREADS: 8
+  TSAN_OPTIONS: "suppressions=${{ github.workspace }}/.github/tsan_suppressions.txt"
 
 jobs:
   detect-changes:
@@ -21,6 +23,7 @@ jobs:
       run_core: ${{ steps.detector.outputs.run_core }}
       run_wamp: ${{ steps.detector.outputs.run_wamp }}
       run_battler_service: ${{ steps.detector.outputs.run_battler_service }}
+      run_battler_data_service: ${{ steps.detector.outputs.run_battler_data_service }}
       run_battler_multiplayer_service: ${{ steps.detector.outputs.run_battler_multiplayer_service }}
       run_battler_server: ${{ steps.detector.outputs.run_battler_server }}
     steps:
@@ -81,7 +84,7 @@ jobs:
       - name: Set up Rust
         uses: ./.github/actions/rust
       - name: Run battler module tests
-        run: cargo test -p battler-choice -p battler-data -p battler-prng
+        run: cargo test -p battler-choice -p battler-data -p battler-prng -p battler-local-data
 
   test-battler-fuzz-test-generator:
     name: Run battler-fuzz-test-generator tests
@@ -108,6 +111,51 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler-service tests
         run: cargo test -p "battler-service*"
+
+  test-battler-service-tsan:
+    name: Run battler-service tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-service tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p "battler-service*" -Zbuild-std --target x86_64-unknown-linux-gnu
+
+  test-battler-data-service:
+    name: Run battler-data-service tests
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_data_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-data-service tests
+        run: cargo test -p "battler-data-service*"
+
+  test-battler-data-service-tsan:
+    name: Run battler-data-service tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_data_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-data-service tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p "battler-data-service*" -Zbuild-std --target x86_64-unknown-linux-gnu
 
   test-battler-state:
     name: Run battler-state tests
@@ -178,6 +226,26 @@ jobs:
       - name: Run battler-multiplayer-service tests
         run: cargo test -p "battler-multiplayer-service*"
 
+  test-battler-multiplayer-service-tsan:
+    name: Run battler-multiplayer-service tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_multiplayer_service == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-multiplayer-service tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p "battler-multiplayer-service*" -Zbuild-std --target x86_64-unknown-linux-gnu
+
   test-battler-multiplayer-client:
     name: Run battler-multiplayer-client tests
     needs: detect-changes
@@ -211,6 +279,26 @@ jobs:
         uses: ./.github/actions/rust
       - name: Run battler-server tests
         run: cargo test -p battler-server
+
+  test-battler-server-tsan:
+    name: Run battler-server tests (TSan)
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.run_battler_server == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: ./.github/actions/battler-ai-gemini-py
+      - name: Set up Rust
+        uses: ./.github/actions/rust
+      - name: Run battler-server tests (TSan)
+        env:
+          RUSTFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+          RUSTDOCFLAGS: "-Zsanitizer=thread -Cunsafe-allow-abi-mismatch=sanitizer"
+        run: cargo test -p battler-server -Zbuild-std --target x86_64-unknown-linux-gnu
 
   test-battler-wamp:
     name: Run battler-wamp tests

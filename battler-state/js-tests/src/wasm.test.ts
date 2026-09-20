@@ -90,6 +90,7 @@ describe("battler-state WASM integration", () => {
     // 5. Convenience helpers
     assert.strictEqual(stateSelectors.monIsFainted(state, squirtleRef), false);
     assert.strictEqual(stateSelectors.monIsActive(state, squirtleRef), true);
+    assert.strictEqual(stateSelectors.monIsDynamaxed(state, squirtleRef), false);
     assert.deepStrictEqual(stateSelectors.activeMonByPosition(state, 0, 0), squirtleRef);
     assert.strictEqual(stateSelectors.playerMons(state, "player-1").length, 1);
     assert.strictEqual(stateSelectors.sidePlayers(state, 0).length, 1);

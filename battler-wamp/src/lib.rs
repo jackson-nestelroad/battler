@@ -45,6 +45,7 @@
 //!
 //! ```
 //! use battler_wamp::router::{
+//!     EmptyConnectionPolicies,
 //!     EmptyPubSubPolicies,
 //!     EmptyRpcPolicies,
 //!     RealmAuthenticationConfig,
@@ -57,7 +58,7 @@
 //! #[tokio::main]
 //! async fn main() {
 //!     let mut config = RouterConfig::default();
-//!     config.port = 8080;
+//!     config.port = 0;
 //!     config.realms.push(RealmConfig {
 //!         name: "Test Realm".to_owned(),
 //!         uri: Uri::try_from("com.battler_wamp.realm.test").unwrap(),
@@ -69,6 +70,7 @@
 //!     // Policy modules can be used to inject custom policies for resources created on the router.
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )
@@ -110,6 +112,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -136,6 +139,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;
@@ -191,6 +195,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -217,6 +222,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;
@@ -319,6 +325,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -348,6 +355,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;
@@ -470,6 +478,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -496,6 +505,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;
@@ -597,6 +607,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -623,6 +634,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;
@@ -744,6 +756,7 @@
 //!         new_web_socket_peer,
 //!     },
 //!     router::{
+//!         EmptyConnectionPolicies,
 //!         EmptyPubSubPolicies,
 //!         EmptyRpcPolicies,
 //!         RealmAuthenticationConfig,
@@ -773,6 +786,7 @@
 //!     });
 //!     let router = new_web_socket_router(
 //!         config,
+//!         Box::new(EmptyConnectionPolicies::default()),
 //!         Box::new(EmptyPubSubPolicies::default()),
 //!         Box::new(EmptyRpcPolicies::default()),
 //!     )?;

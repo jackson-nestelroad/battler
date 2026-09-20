@@ -10,4 +10,3 @@ pub(crate) mod player_data;
 pub(crate) mod request;
 pub(crate) mod start;
 pub(crate) mod update_team;
-pub(crate) mod validate_player;

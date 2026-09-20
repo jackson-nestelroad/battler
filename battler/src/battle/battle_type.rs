@@ -5,7 +5,14 @@ use serde_string_enum::{
 
 /// The type of a battle.
 #[derive(
-    Debug, Default, Clone, Copy, PartialEq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    SerializeLabeledStringEnum,
+    DeserializeLabeledStringEnum,
 )]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]

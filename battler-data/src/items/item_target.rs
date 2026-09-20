@@ -7,6 +7,8 @@ use serde_string_enum::{
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, SerializeLabeledStringEnum, DeserializeLabeledStringEnum,
 )]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub enum ItemTarget {
     /// A Mon in the player's party.
     #[string = "Party"]

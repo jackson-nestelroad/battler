@@ -77,20 +77,20 @@ fn black_sludge_damages_and_heals_based_on_poison_type() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Staraptor,player-2,1|name:Aerial Ace|target:Weezing,player-1,1",
-            "crit|mon:Weezing,player-1,1",
-            "split|side:0",
-            "damage|mon:Weezing,player-1,1|health:71/125",
-            "damage|mon:Weezing,player-1,1|health:57/100",
-            "split|side:1",
-            "damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:127/145",
-            "damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:88/100",
-            "split|side:0",
-            "heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:78/125",
-            "heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:63/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Staraptor,player-2,1|name:Aerial Ace|target:Weezing,player-1,1",
+                "crit|mon:Weezing,player-1,1",
+                "split|side:0",
+                "damage|mon:Weezing,player-1,1|health:71/125",
+                "damage|mon:Weezing,player-1,1|health:57/100",
+                "residual",
+                "split|side:1",
+                "damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:127/145",
+                "damage|mon:Staraptor,player-2,1|from:item:Black Sludge|health:88/100",
+                "split|side:0",
+                "heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:78/125",
+                "heal|mon:Weezing,player-1,1|from:item:Black Sludge|health:63/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

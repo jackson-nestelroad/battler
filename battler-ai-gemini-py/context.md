@@ -278,7 +278,7 @@ Choices for each Pokémon in a request must follow a strict format.
 
 ## Choosing a Move
 
-A move action is a string of the format `move $move_index(, $target_side_position)?`. `$move_index` is the index of the selected move in the `request_data.turn.moves` array. `$target_side_position` is the side position of the move target.
+A move action is a string of the format `move $move_index(, $target_side_position)?`. `$move_index` is the **zero-based** index of the selected move in the `request_data.turn.moves` array (i.e., use 0 for the first move, 1 for the second, etc.). `$target_side_position` is the side position of the move target.
 
 **CRITICAL RULE:** `$target_side_position` MUST only be specified (non-empty) IF the move's target type is one of the following:
 
@@ -288,7 +288,7 @@ A move action is a string of the format `move $move_index(, $target_side_positio
 - AdjacentAllyOrUser
 - AdjacentFoe
 
-**CRITICAL RULE:** For all other move target types not listed above (e.g., AllAdjacent, AllAdjacentFoes, User, etc.), `$target_side_position` MUST be empty. When choosing a SPREAD MOVE or a move that ALWAYS targets the user, `$target_side_position` MUST be empty (not specified).
+**CRITICAL RULE:** For all other move target types not listed above (e.g., AllAdjacent, AllAdjacentFoes, User, etc.), `$target_side_position` MUST be empty. When choosing a SPREAD MOVE or a move that ALWAYS targets the user, `$target_side_position` MUST be empty (not specified). For example, use `move 0` instead of `move 0, 1`.
 
 `$target_side_position` is a signed one-based index representing the side position being targeted. A positive number targets the opposing side, while a negative number targets the same side. Zero is never a valid target.
 

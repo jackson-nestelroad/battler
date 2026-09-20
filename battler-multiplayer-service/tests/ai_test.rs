@@ -32,14 +32,17 @@ use battler_multiplayer_service::{
 };
 use battler_multiplayer_service_client::DirectBattlerMultiplayerServiceClient;
 use battler_service::{
+    Battle,
     BattleServiceOptions,
     BattleState,
     BattlerService,
+    DropReason,
     Timer,
     Timers,
 };
 use battler_service_client::battler_service_client_over_direct_service;
 use battler_test_utils::static_local_data_store;
+use uuid::Uuid;
 
 fn battler_service() -> Arc<BattlerService<'static>> {
     Arc::new(BattlerService::new(static_local_data_store()))
@@ -76,7 +79,7 @@ fn battle_options_singles() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Singles,
-            rules: hashbrown::HashSet::default(),
+            rules: Vec::new(),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -105,7 +108,7 @@ fn battle_options_multi() -> CoreBattleOptions {
         seed: Some(0),
         format: FormatData {
             battle_type: BattleType::Multi,
-            rules: hashbrown::HashSet::default(),
+            rules: Vec::new(),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -176,6 +179,26 @@ where
     }
 }
 
+async fn wait_until_battle_state(
+    battler_service: &BattlerService<'_>,
+    battle_id: Uuid,
+    expected_state: BattleState,
+) -> Battle {
+    let check = async {
+        loop {
+            if let Ok(battle) = battler_service.battle(battle_id).await {
+                if battle.state == expected_state {
+                    return battle;
+                }
+            }
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(5), check)
+        .await
+        .expect("timed out waiting for battle state")
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn hosts_singles_battle_against_random_ai() {
     battler_test_utils::collect_logs();
@@ -216,15 +239,22 @@ async fn hosts_singles_battle_against_random_ai() {
         .await
         .unwrap();
 
-    let battle = battler_service
-        .battle(battler_client.battle())
-        .await
-        .unwrap();
+    let battle = wait_until_battle_state(
+        &battler_service,
+        battler_client.battle(),
+        BattleState::Active,
+    )
+    .await;
     assert_eq!(battle.state, BattleState::Active);
 
     let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(battler_client.make_choice("move 0").await, Ok(()));
+        if let Err(err) = battler_client.make_choice("move 0").await {
+            if err.to_string().contains("the battle is over") {
+                break;
+            }
+            panic!("unexpected error making choice: {err:?}");
+        }
     }
 
     assert_matches::assert_matches!(
@@ -279,10 +309,12 @@ async fn hosts_multi_battle_against_random_ai() {
         .await
         .unwrap();
 
-    let battle = battler_service
-        .battle(battler_client.battle())
-        .await
-        .unwrap();
+    let battle = wait_until_battle_state(
+        &battler_service,
+        battler_client.battle(),
+        BattleState::Active,
+    )
+    .await;
     assert_eq!(battle.state, BattleState::Active);
 
     let mut battle_event_rx = battler_client.battle_event_rx();
@@ -379,7 +411,12 @@ async fn spectator_receives_updates() {
     // Make choices to run the battle
     let mut battle_event_rx = battler_client.battle_event_rx();
     while let Ok(_) = BattlerClient::wait_for_request(&mut battle_event_rx).await {
-        assert_matches::assert_matches!(battler_client.make_choice("move 0").await, Ok(()));
+        if let Err(err) = battler_client.make_choice("move 0").await {
+            if err.to_string().contains("the battle is over") {
+                break;
+            }
+            panic!("unexpected error making choice: {err:?}");
+        }
     }
 
     assert_matches::assert_matches!(
@@ -395,4 +432,82 @@ async fn spectator_receives_updates() {
         updates_count > 0,
         "Spectator should receive state updates during the battle"
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn ai_player_and_client_terminate_cleanly_when_battle_is_dropped() {
+    battler_test_utils::collect_logs();
+
+    let battler_service = battler_service();
+    let service = battler_multiplayer_service_over_battler_service(battler_service.clone()).await;
+    assert_matches::assert_matches!(
+        service
+            .clone()
+            .create_ai_players(AiPlayers {
+                players: HashMap::from_iter([(
+                    "random".to_owned(),
+                    AiPlayerOptions {
+                        ai_type: AiPlayerType::Random(RandomOptions::default()),
+                        players: HashSet::from_iter(["random-1".to_owned()]),
+                    },
+                )]),
+            })
+            .await,
+        Ok(())
+    );
+
+    let client = BattlerMultiplayerClient::new(
+        "trainer".to_owned(),
+        Arc::new(Box::new(DirectBattlerMultiplayerServiceClient::new(
+            service.clone(),
+        ))),
+        Arc::new(battler_service_client_over_direct_service(
+            battler_service.clone(),
+        )),
+    );
+
+    let battler_client = client
+        .propose_and_wait_for_battle_start(proposed_battle_options(
+            "trainer",
+            battle_options_singles(),
+        ))
+        .await
+        .unwrap();
+
+    let battle_id = battler_client.battle();
+    let battle = wait_until_battle_state(&battler_service, battle_id, BattleState::Active).await;
+    assert_eq!(battle.state, BattleState::Active);
+
+    let mut battle_event_rx = battler_client.battle_event_rx();
+    // Wait for the first request
+    assert_matches::assert_matches!(
+        BattlerClient::wait_for_request(&mut battle_event_rx).await,
+        Ok(_)
+    );
+
+    // Drop the battle administratively
+    battler_service
+        .drop_battle(
+            battle_id,
+            DropReason::Administrative("test drop".to_string()),
+        )
+        .await
+        .unwrap();
+
+    // The client should receive the End event when waiting for end
+    BattlerClient::wait_for_end(&mut battle_event_rx)
+        .await
+        .unwrap();
+    assert_eq!(*battle_event_rx.borrow(), BattleClientEvent::End);
+
+    // Verify battle status in service is Finished with drop_reason
+    let battle = battler_service.battle(battle_id).await.unwrap();
+    assert_eq!(battle.state, BattleState::Finished);
+    assert_eq!(
+        battle.drop_reason,
+        Some(DropReason::Administrative("test drop".to_string()))
+    );
+
+    // Give AI player time to finish
+    tokio::time::sleep(Duration::from_millis(50)).await;
 }

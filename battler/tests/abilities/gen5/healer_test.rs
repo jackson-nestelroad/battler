@@ -93,15 +93,15 @@ fn healer_has_chance_to_cure_ally_status_conditions() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Darkrai,player-2,2|name:Dark Void|spread:Alomomola,player-1,1;Alomomola,player-1,3",
-            "miss|mon:Alomomola,player-1,2",
-            "status|mon:Alomomola,player-1,1|status:Sleep",
-            "status|mon:Alomomola,player-1,3|status:Sleep",
-            "activate|mon:Alomomola,player-1,2|ability:Healer",
-            "curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Darkrai,player-2,2|name:Dark Void|spread:Alomomola,player-1,1;Alomomola,player-1,3",
+                "miss|mon:Alomomola,player-1,2",
+                "status|mon:Alomomola,player-1,1|status:Sleep",
+                "status|mon:Alomomola,player-1,3|status:Sleep",
+                "residual",
+                "activate|mon:Alomomola,player-1,2|ability:Healer",
+                "curestatus|mon:Alomomola,player-1,1|status:Sleep|from:ability:Healer|of:Alomomola,player-1,2",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

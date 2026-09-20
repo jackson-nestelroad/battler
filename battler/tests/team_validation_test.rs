@@ -170,3 +170,32 @@ fn fails_to_update_team_for_nonexistent_player() {
         }
     );
 }
+
+#[test]
+fn bypasses_team_validation_when_disabled() {
+    let illegal_team: TeamData = serde_json::from_str(
+        r#"{
+            "members": [
+                {
+                    "name": "Pikachu",
+                    "species": "Pikachu",
+                    "ability": "Wonder Guard",
+                    "moves": ["V-create", "Spore", "Judgment"],
+                    "nature": "Hardy",
+                    "gender": "M",
+                    "level": 50
+                }
+            ]
+        }"#,
+    )
+    .unwrap();
+
+    let mut battle = make_battle_builder()
+        .with_team_validation(false)
+        .build(static_local_data_store())
+        .unwrap();
+
+    assert_matches::assert_matches!(battle.update_team("player-1", illegal_team.clone()), Ok(()));
+    assert_matches::assert_matches!(battle.update_team("player-2", illegal_team), Ok(()));
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+}

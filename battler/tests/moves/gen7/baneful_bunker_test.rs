@@ -77,17 +77,17 @@ fn baneful_bunker_poisons_on_contact() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Toxapex,player-1,1|name:Baneful Bunker|target:Toxapex,player-1,1",
-            "singleturn|mon:Toxapex,player-1,1|move:Protect",
-            "move|mon:Incineroar,player-2,1|name:Tackle|noanim",
-            "activate|mon:Toxapex,player-1,1|move:Protect",
-            "status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1",
-            "split|side:1",
-            "damage|mon:Incineroar,player-2,1|from:status:Poison|health:263/300",
-            "damage|mon:Incineroar,player-2,1|from:status:Poison|health:88/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Toxapex,player-1,1|name:Baneful Bunker|target:Toxapex,player-1,1",
+                "singleturn|mon:Toxapex,player-1,1|move:Protect",
+                "move|mon:Incineroar,player-2,1|name:Tackle|noanim",
+                "activate|mon:Toxapex,player-1,1|move:Protect",
+                "status|mon:Incineroar,player-2,1|status:Poison|from:move:Baneful Bunker|of:Toxapex,player-1,1",
+                "residual",
+                "split|side:1",
+                "damage|mon:Incineroar,player-2,1|from:status:Poison|health:263/300",
+                "damage|mon:Incineroar,player-2,1|from:status:Poison|health:88/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

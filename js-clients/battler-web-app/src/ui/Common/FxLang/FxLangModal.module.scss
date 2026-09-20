@@ -1,0 +1,122 @@
+@use "../../../styles/tabs" as *;
+
+@include segmented-tabs;
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-m);
+  cursor: pointer;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
+  transition: var(--transition-fast);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-input);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: var(--spacing-xxs);
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.loadingState {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-s);
+}
+
+.emptyState {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+}
+
+.codeContainer {
+  padding: var(--spacing-s);
+  overflow-x: auto;
+  background-color: var(--bg-input);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xxs);
+  line-height: 1.2;
+
+  :global(pre) {
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  :global(code) {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    counter-reset: line;
+    display: grid;
+  }
+
+  :global(.line) {
+    counter-increment: line;
+    display: block;
+    line-height: inherit;
+
+    &::before {
+      content: counter(line);
+      display: inline-block;
+      min-width: 1.75rem;
+      text-align: right;
+      margin-right: var(--spacing-xs);
+      color: var(--text-muted);
+      user-select: none;
+    }
+  }
+
+  :global(.fxlang-delegate-link) {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: var(--spacing-xxs);
+    cursor: pointer;
+    border-radius: var(--border-radius-xs);
+    transition: var(--transition-fast);
+
+    &:hover {
+      color: var(--color-primary);
+      background-color: var(--color-primary-bg);
+      text-decoration-style: solid;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: var(--spacing-xxs);
+    }
+  }
+}

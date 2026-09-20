@@ -1,0 +1,5 @@
+# ThreadSanitizer suppressions for battler
+# Suppress data races reported inside Tokio's epoll/kqueue event driver internals
+race:tokio::runtime::io
+race:ScheduledIo
+race:RegistrationSet

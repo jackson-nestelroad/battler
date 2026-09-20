@@ -39,7 +39,7 @@ use crate::{
 };
 
 /// A single subscriber to a topic.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TopicSubscriber {
     subscription_id: Id,
     active: bool,
@@ -183,12 +183,16 @@ impl TopicManager {
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<()>>,
     {
+        let mut activated = false;
         if let Some(topic) = context.topic(topic).await {
             let mut subscribers = topic.subscribers.write().await;
             if let Some(subscriber) = subscribers.get_mut(&session) {
                 subscriber.active = true;
-                after_activation().await?;
+                activated = true;
             }
+        }
+        if activated {
+            after_activation().await?;
         }
         Ok(())
     }
@@ -325,7 +329,17 @@ impl TopicManager {
         arguments_keyword: Dictionary,
         options: &PublishOptions,
     ) {
-        for (session, subscription) in single_topic.subscribers.read().await.iter() {
+        let subscribers = {
+            let subscribers = single_topic.subscribers.read().await;
+            subscribers
+                .iter()
+                .map(|(session, sub)| (*session, sub.clone()))
+                .collect::<Vec<_>>()
+        };
+
+        let mut send_futures = Vec::new();
+
+        for (session, subscription) in subscribers {
             if !subscription.active {
                 continue;
             }
@@ -338,7 +352,7 @@ impl TopicManager {
             }
 
             let exclude_me = options.exclude_me.unwrap_or(true);
-            if *session == publisher && exclude_me {
+            if session == publisher && exclude_me {
                 continue;
             }
 
@@ -371,18 +385,46 @@ impl TopicManager {
                 );
             }
 
-            session
-                .session
-                .send_message(Message::Event(EventMessage {
-                    subscribed_subscription: subscription.subscription_id,
-                    published_publication: published_id,
-                    details,
-                    publish_arguments: arguments.clone(),
-                    publish_arguments_keyword: arguments_keyword.clone(),
-                }))
-                .await
-                .ok();
+            let message = Message::Event(EventMessage {
+                subscribed_subscription: subscription.subscription_id,
+                published_publication: published_id,
+                details,
+                publish_arguments: arguments.clone(),
+                publish_arguments_keyword: arguments_keyword.clone(),
+            });
+
+            send_futures.push(async move {
+                let send_future = session.session.send_message(message);
+                if tokio::time::timeout(std::time::Duration::from_secs(5), send_future)
+                    .await
+                    .is_err()
+                {
+                    log::warn!(
+                        "Subscriber {} timed out receiving event",
+                        session.session.id()
+                    );
+                    let session_clone = session.clone();
+                    tokio::spawn(async move {
+                        if tokio::time::timeout(
+                            std::time::Duration::from_secs(5),
+                            session_clone
+                                .session
+                                .close(crate::core::close::CloseReason::TimedOut),
+                        )
+                        .await
+                        .is_err()
+                        {
+                            log::warn!(
+                                "Force closing session {} timed out",
+                                session_clone.session.id()
+                            );
+                        }
+                    });
+                }
+            });
         }
+
+        futures_util::future::join_all(send_futures).await;
     }
 
     /// Gets the topic matching the URI.

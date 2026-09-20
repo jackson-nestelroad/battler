@@ -1,0 +1,566 @@
+{
+  "manualLogs": [
+    "addsidecondition|side:0|condition:Condition|from:Effect",
+    "removesidecondition|side:0|condition:Condition|from:Effect",
+    "addslotcondition|side:0|slot:0|condition:Condition|from:Effect",
+    "removeslotcondition|side:0|slot:0|condition:Condition|from:Effect",
+    "addpseudoweather|condition:Condition|from:Effect",
+    "removepseudoweather|condition:Condition|from:Effect",
+    "turnlimit",
+    "debug",
+    "catchfailed|item:Poké Ball|shakes:2",
+    "boost|stat:atk|by:2|from:Z-Power",
+    "move|from:move:Assist|zpower",
+    "move|from:move:Copycat|zpower",
+    "move|from:move:Me First|zpower",
+    "move|from:move:Mirror Move|zpower",
+    "move|from:move:Sleep Talk|zpower",
+    "damage|from:move:G-Max Vine Lash",
+    "damage|from:move:G-Max Volcalith",
+    "damage|from:move:G-Max Wildfire",
+    "swapboosts|stats:def,spd|from:move:Guard Swap",
+    "fieldstart|move:Electric Terrain|from:Start"
+  ],
+  "excludeTags": [
+    "mon",
+    "of",
+    "player",
+    "side",
+    "slot",
+    "position",
+    "source",
+    "gender",
+    "health",
+    "level",
+    "name",
+    "species",
+    "stats",
+    "stat",
+    "exp",
+    "atk",
+    "def",
+    "spa",
+    "spd",
+    "spe",
+    "hp",
+    "target",
+    "anim",
+    "newmove",
+    "pick",
+    "size",
+    "length",
+    "id",
+    "time",
+    "tera",
+    "into_position",
+    "hit",
+    "hits",
+    "count",
+    "fallen",
+    "perish",
+    "mimic",
+    "sides",
+    "spread",
+    "turn",
+    "on",
+    "to",
+    "into",
+    "with",
+    "magnitude",
+    "event",
+    "error",
+    "effect",
+    "learned",
+    "silent",
+    "positions",
+    "animate",
+    "animate_only",
+    "animateonly",
+    "notarget",
+    "no_target",
+    "prev_mon"
+  ],
+  "alwaysFromEffectLogs": [
+    "cant",
+    "sethp",
+    "boost",
+    "invertboosts",
+    "copyboosts",
+    "unboost",
+    "deductpp",
+    "restorepp",
+    "setpp",
+    "clearboosts",
+    "clearnegativeboosts",
+    "clearpositiveboosts",
+    "swap",
+    "transform",
+    "block"
+  ],
+  "alwaysNoTagLogs": [
+    "ohko",
+    "waiting",
+    "animatemove",
+    "protectweaken",
+    "copyboosts",
+    "debug",
+    "player",
+    "side",
+    "teamsize",
+    "teampreviewstart",
+    "teampreview",
+    "battlestart",
+    "turnlimit",
+    "maxsidelength",
+    "tie",
+    "win",
+    "time",
+    "continue",
+    "residual",
+    "split",
+    "swapplayer"
+  ],
+  "noTagUnlessFromLogs": ["immune", "move"],
+  "prependWildcardTagLogs": ["block"],
+  "ignoreKeys": [
+    "item|ability:Frisk",
+    "sideend|ability:Screen Cleaner",
+    "sidestart|ability:Toxic Debris",
+    "fail|what:unboost|from:Resist Intimidate Ability Base",
+    "fail|what:unboost|from:Prevent Stat Drop Ability Base",
+    "ability|condition:Aura Ability Base",
+    "fail|what:*|from:Choice Lock",
+    "fail|what:*|from:weather:Heavy Rain",
+    "fail|what:*|from:weather:Extremely Harsh Sunlight",
+    "sideend|condition:Break Protect",
+    "sidestart|item:Guard Spec.",
+    "prepare|condition:Charge Move Base",
+    "activate|condition:Damage-Reducing Berry Item Base",
+    "itemend|condition:Gem Item Base",
+    "sideend|condition:Defog Move Base",
+    "sidestart|condition:Side Screen Move Base",
+    "sideend|condition:Side Screen Move Base",
+    "fail|from:move:Uproar"
+  ],
+  "allowKeys": [
+    "block|ability:*|from:ability:Aroma Veil",
+    "block|ability:*|from:ability:Flower Veil",
+    "block|ability:*|from:ability:Sweet Veil",
+    "block|ability:*|from:ability:Pastel Veil",
+    "block|move:*|from:Dynamax",
+    "fail|from:Choice Lock",
+    "item|item:Air Balloon",
+    "fail|what:unboost|from:item:*"
+  ],
+  "rules": [
+    {
+      "match": {
+        "title": "abilitystart"
+      },
+      "collapse": ["ability"]
+    },
+    {
+      "match": {
+        "title": "itemstart"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": {
+        "title": "abilityend"
+      },
+      "collapse": ["ability"]
+    },
+    {
+      "match": {
+        "title": "addvolatile"
+      },
+      "strip": ["from"],
+      "collapse": ["volatile"]
+    },
+    {
+      "match": {
+        "title": "block"
+      },
+      "collapse": ["ability", "move", "item"]
+    },
+    {
+      "match": {
+        "title": "catch"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": {
+        "title": "catchfailed"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": {
+        "title": "deductpp"
+      },
+      "strip": ["by"],
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "didnotlearnmove"
+      },
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "learnedmove"
+      },
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "removevolatile"
+      },
+      "strip": ["from"],
+      "collapse": ["volatile"]
+    },
+    {
+      "match": {
+        "title": "restorepp"
+      },
+      "strip": ["by", "from"],
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "setpp"
+      },
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "swapsidecondition"
+      },
+      "collapse": ["move", "condition"]
+    },
+    {
+      "match": {
+        "title": "activate",
+        "ability": "Forewarn"
+      },
+      "collapse": ["move"]
+    },
+    {
+      "match": {
+        "title": "activate",
+        "move": "Fling"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": {
+        "title": "activate",
+        "move": "Poltergeist"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": { "title": "activate", "move": "Mat Block" },
+      "strip": ["from"]
+    },
+    {
+      "match": {},
+      "collapse": [
+        "type",
+        "battletype",
+        "environment",
+        "rule",
+        "disabledmove",
+        "forgot",
+        "mimic"
+      ]
+    },
+    {
+      "match": {},
+      "collapse": ["types"],
+      "except": {
+        "types": "None"
+      }
+    },
+    {
+      "match": {
+        "title": "boost",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
+    },
+    {
+      "match": {
+        "title": "unboost"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "fail",
+        "what": "unboost"
+      },
+      "strip": ["boosts"],
+      "collapse": ["from"]
+    },
+    {
+      "match": {
+        "title": "curestatus",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": ["Affection", "move:Uproar"]
+      }
+    },
+    {
+      "match": {
+        "title": "fieldstart",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Start"
+      }
+    },
+    {
+      "match": {
+        "title": "start",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
+    },
+    {
+      "match": {
+        "title": "status",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Disobedience"
+      }
+    },
+    {
+      "match": {
+        "title": "typechange"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "move:*"
+      }
+    },
+    {
+      "match": {
+        "title": "resettypechange"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "weather",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Start"
+      }
+    },
+    {
+      "match": {
+        "title": "immune"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "clearboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "clearnegativeboosts",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": "Z-Power"
+      }
+    },
+    {
+      "match": {
+        "title": "clearpositiveboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "copyboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "invertboosts"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "swapboosts",
+        "from": "*"
+      },
+      "strip": ["from"],
+      "except": {
+        "from": ["move:Heart Swap", "move:Power Swap", "move:Guard Swap"]
+      }
+    },
+    {
+      "match": {
+        "title": "swap"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertmega"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertprimal"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revertultra"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "itemend",
+        "from": "*"
+      },
+      "collapse": ["item"]
+    },
+    {
+      "match": {
+        "title": "mega",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "primal",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "singleturn",
+        "condition": "Z-Power",
+        "from": "item:*"
+      },
+      "strip": ["from"]
+    },
+    {
+      "match": {
+        "title": "revive",
+        "from": "item:*"
+      },
+      "collapse": ["from"]
+    },
+    {
+      "match": {
+        "title": "crit"
+      },
+      "inject": ["battletype:singles"]
+    },
+    {
+      "match": {
+        "title": "supereffective"
+      },
+      "inject": ["battletype:singles"]
+    },
+    {
+      "match": {
+        "title": "resisted"
+      },
+      "inject": ["battletype:singles"]
+    },
+    {
+      "match": {
+        "title": "move"
+      },
+      "strip": ["noanim"]
+    },
+    {
+      "match": {
+        "title": "animatemove"
+      },
+      "strip": ["noanim"]
+    },
+    {
+      "match": {
+        "title": "addsidecondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removesidecondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "addslotcondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removeslotcondition"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "addpseudoweather"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "removepseudoweather"
+      },
+      "strip": ["from"],
+      "collapse": ["condition"]
+    },
+    {
+      "match": {
+        "title": "cant"
+      },
+      "collapse": ["move"]
+    }
+  ]
+}

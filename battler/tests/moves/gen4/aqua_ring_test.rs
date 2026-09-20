@@ -58,18 +58,18 @@ fn aqua_ring_heals_each_turn() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Mantyke,player-1,1|name:Aqua Ring|target:Mantyke,player-1,1",
-            "start|mon:Mantyke,player-1,1|move:Aqua Ring",
-            "move|mon:Mantyke,player-2,1|name:Slash|target:Mantyke,player-1,1",
-            "split|side:0",
-            "damage|mon:Mantyke,player-1,1|health:90/105",
-            "damage|mon:Mantyke,player-1,1|health:86/100",
-            "split|side:0",
-            "heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:96/105",
-            "heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:92/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Mantyke,player-1,1|name:Aqua Ring|target:Mantyke,player-1,1",
+                "start|mon:Mantyke,player-1,1|move:Aqua Ring",
+                "move|mon:Mantyke,player-2,1|name:Slash|target:Mantyke,player-1,1",
+                "split|side:0",
+                "damage|mon:Mantyke,player-1,1|health:90/105",
+                "damage|mon:Mantyke,player-1,1|health:86/100",
+                "residual",
+                "split|side:0",
+                "heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:96/105",
+                "heal|mon:Mantyke,player-1,1|from:move:Aqua Ring|health:92/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

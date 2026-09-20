@@ -297,3 +297,79 @@ fn must_switch_one_after_two_faint() {
         assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
     });
 }
+
+#[test]
+fn randomall_handles_forced_passes_during_switch() {
+    let mut battle = make_battle(false).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 1;move 0,1"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "switch 2;move 0,1"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+
+    let _ = battle.new_log_entries();
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(None));
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Switch(request))) => {
+        assert_eq!(request.needs_switch, vec![0, 1]);
+    });
+
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "randomall"), Ok(()));
+    assert_matches::assert_matches!(battle.continue_battle(), Ok(()));
+
+    assert_matches::assert_matches!(battle.request_for_player("player-1"), Ok(Some(Request::Turn(request))) => {
+        assert_eq!(request.active.len(), 2);
+    });
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Turn(request))) => {
+        let player_data = battle.player_data("player-2").unwrap();
+        assert_eq!(request.active.len(), 1);
+        assert_eq!(player_data.mons[request.active[0].team_position].summary.name, "Bulbasaur");
+    });
+}
+
+#[test]
+fn player_data_correctly_tracks_active_position_after_switches_and_faint() {
+    let mut battle = make_battle(true).unwrap();
+    assert_matches::assert_matches!(battle.start(), Ok(()));
+
+    // Turn 1: Player 2 switches Bulbasaur out for Squirtle (slot 2)
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "pass;pass"), Ok(()));
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-2", "switch 2;pass"),
+        Ok(())
+    );
+
+    // Turn 2: Player 1 attacks Squirtle (slot 0, position 1 on player 2) and faints it
+    assert_matches::assert_matches!(
+        battle.set_player_choice("player-1", "move 0,1;pass"),
+        Ok(())
+    );
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass;pass"), Ok(()));
+
+    // Player 2 needs switch for slot 0 (where Squirtle was)
+    assert_matches::assert_matches!(battle.request_for_player("player-2"), Ok(Some(Request::Switch(request))) => {
+        assert_eq!(request.needs_switch, vec![0]);
+        let player_data = battle.player_data("player-2").unwrap();
+        // Bulbasaur is on the bench and should NOT have player_active_position
+        assert_eq!(player_data.mons[0].summary.name, "Bulbasaur");
+        assert_eq!(player_data.mons[0].active, false);
+        assert_eq!(player_data.mons[0].player_active_position, None);
+
+        // Charmander is active in position 1
+        assert_eq!(player_data.mons[1].summary.name, "Charmander");
+        assert_eq!(player_data.mons[1].active, true);
+        assert_eq!(player_data.mons[1].player_active_position, Some(1));
+
+        // Squirtle fainted in position 0 and IS the exiting mon for position 0
+        assert_eq!(player_data.mons[2].summary.name, "Squirtle");
+        assert_eq!(player_data.mons[2].active, true);
+        assert_eq!(player_data.mons[2].player_active_position, Some(0));
+    });
+}

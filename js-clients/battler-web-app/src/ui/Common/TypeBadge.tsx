@@ -1,0 +1,138 @@
+import DataTooltipTrigger from "./Tooltip/DataTooltipTrigger";
+import IconBadge from "./IconBadge";
+import styles from "./TypeBadge.module.scss";
+
+export interface TypeBadgeProps {
+  type: string;
+  size?: "sm" | "md";
+  variant?: "standard" | "tera";
+  showIcon?: boolean;
+  fixedWidth?: boolean;
+  square?: boolean;
+  interactive?: boolean;
+  className?: string;
+}
+
+export default function TypeBadge({
+  type,
+  size = "md",
+  variant = "standard",
+  showIcon = true,
+  fixedWidth = true,
+  square = false,
+  interactive = false,
+  className,
+}: TypeBadgeProps) {
+  const normalizedType = type.trim().toLowerCase();
+  const typeKey = normalizedType === "???" ? "unknown" : normalizedType;
+  const baseUrl = import.meta.env?.BASE_URL ?? "/";
+
+  if (square) {
+    const squareClasses = [
+      styles.typeSquare,
+      size === "sm" ? styles.typeSquareSm : styles.typeSquareMd,
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const squareElement = (
+      <span
+        className={squareClasses}
+        style={{
+          background: `var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`,
+        }}
+        title={type}
+        aria-label={type}
+        data-type={typeKey}
+      >
+        <img
+          src={`${baseUrl}assets/types/${typeKey}.png`}
+          alt=""
+          aria-hidden="true"
+          className={styles.typeSquareIcon}
+          draggable={false}
+        />
+      </span>
+    );
+
+    if (interactive) {
+      return (
+        <DataTooltipTrigger resourceType="type" name={type} showUnderline={false}>
+          {squareElement}
+        </DataTooltipTrigger>
+      );
+    }
+
+    return squareElement;
+  }
+
+  const typeClasses = [
+    styles.typeBadge,
+    size === "sm" ? styles.typeBadgeSm : styles.typeBadgeMd,
+    variant === "tera" && styles.typeBadgeTera,
+    fixedWidth && styles.fixedWidth,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const badge = (
+    <IconBadge
+      label={type}
+      iconSrc={`${baseUrl}assets/types/${typeKey}.png`}
+      background={`var(--background-type-${typeKey}, var(--color-type-${typeKey}, var(--border-color)))`}
+      size={size}
+      showIcon={showIcon}
+      fixedWidth={fixedWidth}
+      className={typeClasses}
+      iconClassName={styles.typeIcon}
+      textClassName={styles.typeText}
+      dataAttributes={{
+        "data-type": typeKey,
+        "data-variant": variant,
+      }}
+    >
+      {variant === "tera" && (
+        <>
+          <svg
+            className={styles.teraCapLeft}
+            viewBox="0 0 10 20"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <polygon points="0,10 3,0 10,10" className={styles.facetHighlight} />
+            <polygon points="0,10 3,20 10,10" className={styles.facetShadow} />
+            <line x1="0" y1="10" x2="3" y2="0" className={styles.lineHighlightSpecular} />
+            <line x1="3" y1="0" x2="10" y2="10" className={styles.lineHighlight} />
+            <line x1="0" y1="10" x2="3" y2="20" className={styles.lineShadow} />
+            <line x1="3" y1="20" x2="10" y2="10" className={styles.lineShadow} />
+          </svg>
+          <svg
+            className={styles.teraCapRight}
+            viewBox="0 0 10 20"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <polygon points="10,10 7,0 0,10" className={styles.facetHighlightSpecular} />
+            <polygon points="10,10 7,20 0,10" className={styles.facetShadow} />
+            <line x1="10" y1="10" x2="7" y2="0" className={styles.lineHighlightSpecular} />
+            <line x1="7" y1="0" x2="0" y2="10" className={styles.lineHighlight} />
+            <line x1="10" y1="10" x2="7" y2="20" className={styles.lineShadow} />
+            <line x1="7" y1="20" x2="0" y2="10" className={styles.lineShadow} />
+          </svg>
+        </>
+      )}
+    </IconBadge>
+  );
+
+  if (interactive) {
+    return (
+      <DataTooltipTrigger resourceType="type" name={type} showUnderline={false}>
+        {badge}
+      </DataTooltipTrigger>
+    );
+  }
+
+  return badge;
+}

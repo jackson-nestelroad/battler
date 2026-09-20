@@ -223,6 +223,8 @@ pub struct Move {
     pub damaged_targets: Vec<MonHandle>,
     /// Have the primary user effect been applied?
     pub primary_user_effect_applied: bool,
+    /// Secondary effects that have already been applied during this move's execution.
+    pub applied_secondary_effects: HashSet<usize>,
     /// Is the move upgraded?
     pub upgraded: Option<UpgradedMoveSource>,
     /// Ignore all secondary effects?
@@ -285,6 +287,7 @@ impl Move {
             original_targets: Vec::default(),
             damaged_targets: Vec::default(),
             primary_user_effect_applied: false,
+            applied_secondary_effects: HashSet::default(),
             upgraded: None,
             ignore_all_secondary_effects: false,
             last_move_log: None,
@@ -428,6 +431,11 @@ impl Move {
                     .effect,
             ),
         }
+    }
+
+    /// Returns the secondary effect for the given target and index.
+    pub fn secondary_effect(&self, target: MonHandle, index: usize) -> Option<&SecondaryEffect> {
+        self.secondary_effects.get(&(target, self.hit))?.get(index)
     }
 
     /// Saves secondary effects for the given target.

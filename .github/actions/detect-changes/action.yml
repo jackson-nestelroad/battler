@@ -14,18 +14,27 @@ outputs:
   run_battler_service:
     description: "Whether to run single-player service and client tests"
     value: ${{ steps.eval.outputs.run_battler_service }}
+  run_battler_data_service:
+    description: "Whether to run data service and client tests"
+    value: ${{ steps.eval.outputs.run_battler_data_service }}
   run_battler_multiplayer_service:
     description: "Whether to run multiplayer service and client tests"
     value: ${{ steps.eval.outputs.run_battler_multiplayer_service }}
   run_battler_server:
     description: "Whether to run server host binary tests"
     value: ${{ steps.eval.outputs.run_battler_server }}
+  run_battler_web_app:
+    description: "Whether to run battler-web-app modules (team-converter, log-formatter, web-app)"
+    value: ${{ steps.eval.outputs.run_battler_web_app }}
   run_js_clients:
-    description: "Whether to run JS/TS client integration tests"
+    description: "Whether to run JS/WAMP client integration tests against live server"
     value: ${{ steps.eval.outputs.run_js_clients }}
   run_wamp_integration:
     description: "Whether to run WAMP integration tests"
     value: ${{ steps.eval.outputs.run_wamp_integration }}
+  run_battler_bug_reporter:
+    description: "Whether to run battler-bug-reporter build and checks"
+    value: ${{ steps.eval.outputs.run_battler_bug_reporter }}
 
 runs:
   using: "composite"
@@ -64,6 +73,10 @@ runs:
             - 'battler-service-client/**'
             - 'battler-service-producer/**'
             - 'battler-client/**'
+          battler_data_service:
+            - 'battler-data-service/**'
+            - 'battler-data-service-client/**'
+            - 'battler-data-service-producer/**'
           battler_multiplayer_service:
             - 'battler-multiplayer-service/**'
             - 'battler-multiplayer-service-client/**'
@@ -74,13 +87,30 @@ runs:
           ai:
             - 'battler-ai/**'
             - 'battler-ai-gemini-py/**'
+          battler_web_app:
+            - 'js-clients/battler-web-app/**'
+            - 'js-clients/battler-log-formatter/**'
+            - 'js-clients/team-converter/**'
+            - 'js-clients/battler-types/**'
+            - 'package.json'
+            - 'package-lock.json'
+            - 'tsconfig.base.json'
           js_clients:
-            - 'js-clients/**'
+            - 'js-clients/battler-client/**'
+            - 'js-clients/battler-service-client/**'
+            - 'js-clients/battler-data-service-client/**'
+            - 'js-clients/battler-multiplayer-client/**'
+            - 'js-clients/battler-multiplayer-service-client/**'
+            - 'js-clients/battler-wamp-client/**'
+            - 'js-clients/battler-types/**'
+            - 'js-clients/integration-tests/**'
             - 'package.json'
             - 'package-lock.json'
             - 'tsconfig.base.json'
           wamp_integration:
             - 'wamp-integration-tests/**'
+          battler_bug_reporter:
+            - 'battler-bug-reporter/**'
 
     - name: Evaluate combined rules
       id: eval
@@ -90,11 +120,14 @@ runs:
         CORE="${{ steps.filter.outputs.core }}"
         WAMP="${{ steps.filter.outputs.wamp }}"
         SERVICE="${{ steps.filter.outputs.battler_service }}"
+        DATA_SERVICE="${{ steps.filter.outputs.battler_data_service }}"
         MULTIPLAYER="${{ steps.filter.outputs.battler_multiplayer_service }}"
         SERVER="${{ steps.filter.outputs.battler_server }}"
         AI="${{ steps.filter.outputs.ai }}"
+        WEB_APP="${{ steps.filter.outputs.battler_web_app }}"
         JS_CLIENTS="${{ steps.filter.outputs.js_clients }}"
         WAMP_INT="${{ steps.filter.outputs.wamp_integration }}"
+        BUG_REPORTER="${{ steps.filter.outputs.battler_bug_reporter }}"
 
         # Run logic with sequential dependency checks
         RUN_CORE="false"
@@ -106,6 +139,9 @@ runs:
         RUN_SERVICE="false"
         if [ "$RUN_CORE" = "true" ] || [ "$RUN_WAMP" = "true" ] || [ "$SERVICE" = "true" ]; then RUN_SERVICE="true"; fi
 
+        RUN_DATA_SERVICE="false"
+        if [ "$RUN_CORE" = "true" ] || [ "$RUN_WAMP" = "true" ] || [ "$DATA_SERVICE" = "true" ]; then RUN_DATA_SERVICE="true"; fi
+
         RUN_AI="false"
         if [ "$RUN_SERVICE" = "true" ] || [ "$AI" = "true" ]; then RUN_AI="true"; fi
 
@@ -113,19 +149,29 @@ runs:
         if [ "$RUN_SERVICE" = "true" ] || [ "$RUN_AI" = "true" ] || [ "$MULTIPLAYER" = "true" ]; then RUN_MULTIPLAYER="true"; fi
 
         RUN_SERVER="false"
-        if [ "$RUN_MULTIPLAYER" = "true" ] || [ "$SERVER" = "true" ]; then RUN_SERVER="true"; fi
+        if [ "$RUN_MULTIPLAYER" = "true" ] || [ "$RUN_DATA_SERVICE" = "true" ] || [ "$SERVER" = "true" ]; then RUN_SERVER="true"; fi
 
         RUN_JS_CLIENTS="false"
         if [ "$RUN_SERVER" = "true" ] || [ "$JS_CLIENTS" = "true" ]; then RUN_JS_CLIENTS="true"; fi
 
+        RUN_BATTLER_WEB_APP="false"
+        if [ "$CI" = "true" ] || [ "$RUN_CORE" = "true" ] || [ "$RUN_SERVER" = "true" ] || [ "$RUN_JS_CLIENTS" = "true" ] || [ "$WEB_APP" = "true" ]; then RUN_BATTLER_WEB_APP="true"; fi
+
         RUN_WAMP_INTEGRATION="false"
         if [ "$RUN_WAMP" = "true" ] || [ "$WAMP_INT" = "true" ]; then RUN_WAMP_INTEGRATION="true"; fi
+
+        RUN_BATTLER_BUG_REPORTER="false"
+        if [ "$CI" = "true" ] || [ "$BUG_REPORTER" = "true" ]; then RUN_BATTLER_BUG_REPORTER="true"; fi
 
         echo "run_core=$RUN_CORE" >> $GITHUB_OUTPUT
         echo "run_wamp=$RUN_WAMP" >> $GITHUB_OUTPUT
         echo "run_ai=$RUN_AI" >> $GITHUB_OUTPUT
         echo "run_battler_service=$RUN_SERVICE" >> $GITHUB_OUTPUT
+        echo "run_battler_data_service=$RUN_DATA_SERVICE" >> $GITHUB_OUTPUT
         echo "run_battler_multiplayer_service=$RUN_MULTIPLAYER" >> $GITHUB_OUTPUT
         echo "run_battler_server=$RUN_SERVER" >> $GITHUB_OUTPUT
+        echo "run_battler_web_app=$RUN_BATTLER_WEB_APP" >> $GITHUB_OUTPUT
         echo "run_js_clients=$RUN_JS_CLIENTS" >> $GITHUB_OUTPUT
         echo "run_wamp_integration=$RUN_WAMP_INTEGRATION" >> $GITHUB_OUTPUT
+        echo "run_battler_bug_reporter=$RUN_BATTLER_BUG_REPORTER" >> $GITHUB_OUTPUT
+

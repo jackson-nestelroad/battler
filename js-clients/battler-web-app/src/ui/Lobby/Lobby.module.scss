@@ -1,0 +1,40 @@
+@use "../../styles/breakpoints" as *;
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-l);
+  align-items: stretch; /* Stretch children to equal heights */
+
+  @include tablet {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  & > :global(.card) {
+    display: flex;
+    flex-direction: column;
+    min-height: rem(160px);
+  }
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-l) 0;
+  margin: auto 0; /* Center vertically if space allows */
+}
+
+.proposalsList {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs); /* Scrollbar padding */
+}
+
+.lobbyHeader {
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
+}

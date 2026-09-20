@@ -84,23 +84,23 @@ fn fling_throws_berry() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ambipom,player-1,1|name:Fling|target:Ambipom,player-2,1",
-            "activate|mon:Ambipom,player-1,1|move:Fling|item:Pecha Berry",
-            "split|side:1",
-            "damage|mon:Ambipom,player-2,1|health:128/135",
-            "damage|mon:Ambipom,player-2,1|health:95/100",
-            "itemend|mon:Ambipom,player-1,1|item:Pecha Berry|silent|from:move:Fling",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Ambipom,player-2,1|name:Toxic|target:Ambipom,player-1,1",
-            "status|mon:Ambipom,player-1,1|status:Bad Poison",
-            "split|side:0",
-            "damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:127/135",
-            "damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:95/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Ambipom,player-1,1|name:Fling|target:Ambipom,player-2,1",
+                "activate|mon:Ambipom,player-1,1|move:Fling|item:Pecha Berry",
+                "split|side:1",
+                "damage|mon:Ambipom,player-2,1|health:128/135",
+                "damage|mon:Ambipom,player-2,1|health:95/100",
+                "itemend|mon:Ambipom,player-1,1|item:Pecha Berry|silent|from:move:Fling",
+                "residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Ambipom,player-2,1|name:Toxic|target:Ambipom,player-1,1",
+                "status|mon:Ambipom,player-1,1|status:Bad Poison",
+                "residual",
+                "split|side:0",
+                "damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:127/135",
+                "damage|mon:Ambipom,player-1,1|from:status:Bad Poison|health:95/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);
@@ -173,19 +173,19 @@ fn fling_toxic_orb_triggers_bad_poison() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Ambipom,player-1,1|name:Fling|target:Ambipom,player-2,1",
-            "activate|mon:Ambipom,player-1,1|move:Fling|item:Toxic Orb",
-            "split|side:1",
-            "damage|mon:Ambipom,player-2,1|health:115/135",
-            "damage|mon:Ambipom,player-2,1|health:86/100",
-            "status|mon:Ambipom,player-2,1|status:Bad Poison",
-            "itemend|mon:Ambipom,player-1,1|item:Toxic Orb|silent|from:move:Fling",
-            "split|side:1",
-            "damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:107/135",
-            "damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:80/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Ambipom,player-1,1|name:Fling|target:Ambipom,player-2,1",
+                "activate|mon:Ambipom,player-1,1|move:Fling|item:Toxic Orb",
+                "split|side:1",
+                "damage|mon:Ambipom,player-2,1|health:115/135",
+                "damage|mon:Ambipom,player-2,1|health:86/100",
+                "status|mon:Ambipom,player-2,1|status:Bad Poison",
+                "itemend|mon:Ambipom,player-1,1|item:Toxic Orb|silent|from:move:Fling",
+                "residual",
+                "split|side:1",
+                "damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:107/135",
+                "damage|mon:Ambipom,player-2,1|from:status:Bad Poison|health:80/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

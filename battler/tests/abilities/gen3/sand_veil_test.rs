@@ -57,12 +57,12 @@ fn sand_veil_adds_immunity_to_sandstorm() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Pikachu,player-1,1|name:Sandstorm",
-            "weather|weather:Sandstorm",
-            "weather|weather:Sandstorm|residual",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Pikachu,player-1,1|name:Sandstorm",
+                "weather|weather:Sandstorm",
+                "residual",
+                "weather|weather:Sandstorm|residual",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

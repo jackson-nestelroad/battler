@@ -14,7 +14,7 @@ use core::{
 use thiserror::Error;
 
 /// An error resulting from some validation process.
-#[derive(Debug, Default, Error)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Error)]
 pub struct ValidationError {
     problems: Vec<String>,
 }

@@ -82,19 +82,19 @@ fn competitive_activates_after_each_stat_drop() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Jigglypuff,player-1,1|name:Venom Drench",
-            "unboost|mon:Jigglypuff,player-2,1|stat:atk|by:1",
-            "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
-            "unboost|mon:Jigglypuff,player-2,1|stat:spa|by:1",
-            "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
-            "unboost|mon:Jigglypuff,player-2,1|stat:spe|by:1",
-            "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
-            "split|side:1",
-            "damage|mon:Jigglypuff,player-2,1|from:status:Bad Poison|health:277/340",
-            "damage|mon:Jigglypuff,player-2,1|from:status:Bad Poison|health:82/100",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Jigglypuff,player-1,1|name:Venom Drench",
+                "unboost|mon:Jigglypuff,player-2,1|stat:atk|by:1",
+                "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
+                "unboost|mon:Jigglypuff,player-2,1|stat:spa|by:1",
+                "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
+                "unboost|mon:Jigglypuff,player-2,1|stat:spe|by:1",
+                "boost|mon:Jigglypuff,player-2,1|stat:spa|by:2|from:ability:Competitive",
+                "residual",
+                "split|side:1",
+                "damage|mon:Jigglypuff,player-2,1|from:status:Bad Poison|health:277/340",
+                "damage|mon:Jigglypuff,player-2,1|from:status:Bad Poison|health:82/100",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 2, &expected_logs);

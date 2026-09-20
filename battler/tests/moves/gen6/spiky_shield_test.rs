@@ -99,7 +99,7 @@ fn spiky_shield_deals_damage_even_if_bypassed() {
         r#"[
             "move|mon:Chesnaught,player-1,1|name:Spiky Shield|target:Chesnaught,player-1,1",
             "singleturn|mon:Chesnaught,player-1,1|move:Protect",
-            "singleturn|mon:Incineroar,player-2,1|condition:Z-Power",
+            "singleturn|mon:Incineroar,player-2,1|condition:Z-Power|from:item:Incinium Z",
             "move|mon:Incineroar,player-2,1|name:Malicious Moonsault|target:Chesnaught,player-1,1",
             "resisted|mon:Chesnaught,player-1,1",
             "crit|mon:Chesnaught,player-1,1",

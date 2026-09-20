@@ -130,7 +130,7 @@ fn soak_changes_type_to_water() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Alomomola,player-1,1|name:Soak|target:Charmander,player-2,1",
-            "typechange|mon:Charmander,player-2,1|types:Water",
+            "typechange|mon:Charmander,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,
@@ -170,7 +170,7 @@ fn soak_changes_dual_type_to_pure_water() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Alomomola,player-1,1|name:Soak|target:Swampert,player-2,1",
-            "typechange|mon:Swampert,player-2,1|types:Water",
+            "typechange|mon:Swampert,player-2,1|types:Water|from:move:Soak|of:Alomomola,player-1,1",
             "residual",
             "turn|turn:2"
         ]"#,

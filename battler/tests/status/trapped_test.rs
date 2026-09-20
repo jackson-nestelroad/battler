@@ -110,7 +110,7 @@ fn trapped_mon_cannot_switch_out_while_source_is_active() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Gengar,player-1,1|name:Mean Look|target:Pikachu,player-2,1",
-            "activate|mon:Pikachu,player-2,1|condition:Trapped",
+            "activate|mon:Pikachu,player-2,1|condition:Trapped|of:Gengar,player-1,1",
             "residual",
             "turn|turn:2",
             "continue",

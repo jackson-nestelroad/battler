@@ -49,6 +49,7 @@ use crate::{
         Action,
         BattleQueue,
         BattleRegistry,
+        BattleType,
         Context,
         CoreBattleEngineOptions,
         CoreBattleEngineRandomizeBaseDamage,
@@ -71,6 +72,7 @@ use crate::{
         Request,
         RequestType,
         SelectPosition,
+        SelectReason,
         SelectRequest,
         Side,
         SpeedOrderable,
@@ -144,11 +146,6 @@ impl<'d> PublicCoreBattle<'d> {
         self.internal.update_team(player_id, team)
     }
 
-    /// Validates a single player.
-    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
-        self.internal.validate_player(player_id)
-    }
-
     /// Has the battle started?
     pub fn started(&self) -> bool {
         self.internal.started
@@ -162,6 +159,16 @@ impl<'d> PublicCoreBattle<'d> {
     /// The current turn.
     pub fn turn(&self) -> u64 {
         self.internal.turn
+    }
+
+    /// Returns the battle type of the format.
+    pub fn battle_type(&self) -> BattleType {
+        self.internal.format.battle_type
+    }
+
+    /// Returns the rules of the battle format as strings.
+    pub fn rules(&self) -> Vec<String> {
+        self.internal.format.rules()
     }
 
     /// Does the battle have new battle log entries since the last call to
@@ -204,6 +211,11 @@ impl<'d> PublicCoreBattle<'d> {
     /// viewing for the player's team at other points in the battle and even after the battle ends.
     pub fn player_data(&mut self, player: &str) -> Result<PlayerBattleData> {
         self.internal.player_data(player)
+    }
+
+    /// Validates a player's team for this battle.
+    pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
+        self.internal.validate_player(player_id)
     }
 
     /// Returns all active requests for the battle, indexed by player ID.
@@ -320,7 +332,7 @@ pub struct CoreBattle<'d> {
 // Block for constructors.
 impl<'d> CoreBattle<'d> {
     fn new(
-        options: CoreBattleOptions,
+        mut options: CoreBattleOptions,
         data: &'d dyn DataStore,
         engine_options: CoreBattleEngineOptions,
     ) -> Result<Self> {
@@ -330,6 +342,30 @@ impl<'d> CoreBattle<'d> {
 
         let dex = Dex::new(data)?;
         let format = Format::new(options.format, &dex)?;
+
+        for player in options.side_1.players.iter_mut() {
+            if !player.team.members.is_empty() {
+                Self::validate_and_modify_team_static(
+                    &format,
+                    &dex,
+                    &mut player.team,
+                    engine_options.validate_teams,
+                )
+                .wrap_error_with_format(format_args!("validation failed for {}", player.name))?;
+            }
+        }
+        for player in options.side_2.players.iter_mut() {
+            if !player.team.members.is_empty() {
+                Self::validate_and_modify_team_static(
+                    &format,
+                    &dex,
+                    &mut player.team,
+                    engine_options.validate_teams,
+                )
+                .wrap_error_with_format(format_args!("validation failed for {}", player.name))?;
+            }
+        }
+
         let prng = (engine_options.rng_factory)(options.seed);
         let clock = engine_options
             .clock_factory
@@ -703,26 +739,41 @@ impl<'d> CoreBattle<'d> {
         }
 
         let player = self.player_index_by_id(player_id)?;
-        let player = self.player_mut(player)?;
 
-        // SAFETY: Players, dex, and registry are disjoint. We could use a context instead, but this
-        // method allows the team to be set from initialization logic as well.
-        let player = unsafe { player.unsafely_detach_borrow_mut() };
-        player.update_team(team, &self.dex, &self.registry)?;
+        {
+            let player = self.player_mut(player)?;
+
+            // SAFETY: Players, dex, and registry are disjoint. We could use a context instead, but
+            // this method allows the team to be set from initialization logic as well.
+            let player = unsafe { player.unsafely_detach_borrow_mut() };
+            player.update_team(team, &self.dex, &self.registry)?;
+        }
 
         // Reinitialize players and Mons.
         Self::initialize(&mut self.context())?;
 
+        // Run full dynamic validation (fxlang clauses) now that the team is initialized.
+        Self::validate_player_internal(&mut self.context().player_context(player)?)?;
+
+        Ok(())
+    }
+
+    fn validate_and_modify_team_static(
+        format: &Format,
+        dex: &Dex,
+        team: &mut TeamData,
+        validate: bool,
+    ) -> Result<()> {
+        let validator = TeamValidator::new(format, dex);
+        let problems = validator.validate_team(team);
+        if validate && !problems.is_empty() {
+            return Err(ValidationError::from_iter(problems).wrap_error());
+        }
         Ok(())
     }
 
     fn validate_and_modify_team(&self, team: &mut TeamData) -> Result<()> {
-        let validator = TeamValidator::new(&self.format, &self.dex);
-        let problems = validator.validate_team(team);
-        if !problems.is_empty() {
-            return Err(ValidationError::from_iter(problems).wrap_error());
-        }
-        Ok(())
+        Self::validate_and_modify_team_static(&self.format, &self.dex, team, true)
     }
 
     pub fn log_private_public(
@@ -840,12 +891,20 @@ impl<'d> CoreBattle<'d> {
         Ok(())
     }
 
+    /// Validates a player's team for this battle.
     pub fn validate_player(&mut self, player_id: &str) -> Result<()> {
         let player = self.player_index_by_id(player_id)?;
         Self::validate_player_internal(&mut self.context().player_context(player)?)
     }
 
     fn validate_player_internal(context: &mut PlayerContext) -> Result<()> {
+        if let Some(cached) = &context.player().validation_status {
+            return match cached {
+                Ok(()) => Ok(()),
+                Err(err) => Err(err.clone().wrap_error()),
+            };
+        }
+
         // Note that we do not call the TeamValidator here, since the player's team is not updated
         // unless it passes validation.
         //
@@ -856,23 +915,27 @@ impl<'d> CoreBattle<'d> {
         // REQUIRED to use update_team. Then, validation can occur in the core battle engine, and
         // the interface into the battle engine can do additional validation (i.e., the player is
         // not using Mons it does not truly own).
-        let mut problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
-            context,
-            fxlang::BattleEvent::ValidateTeam,
-            Vec::default(),
-        );
+        let mut problems = Vec::new();
         if context.player().team_size() == 0 {
             problems.push("Empty team is not allowed.".to_owned());
         }
-        for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
-            let mut context = context.mon_context(mon)?;
-
-            let mut mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
-                &mut context,
-                fxlang::BattleEvent::ValidateMon,
+        if context.battle().engine_options.validate_teams {
+            let team_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
+                context,
+                fxlang::BattleEvent::ValidateTeam,
                 Vec::default(),
             );
-            problems.append(&mut mon_problems);
+            problems.extend(team_problems);
+            for mon in context.player().mon_handles().cloned().collect::<Vec<_>>() {
+                let mut context = context.mon_context(mon)?;
+
+                let mon_problems = core_battle_effects::run_event_with_relay::<_, Vec<String>>(
+                    &mut context,
+                    fxlang::BattleEvent::ValidateMon,
+                    Vec::default(),
+                );
+                problems.extend(mon_problems);
+            }
         }
 
         // Commit logs, since debug logs end up here. This is somewhat fine because program errors
@@ -883,8 +946,12 @@ impl<'d> CoreBattle<'d> {
         context.battle_mut().log.commit();
 
         if !problems.is_empty() {
-            return Err(ValidationError::from_iter(problems).wrap_error());
+            let error = ValidationError::from_iter(problems);
+            context.player_mut().validation_status = Some(Err(error.clone()));
+            return Err(error.wrap_error());
         }
+
+        context.player_mut().validation_status = Some(Ok(()));
         Ok(())
     }
 
@@ -1015,13 +1082,17 @@ impl<'d> CoreBattle<'d> {
             .battle()
             .players()
             .map(|player| {
-                battle_log_entry!(
+                let mut entry = battle_log_entry!(
                     "player",
                     ("id", &player.id),
                     ("name", &player.name),
                     ("side", player.side),
                     ("position", player.position),
-                )
+                );
+                if player.player_type.wild() {
+                    entry.add_flag("wild");
+                }
+                entry
             })
             .collect::<Vec<_>>();
         context.battle_mut().log_many(player_logs);
@@ -1123,17 +1194,7 @@ impl<'d> CoreBattle<'d> {
                 if active.is_empty() {
                     return Ok(None);
                 }
-                let ally_indices = context
-                    .battle()
-                    .player_indices_on_side(context.side().index)
-                    .filter(|player| *player != context.player().index)
-                    .collect::<Vec<_>>();
-                let mut allies = Vec::with_capacity(ally_indices.len());
-                for player in ally_indices {
-                    let mut context = context.as_battle_context_mut().player_context(player)?;
-                    allies.push(Player::request_data(&mut context)?);
-                }
-                Ok(Some(Request::Turn(TurnRequest { active, allies })))
+                Ok(Some(Request::Turn(TurnRequest { active })))
             }
             RequestType::Switch => {
                 // We only make a request if there are Mons that need to switch out.
@@ -1497,6 +1558,7 @@ impl<'d> CoreBattle<'d> {
                 }
             }
             Action::Residual => {
+                context.battle_mut().log(battle_log_entry!("residual"));
                 context.battle_mut().in_residual = true;
                 Self::clear_all_active_moves(context)?;
                 Self::update_speed(context)?;
@@ -1509,7 +1571,6 @@ impl<'d> CoreBattle<'d> {
                         ..Default::default()
                     },
                 );
-                context.battle_mut().log(battle_log_entry!("residual"));
                 context.battle_mut().in_residual = false;
             }
             Action::Experience(action) => {
@@ -1653,7 +1714,24 @@ impl<'d> CoreBattle<'d> {
         for player in context.battle().player_indices() {
             let mut context = context.player_context(player)?;
 
-            some_select_needed = some_select_needed || Player::needs_select(&context)?;
+            let needs_select = Player::needs_select(&context)?;
+            let can_select = Player::can_select(&context)?;
+            if needs_select {
+                if !can_select {
+                    // Selection can't happen, so unset the select flag.
+                    for mon in context
+                        .player()
+                        .active_or_exited_mon_handles()
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                    {
+                        context.mon_mut(mon)?.volatile_state.select = None;
+                    }
+                } else {
+                    some_select_needed = true;
+                }
+            }
 
             let needs_switch = Player::needs_switch(&context)?;
             let can_switch = Player::can_switch(&context);
@@ -1810,14 +1888,14 @@ impl<'d> CoreBattle<'d> {
             Player::reset_state_for_next_turn(&mut context)?;
         }
 
+        // Save moves that are still referenced from last turn before resetting state for the next
+        // turn, since resetting state can evaluate effects that borrow these active moves.
         for mon_handle in context
             .battle()
             .all_active_mon_handles()
             .collect::<Vec<_>>()
         {
-            let mut context = context.mon_context(mon_handle)?;
-            Mon::reset_state_for_next_turn(&mut context)?;
-
+            let context = context.mon_context(mon_handle)?;
             if let Some(last_move) = context.mon().volatile_state.last_move {
                 context
                     .battle()
@@ -1844,6 +1922,15 @@ impl<'d> CoreBattle<'d> {
                 .battle()
                 .registry
                 .save_active_move_from_next_turn(last_successful_move)?;
+        }
+
+        for mon_handle in context
+            .battle()
+            .all_active_mon_handles()
+            .collect::<Vec<_>>()
+        {
+            let mut context = context.mon_context(mon_handle)?;
+            Mon::reset_state_for_next_turn(&mut context)?;
         }
 
         context.battle_mut().registry.next_turn()?;
@@ -2108,6 +2195,35 @@ impl<'d> CoreBattle<'d> {
             }
         }
         Ok(rand_util::sample_iter(prng, switchables.iter()).cloned())
+    }
+
+    /// Selects a random selectable Mon from the player for the given reason, excluding the given
+    /// team positions.
+    pub fn random_selectable_excluding_team_positions<I>(
+        context: &mut Context,
+        player: usize,
+        reason: SelectReason,
+        exclude: I,
+    ) -> Result<Option<MonHandle>>
+    where
+        I: IntoIterator<Item = usize>,
+    {
+        let exclude: HashSet<usize> = exclude.into_iter().collect();
+        let prng = context.battle_mut().prng.as_mut();
+        // SAFETY: PRNG is completely disjoint from the iterator created below.
+        let prng = unsafe { mem::transmute(prng) };
+
+        let context = context.player_context(player)?;
+        let mut selectables = Vec::new();
+        for mon_handle in Player::selectable_mon_handles(&context, reason)
+            .cloned()
+            .collect::<Vec<_>>()
+        {
+            if !exclude.contains(&context.mon(mon_handle)?.team_position) {
+                selectables.push(mon_handle);
+            }
+        }
+        Ok(rand_util::sample_iter(prng, selectables.iter()).cloned())
     }
 
     /// Selects a random target for the move.

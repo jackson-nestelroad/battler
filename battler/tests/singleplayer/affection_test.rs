@@ -92,12 +92,12 @@ fn affection_cures_status() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Eevee,trainer,1|name:Toxic|target:Pikachu,protagonist,1",
-            "status|mon:Pikachu,protagonist,1|status:Bad Poison",
-            "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Eevee,trainer,1|name:Toxic|target:Pikachu,protagonist,1",
+                "status|mon:Pikachu,protagonist,1|status:Bad Poison",
+                "residual",
+                "curestatus|mon:Pikachu,protagonist,1|status:Bad Poison|from:Affection",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

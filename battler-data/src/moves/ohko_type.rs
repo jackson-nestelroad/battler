@@ -26,6 +26,38 @@ pub enum OhkoType {
     Type(Type),
 }
 
+#[cfg(feature = "typescript")]
+impl ts_rs::TS for OhkoType {
+    type WithoutGenerics = Self;
+    fn ident() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("OhkoType")
+    }
+    fn decl() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("type OhkoType = true | Type;")
+    }
+    fn decl_concrete() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("type OhkoType = true | Type;")
+    }
+    fn name() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("OhkoType")
+    }
+    fn inline() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("true | Type")
+    }
+    fn inline_flattened() -> alloc::string::String {
+        alloc::borrow::ToOwned::to_owned("true | Type")
+    }
+    fn visit_dependencies(v: &mut impl ts_rs::TypeVisitor)
+    where
+        Self: 'static,
+    {
+        v.visit::<Type>();
+    }
+    fn output_path() -> Option<&'static std::path::Path> {
+        Some(std::path::Path::new("OhkoType.ts"))
+    }
+}
+
 impl Display for OhkoType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

@@ -13,7 +13,6 @@ ahash = { workspace = true }
 anyhow = { workspace = true }
 indexmap = { workspace = true }
 num = { workspace = true }
-uuid = { workspace = true }
 
 battler-data = { workspace = true }
 

@@ -7,6 +7,9 @@ use battler_wamprat_message::WampApplicationMessage;
 use battler_wamprat_schema::WampSchema;
 use battler_wamprat_uri::WampUriMatcher;
 
+mod error;
+pub use error::BattlerMultiplayerServiceError;
+
 /// Arguments for proposing a battle.
 #[derive(Debug, Clone, WampList)]
 pub struct ProposeBattleInputArgs {
@@ -89,13 +92,10 @@ pub struct ProposedBattleRejectionOutputArgs {
     pub proposed_battle_rejection_json: String,
 }
 
-/// URI pattern for proposed battle updates for a player.
+/// URI pattern for proposed battle updates.
 #[derive(Debug, Clone, WampUriMatcher)]
-#[uri("com.battler.battler_multiplayer_service.proposed_battle_updates.{player}")]
-pub struct ProposedBattleUpdatesPattern {
-    /// Player ID.
-    pub player: String,
-}
+#[uri("com.battler.battler_multiplayer_service.proposed_battle_updates")]
+pub struct ProposedBattleUpdatesPattern;
 
 /// An update to a proposed battle.
 #[derive(Debug, Clone, WampList)]
@@ -108,6 +108,17 @@ pub struct ProposedBattleUpdate {
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct ProposedBattleUpdateEvent(#[arguments] pub ProposedBattleUpdate);
 
+/// Arguments for proposing a special battle.
+#[derive(Debug, Clone, WampList)]
+pub struct ProposeSpecialBattleInputArgs {
+    /// JSON-serialized [`battler_multiplayer_service::ProposedSpecialBattleOptions`].
+    pub proposed_special_battle_options_json: String,
+}
+
+/// Input for proposing a special battle.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct ProposeSpecialBattleInput(#[arguments] pub ProposeSpecialBattleInputArgs);
+
 /// Service for managing multiplayer battles on the `battler` battle engine.
 #[derive(Debug, Clone, WampSchema)]
 #[realm("com.battler")]
@@ -115,6 +126,9 @@ pub enum BattlerMultiplayerService {
     /// Proposes a battle to the given players.
     #[rpc(uri = "com.battler.battler_multiplayer_service.proposed_battles.create", input = ProposeBattleInput, output = ProposedBattleOutput)]
     ProposeBattle,
+    /// Proposes a special battle to the given players.
+    #[rpc(uri = "com.battler.battler_multiplayer_service.proposed_battles.create_special", input = ProposeSpecialBattleInput, output = ProposedBattleOutput)]
+    ProposeSpecialBattle,
     /// Looks up a proposed battle.
     #[rpc(pattern = ProposedBattlePattern, input = ProposedBattleInput, output = ProposedBattleOutput)]
     ProposedBattle,

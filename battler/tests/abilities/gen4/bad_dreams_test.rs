@@ -57,14 +57,14 @@ fn bad_dreams_inflicts_damage_when_asleep() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Darkrai,player-1,1|name:Spore|target:Darkrai,player-2,1",
-            "status|mon:Darkrai,player-2,1|status:Sleep",
-            "split|side:0",
-            "damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:114/130",
-            "damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:88/100",
-            "residual",
-            "turn|turn:2"
-        ]"#,
+                "move|mon:Darkrai,player-1,1|name:Spore|target:Darkrai,player-2,1",
+                "status|mon:Darkrai,player-2,1|status:Sleep",
+                "residual",
+                "split|side:0",
+                "damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:114/130",
+                "damage|mon:Darkrai,player-1,1|from:ability:Bad Dreams|of:Darkrai,player-2,1|health:88/100",
+                "turn|turn:2"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

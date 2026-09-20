@@ -1,4 +1,7 @@
-use ahash::HashMap;
+use ahash::{
+    HashMap,
+    HashSet,
+};
 use anyhow::Result;
 use tokio::{
     sync::broadcast,
@@ -41,6 +44,7 @@ impl Drop for AiPlayerRegistryTaskHandle<'_> {
 #[derive(Debug, Default)]
 pub struct AiPlayerRegistry<'d> {
     players: HashMap<String, AiPlayerRegistryTaskHandle<'d>>,
+    player_ids: HashSet<String>,
 }
 
 impl<'d> AiPlayerRegistry<'d> {
@@ -51,6 +55,9 @@ impl<'d> AiPlayerRegistry<'d> {
         options: AiPlayerOptions,
         modules: AiPlayerModules<'d>,
     ) -> Result<()> {
+        for player in &options.players {
+            self.player_ids.insert(player.clone());
+        }
         let handle = AiPlayer::new(id.clone(), options, modules).start().await?;
         let error_rx = handle.error_rx();
         let join_handle = tokio::spawn(AiPlayerRegistry::watch_ai_player(id.clone(), error_rx));
@@ -60,6 +67,11 @@ impl<'d> AiPlayerRegistry<'d> {
         };
         self.players.insert(id, handle);
         Ok(())
+    }
+
+    /// Checks if a player ID is a registered AI player.
+    pub fn is_ai_player(&self, player_id: &str) -> bool {
+        self.player_ids.contains(player_id)
     }
 
     async fn watch_ai_player(id: String, mut error_rx: broadcast::Receiver<String>) {

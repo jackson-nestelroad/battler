@@ -12,16 +12,21 @@ use crate::AbilityFlag;
 ///
 /// Every Mon has one ability, which affects the battle in a wide variety of ways.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
 pub struct AbilityData {
     /// Name of the ability.
     pub name: String,
     /// Ability flags.
+    #[cfg_attr(feature = "typescript", ts(as = "Vec<AbilityFlag>"))]
     pub flags: HashSet<AbilityFlag>,
 
     /// Dynamic battle effects.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub effect: serde_json::Value,
     /// Dynamic battle effects of the condition created by this ability.
     #[serde(default)]
+    #[cfg_attr(feature = "typescript", ts(type = "unknown"))]
     pub condition: serde_json::Value,
 }

@@ -1,0 +1,158 @@
+import { useEffect, useRef } from "react";
+import { restoreBattleSession, restoreProposalSession } from "../core/wamp";
+import type { ActiveView } from "../store/battlesSlice";
+import { selectBattle } from "../store/battlesSlice";
+import { store, useAppDispatch, useAppSelector } from "../store/store";
+
+// Helper to get path relative to Vite's BASE_URL (e.g., /my-app/teams -> /teams)
+const getCleanPathname = () => {
+  const base = import.meta.env.BASE_URL || "/";
+  const baseNoTrailing = base.endsWith("/") ? base.slice(0, -1) : base;
+  return window.location.pathname.replace(baseNoTrailing, "") || "/";
+};
+
+const pushPath = (cleanPath: string) => {
+  const base = import.meta.env.BASE_URL || "/";
+  const baseNoTrailing = base.endsWith("/") ? base.slice(0, -1) : base;
+  window.history.pushState(null, "", (baseNoTrailing + cleanPath).replace(/\/+/g, "/"));
+};
+
+export function useHistorySync() {
+  const dispatch = useAppDispatch();
+  const currentView = useAppSelector((state) => state.battles.currentView);
+  const activeBattleId = useAppSelector((state) => state.battles.activeBattleId);
+  const activeResource = useAppSelector((state) => state.battles.activeResource);
+  const battles = useAppSelector((state) => state.battles.battles);
+  const proposalsMap = useAppSelector((state) => state.proposals.proposals);
+  const connection = useAppSelector((state) => state.connection);
+
+  const isHandlingPopState = useRef(false);
+  const battlesRef = useRef(battles);
+
+  // Keep battlesRef up-to-date
+  useEffect(() => {
+    battlesRef.current = battles;
+  }, [battles]);
+
+  // Auto-transition from proposal view to battle view if battle session created, or redirect if not a participant
+  useEffect(() => {
+    if (currentView === "proposal" && activeBattleId) {
+      const proposal = proposalsMap[activeBattleId];
+      if (proposal) {
+        if (proposal.battle && battles[proposal.battle]) {
+          dispatch(selectBattle({ view: "battle", battleId: proposal.battle }));
+        } else if (connection.playerId) {
+          const isParticipant = proposal.sides
+            .flatMap((s) => s.players)
+            .some((p) => p.id === connection.playerId);
+          if (!isParticipant) {
+            dispatch(selectBattle({ view: "lobby", battleId: null }));
+          }
+        }
+      }
+    }
+  }, [currentView, activeBattleId, proposalsMap, battles, connection.playerId, dispatch]);
+
+  // 1. Sync URL -> Redux (on load and back/forward navigation)
+  useEffect(() => {
+    const handlePopState = () => {
+      isHandlingPopState.current = true;
+      const path = getCleanPathname();
+
+      let view: ActiveView = "lobby";
+      let activeId: string | null = null;
+      let resource: string | null = null;
+
+      if (path.startsWith("/battle/")) {
+        view = "battle";
+        activeId = path.slice(8) || null;
+      } else if (path.startsWith("/replay/")) {
+        activeId = path.slice(8) || null;
+        if (activeId && battlesRef.current[activeId]) {
+          view = "battle";
+        } else {
+          view = "replays";
+          activeId = null;
+        }
+      } else if (path === "/replays") {
+        view = "replays";
+      } else if (path.startsWith("/proposal/")) {
+        view = "proposal";
+        activeId = path.slice(10) || null;
+      } else if (path === "/teams") {
+        view = "teams";
+      } else if (path === "/resources/type-chart" || path === "/type-chart") {
+        view = "resources";
+        resource = "type-chart";
+      } else if (path === "/resources") {
+        view = "resources";
+        resource = null;
+      }
+
+      dispatch(selectBattle({ view, battleId: activeId, resource }));
+
+      setTimeout(() => {
+        isHandlingPopState.current = false;
+      }, 0);
+    };
+
+    handlePopState();
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [dispatch]);
+
+  // Load/restore battle or proposal on navigation if not already in store
+  useEffect(() => {
+    if (connection.status !== "connected" || !connection.playerId || !activeBattleId) return;
+
+    if (currentView === "battle") {
+      const b = battles[activeBattleId];
+      const hasAttempted = b && (b.isLoading || b.error !== null || b.battleState !== null);
+      if (!hasAttempted) {
+        restoreBattleSession(activeBattleId, connection.playerId, dispatch);
+      }
+    } else if (currentView === "proposal") {
+      const b = battles[activeBattleId];
+      const hasAttempted =
+        b && (b.isLoading || b.error !== null || proposalsMap[activeBattleId] !== undefined);
+      if (!hasAttempted) {
+        restoreProposalSession(activeBattleId, connection.playerId, dispatch, store.getState);
+      }
+    }
+  }, [
+    connection.status,
+    connection.playerId,
+    activeBattleId,
+    currentView,
+    battles,
+    proposalsMap,
+    dispatch,
+  ]);
+
+  // 2. Sync Redux -> URL (on state changes)
+  useEffect(() => {
+    if (isHandlingPopState.current) return;
+
+    let targetPath = "/";
+    if (currentView === "teams") {
+      targetPath = "/teams";
+    } else if (currentView === "replays") {
+      targetPath = "/replays";
+    } else if (currentView === "proposal" && activeBattleId) {
+      targetPath = `/proposal/${activeBattleId}`;
+    } else if (currentView === "battle" && activeBattleId) {
+      const battle = battles[activeBattleId];
+      if (battle?.isReplay) {
+        targetPath = `/replay/${activeBattleId}`;
+      } else {
+        targetPath = `/battle/${activeBattleId}`;
+      }
+    } else if (currentView === "resources") {
+      targetPath = activeResource ? `/resources/${activeResource}` : "/resources";
+    }
+
+    if (getCleanPathname() !== targetPath) {
+      pushPath(targetPath);
+    }
+  }, [currentView, activeResource, activeBattleId, battles]);
+}

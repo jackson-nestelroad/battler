@@ -63,26 +63,26 @@ fn slush_rush_boosts_speed_in_snow() {
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
-            "move|mon:Beartic,player-1,1|name:Snowscape",
-            "weather|weather:Snow",
-            "move|mon:Beartic,player-2,1|name:Agility|target:Beartic,player-2,1",
-            "boost|mon:Beartic,player-2,1|stat:spe|by:2",
-            "weather|weather:Snow|residual",
-            "residual",
-            "turn|turn:2",
-            "continue",
-            "move|mon:Beartic,player-1,1|name:Tackle|target:Beartic,player-2,1",
-            "split|side:1",
-            "damage|mon:Beartic,player-2,1|health:264/300",
-            "damage|mon:Beartic,player-2,1|health:88/100",
-            "move|mon:Beartic,player-2,1|name:Tackle|target:Beartic,player-1,1",
-            "split|side:0",
-            "damage|mon:Beartic,player-1,1|health:266/300",
-            "damage|mon:Beartic,player-1,1|health:89/100",
-            "weather|weather:Snow|residual",
-            "residual",
-            "turn|turn:3"
-        ]"#,
+                "move|mon:Beartic,player-1,1|name:Snowscape",
+                "weather|weather:Snow",
+                "move|mon:Beartic,player-2,1|name:Agility|target:Beartic,player-2,1",
+                "boost|mon:Beartic,player-2,1|stat:spe|by:2",
+                "residual",
+                "weather|weather:Snow|residual",
+                "turn|turn:2",
+                "continue",
+                "move|mon:Beartic,player-1,1|name:Tackle|target:Beartic,player-2,1",
+                "split|side:1",
+                "damage|mon:Beartic,player-2,1|health:264/300",
+                "damage|mon:Beartic,player-2,1|health:88/100",
+                "move|mon:Beartic,player-2,1|name:Tackle|target:Beartic,player-1,1",
+                "split|side:0",
+                "damage|mon:Beartic,player-1,1|health:266/300",
+                "damage|mon:Beartic,player-1,1|health:89/100",
+                "residual",
+                "weather|weather:Snow|residual",
+                "turn|turn:3"
+            ]"#,
     )
     .unwrap();
     assert_logs_since_turn_eq(&battle, 1, &expected_logs);

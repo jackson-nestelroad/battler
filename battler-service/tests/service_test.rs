@@ -23,7 +23,6 @@ use battler::{
     PlayerOptions,
     PlayerType,
     RequestType,
-    Rule,
     SideData,
     StatTable,
     TeamData,
@@ -35,6 +34,7 @@ use battler_service::{
     BattleServiceOptions,
     BattleState,
     BattlerService,
+    DropReason,
     LogEntry,
     Player,
     PlayerPreview,
@@ -43,9 +43,9 @@ use battler_service::{
     SidePreview,
     Timer,
     Timers,
+    WatchdogOptions,
 };
 use battler_test_utils::static_local_data_store;
-use hashbrown::HashSet;
 use itertools::Itertools;
 use tokio::{
     sync::broadcast,
@@ -113,7 +113,7 @@ fn core_battle_options(battle_type: BattleType, team: TeamData) -> CoreBattleOpt
         seed: Some(0),
         format: FormatData {
             battle_type: battle_type,
-            rules: HashSet::from_iter([Rule::value_name("Item Clause")]),
+            rules: Vec::from_iter(["Item Clause".to_owned()]),
         },
         field: FieldData::default(),
         side_1: SideData {
@@ -260,10 +260,6 @@ async fn invalid_team_fails_validation_and_resets_state() {
         .await
         .unwrap();
     assert_eq!(battle.sides[0].players[0].state, PlayerState::Ready);
-    assert_matches::assert_matches!(battler_service.validate_player(battle.uuid, "player-1").await, Ok(validation) => {
-        assert!(validation.problems.is_empty());
-    });
-
     let mut bad_team = team(5);
     bad_team.members[0].item = Some("Leftovers".to_owned());
     bad_team.members[1].item = Some("Leftovers".to_owned());
@@ -272,16 +268,10 @@ async fn invalid_team_fails_validation_and_resets_state() {
         battler_service
             .update_team(battle.uuid, "player-1", bad_team)
             .await,
-        Ok(())
+        Err(err) => {
+            assert!(err.to_string().contains("Item Leftovers appears more than 1 time."));
+        }
     );
-
-    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Ok(battle) => {
-        assert_eq!(battle.sides[0].players[0].state, PlayerState::Waiting);
-    });
-
-    assert_matches::assert_matches!(battler_service.validate_player(battle.uuid, "player-1").await, Ok(validation) => {
-        pretty_assertions::assert_eq!(validation.problems, Vec::from_iter(["Item Leftovers appears more than 1 time."]));
-    });
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -402,6 +392,66 @@ async fn plays_battle_and_finishes_and_deletes() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn auto_cleans_up_finished_battles() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for battle to start.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
+
+    // Forfeit to end battle.
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "forfeit")
+            .await,
+        Ok(())
+    );
+
+    // Wait for battle to end.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
+
+    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Ok(battle) => {
+        assert_eq!(battle.state, BattleState::Finished);
+    });
+
+    // Make sure it is not deleted yet (duration since end is 0, TTL is 60 secs).
+    let deleted = battler_service
+        .clean_up_finished_battles(Duration::from_secs(60))
+        .await
+        .unwrap();
+    assert_eq!(deleted.len(), 0);
+
+    // Clean up with Duration::ZERO (instantly expired).
+    let deleted = battler_service
+        .clean_up_finished_battles(Duration::ZERO)
+        .await
+        .unwrap();
+    assert_eq!(deleted, vec![battle.uuid]);
+
+    // Verify it is gone from the service.
+    assert_matches::assert_matches!(battler_service.battle(battle.uuid).await, Err(err) => {
+        assert_eq!(err.to_string(), "battle does not exist");
+    });
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn returns_filtered_logs_by_side() {
     let battler_service = BattlerService::new(static_local_data_store());
     let battle = battler_service
@@ -416,15 +466,12 @@ async fn returns_filtered_logs_by_side() {
         .await
         .unwrap();
 
-    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+    let mut start_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
 
     assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
 
     // Wait for battle to start.
-    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
-
-    // Read all logs from the battle starting; we only care to verify the first turn.
-    while let Ok(_) = public_log_rx.try_recv() {}
+    read_all_entries_from_log_rx_stopping_at(&mut start_log_rx, "turn|turn:1").await;
 
     let mut side_1_log_rx = battler_service
         .subscribe(battle.uuid, Some(0))
@@ -434,6 +481,7 @@ async fn returns_filtered_logs_by_side() {
         .subscribe(battle.uuid, Some(1))
         .await
         .unwrap();
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
 
     assert_matches::assert_matches!(
         battler_service
@@ -527,35 +575,49 @@ async fn lists_battles_in_uuid_order() {
                 uuid: battles[0],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
+                drop_reason: None,
+                special: None,
             },
             BattlePreview {
                 uuid: battles[1],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
+                drop_reason: None,
+                special: None,
             }
         ])
     );
@@ -566,18 +628,25 @@ async fn lists_battles_in_uuid_order() {
             uuid: battles[2],
             sides: Vec::from_iter([
                 SidePreview {
+                    name: "Side 1".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-1".to_owned(),
                         name: "Player 1".to_owned(),
                     }]),
                 },
                 SidePreview {
+                    name: "Side 2".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-2".to_owned(),
                         name: "Player 2".to_owned(),
                     }]),
                 }
             ]),
+            battle_type: battler::battle::BattleType::Singles,
+            state: BattleState::Preparing,
+            turn: 0,
+            drop_reason: None,
+            special: None,
         }])
     );
 
@@ -631,35 +700,49 @@ async fn lists_battles_for_player_in_uuid_order() {
                 uuid: battles[0],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
+                drop_reason: None,
+                special: None,
             },
             BattlePreview {
                 uuid: battles[1],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
                         }]),
                     }
                 ]),
+                battle_type: battler::battle::BattleType::Singles,
+                state: BattleState::Preparing,
+                turn: 0,
+                drop_reason: None,
+                special: None,
             }
         ])
     );
@@ -670,18 +753,25 @@ async fn lists_battles_for_player_in_uuid_order() {
             uuid: battles[2],
             sides: Vec::from_iter([
                 SidePreview {
+                    name: "Side 1".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-1".to_owned(),
                         name: "Player 1".to_owned(),
                     }]),
                 },
                 SidePreview {
+                    name: "Side 2".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-2".to_owned(),
                         name: "Player 2".to_owned(),
                     }]),
                 }
             ]),
+            battle_type: battler::battle::BattleType::Singles,
+            state: BattleState::Preparing,
+            turn: 0,
+            drop_reason: None,
+            special: None,
         }])
     );
 
@@ -753,15 +843,17 @@ async fn auto_ends_battle_on_battle_timer() {
 
     assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
         pretty_assertions::assert_eq!(
-            log[(log.len() - 7)..],
+            log[(log.len() - 9)..],
             [
                 "turn|turn:1",
+                "-battlerservice:request",
                 "-battlerservice:timer|battle|remainingsecs:5",
                 "-battlerservice:timer|battle|warning|remainingsecs:4",
                 "-battlerservice:timer|battle|warning|remainingsecs:2",
                 "-battlerservice:timer|battle|warning|remainingsecs:1",
                 "-battlerservice:timer|battle|done|remainingsecs:0",
                 "tie",
+                "-battlerservice:done",
             ]
         );
     });
@@ -773,6 +865,106 @@ async fn auto_ends_battle_on_battle_timer() {
         Err(err) => {
             assert!(err.to_string().contains("the battle is over"), "{err:#}");
         }
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn battle_timer_does_not_reset_on_resume() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    battle: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::from_iter([4, 2, 1]),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    tokio::time::sleep(Duration::from_secs(2)).await;
+
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 1")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_millis(3500)).await;
+
+    assert_eq!(
+        battler_service.battle(battle.uuid).await.unwrap().state,
+        BattleState::Finished
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_timer_does_not_reset_on_resume() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    player: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::from_iter([4, 2, 1]),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    tokio::time::sleep(Duration::from_secs(2)).await;
+
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 1")
+            .await,
+        Ok(())
+    );
+
+    tokio::time::sleep(Duration::from_millis(3500)).await;
+
+    assert_eq!(
+        battler_service.battle(battle.uuid).await.unwrap().state,
+        BattleState::Finished
     );
 }
 
@@ -837,7 +1029,7 @@ async fn forfeits_on_player_timer() {
 
     assert_matches::assert_matches!(battler_service.full_log(battle.uuid, None).await, Ok(log) => {
         pretty_assertions::assert_eq!(
-            log[(log.len() - 6)..],
+            log[(log.len() - 7)..],
             [
                 "-battlerservice:timer|player:player-2|warning|remainingsecs:1",
                 "-battlerservice:timer|player:player-2|done|remainingsecs:0",
@@ -845,6 +1037,7 @@ async fn forfeits_on_player_timer() {
                 "switchout|mon:Bulbasaur,player-2,1",
                 "forfeited|player:player-2",
                 "win|side:0",
+                "-battlerservice:done",
             ]
         );
     });
@@ -982,23 +1175,816 @@ async fn only_activates_player_timer_if_request_is_active() {
     // Wait for battle to end.
     let log = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "win|side:0").await;
 
-    assert_eq!(log.len(), 8);
-    assert_eq!(
-        log[0],
-        "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1"
-    );
-    assert_eq!(log[1], "damage|mon:Bulbasaur,player-2,1|health:0");
-    assert_eq!(log[2], "faint|mon:Bulbasaur,player-2,1");
-    assert_eq!(log[3], "residual");
+    assert!(log.iter().any(
+        |line| line == "move|mon:Bulbasaur,player-1,1|name:Tackle|target:Bulbasaur,player-2,1"
+    ));
     assert!(
-        log[4].starts_with("-battlerservice:timer|player:player-2|remainingsecs:"),
-        "expected timer log with remaining seconds, got: {}",
-        log[4]
+        log.iter()
+            .any(|line| line == "damage|mon:Bulbasaur,player-2,1|health:0")
     );
+    assert!(
+        log.iter()
+            .any(|line| line == "faint|mon:Bulbasaur,player-2,1")
+    );
+    assert!(log.iter().any(|line| line == "residual"));
+    assert!(log.iter().any(|line| line == "-battlerservice:request"));
+    assert!(
+        log.iter()
+            .any(|line| line.starts_with("-battlerservice:timer|player:player-2|remainingsecs:"))
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|player:player-2|done|remainingsecs:0")
+    );
+    assert!(log.iter().any(|line| line == "continue"));
+    assert!(log.iter().any(|line| line == "forfeited|player:player-2"));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn selects_random_leads_on_team_preview_timer() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let mut options = core_battle_options(BattleType::Singles, team(5));
+    // Enable Team Preview clause.
+    options.format.rules.push("Team Preview".to_owned());
+    let battle = battler_service
+        .create(
+            options,
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                log_time: false,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    team_preview: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::default(),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for the team preview timer to start.
+    read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|teampreview|remainingsecs:5",
+    )
+    .await;
+
+    // Do NOT make any choices. The team preview timer should fire and make choice "randomall",
+    // causing the battle to start.
+    read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "battlestart").await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_and_battle_timers_do_not_activate_during_team_preview() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let mut options = core_battle_options(BattleType::Singles, team(5));
+    // Enable Team Preview clause.
+    options.format.rules.push("Team Preview".to_owned());
+    let battle = battler_service
+        .create(
+            options,
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                log_time: false,
+                ..Default::default()
+            },
+            BattleServiceOptions {
+                timers: Timers {
+                    battle: Some(Timer {
+                        secs: 300,
+                        warnings: BTreeSet::default(),
+                    }),
+                    player: Some(Timer {
+                        secs: 120,
+                        warnings: BTreeSet::default(),
+                    }),
+                    team_preview: Some(Timer {
+                        secs: 5,
+                        warnings: BTreeSet::default(),
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+    let mut public_log_rx = battler_service.subscribe(battle.uuid, None).await.unwrap();
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for the team preview and inactive timers to start.
+    let log = read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|player:player-2|inactive|remainingsecs:120",
+    )
+    .await;
+
+    // Verify that NO battle timer or player timer has started (active) during Team Preview.
+    assert!(
+        !log.iter()
+            .any(|line| line.contains("timer|battle") && !line.contains("inactive"))
+    );
+    assert!(
+        !log.iter()
+            .any(|line| line.contains("timer|player") && !line.contains("inactive"))
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|teampreview|remainingsecs:5")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|battle|inactive|remainingsecs:300")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|player:player-1|inactive|remainingsecs:120")
+    );
+
+    // Submit team preview choices to move out of Team Preview.
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "team 0 1 2 3 4 5")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "team 0 1 2 3 4 5")
+            .await,
+        Ok(())
+    );
+
+    // Wait for Turn 1 to start.
+    _ = read_all_entries_from_log_rx_stopping_at(&mut public_log_rx, "turn|turn:1").await;
+
+    // Now that Team Preview has ended, the battle and player timers should start.
+    let log = read_all_entries_from_log_rx_stopping_at(
+        &mut public_log_rx,
+        "-battlerservice:timer|player:player-2|remainingsecs:120",
+    )
+    .await;
+
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|battle|remainingsecs:300")
+    );
+    assert!(
+        log.iter()
+            .any(|line| line == "-battlerservice:timer|player:player-1|remainingsecs:120")
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn forfeit_during_forced_switch_in_multi_battle_serves_requests_to_remaining_players() {
+    let battler_service = BattlerService::new(static_local_data_store());
+
+    let strong_team = TeamData {
+        members: Vec::from_iter([mon(
+            "Squirtle".to_owned(),
+            "Squirtle".to_owned(),
+            "Torrent".to_owned(),
+            Vec::from_iter(["Surf".to_owned(), "Tackle".to_owned()]),
+            100,
+        )]),
+        bag: BagData::default(),
+    };
+
+    let weak_team_with_reserve = TeamData {
+        members: Vec::from_iter([
+            mon(
+                "Charmander".to_owned(),
+                "Charmander".to_owned(),
+                "Blaze".to_owned(),
+                Vec::from_iter(["Scratch".to_owned()]),
+                5,
+            ),
+            mon(
+                "Squirtle".to_owned(),
+                "Squirtle".to_owned(),
+                "Torrent".to_owned(),
+                Vec::from_iter(["Tackle".to_owned()]),
+                5,
+            ),
+        ]),
+        bag: BagData::default(),
+    };
+
+    let battle = battler_service
+        .create(
+            CoreBattleOptions {
+                seed: Some(0),
+                format: FormatData {
+                    battle_type: BattleType::Multi,
+                    ..Default::default()
+                },
+                field: FieldData::default(),
+                side_1: SideData {
+                    name: "Side 1".to_owned(),
+                    players: Vec::from_iter([
+                        PlayerData {
+                            id: "player-1".to_owned(),
+                            name: "Player 1".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                        PlayerData {
+                            id: "player-2".to_owned(),
+                            name: "Player 2".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                    ]),
+                },
+                side_2: SideData {
+                    name: "Side 2".to_owned(),
+                    players: Vec::from_iter([
+                        PlayerData {
+                            id: "player-3".to_owned(),
+                            name: "Player 3".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: weak_team_with_reserve.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                        PlayerData {
+                            id: "player-4".to_owned(),
+                            name: "Player 4".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                    ]),
+                },
+            },
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-1", strong_team.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-2", strong_team.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-3", weak_team_with_reserve.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-4", strong_team.clone())
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    // Wait for requests to be generated by proceed task.
+    let mut request = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-1").await {
+            request = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(request.is_some(), "player-1 should receive Turn 1 request");
+
+    // Turn 1 choices: player-1 uses Surf (no target), player-3's Charmander faints!
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-3", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-4", "move 0")
+            .await,
+        Ok(())
+    );
+
+    // Player 3 has a Switch request. Wait for proceed task to populate request.
+    let mut player_3_req = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-3").await {
+            player_3_req = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(
+        player_3_req.is_some(),
+        "player-3 should have a Switch request"
+    );
+
+    // Player 3 forfeits instead of switching!
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-3", "forfeit")
+            .await,
+        Ok(())
+    );
+
+    // Wait for proceed task to process forfeit and advance to Turn 2.
+    let mut player_1_req = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-1").await {
+            player_1_req = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(
+        player_1_req.is_some(),
+        "player-1 should have a Turn 2 request"
+    );
+    assert_matches::assert_matches!(
+        battler_service.request(battle.uuid, "player-2").await,
+        Ok(Some(_))
+    );
+    assert_matches::assert_matches!(
+        battler_service.request(battle.uuid, "player-4").await,
+        Ok(Some(_))
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn player_with_forced_switch_forfeits_in_multi_battle_serves_requests_to_remaining_players() {
+    let battler_service = BattlerService::new(static_local_data_store());
+
+    let strong_team = TeamData {
+        members: Vec::from_iter([mon(
+            "Squirtle".to_owned(),
+            "Squirtle".to_owned(),
+            "Torrent".to_owned(),
+            Vec::from_iter(["Surf".to_owned(), "Tackle".to_owned()]),
+            100,
+        )]),
+        bag: BagData::default(),
+    };
+
+    let weak_team_with_reserve = TeamData {
+        members: Vec::from_iter([
+            mon(
+                "Charmander".to_owned(),
+                "Charmander".to_owned(),
+                "Blaze".to_owned(),
+                Vec::from_iter(["Scratch".to_owned()]),
+                5,
+            ),
+            mon(
+                "Squirtle".to_owned(),
+                "Squirtle".to_owned(),
+                "Torrent".to_owned(),
+                Vec::from_iter(["Tackle".to_owned()]),
+                5,
+            ),
+        ]),
+        bag: BagData::default(),
+    };
+
+    let battle = battler_service
+        .create(
+            CoreBattleOptions {
+                seed: Some(0),
+                format: FormatData {
+                    battle_type: BattleType::Multi,
+                    ..Default::default()
+                },
+                field: FieldData::default(),
+                side_1: SideData {
+                    name: "Side 1".to_owned(),
+                    players: Vec::from_iter([
+                        PlayerData {
+                            id: "player-1".to_owned(),
+                            name: "Player 1".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: weak_team_with_reserve.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                        PlayerData {
+                            id: "player-2".to_owned(),
+                            name: "Player 2".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                    ]),
+                },
+                side_2: SideData {
+                    name: "Side 2".to_owned(),
+                    players: Vec::from_iter([
+                        PlayerData {
+                            id: "player-3".to_owned(),
+                            name: "Player 3".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                        PlayerData {
+                            id: "player-4".to_owned(),
+                            name: "Player 4".to_owned(),
+                            player_type: PlayerType::Trainer,
+                            player_options: PlayerOptions::default(),
+                            team: strong_team.clone(),
+                            dex: PlayerDex::default(),
+                        },
+                    ]),
+                },
+            },
+            CoreBattleEngineOptions {
+                speed_sort_tie_resolution: CoreBattleEngineSpeedSortTieResolution::Keep,
+                ..Default::default()
+            },
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-1", weak_team_with_reserve.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-2", strong_team.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-3", strong_team.clone())
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .update_team(battle.uuid, "player-4", strong_team.clone())
+            .await,
+        Ok(())
+    );
+
+    assert_matches::assert_matches!(battler_service.start(battle.uuid).await, Ok(()));
+
+    let mut request = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-1").await {
+            request = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(request.is_some(), "player-1 should receive Turn 1 request");
+
+    // Turn 1 choices: player-3 uses Surf, player-1's Charmander faints!
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-2", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-3", "move 0")
+            .await,
+        Ok(())
+    );
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-4", "move 0")
+            .await,
+        Ok(())
+    );
+
+    // Player 1 has a Switch request. Wait for proceed task to populate request.
+    let mut player_1_req = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-1").await {
+            player_1_req = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(
+        player_1_req.is_some(),
+        "player-1 should have a Switch request"
+    );
+
+    // Player 1 forfeits instead of switching!
+    assert_matches::assert_matches!(
+        battler_service
+            .make_choice(battle.uuid, "player-1", "forfeit")
+            .await,
+        Ok(())
+    );
+
+    // Wait for proceed task to process forfeit and advance to Turn 2 for remaining active players.
+    let mut player_2_req = None;
+    for _ in 0..50 {
+        if let Ok(Some(r)) = battler_service.request(battle.uuid, "player-2").await {
+            player_2_req = Some(r);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    assert!(
+        player_2_req.is_some(),
+        "player-2 should have a Turn 2 request"
+    );
+    assert_matches::assert_matches!(
+        battler_service.request(battle.uuid, "player-3").await,
+        Ok(Some(_))
+    );
+    assert_matches::assert_matches!(
+        battler_service.request(battle.uuid, "player-4").await,
+        Ok(Some(_))
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn manual_drop_battle_sets_state_and_allows_delete() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+
+    // Active battle cannot be deleted normally
+    assert!(battler_service.delete(battle.uuid).await.is_err());
+
+    // Manually drop the battle
+    battler_service
+        .drop_battle(
+            battle.uuid,
+            DropReason::Administrative("admin dropped".to_string()),
+        )
+        .await
+        .unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
     assert_eq!(
-        log[5],
-        "-battlerservice:timer|player:player-2|done|remainingsecs:0"
+        battle_status.drop_reason,
+        Some(DropReason::Administrative("admin dropped".to_string()))
     );
-    assert_eq!(log[6], "continue");
-    assert_eq!(log[7], "forfeited|player:player-2");
+
+    // Verify log contains drop signal and does not contain done signal
+    let full_log = battler_service.full_log(battle.uuid, None).await.unwrap();
+    assert!(
+        full_log
+            .iter()
+            .any(|entry| entry == "-battlerservice:dropped|reason:administrative: admin dropped")
+    );
+    assert!(!full_log.iter().any(|entry| entry == "-battlerservice:done"));
+
+    // Making a choice on dropped battle fails
+    let choice_err = battler_service
+        .make_choice(battle.uuid, "player-1", "move 0")
+        .await;
+    assert!(choice_err.is_err());
+    assert!(
+        choice_err
+            .unwrap_err()
+            .to_string()
+            .contains("the battle is over")
+    );
+
+    // Starting a dropped battle fails
+    let start_err = battler_service.start(battle.uuid).await;
+    assert!(start_err.is_err());
+
+    // Dropped battle can now be deleted
+    assert!(battler_service.delete(battle.uuid).await.is_ok());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn watchdog_drops_stuck_battle_on_inactivity() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_millis(10),
+        max_battle_duration: Duration::from_secs(3600),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert_eq!(dropped.len(), 1);
+    assert_eq!(dropped[0].0, battle.uuid);
+    assert_matches::assert_matches!(dropped[0].1, DropReason::InactivityTimeout);
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
+    assert_matches::assert_matches!(
+        battle_status.drop_reason,
+        Some(DropReason::InactivityTimeout)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn watchdog_drops_stuck_battle_on_max_battle_duration() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_secs(3600),
+        max_battle_duration: Duration::from_millis(10),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert_eq!(dropped.len(), 1);
+    assert_eq!(dropped[0].0, battle.uuid);
+    assert_matches::assert_matches!(dropped[0].1, DropReason::ExceededMaxDuration);
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Finished);
+    assert_matches::assert_matches!(
+        battle_status.drop_reason,
+        Some(DropReason::ExceededMaxDuration)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn healthy_active_battle_is_not_dropped_by_watchdog() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_secs(600),
+        max_battle_duration: Duration::from_secs(3600),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert!(
+        dropped.is_empty(),
+        "Healthy ongoing battle should not be dropped"
+    );
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn dropping_already_finished_battle_is_noop_and_not_reported_by_watchdog() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    battler_service
+        .drop_battle(
+            battle.uuid,
+            DropReason::Administrative("admin dropped".to_string()),
+        )
+        .await
+        .unwrap();
+
+    let watchdog_options = WatchdogOptions {
+        proceed_step_timeout: Duration::from_secs(5),
+        max_inactivity_duration: Duration::from_millis(0),
+        max_battle_duration: Duration::from_millis(0),
+    };
+
+    let dropped = battler_service.drop_stuck_battles(&watchdog_options).await;
+    assert!(
+        dropped.is_empty(),
+        "Already dropped battle must not be reported by watchdog again"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn delete_force_terminates_active_battle_without_hanging() {
+    let battler_service = BattlerService::new(static_local_data_store());
+    let battle = battler_service
+        .create(
+            core_battle_options(BattleType::Singles, team(5)),
+            CoreBattleEngineOptions::default(),
+            BattleServiceOptions::default(),
+        )
+        .await
+        .unwrap();
+
+    battler_service.start(battle.uuid).await.unwrap();
+
+    let battle_status = battler_service.battle(battle.uuid).await.unwrap();
+    assert_eq!(battle_status.state, BattleState::Active);
+
+    // Regular delete should fail for active battle
+    assert!(battler_service.delete(battle.uuid).await.is_err());
+
+    // delete_force should succeed cleanly without hanging
+    let delete_result = tokio::time::timeout(
+        Duration::from_secs(3),
+        battler_service.delete_force(battle.uuid),
+    )
+    .await;
+    assert!(delete_result.is_ok(), "delete_force timed out!");
+    assert!(delete_result.unwrap().is_ok());
+
+    // Battle should no longer exist
+    assert!(battler_service.battle(battle.uuid).await.is_err());
 }

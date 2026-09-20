@@ -312,7 +312,7 @@
     }
   },
   "adjust_level_down_does_not_invalidate_moves": {
-    "format": { "battle_type": "Singles", "rules": ["Adjust Level Down = 50"] },
+    "format": { "battle_type": "Singles", "rules": ["Adjust Level Down = 50", "Obtainable"] },
     "team": {
       "members": [
         {
@@ -606,6 +606,200 @@
     },
     "expected_problems": ["Giratina (Altered) is not allowed."]
   },
+  "limit_restricted_valid": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Bulbasaur",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "limit_restricted_exceeded_default": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Giratina, Rayquaza)."]
+  },
+  "limit_restricted_exceeded_custom": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "Limit Restricted = 2"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Kyogre",
+          "species": "Kyogre",
+          "ability": "Drizzle",
+          "moves": [],
+          "nature": "Modest",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": [
+      "You may only bring 2 restricted Mons (you have Giratina, Rayquaza, Kyogre)."
+    ]
+  },
+  "unrestrict_species_valid": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "!* Rayquaza", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "unrestrict_species_exceeded": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Restricted Legendary", "!* Rayquaza", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Rayquaza",
+          "species": "Rayquaza",
+          "ability": "Air Lock",
+          "moves": [],
+          "nature": "Jolly",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Giratina",
+          "species": "Giratina",
+          "ability": "Pressure",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "U",
+          "ball": "Normal"
+        },
+        {
+          "name": "Kyogre",
+          "species": "Kyogre",
+          "ability": "Drizzle",
+          "moves": [],
+          "nature": "Modest",
+          "gender": "U",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Giratina, Kyogre)."]
+  },
+  "restrict_by_species": {
+    "format": {
+      "battle_type": "Singles",
+      "rules": ["* Bulbasaur", "Limit Restricted = 1"]
+    },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba 1",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        },
+        {
+          "name": "Bulba 2",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal"
+        }
+      ]
+    },
+    "expected_problems": ["You may only bring 1 restricted Mon (you have Bulba 1, Bulba 2)."]
+  },
   "max_move_count": {
     "format": { "battle_type": "Singles", "rules": ["Max Move Count = 3"] },
     "team": {
@@ -739,7 +933,7 @@
     "expected_problems": []
   },
   "cannot_learn_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -759,7 +953,7 @@
     ]
   },
   "only_prevo_can_learn_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -777,7 +971,7 @@
     "expected_problems": []
   },
   "move_not_learned_yet": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -910,7 +1104,7 @@
     "expected_problems": []
   },
   "unobtainable_ability": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -928,7 +1122,7 @@
     "expected_problems": ["Bulba Fett cannot have the ability Torrent because it is unobtainable."]
   },
   "forme_moves": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -945,7 +1139,7 @@
     "expected_problems": []
   },
   "battle_only_forme": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -964,7 +1158,7 @@
     ]
   },
   "item_induced_forme": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1016,7 +1210,7 @@
     }
   },
   "event_giveaway": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1041,7 +1235,7 @@
     "expected_problems": []
   },
   "event_with_illegal_move": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1061,7 +1255,7 @@
     ]
   },
   "multiple_event_source": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1080,7 +1274,7 @@
     ]
   },
   "invalid_ball_for_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1097,7 +1291,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_non_shiny_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1115,7 +1309,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_ivs_for_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1133,7 +1327,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "invalid_shiny_for_shiny_only_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1150,7 +1344,7 @@
     "expected_problems": ["Charmander is unobtainable (no matching giveaway event)."]
   },
   "evolved_from_event": {
-    "format": { "battle_type": "Singles", "rules": [] },
+    "format": { "battle_type": "Singles", "rules": ["Obtainable"] },
     "team": {
       "members": [
         {
@@ -1352,5 +1546,42 @@
       }
     },
     "expected_problems": ["Item Potion is not allowed."]
+  },
+  "unobtainable_move_allowed_without_obtainable_clause": {
+    "format": { "battle_type": "Singles", "rules": [] },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba Fett",
+          "species": "Bulbasaur",
+          "ability": "Overgrow",
+          "moves": ["Water Gun"],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal",
+          "level": 50
+        }
+      ]
+    },
+    "expected_problems": []
+  },
+  "unobtainable_ability_allowed_without_obtainable_clause": {
+    "format": { "battle_type": "Singles", "rules": [] },
+    "team": {
+      "members": [
+        {
+          "name": "Bulba Fett",
+          "species": "Bulbasaur",
+          "ability": "Torrent",
+          "moves": [],
+          "nature": "Adamant",
+          "gender": "M",
+          "ball": "Normal",
+          "level": 1
+        }
+      ]
+    },
+    "expected_problems": []
   }
 }
+

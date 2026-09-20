@@ -23,33 +23,43 @@ impl battler_wamprat::procedure::TypedProcedure for Handler {
         invocation: battler_wamprat::procedure::Invocation,
         input: Self::Input,
     ) -> Result<Self::Output, Self::Error> {
-        self.authorizer
-            .authorize_player_operation(
-                &invocation.peer_info,
-                &input.0.player,
-                PlayerOperation::PlayerData,
-            )
-            .await?;
-        let proposed_battles = self
-            .service
-            .proposed_battles_for_player(
-                &input.0.player,
-                input.0.count as usize,
-                input.0.offset as usize,
-            )
-            .await;
-        Ok(battler_multiplayer_service_schema::ProposedBattlesOutput(
-            battler_multiplayer_service_schema::ProposedBattlesOutputArgs {
-                proposed_battles: proposed_battles
-                    .into_iter()
-                    .map(|proposed_battle| {
-                        Ok(battler_multiplayer_service_schema::ProposedBattle {
-                            proposed_battle_json: serde_json::to_string(&proposed_battle)?,
-                        })
-                    })
-                    .collect::<Result<Vec<_>>>()?,
-            },
-        ))
+        battler_service_producer::log_procedure!(
+            "ProposedBattlesForPlayer",
+            format!(
+                "player={}, count={}, offset={}",
+                input.0.player, input.0.count, input.0.offset
+            ),
+            async {
+                self.authorizer
+                    .authorize_player_operation(
+                        &invocation.peer_info,
+                        &input.0.player,
+                        PlayerOperation::PlayerData,
+                    )
+                    .await?;
+                let proposed_battles = self
+                    .service
+                    .proposed_battles_for_player(
+                        &input.0.player,
+                        input.0.count as usize,
+                        input.0.offset as usize,
+                    )
+                    .await;
+                Ok(battler_multiplayer_service_schema::ProposedBattlesOutput(
+                    battler_multiplayer_service_schema::ProposedBattlesOutputArgs {
+                        proposed_battles: proposed_battles
+                            .into_iter()
+                            .map(|proposed_battle| {
+                                Ok(battler_multiplayer_service_schema::ProposedBattle {
+                                    proposed_battle_json: serde_json::to_string(&proposed_battle)?,
+                                })
+                            })
+                            .collect::<Result<Vec<_>>>()?,
+                    },
+                ))
+            }
+            .await
+        )
     }
 
     fn options() -> battler_wamprat::procedure::ProcedureOptions {

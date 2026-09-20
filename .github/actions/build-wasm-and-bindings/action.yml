@@ -1,0 +1,17 @@
+name: Build WASM and TS Bindings
+description: Sets up toolchains and builds battler-choice, battler-state WASM packages, and generated TypeScript bindings.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: ./.github/actions/battler-ai-gemini-py
+    - name: Set up Rust
+      uses: ./.github/actions/rust
+    - name: Set up Node.js
+      uses: ./.github/actions/nodejs
+    - name: Build WASM and TypeScript Bindings
+      shell: bash
+      env:
+        GEMINI_PYTHON_VENV: ${{ github.workspace }}/.venv
+      run: npm run build:deps

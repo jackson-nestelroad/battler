@@ -1,6 +1,7 @@
 mod ai;
 mod api;
 mod client;
+mod error;
 mod service;
 
 pub use api::*;
@@ -8,6 +9,7 @@ pub use client::{
     BattlerMultiplayerServiceClient,
     DirectBattlerMultiplayerServiceClient,
 };
+pub use error::MultiplayerError;
 pub use service::BattlerMultiplayerService;
 
 #[cfg(all(test, feature = "typescript"))]
@@ -23,6 +25,10 @@ mod typescript_tests {
         AiPlayerType::export().unwrap();
         AiPlayerOptions::export().unwrap();
         AiPlayers::export().unwrap();
+        ChaosBattleMode::export().unwrap();
+        ChaosBattleOptions::export().unwrap();
+        SpecialBattle::export().unwrap();
+        ProposedSpecialBattleOptions::export().unwrap();
         ProposedBattleOptions::export().unwrap();
         PlayerStatus::export().unwrap();
         Player::export().unwrap();

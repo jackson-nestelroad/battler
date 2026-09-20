@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-
 export interface MemberData {
     description: string;
     type: string;

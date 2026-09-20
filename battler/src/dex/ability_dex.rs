@@ -3,6 +3,7 @@ use battler_data::{
     AbilityData,
     DataStore,
     Id,
+    ResourceType,
 };
 
 use crate::{
@@ -14,6 +15,7 @@ use crate::{
         ResourceWrapper,
     },
 };
+
 /// Lookup type for [`AbilityDex`].
 #[derive(Clone)]
 pub struct AbilityLookup<'d> {
@@ -21,6 +23,8 @@ pub struct AbilityLookup<'d> {
 }
 
 impl<'d> ResourceLookup<'d, AbilityData> for AbilityLookup<'d> {
+    const RESOURCE_TYPE: ResourceType = ResourceType::Ability;
+
     fn new(data: &'d dyn DataStore) -> Self {
         Self { data }
     }

@@ -1,4 +1,8 @@
-use alloc::string::String;
+use alloc::{
+    borrow::ToOwned,
+    string::String,
+    vec::Vec,
+};
 
 use hashbrown::{
     HashMap,
@@ -34,8 +38,18 @@ pub struct MonReference {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
+pub struct ActiveMonReference {
+    #[serde(flatten)]
+    pub position: FieldPosition,
+    #[serde(flatten)]
+    pub reference: MonReference,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export, rename = "UiMon"))]
 pub enum Mon {
-    Active(FieldPosition),
+    Active(ActiveMonReference),
     Inactive(MonReference),
 }
 
@@ -62,13 +76,28 @@ pub struct Effect {
     pub name: String,
 }
 
-/// Data for an activated effect in a battle.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// A generic, domain-agnostic parsed value.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
-pub struct EffectData {
-    /// The effect that activated.
-    pub effect: Option<Effect>,
+pub enum LogValue {
+    Boolean(bool),
+    Number(i64),
+    Fraction(u64, u64),
+    String(String),
+    Mon(Mon),
+    MonList(#[cfg_attr(feature = "typescript", ts(as = "Vec<Mon>"))] Vec<Mon>),
+}
+
+/// A battle log entry specifically for the battle UI.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
+#[cfg_attr(feature = "typescript", ts(export))]
+pub struct UiLogEntry {
+    /// The title of the log.
+    pub title: String,
+
     /// The side targeted by the effect.
     pub side: Option<usize>,
     /// The slot targeted by the effect.
@@ -79,133 +108,98 @@ pub struct EffectData {
     pub target: Option<Mon>,
     /// The Mon that triggered the effect.
     pub source: Option<Mon>,
+    /// The effect that activated.
+    pub effect: Option<Effect>,
     /// The effect that triggered the effect.
     pub source_effect: Option<Effect>,
-    /// Any additional data from the battle log.
+
+    /// Typed key-value data.
     #[cfg_attr(
         feature = "typescript",
-        ts(as = "std::collections::BTreeMap<String, String>")
+        ts(as = "std::collections::BTreeMap<String, LogValue>")
     )]
-    pub additional: HashMap<String, String>,
+    pub values: HashMap<String, LogValue>,
 }
 
-/// A battle log entry specifically for the battle UI.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
-#[cfg_attr(feature = "typescript", ts(export))]
-pub enum UiLogEntry {
-    /// A player attempted to escape but failed.
-    CannotEscape { player: String },
-    /// A Mon was caught by a player.
-    Caught { effect: EffectData },
-    /// A Mon received damage.
-    Damage {
-        health: (u64, u64),
-        effect: EffectData,
-    },
-    /// A debug log that should be shown to clients.
-    Debug {
-        title: String,
-        #[cfg_attr(
-            feature = "typescript",
-            ts(as = "std::collections::BTreeMap<String, String>")
-        )]
-        values: HashMap<String, String>,
-    },
-    /// A generic effect activated.
-    Effect { title: String, effect: EffectData },
-    /// A Mon received experience.
-    Experience { mon: Mon, exp: u64 },
-    /// A log from some other source was generated.
-    Extension {
-        source: String,
-        title: String,
-        #[cfg_attr(
-            feature = "typescript",
-            ts(as = "std::collections::BTreeMap<String, String>")
-        )]
-        values: HashMap<String, String>,
-    },
-    /// A Mon fainted.
-    Faint { effect: EffectData },
-    /// A Mon healed damage.
-    Heal {
-        health: (u64, u64),
-        effect: EffectData,
-    },
-    /// A player left the battle.
-    Leave {
-        title: String,
-        player: String,
-        #[cfg_attr(
-            feature = "typescript",
-            ts(as = "std::collections::BTreeSet<FieldPosition>")
-        )]
-        positions: HashSet<FieldPosition>,
-    },
-    /// A Mon leveled up.
-    LevelUp {
-        mon: Mon,
-        level: u64,
-        #[cfg_attr(
-            feature = "typescript",
-            ts(as = "std::collections::BTreeMap<String, u64>")
-        )]
-        stats: HashMap<String, u64>,
-    },
-    /// The battle ended due to a turn limit.
-    TurnLimit,
-    /// A Mon used a move.
-    Move {
-        name: String,
-        mon: Mon,
-        target: Option<MoveTarget>,
-        animate: bool,
-        animate_only: bool,
-    },
-    /// A Mon potentially learned a move.
-    MoveUpdate {
-        mon: Mon,
-        move_name: String,
-        learned: bool,
-        forgot: Option<String>,
-    },
-    /// A Mon is waiting for another Mon.
-    Waiting { mon: Mon, on: Mon },
-    /// A Mon revived.
-    Revive { effect: EffectData },
-    /// A Mon's health update directly.
-    SetHealth {
-        health: (u64, u64),
-        effect: EffectData,
-    },
-    /// A Mon's stat received a boost (or drop).
-    StatBoost { mon: Mon, stat: String, by: i64 },
-    /// A Mon switched in.
-    Switch {
-        title: String,
-        player: String,
-        mon: usize,
-        into_position: FieldPosition,
-    },
-    /// A Mon switched out.
-    SwitchOut { mon: Mon },
-    /// The battle resulted in a tie.
-    Tie,
-    /// A Mon transformed into another Mon.
-    Transform { target: Mon, effect: EffectData },
-    /// A Mon's appearance updated.
-    UpdateAppearance {
-        title: String,
-        species: String,
-        effect: EffectData,
-    },
-    /// A player used an item.
-    UseItem {
-        player: String,
-        item: String,
-        target: Option<Mon>,
-    },
-    /// A side won the battle.
-    Win { side: usize },
+pub trait IntoLogValue {
+    fn into_log_value(self) -> crate::ui::LogValue;
+}
+impl IntoLogValue for bool {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Boolean(self)
+    }
+}
+impl IntoLogValue for i64 {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Number(self)
+    }
+}
+impl IntoLogValue for u64 {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Number(self as i64)
+    }
+}
+impl IntoLogValue for i32 {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Number(self as i64)
+    }
+}
+impl IntoLogValue for u32 {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Number(self as i64)
+    }
+}
+impl IntoLogValue for String {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::String(self)
+    }
+}
+impl IntoLogValue for &str {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::String(self.to_owned())
+    }
+}
+impl IntoLogValue for crate::ui::Mon {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Mon(self)
+    }
+}
+impl IntoLogValue for (u64, u64) {
+    fn into_log_value(self) -> crate::ui::LogValue {
+        crate::ui::LogValue::Fraction(self.0, self.1)
+    }
+}
+
+#[macro_export]
+macro_rules! ui_log {
+    (
+        title = $title:expr
+        $(, side = $side:expr)?
+        $(, slot = $slot:expr)?
+        $(, player = $player:expr)?
+        $(, target = $target:expr)?
+        $(, source = $source:expr)?
+        $(, effect = $effect:expr)?
+        $(, source_effect = $source_effect:expr)?
+        $(, values = { $($k:expr => $v:expr),* $(,)? })?
+    ) => {{
+        #[allow(unused_mut)]
+        let mut values = hashbrown::HashMap::<alloc::string::String, $crate::ui::LogValue>::new();
+        $($(
+            values.insert(alloc::borrow::ToOwned::to_owned($k), $crate::ui::IntoLogValue::into_log_value($v));
+        )*)?
+        $crate::ui::UiLogEntry {
+            title: alloc::borrow::ToOwned::to_owned($title),
+            side: $crate::ui_log!(@opt $($side)?),
+            slot: $crate::ui_log!(@opt $($slot)?),
+            player: $crate::ui_log!(@opt $($player)?),
+            target: $crate::ui_log!(@opt $($target)?),
+            source: $crate::ui_log!(@opt $($source)?),
+            effect: $crate::ui_log!(@opt $($effect)?),
+            source_effect: $crate::ui_log!(@opt $($source_effect)?),
+            values,
+        }
+    }};
+    (@opt) => { None };
+    (@opt $val:expr) => { Some($val.clone().into()) };
 }
