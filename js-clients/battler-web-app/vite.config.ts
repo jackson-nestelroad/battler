@@ -88,5 +88,6 @@ export default defineConfig({
   },
   build: {
     target: "esnext",
+    modulePreload: false,
   },
 });

@@ -23,7 +23,7 @@ jobs:
       - name: Build battler-web-app
         run: npm run build:web-app
         env:
-          VITE_SERVER_URL: "wss://ws.battler.live/ws"
+          VITE_SERVER_URL: "wss://ws.battler.live"
           VITE_BUG_REPORT_API_URL: "https://bugs.battler.live/api/report-bug"
 
       - name: Deploy to Vercel

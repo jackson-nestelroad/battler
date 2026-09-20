@@ -14,7 +14,7 @@ export default function ConnectForm() {
   const connection = useAppSelector((state) => state.connection);
   const { connectionMessage } = useConnectionCountdown();
 
-  const defaultServerUrl = import.meta.env?.VITE_SERVER_URL || "ws://localhost:8080/ws";
+  const defaultServerUrl = import.meta.env?.VITE_SERVER_URL || "ws://localhost:8080";
   const [playerName, setPlayerName] = useState(connection.savedPlayerId || "");
   const [serverUrl, setServerUrl] = useState(connection.savedServerUrl || defaultServerUrl);
   const [autoconnect, setAutoconnect] = useState(connection.autoconnect);
@@ -53,7 +53,7 @@ export default function ConnectForm() {
               type="text"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="e.g., Red, Ash, Cynthia"
+              placeholder="Player name"
               disabled={isDisabled}
               required
             />
