@@ -75,7 +75,11 @@
 .scrollArea {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-s);
+  padding: var(--spacing-m);
+
+  @include tablet {
+    padding: var(--spacing-s);
+  }
 }
 
 .turnHeader {
