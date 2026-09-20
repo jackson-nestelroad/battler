@@ -34,6 +34,27 @@ export function getBattleTitle(
   return `${side0Name || "Side 1"} vs ${side1Name || "Side 2"}`;
 }
 
+export function getBattleSessionTitle(
+  session?: {
+    battleState?: BattleState | null;
+    serviceBattle?: Battle | null;
+    preview?: BattlePreview | null;
+    isDeleted?: boolean;
+    isProposal?: boolean;
+  } | null,
+  proposal?: ProposedBattleWithDetails | null,
+  isDeletedOverride?: boolean,
+): string {
+  const isDeleted = isDeletedOverride !== undefined ? isDeletedOverride : !!session?.isDeleted;
+  return getBattleTitle(
+    session?.battleState,
+    session?.serviceBattle,
+    session?.isProposal ? proposal : !session ? proposal : null,
+    isDeleted,
+    session?.preview,
+  );
+}
+
 export function formatDeletionReason(reason: string | null | undefined): string {
   if (!reason) return "Declined";
   if (reason === "deleted") return "Deleted";

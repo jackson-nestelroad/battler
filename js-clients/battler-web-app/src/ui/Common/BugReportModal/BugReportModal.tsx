@@ -7,6 +7,7 @@ import {
   submitBugReport,
 } from "../../../core/bugReport";
 import { useAppSelector } from "../../../store/store";
+import { getBattleTurnNumber } from "../../../utils/battleState";
 import Modal from "../Modal/Modal";
 
 import styles from "./BugReportModal.module.scss";
@@ -92,7 +93,7 @@ export default function BugReportModal({
 
   const activeBattle = diagnosticPayload.battleDebug;
   const contextDescription = activeBattle
-    ? `Battle ${activeBattle.battleId.slice(0, 8)} (Turn ${activeBattle.battleState?.turn ?? 0})`
+    ? `Battle ${activeBattle.battleId.slice(0, 8)} (Turn ${getBattleTurnNumber(activeBattle)})`
     : diagnosticPayload.view.charAt(0).toUpperCase() + diagnosticPayload.view.slice(1);
 
   return (

@@ -1,4 +1,4 @@
-import type { BattleMetadata } from "battler-service-client";
+import type { BattleMetadata, BattlePreview } from "battler-service-client";
 import type { BattleState, UiLogEntry } from "battler-state";
 import type { PlayerBattleData, Request } from "battler-types";
 import type { RootState } from "../store/store";
@@ -25,6 +25,7 @@ export interface BugReportBattleDebug {
   engineLogs: string[];
   error: string | null;
   choiceError: string | null;
+  preview?: BattlePreview | null;
 }
 
 export interface BugReportPayload {
@@ -92,6 +93,7 @@ export function gatherBugReportPayload(
         : battleSession.engineLogs,
       error: battleSession.error,
       choiceError: battleSession.choiceError,
+      preview: battleSession.preview,
     };
   }
 

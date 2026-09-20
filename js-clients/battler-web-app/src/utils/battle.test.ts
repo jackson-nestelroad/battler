@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { Battle, BattlePreview } from "battler-service-client";
 import type { BattleState, UiLogEntry } from "battler-state";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
-import { formatDeletionReason, getBattleTitle, getRuleBadgeClass, parseTimerLog } from "./battle";
+import {
+  formatDeletionReason,
+  getBattleSessionTitle,
+  getBattleTitle,
+  getRuleBadgeClass,
+  parseTimerLog,
+} from "./battle";
 
 describe("getBattleTitle", () => {
   it("uses battleState side names when available", () => {
@@ -88,6 +94,35 @@ describe("getBattleTitle", () => {
 
   it("falls back to Side 1 vs Side 2 when no data is provided", () => {
     expect(getBattleTitle()).toBe("Side 1 vs Side 2");
+  });
+});
+
+describe("getBattleSessionTitle", () => {
+  it("resolves title from session object", () => {
+    const session = {
+      battleState: {
+        field: {
+          sides: [{ name: "Red" }, { name: "Blue" }],
+        },
+      } as any,
+    };
+    expect(getBattleSessionTitle(session)).toBe("Red vs Blue");
+  });
+
+  it("resolves title from preview object", () => {
+    const session = {
+      preview: {
+        sides: [
+          { name: "Brock", players: [] },
+          { name: "Misty", players: [] },
+        ],
+      } as any,
+    };
+    expect(getBattleSessionTitle(session)).toBe("Brock vs Misty");
+  });
+
+  it("respects isDeletedOverride", () => {
+    expect(getBattleSessionTitle(null, null, true)).toBe("Deleted Battle");
   });
 });
 

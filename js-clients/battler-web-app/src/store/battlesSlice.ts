@@ -315,7 +315,7 @@ const battlesSlice = createSlice({
           isProposal,
           preview: preview ?? null,
         };
-      } else if (preview && !existing.preview) {
+      } else if (preview) {
         existing.preview = preview;
       }
     },

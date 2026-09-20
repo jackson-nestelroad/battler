@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   getAllyPlayerIds,
+  getBattleSessionStateLabel,
   getBattleStateLabel,
+  getBattleTurnNumber,
+  isBattleFinished,
+  isBattlePreparing,
   isMonActiveOnField,
   isMonDynamaxedInState,
   isMonFaintedInState,
@@ -27,6 +31,82 @@ describe("getBattleStateLabel", () => {
   it("returns Turn X when turn is greater than 0", () => {
     expect(getBattleStateLabel({ state: "active", turn: 1 })).toBe("Turn 1");
     expect(getBattleStateLabel({ state: "active", turn: 14 })).toBe("Turn 14");
+  });
+});
+
+describe("isBattleFinished", () => {
+  it("returns false for null or undefined session", () => {
+    expect(isBattleFinished(null)).toBe(false);
+    expect(isBattleFinished(undefined)).toBe(false);
+  });
+
+  it("identifies finished battles across all sources", () => {
+    expect(isBattleFinished({ battleState: { phase: "finished" } as any })).toBe(true);
+    expect(isBattleFinished({ serviceBattle: { state: "finished" } as any })).toBe(true);
+    expect(isBattleFinished({ preview: { state: "finished" } as any })).toBe(true);
+    expect(isBattleFinished({ battleState: { phase: "battle" } as any, preview: { state: "active" } as any })).toBe(false);
+  });
+
+  it("respects replay scrubber position over preview state", () => {
+    expect(
+      isBattleFinished({
+        isReplay: true,
+        battleState: { phase: "battle" } as any,
+        preview: { state: "finished" } as any,
+      }),
+    ).toBe(false);
+    expect(
+      isBattleFinished({
+        isReplay: true,
+        battleState: { phase: "finished" } as any,
+        preview: { state: "finished" } as any,
+      }),
+    ).toBe(true);
+  });
+});
+
+describe("isBattlePreparing", () => {
+  it("returns false for null or undefined session", () => {
+    expect(isBattlePreparing(null)).toBe(false);
+    expect(isBattlePreparing(undefined)).toBe(false);
+  });
+
+  it("identifies preparing battles across all sources", () => {
+    expect(isBattlePreparing({ battleState: { phase: "pre_battle" } as any })).toBe(true);
+    expect(isBattlePreparing({ battleState: { phase: "battle" } as any, preview: { state: "preparing" } as any })).toBe(false);
+    expect(isBattlePreparing({ serviceBattle: { state: "preparing" } as any })).toBe(true);
+    expect(isBattlePreparing({ preview: { state: "preparing" } as any })).toBe(true);
+  });
+
+  it("returns false for replays even if preview says preparing", () => {
+    expect(isBattlePreparing({ isReplay: true, preview: { state: "preparing" } as any })).toBe(false);
+  });
+});
+
+describe("getBattleTurnNumber", () => {
+  it("returns 0 for null, undefined, or empty session", () => {
+    expect(getBattleTurnNumber(null)).toBe(0);
+    expect(getBattleTurnNumber(undefined)).toBe(0);
+    expect(getBattleTurnNumber({})).toBe(0);
+  });
+
+  it("prefers battleState turn and falls back to preview turn", () => {
+    expect(getBattleTurnNumber({ preview: { turn: 7 } as any })).toBe(7);
+    expect(getBattleTurnNumber({ battleState: { turn: 14 } as any, preview: { turn: 7 } as any })).toBe(14);
+  });
+});
+
+describe("getBattleSessionStateLabel", () => {
+  it("returns Preview for null or undefined session", () => {
+    expect(getBattleSessionStateLabel(null)).toBe("Preview");
+    expect(getBattleSessionStateLabel(undefined)).toBe("Preview");
+  });
+
+  it("correctly derives label from preview alone during reconnection", () => {
+    expect(getBattleSessionStateLabel({ preview: { state: "active", turn: 12 } as any })).toBe("Turn 12");
+    expect(getBattleSessionStateLabel({ preview: { state: "finished", turn: 12 } as any })).toBe("Finished");
+    expect(getBattleSessionStateLabel({ preview: { state: "preparing", turn: 0 } as any })).toBe("Preparing");
+    expect(getBattleSessionStateLabel({ preview: { state: "active", turn: 0 } as any })).toBe("Preview");
   });
 });
 

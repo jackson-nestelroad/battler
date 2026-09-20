@@ -4,8 +4,8 @@ import type { ActiveView, SerializedBattleSession } from "../../store/battlesSli
 import { isSpectatorSession, selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import BugReportModal from "../Common/BugReportModal/BugReportModal";
-import { getBattleTitle } from "../../utils/battle";
-import { getBattleStateLabel } from "../../utils/battleState";
+import { getBattleSessionTitle } from "../../utils/battle";
+import { getBattleSessionStateLabel, isBattleFinished } from "../../utils/battleState";
 import { BREAKPOINT_MOBILE_PX } from "../../utils/constants";
 
 import styles from "./Sidebar.module.scss";
@@ -32,28 +32,20 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const replayBattlesList = Object.values(battles).filter((b) => b.isReplay);
 
   const renderBattleItem = (battle: SerializedBattleSession) => {
-    const isSpectator = isSpectatorSession(battle, connection.playerId);
+    const isReplay = !!battle.isReplay;
+    const isSpectator = !isReplay && isSpectatorSession(battle, connection.playerId);
     const isSelected =
       (currentView === "battle" || currentView === "proposal") &&
       activeBattleId === battle.battleId;
+    const isFinished = isBattleFinished(battle);
     const hasPendingAction =
+      !isReplay &&
       !isSpectator &&
       battle.activeRequest !== null &&
-      battle.battleState?.phase !== "finished";
-    const isDeleted = battle.isDeleted || (!battle.battleState && !!battle.error);
-    const title = getBattleTitle(
-      battle.battleState,
-      battle.serviceBattle,
-      proposalsMap[battle.battleId],
-      isDeleted,
-      battle.preview,
-    );
-    const turnNumber = battle.battleState?.turn || 0;
-    const isFinished = battle.battleState?.phase === "finished";
-    const isPreparing = battle.battleState
-      ? battle.battleState.phase === "pre_battle"
-      : battle.serviceBattle?.state === "preparing";
-    const isCloseable = isFinished || isDeleted || isSpectator;
+      !isFinished;
+    const isDeleted = !isReplay && (battle.isDeleted || (!battle.battleState && !battle.preview && !!battle.error));
+    const title = getBattleSessionTitle(battle, proposalsMap[battle.battleId], isDeleted);
+    const isCloseable = isReplay || isFinished || isDeleted || isSpectator;
 
     return (
       <div
@@ -63,12 +55,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         <button
           className={`${styles.battleItem} ${isCloseable ? styles.closeableBattleItem : ""} ${isSelected ? styles.selected : ""}`}
           onClick={() => handleNav("battle", battle.battleId)}
-          title={isSpectator ? `Spectating: ${title}` : title}
+          title={isReplay ? `Replay: ${title}` : isSpectator ? `Spectating: ${title}` : title}
         >
           <div className={styles.battleMeta}>
             {isCollapsed ? (
-              <span className={styles.navIcon} title={isSpectator ? "Spectating" : "Playing"}>
-                🎮
+              <span
+                className={styles.navIcon}
+                title={isReplay ? "Replay" : isSpectator ? "Spectating" : "Playing"}
+              >
+                {isReplay ? "🎬" : "🎮"}
               </span>
             ) : (
               <>
@@ -76,13 +71,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <span
                   className={`${styles.turnLabel} ${isDeleted ? styles.errorLabel : isFinished ? styles.finishedLabel : ""}`}
                 >
-                  {isDeleted
-                    ? "Deleted"
-                    : getBattleStateLabel({
-                        state: isFinished ? "finished" : isPreparing ? "preparing" : "active",
-                        phase: battle.battleState?.phase,
-                        turn: turnNumber,
-                      })}
+                  {isDeleted ? "Deleted" : getBattleSessionStateLabel(battle)}
                   {isSpectator && <span className={styles.spectatorBadge}> • Spectating</span>}
                 </span>
               </>
@@ -101,7 +90,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               dispatch(closeBattleSession(battle.battleId));
             }}
             className={styles.closeBtn}
-            title={isSpectator ? "Close Spectating Battle" : "Close Battle"}
+            title={isReplay ? "Close Replay" : isSpectator ? "Close Spectating Battle" : "Close Battle"}
           >
             ✕
           </button>
@@ -258,53 +247,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       {replayBattlesList.length > 0 && (
         <div className={`${styles.battlesSection} ${styles.replaysSection}`}>
           {!isCollapsed && <h3>Replays</h3>}
-          <div className={styles.battlesList}>
-            {replayBattlesList.map((battle) => {
-              const isSelected = currentView === "battle" && activeBattleId === battle.battleId;
-              const title = getBattleTitle(battle.battleState);
-              const turnNumber = battle.battleState?.turn || 0;
-
-              return (
-                <div
-                  key={battle.battleId}
-                  className={`${styles.battleItemWrapper} flex-row align-center justify-between w-full`}
-                >
-                  <button
-                    className={`${styles.battleItem} ${styles.closeableBattleItem} ${isSelected ? styles.selected : ""}`}
-                    onClick={() => handleNav("battle", battle.battleId)}
-                    title={`Replay: ${title}`}
-                  >
-                    <div className={styles.battleMeta}>
-                      {isCollapsed ? (
-                        <span className={styles.navIcon} title="Replay">
-                          🎬
-                        </span>
-                      ) : (
-                        <>
-                          <span className={styles.opponentName}>{title}</span>
-                          <span className={styles.turnLabel}>
-                            {getBattleStateLabel({ phase: battle.battleState?.phase, turn: turnNumber })}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </button>
-                  {!isCollapsed && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        dispatch(closeBattleSession(battle.battleId));
-                      }}
-                      className={styles.closeBtn}
-                      title="Close Replay"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <div className={styles.battlesList}>{replayBattlesList.map(renderBattleItem)}</div>
         </div>
       )}
 

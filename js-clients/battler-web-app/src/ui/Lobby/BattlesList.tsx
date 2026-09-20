@@ -3,7 +3,7 @@ import type { BattlePreview } from "battler-service-client";
 import { fetchBattles, restoreBattleSession } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { getBattleStateLabel } from "../../utils/battleState";
+import { getBattleSessionStateLabel } from "../../utils/battleState";
 import { formatUuid } from "../../utils/uuid";
 import CopyableId from "../Common/CopyableId";
 import styles from "./BattlesList.module.scss";
@@ -101,7 +101,7 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
         <div className="flex-col gap-xs">
           {battles.map((b) => {
             const battleId = formatUuid(b.uuid);
-            const stateStr = getBattleStateLabel({ state: b.state, turn: b.turn });
+            const stateStr = getBattleSessionStateLabel({ preview: b });
             return (
               <div
                 key={b.uuid}

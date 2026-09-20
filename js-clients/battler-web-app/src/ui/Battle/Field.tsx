@@ -1,7 +1,7 @@
 import type { Battle } from "battler-service-client";
 import type { BattleState } from "battler-state";
 import type { ActiveTimerState } from "../../store/battlesSlice";
-import { getBattleStateLabel } from "../../utils/battleState";
+import { getBattleSessionStateLabel } from "../../utils/battleState";
 import BattleConditionsBar from "./BattleConditionsBar";
 import BattleTimers from "./BattleTimers";
 import styles from "./Field.module.scss";
@@ -49,7 +49,7 @@ export default function Field({
           )}
         </div>
         <span className={styles.turnLabel}>
-          {getBattleStateLabel({ phase: battleState.phase, turn: battleState.turn })}
+          {getBattleSessionStateLabel({ battleState, serviceBattle, isReplay })}
         </span>
       </div>
 

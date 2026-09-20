@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { checkBattleStatus, closeBattleSession, refreshBattleSession } from "../../core/wamp";
 import { isSpectatorSession, selectBattle, setBattleError } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { getBattleTitle } from "../../utils/battle";
+import { getBattleSessionTitle } from "../../utils/battle";
+import { isBattleFinished, isBattlePreparing } from "../../utils/battleState";
 import BattleDetailsGrid from "../Common/BattleDetailsGrid";
 import CopyableId from "../Common/CopyableId";
 import ErrorBanner from "../Common/ErrorBanner";
@@ -39,7 +40,7 @@ export default function BattleScreen() {
   const [showDetails, setShowDetails] = useState(false);
   const [showTypeChart, setShowTypeChart] = useState(false);
 
-  const isFinished = battleSession?.battleState?.phase === "finished";
+  const isFinished = isBattleFinished(battleSession);
   const isReplay = !!battleSession?.isReplay;
 
   useEffect(() => {
@@ -103,12 +104,9 @@ export default function BattleScreen() {
 
   const title = useMemo(() => {
     if (!battleSession) return "";
-    return getBattleTitle(
-      battleSession.battleState,
-      battleSession.serviceBattle,
+    return getBattleSessionTitle(
+      battleSession,
       battleSession.isProposal ? activeProposal : null,
-      battleSession.isDeleted,
-      battleSession.preview,
     );
   }, [battleSession, activeProposal]);
 
@@ -225,9 +223,7 @@ export default function BattleScreen() {
     );
   }
 
-  const isPreparing = battleSession.battleState
-    ? battleSession.battleState.phase === "pre_battle"
-    : battleSession.serviceBattle?.state === "preparing";
+  const isPreparing = isBattlePreparing(battleSession);
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
 

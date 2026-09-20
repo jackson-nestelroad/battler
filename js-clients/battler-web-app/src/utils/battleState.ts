@@ -1,3 +1,4 @@
+import type { Battle, BattlePreview } from "battler-service-client";
 import { type BattleState, stateSelectors } from "battler-state";
 import type { PlayerBattleData } from "battler-types";
 
@@ -109,6 +110,60 @@ export function getBattleStateLabel(input: BattleStateInput): string {
   }
 
   return "Preview";
+}
+
+export interface BattleSessionLike {
+  battleState?: BattleState | null;
+  serviceBattle?: Battle | null;
+  preview?: BattlePreview | null;
+  isReplay?: boolean;
+}
+
+export function isBattleFinished(session?: BattleSessionLike | null): boolean {
+  if (!session) return false;
+  if (session.isReplay) {
+    return session.battleState?.phase === "finished";
+  }
+  return (
+    session.battleState?.phase === "finished" ||
+    session.serviceBattle?.state === "finished" ||
+    session.preview?.state === "finished"
+  );
+}
+
+export function isBattlePreparing(session?: BattleSessionLike | null): boolean {
+  if (!session || session.isReplay) return false;
+  if (session.battleState) {
+    return session.battleState.phase === "pre_battle";
+  }
+  return (
+    session.serviceBattle?.state === "preparing" ||
+    session.preview?.state === "preparing"
+  );
+}
+
+export function getBattleTurnNumber(session?: BattleSessionLike | null): number {
+  if (!session) return 0;
+  const turn = session.battleState?.turn ?? session.preview?.turn;
+  return turn != null ? Number(turn) : 0;
+}
+
+export function getBattleSessionStateLabel(session?: BattleSessionLike | null): string {
+  if (!session) return "Preview";
+  const isFinished = isBattleFinished(session);
+  const isPreparing = isBattlePreparing(session);
+  const turnNumber = getBattleTurnNumber(session);
+  const state = isFinished
+    ? "finished"
+    : isPreparing
+      ? "preparing"
+      : session.serviceBattle?.state || session.preview?.state || "active";
+
+  return getBattleStateLabel({
+    state,
+    phase: session.battleState?.phase,
+    turn: turnNumber,
+  });
 }
 
 export function getActiveRefFromState(
