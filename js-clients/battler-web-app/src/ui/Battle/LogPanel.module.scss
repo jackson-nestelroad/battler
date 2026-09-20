@@ -47,6 +47,18 @@
 
   @include tablet {
     padding: var(--spacing-s) var(--spacing-m);
+    cursor: pointer;
+    user-select: none;
+
+    :global(.tabs-row) {
+      cursor: default;
+    }
+
+    &:hover .collapseToggle {
+      color: var(--text-primary);
+      border-color: var(--text-secondary);
+      background-color: var(--bg-primary);
+    }
   }
 }
 

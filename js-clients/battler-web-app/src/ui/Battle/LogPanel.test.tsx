@@ -20,6 +20,20 @@ describe("LogPanel", () => {
     expect(html).not.toContain("JSON");
   });
 
+  it("renders collapse toggle button with accessibility attributes", () => {
+    const html = renderToStaticMarkup(
+      <LogPanel
+        visibleLogs={[]}
+        uiLogs={[]}
+        battleState={null}
+      />,
+    );
+
+    expect(html).toContain('title="Collapse log panel"');
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('aria-label="Collapse log panel"');
+  });
+
   it("renders move names with DataTooltipTrigger in log messages", () => {
     const moveLog: FormattedLogDisplayItem = {
       kind: "message",

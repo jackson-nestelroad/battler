@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
-  <defs>
-    <linearGradient id="battlerGrad" x1="5%" y1="95%" x2="95%" y2="5%">
-      <stop offset="0%" stop-color="#863bff" />
-      <stop offset="30%" stop-color="#674aff" />
-      <stop offset="65%" stop-color="#1f94f6" />
-      <stop offset="100%" stop-color="#00d4ff" />
-    </linearGradient>
-  </defs>
-  <g fill="url(#battlerGrad)" fill-rule="evenodd">
+  <g fill="currentColor" fill-rule="evenodd">
     <!-- Center Core Pokéball Button -->
     <circle cx="50" cy="50" r="7.5" />
 

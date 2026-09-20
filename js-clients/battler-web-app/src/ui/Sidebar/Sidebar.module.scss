@@ -34,6 +34,13 @@
   }
 }
 
+.brandLogo {
+  width: rem(28px);
+  height: rem(28px);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .toggleBtn {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
@@ -318,11 +325,17 @@
 
   .brand {
     padding: var(--spacing-m) var(--spacing-s);
-    flex-direction: column-reverse;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: var(--spacing-s);
 
     h2 {
       font-size: var(--font-size-xs);
+    }
+
+    .brandLogo {
+      cursor: pointer;
     }
   }
 
@@ -538,10 +551,11 @@
   }
 
   .sidebar.collapsed & {
-    text-align: center;
-    padding: var(--spacing-xxs) var(--spacing-xs);
-    font-size: var(--font-size-xxs);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-m);
+    line-height: 1;
   }
 }

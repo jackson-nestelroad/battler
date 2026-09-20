@@ -20,7 +20,7 @@ export default defineConfig({
         enabled: true,
         type: "module",
       },
-      includeAssets: ["favicon.svg", "icons.svg"],
+      includeAssets: ["favicon.svg", "logo.svg", "logo-mono.svg"],
       manifest: {
         name: "Battler",
         short_name: "Battler",

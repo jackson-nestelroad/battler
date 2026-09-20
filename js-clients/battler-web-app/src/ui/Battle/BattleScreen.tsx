@@ -275,7 +275,8 @@ export default function BattleScreen() {
             <span className="btn-text-desktop">Type chart</span>
           </button>
           <button
-            className={`btn btn-sm ${showDebug ? "btn-primary" : "btn-secondary"}`}
+            type="button"
+            className={`btn btn-sm ${showDebug ? "btn-primary" : "btn-secondary"} flex-row align-center gap-xs`}
             onClick={() => setShowDebug(!showDebug)}
             title="Toggle Debug JSON View"
           >

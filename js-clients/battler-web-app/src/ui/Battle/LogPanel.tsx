@@ -11,6 +11,7 @@ import DataTooltipTrigger, { type DataResourceType } from "../Common/Tooltip/Dat
 import PlayerStateViewer from "./PlayerStateViewer";
 
 import styles from "./LogPanel.module.scss";
+import { BREAKPOINT_TABLET_PX } from "../../utils/constants";
 
 interface LogPanelProps {
   battleId?: string | null;
@@ -180,15 +181,43 @@ export default function LogPanel({
     }
   }, [visibleLogs.length, mode]);
 
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => !prev);
+  };
+
+  const handleHeaderClick = (e: React.MouseEvent<HTMLElement>) => {
+    // Only toggle collapsible panel on mobile/tablet viewports
+    if (typeof window !== "undefined" && window.innerWidth > BREAKPOINT_TABLET_PX) {
+      return;
+    }
+    const target = e.target as HTMLElement | null;
+    // Don't toggle collapse if clicking interactive elements inside header like tabs or the toggle button
+    if (
+      target?.closest?.(".tabs-row") ||
+      target?.closest?.(`.${styles.collapseToggle}`)
+    ) {
+      return;
+    }
+    toggleCollapse();
+  };
+
   return (
     <div className={`card ${styles.logPanel} ${isCollapsed ? styles.collapsed : ""}`}>
-      <header className={`card-header ${styles.header}`}>
+      <header
+        className={`card-header ${styles.header}`}
+        onClick={handleHeaderClick}
+      >
         <div className="flex-row align-center gap-m">
           <button
             type="button"
             className={styles.collapseToggle}
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCollapse();
+            }}
             title={isCollapsed ? "Expand log panel" : "Collapse log panel"}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? "Expand log panel" : "Collapse log panel"}
           >
             {isCollapsed ? "▲" : "▼"}
           </button>

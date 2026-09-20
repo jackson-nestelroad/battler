@@ -121,7 +121,20 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   return (
     <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ""}`}>
       <div className={styles.brand}>
-        <h2>{isCollapsed ? "B" : "Battler"}</h2>
+        {isCollapsed ? (
+          <img
+            src="/logo.svg"
+            alt="Battler"
+            className={styles.brandLogo}
+            onClick={() => setIsCollapsed(false)}
+            title="Expand Sidebar"
+          />
+        ) : (
+          <div className="flex-row align-center gap-xs">
+            <img src="/logo.svg" alt="" className={styles.brandLogo} />
+            <h2>Battler</h2>
+          </div>
+        )}
         <button
           className={styles.toggleBtn}
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -257,8 +270,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
           className={styles.reportBugBtn}
           onClick={() => setShowBugReportModal(true)}
           title={isCollapsed ? "Report bug" : undefined}
+          aria-label="Report bug"
         >
-          {isCollapsed ? "Bug" : "Report bug"}
+          {isCollapsed ? "🐞" : "Report bug"}
         </button>
       </div>
 
