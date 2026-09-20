@@ -25,7 +25,7 @@ export function useConnectionCountdown() {
   let connectionMessage = "Connecting...";
 
   if (connection.status === "connecting") {
-    const isReconnection = !!connection.playerId || (retryCount !== null && retryCount > 0);
+    const isReconnection = connection.hasConnected;
     const baseWord = isReconnection ? "Reconnecting" : "Connecting";
 
     if (secondsRemaining !== null) {

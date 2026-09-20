@@ -53,6 +53,7 @@ import {
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 import { addProposals, clearProposals, updateProposal } from "../store/proposalsSlice";
 import { formatUuid } from "../utils/uuid";
+import { normalizeWebSocketUrl } from "../utils/url";
 import { LocalStoragePersistentStorage } from "./storage";
 
 function saveItem(key: string, value: string) {
@@ -525,9 +526,12 @@ export const connectWamp = createAsyncThunk<
     { dispatch, getState },
   ) => {
     dispatch(setConnectionStatus("connecting"));
+    dispatch(setPlayerId(null));
     dispatch(setConnectionError(null));
     dispatch(setRetryDetails(null));
     dispatch(clearBattles());
+
+    const normalizedUrl = normalizeWebSocketUrl(url);
 
     try {
       // Cancel active battle clients and clear registry
@@ -549,7 +553,7 @@ export const connectWamp = createAsyncThunk<
       connectionManager.clear();
 
       connectionManager.sessionProvider = new WampSessionProvider({
-        url,
+        url: normalizedUrl,
         realm: "com.battler",
         use_es6_promises: true,
         authmethods: ["wamp-battler-undisputed"],
@@ -651,12 +655,12 @@ export const connectWamp = createAsyncThunk<
       await connectionManager.sessionProvider.connect();
 
       dispatch(setPlayerId(playerId));
-      dispatch(setServerUrl(url));
-      dispatch(setSavedConnectionDetails({ playerId, serverUrl: url, autoconnect }));
+      dispatch(setServerUrl(normalizedUrl));
+      dispatch(setSavedConnectionDetails({ playerId, serverUrl: normalizedUrl, autoconnect }));
 
       // Save settings to local storage
       saveItem("battler_username", playerId);
-      saveItem("battler_server_url", url);
+      saveItem("battler_server_url", normalizedUrl);
       saveItem("battler_autoconnect", autoconnect ? "true" : "false");
 
       // Sync active proposals

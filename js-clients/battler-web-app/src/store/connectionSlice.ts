@@ -5,6 +5,7 @@ export interface ConnectionState {
   status: "disconnected" | "connecting" | "connected";
   playerId: string | null;
   serverUrl: string | null;
+  hasConnected: boolean;
   isHydrated: boolean;
   error: string | null;
   savedPlayerId: string | null;
@@ -28,6 +29,7 @@ const initialState: ConnectionState = {
   status: initialAutoconnect && initialSavedPlayerId ? "connecting" : "disconnected",
   playerId: null,
   serverUrl: null,
+  hasConnected: false,
   isHydrated: false,
   error: null,
   savedPlayerId: initialSavedPlayerId,
@@ -43,7 +45,12 @@ const connectionSlice = createSlice({
   reducers: {
     setConnectionStatus(state, action: PayloadAction<ConnectionState["status"]>) {
       state.status = action.payload;
-      if (action.payload === "connected" || action.payload === "disconnected") {
+      if (action.payload === "connected") {
+        state.hasConnected = true;
+        state.retryDelay = null;
+        state.retryCount = null;
+      } else if (action.payload === "disconnected") {
+        state.hasConnected = false;
         state.retryDelay = null;
         state.retryCount = null;
       }

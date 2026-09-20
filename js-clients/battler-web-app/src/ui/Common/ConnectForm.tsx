@@ -4,6 +4,7 @@ import { useConnectionCountdown } from "../../hooks/useConnectionCountdown";
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { setConnectionError } from "../../store/connectionSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import { normalizeWebSocketUrl } from "../../utils/url";
 import ErrorBanner from "./ErrorBanner";
 
 import styles from "./ConnectForm.module.scss";
@@ -28,9 +29,11 @@ export default function ConnectForm() {
       dispatch(setConnectionError("Player IDs starting with 'ai-' are reserved.", null));
       return;
     }
+    const targetUrl = normalizeWebSocketUrl(serverUrl);
+
     dispatch(
       connectWamp({
-        url: serverUrl,
+        url: targetUrl,
         playerId: cleanPlayerName,
         autoconnect,
       }),
