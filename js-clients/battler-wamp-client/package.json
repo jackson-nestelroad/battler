@@ -5,7 +5,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "node --test test/**/*.test.js"
   },
   "dependencies": {
     "autobahn": "^26.3.1"

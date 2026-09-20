@@ -148,13 +148,17 @@ export default function TypeChartGrid({
               </th>
 
               {/* Selected Defender Columns */}
-              {selectedDefenders.map((defType) => {
+              {selectedDefenders.map((defType, index) => {
                 const isColHovered = hoveredCol === defType;
+                const isLastSelected = index === selectedDefenders.length - 1;
 
                 return (
                   <th
                     key={defType}
-                    className={`${styles.thDefender} ${isColHovered ? styles.colHovered : ""}`}
+                    className={`${styles.thDefender} ${styles.thDefenderPinned} ${isLastSelected ? styles.lastPinnedCol : ""} ${isColHovered ? styles.colHovered : ""}`}
+                    style={{
+                      left: `calc(${index + 1} * (var(--type-chart-cell-size) + var(--spacing-xxs)))`,
+                    }}
                     onMouseEnter={() => {
                       setHoveredRow(null);
                       setHoveredCol(defType);
@@ -231,7 +235,10 @@ export default function TypeChartGrid({
                     return (
                       <td
                         colSpan={selectedDefenders.length}
-                        className={`${styles.tdCell} ${styles.cellCombined} ${multClass} ${isRowHovered ? styles.rowHovered : ""} ${isCellHovered ? styles.cellHovered : ""}`}
+                        className={`${styles.tdCell} ${styles.cellCombined} ${styles.cellCombinedPinned} ${multClass} ${isRowHovered ? styles.rowHovered : ""} ${isCellHovered ? styles.cellHovered : ""}`}
+                        style={{
+                          left: `calc(var(--type-chart-cell-size) + var(--spacing-xxs))`,
+                        }}
                         onMouseEnter={() => {
                           setHoveredRow(atk);
                           setHoveredCol(selectedDefenders[0]);

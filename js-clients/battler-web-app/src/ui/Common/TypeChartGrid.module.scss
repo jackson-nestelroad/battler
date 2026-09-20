@@ -30,7 +30,7 @@
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 4;
+  z-index: 6;
   background-color: var(--bg-card);
   padding: 0;
   border: none;
@@ -39,6 +39,7 @@
   min-width: var(--type-chart-cell-size);
   height: var(--type-chart-cell-size);
   vertical-align: middle;
+  box-shadow: var(--spacing-xxs) 0 0 var(--bg-card);
 }
 
 .cornerHeader {
@@ -131,12 +132,29 @@
     z-index: 3;
     filter: brightness(1.2);
   }
+
+  &.thDefenderPinned {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--bg-card);
+    box-shadow: var(--spacing-xxs) 0 0 var(--bg-card);
+
+    &.lastPinnedCol {
+      box-shadow: 1px 0 0 var(--border-color);
+    }
+
+    &.colHovered {
+      z-index: 5;
+      filter: brightness(1.2);
+    }
+  }
 }
 
 .thAttacker {
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: 4;
   background-color: var(--bg-card);
   padding: 0;
   width: var(--type-chart-cell-size);
@@ -145,9 +163,10 @@
   height: var(--type-chart-cell-size);
   vertical-align: middle;
   transition: transform var(--transition-fast), filter var(--transition-fast);
+  box-shadow: var(--spacing-xxs) 0 0 var(--bg-card);
 
   &.rowHovered {
-    z-index: 3;
+    z-index: 4;
     filter: brightness(1.2);
   }
 }
@@ -175,7 +194,7 @@
   &.cellHovered {
     outline: 2px solid var(--color-primary);
     outline-offset: -1px;
-    z-index: 1;
+    z-index: 2;
   }
 }
 
@@ -281,6 +300,16 @@
 .cellCombined {
   width: auto;
   max-width: none;
+}
+
+.cellCombinedPinned {
+  position: sticky;
+  z-index: 3;
+  box-shadow: 1px 0 0 var(--border-color);
+
+  &.cellHovered {
+    z-index: 3;
+  }
 }
 
 .cellFaded {

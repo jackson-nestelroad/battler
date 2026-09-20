@@ -151,4 +151,53 @@ describe("TypeChartGrid", () => {
       `aria-label="Grass vs ${defenders.join("/")}: 8×"`,
     );
   });
+
+  it("pins selected defender headers and combined cells next to the left column", () => {
+    vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
+      typeChart: MOCK_CHART,
+      loading: false,
+      error: null,
+    });
+
+    const html = renderToStaticMarkup(
+      <TypeChartGrid defendingTypes={["Water"]} />,
+    );
+
+    // Header has pinned class, last pinned indicator, and left offset
+    expect(html).toContain("thDefenderPinned");
+    expect(html).toContain("lastPinnedCol");
+    expect(html).toContain(
+      "left:calc(1 * (var(--type-chart-cell-size) + var(--spacing-xxs)))",
+    );
+
+    // Combined data cell has pinned class and left offset
+    expect(html).toContain("cellCombinedPinned");
+    expect(html).toContain(
+      "left:calc(var(--type-chart-cell-size) + var(--spacing-xxs))",
+    );
+  });
+
+  it("calculates sequential sticky left offsets when multiple defenders are selected", () => {
+    vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
+      typeChart: MOCK_CHART,
+      loading: false,
+      error: null,
+    });
+
+    const html = renderToStaticMarkup(
+      <TypeChartGrid defendingTypes={["Water", "Ground"]} />,
+    );
+
+    // Defender 1 offset
+    expect(html).toContain(
+      "left:calc(1 * (var(--type-chart-cell-size) + var(--spacing-xxs)))",
+    );
+    // Defender 2 offset
+    expect(html).toContain(
+      "left:calc(2 * (var(--type-chart-cell-size) + var(--spacing-xxs)))",
+    );
+    expect(html).toContain("thDefenderPinned");
+    expect(html).toContain("lastPinnedCol");
+    expect(html).toContain("cellCombinedPinned");
+  });
 });

@@ -10,6 +10,19 @@ interface InternalConnection extends autobahn.Connection {
   _session_close_message?: string;
   _retry?: boolean;
   _transport?: { close: () => void };
+  _retry_count?: number;
+  _retry_delay?: number;
+  _initial_retry_delay?: number;
+  _max_retries?: number;
+  _autoreconnect_advance?: () => {
+    count: number | null;
+    delay: number | null;
+    will_retry: boolean;
+  };
+}
+
+export interface WampSessionProviderOptions extends autobahn.IConnectionOptions {
+  fastFirstRetry?: boolean;
 }
 
 export class WampSessionProvider extends EventEmitter {
@@ -18,9 +31,39 @@ export class WampSessionProvider extends EventEmitter {
   private connectionPromise: Promise<autobahn.Session> | null = null;
   private isManualDisconnect = false;
 
-  constructor(options: autobahn.IConnectionOptions) {
+  constructor(options: WampSessionProviderOptions) {
     super();
     this.connection = new autobahn.Connection(options);
+
+    const fastFirstRetry = options.fastFirstRetry !== false;
+    const conn = this.connection;
+    if (fastFirstRetry && typeof conn._autoreconnect_advance === "function") {
+      const originalAdvance = conn._autoreconnect_advance.bind(conn);
+      conn._autoreconnect_advance = () => {
+        if (conn._retry_count === 0) {
+          conn._retry_count = 1;
+          conn._retry_delay = conn._initial_retry_delay ?? 1.5;
+          const willRetry =
+            Boolean(conn._retry) &&
+            (conn._max_retries === -1 ||
+              (conn._max_retries !== undefined &&
+                conn._retry_count <= conn._max_retries));
+          if (!willRetry) {
+            return {
+              count: null,
+              delay: null,
+              will_retry: false,
+            };
+          }
+          return {
+            count: 1,
+            delay: 0,
+            will_retry: true,
+          };
+        }
+        return originalAdvance();
+      };
+    }
 
     this.connection.onopen = (session) => {
       this.currentSession = session;
