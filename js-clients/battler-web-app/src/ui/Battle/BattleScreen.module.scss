@@ -117,20 +117,3 @@
   max-width: rem(480px);
   width: 100%;
 }
-
-.desktopOnlyHeader {
-  display: contents;
-
-  @include tablet {
-    display: none;
-  }
-}
-
-.mobileOnlyHeader {
-  display: none;
-
-  @include tablet {
-    display: contents;
-  }
-}
-

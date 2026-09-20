@@ -299,135 +299,134 @@ export default function BattleScreen() {
     </>
   );
 
+  const statusBanner = battleSession.isDeleted ? (
+    <div className="alert alert-danger w-full flex-row align-center justify-between gap-m">
+      <div className="flex-col gap-xxs text-left">
+        <strong>Battle Deleted</strong>
+        <span>{battleSession.error || "Battle no longer exists"}</span>
+      </div>
+      <button
+        onClick={() => dispatch(closeBattleSession(battleId))}
+        className="btn btn-primary btn-sm"
+      >
+        ← Lobby
+      </button>
+    </div>
+  ) : (
+    battleSession.error &&
+    !isPreparing && (
+      <ErrorBanner
+        message={battleSession.error}
+        onClear={() => dispatch(setBattleError({ battleId, error: null }))}
+      />
+    )
+  );
+
   return (
     <div className="page-container">
-      {showDebug || battleSession.isDeleted ? (
-        screenHeaderContent
-      ) : (
-        <div className={styles.desktopOnlyHeader}>{screenHeaderContent}</div>
-      )}
-
-      {battleSession.isDeleted ? (
-        <div className="alert alert-danger w-full flex-row align-center justify-between gap-m">
-          <div className="flex-col gap-xxs text-left">
-            <strong>Battle Deleted</strong>
-            <span>{battleSession.error || "Battle no longer exists"}</span>
-          </div>
-          <button
-            onClick={() => dispatch(closeBattleSession(battleId))}
-            className="btn btn-primary btn-sm"
-          >
-            ← Lobby
-          </button>
-        </div>
-      ) : (
-        battleSession.error &&
-        !isPreparing && (
-          <ErrorBanner
-            message={battleSession.error}
-            onClear={() => dispatch(setBattleError({ battleId, error: null }))}
-          />
-        )
-      )}
-
       {showDebug ? (
-        <div className={`card ${styles.debugContainer} flex-col gap-m`}>
-          <div className="flex-row justify-between align-center gap-m flex-wrap">
-            <Tabs
-              active={debugTab}
-              onChange={setDebugTab}
-              options={[
-                { value: "state", label: "State" },
-                { value: "ui_log", label: "UI Log" },
-                { value: "engine_log", label: "Engine Log" },
-                { value: "request", label: "Request" },
-                { value: "player", label: "Player" },
-                { value: "metadata", label: "Metadata" },
-              ]}
-            />
-            <div className="flex-row gap-s align-center flex-wrap">
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleExportReplay}
-                title="Save .battler replay file"
-              >
-                Save replay
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleExportDebugInfo}
-                title="Save debug info JSON"
-              >
-                Save debug info
-              </button>
+        <>
+          {screenHeaderContent}
+          {statusBanner}
+          <div className={`card ${styles.debugContainer} flex-col gap-m`}>
+            <div className="flex-row justify-between align-center gap-m flex-wrap">
+              <Tabs
+                active={debugTab}
+                onChange={setDebugTab}
+                options={[
+                  { value: "state", label: "State" },
+                  { value: "ui_log", label: "UI Log" },
+                  { value: "engine_log", label: "Engine Log" },
+                  { value: "request", label: "Request" },
+                  { value: "player", label: "Player" },
+                  { value: "metadata", label: "Metadata" },
+                ]}
+              />
+              <div className="flex-row gap-s align-center flex-wrap">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleExportReplay}
+                  title="Save .battler replay file"
+                >
+                  Save replay
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleExportDebugInfo}
+                  title="Save debug info JSON"
+                >
+                  Save debug info
+                </button>
+              </div>
+            </div>
+            <div className={styles.debugJsonContainer}>
+              {debugTab === "state" && (
+                <>
+                  <h4>BattleState</h4>
+                  <pre className={styles.debugJson}>
+                    {JSON.stringify(
+                      battleSession.battleState
+                        ? { ...battleSession.battleState, ui_log: undefined }
+                        : null,
+                      null,
+                      2
+                    )}
+                  </pre>
+                </>
+              )}
+              {debugTab === "ui_log" && (
+                <>
+                  <h4>UI Log</h4>
+                  <pre className={styles.debugJson}>
+                    {JSON.stringify(battleSession.battleState?.ui_log, null, 2)}
+                  </pre>
+                </>
+              )}
+              {debugTab === "engine_log" && (
+                <>
+                  <h4>Engine Log</h4>
+                  <EngineLogViewer
+                    engineLogs={
+                      battleSession.isReplay
+                        ? battleSession.replayEngineLogs
+                        : battleSession.engineLogs
+                    }
+                  />
+                </>
+              )}
+              {debugTab === "request" && (
+                <>
+                  <h4>Request</h4>
+                  <pre className={styles.debugJson}>
+                    {JSON.stringify(battleSession.activeRequest, null, 2)}
+                  </pre>
+                </>
+              )}
+              {debugTab === "player" && (
+                <>
+                  <h4>PlayerData</h4>
+                  <pre className={styles.debugJson}>
+                    {JSON.stringify(battleSession.playerData, null, 2)}
+                  </pre>
+                </>
+              )}
+              {debugTab === "metadata" && (
+                <>
+                  <h4>BattleMetadata</h4>
+                  <pre className={styles.debugJson}>{JSON.stringify(metadata, null, 2)}</pre>
+                </>
+              )}
             </div>
           </div>
-          <div className={styles.debugJsonContainer}>
-            {debugTab === "state" && (
-              <>
-                <h4>BattleState</h4>
-                <pre className={styles.debugJson}>
-                  {JSON.stringify(
-                    battleSession.battleState
-                      ? { ...battleSession.battleState, ui_log: undefined }
-                      : null,
-                    null,
-                    2
-                  )}
-                </pre>
-              </>
-            )}
-            {debugTab === "ui_log" && (
-              <>
-                <h4>UI Log</h4>
-                <pre className={styles.debugJson}>
-                  {JSON.stringify(battleSession.battleState?.ui_log, null, 2)}
-                </pre>
-              </>
-            )}
-            {debugTab === "engine_log" && (
-              <>
-                <h4>Engine Log</h4>
-                <EngineLogViewer
-                  engineLogs={
-                    battleSession.isReplay
-                      ? battleSession.replayEngineLogs
-                      : battleSession.engineLogs
-                  }
-                />
-              </>
-            )}
-            {debugTab === "request" && (
-              <>
-                <h4>Request</h4>
-                <pre className={styles.debugJson}>
-                  {JSON.stringify(battleSession.activeRequest, null, 2)}
-                </pre>
-              </>
-            )}
-            {debugTab === "player" && (
-              <>
-                <h4>PlayerData</h4>
-                <pre className={styles.debugJson}>
-                  {JSON.stringify(battleSession.playerData, null, 2)}
-                </pre>
-              </>
-            )}
-            {debugTab === "metadata" && (
-              <>
-                <h4>BattleMetadata</h4>
-                <pre className={styles.debugJson}>{JSON.stringify(metadata, null, 2)}</pre>
-              </>
-            )}
-          </div>
-        </div>
+        </>
       ) : isPreparing ? (
         <div className={styles.workspaceGrid}>
           {/* Left Column: Team selection panel */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
-            <div className={styles.mobileOnlyHeader}>{screenHeaderContent}</div>
+            {screenHeaderContent}
+            {statusBanner}
             <BattleTimers
               activeTimers={battleSession.activeTimers}
               playerId={connection.playerId || undefined}
@@ -456,7 +455,8 @@ export default function BattleScreen() {
         <div className={styles.workspaceGrid}>
           {/* Left Arena & Command Deck */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
-            <div className={styles.mobileOnlyHeader}>{screenHeaderContent}</div>
+            {screenHeaderContent}
+            {statusBanner}
             <Field
               battleState={battleSession.battleState}
               activeTimers={battleSession.activeTimers}
