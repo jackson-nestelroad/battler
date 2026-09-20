@@ -49,3 +49,7 @@
 ## .NET Microservices
 
 1. [`battler-bug-reporter`](./battler-bug-reporter/) - Diagnostic bug reporting service for submitting structured GitHub issues and diagnostic payloads.
+
+## Deployment & Operations
+
+For complete documentation on production architecture, domain/TLS routing, automated CI/CD, maintenance windows, and release checklists, see the **[Infrastructure & Deployment Guide](./deploy/README.md)**.

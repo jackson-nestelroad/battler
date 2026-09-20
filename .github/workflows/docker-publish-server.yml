@@ -47,7 +47,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
             type=sha,format=short
-            type=raw,value=prod,enable=${{ startsWith(github.ref, 'refs/tags/v') || inputs.promote_to_prod == true }}
+            type=raw,value=prod,enable=${{ inputs.promote_to_prod == true }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

@@ -2,8 +2,6 @@ name: Deploy Web App to Vercel
 
 on:
   workflow_dispatch:
-  push:
-    tags: ["v*"]
 
 jobs:
   deploy:
