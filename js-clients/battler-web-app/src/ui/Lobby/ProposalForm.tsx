@@ -32,7 +32,11 @@ const parseBigIntSafe = (val: string): bigint => {
 
 type BattleCategory = "standard" | "chaos";
 
-export default function ProposalForm() {
+interface ProposalFormProps {
+  initialCategory?: BattleCategory;
+}
+
+export default function ProposalForm({ initialCategory = "standard" }: ProposalFormProps = {}) {
   const dispatch = useAppDispatch();
   const connection = useAppSelector((state) => state.connection);
   const teams = useAppSelector((state) => state.teams.teams);
@@ -44,7 +48,7 @@ export default function ProposalForm() {
   }, [teamOrder, teams]);
 
   // Tab state: Standard vs Chaos
-  const [category, setCategory] = useState<BattleCategory>("standard");
+  const [category, setCategory] = useState<BattleCategory>(initialCategory);
 
   // Chaos battle state
   const [chaosMode, setChaosMode] = useState<ChaosBattleMode>("doubles_4v4");
@@ -450,13 +454,26 @@ export default function ProposalForm() {
         <h3>New Battle Proposal</h3>
         <Tabs
           options={[
-            { value: "standard", label: "Standard" },
-            { value: "chaos", label: "Chaos" },
+            {
+              value: "standard",
+              label: "Standard",
+              title: "Standard battle with configured teams",
+            },
+            {
+              value: "chaos",
+              label: "Chaos",
+              title: "Chaos battle with randomly generated legitimate Pokémon",
+            },
           ]}
           active={category}
           onChange={setCategory}
         />
       </div>
+      <p className={styles.categoryDescription}>
+        {category === "standard"
+          ? "Standard: Traditional Pokémon battles using your configured teams with customizable formats and rules."
+          : "Chaos: Battles with randomly generated teams of legitimate Pokémon. True Chaos uses fully random, illegal Pokémon."}
+      </p>
       <form onSubmit={handleSendProposal} className="w-full flex-col gap-m">
         <div className="w-full flex-row flex-wrap gap-m">
           {category === "standard" ? (
@@ -486,7 +503,10 @@ export default function ProposalForm() {
                 <option value="doubles_4v4">Doubles 4v4</option>
                 <option value="doubles_6v6">Doubles 6v6</option>
               </select>
-              <label className={`${styles.checkboxLabel} mt-xs`}>
+              <label
+                className={`${styles.checkboxLabel} mt-xs`}
+                title="True Chaos uses fully random, illegal Pokémon"
+              >
                 <input
                   type="checkbox"
                   checked={trueChaos}

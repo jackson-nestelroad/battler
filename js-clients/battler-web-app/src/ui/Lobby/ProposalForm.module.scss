@@ -21,6 +21,14 @@
   }
 }
 
+.categoryDescription {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+  margin-top: 0;
+  margin-bottom: var(--spacing-m);
+  line-height: 1.4;
+}
+
 /* Advanced Battle Proposal Styles */
 
 .sideHeaderLabel {

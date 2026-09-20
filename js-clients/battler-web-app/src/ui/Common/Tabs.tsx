@@ -1,6 +1,7 @@
 interface TabOption<T extends string> {
   value: T;
   label: string;
+  title?: string;
 }
 
 interface TabsProps<T extends string> {
@@ -18,6 +19,7 @@ export default function Tabs<T extends string>({ options, active, onChange }: Ta
           type="button"
           className={`tab-btn ${active === option.value ? "active" : ""}`}
           onClick={() => onChange(option.value)}
+          title={option.title}
         >
           {option.label}
         </button>
