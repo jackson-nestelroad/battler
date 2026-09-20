@@ -1,4 +1,4 @@
-name: Publish Bug Reporter Docker Image
+name: Publish & Deploy Bug Reporter
 
 on:
   workflow_dispatch:
@@ -40,7 +40,8 @@ jobs:
             type=raw,value=latest,enable=true
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=sha,format=long
+            type=sha,format=short
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -52,3 +53,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: battler-bug-reporter
+          region: us-central1
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
