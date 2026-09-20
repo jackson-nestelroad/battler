@@ -56,8 +56,25 @@
   overflow: hidden;
 
   @include tablet {
-    grid-template-columns: 1fr;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap: var(--spacing-s);
+
+    .leftColumn {
+      flex: 1;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 0;
+    }
+
+    .rightColumn {
+      flex: 0 0 auto;
+      height: auto;
+      min-height: 0;
+    }
   }
 }
 
@@ -99,5 +116,21 @@
 .errorCard {
   max-width: rem(480px);
   width: 100%;
+}
+
+.desktopOnlyHeader {
+  display: contents;
+
+  @include tablet {
+    display: none;
+  }
+}
+
+.mobileOnlyHeader {
+  display: none;
+
+  @include tablet {
+    display: contents;
+  }
 }
 

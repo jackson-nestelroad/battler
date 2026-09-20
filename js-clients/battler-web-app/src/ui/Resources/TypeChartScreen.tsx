@@ -7,7 +7,7 @@ export interface TypeChartScreenProps {
 
 export default function TypeChartScreen({ onBack }: TypeChartScreenProps) {
   return (
-    <div className="page-container">
+    <div className="page-container scroll-y">
       <header className="screen-header flex-row justify-between align-center gap-m">
         <div className="flex-row align-center gap-m">
           <button

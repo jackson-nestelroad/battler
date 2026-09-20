@@ -13,8 +13,13 @@
     flex var(--transition-duration) var(--transition-timing);
 
   @include tablet {
+    flex: 0 0 auto;
+    height: rem(280px);
+    max-height: 50vh;
+
     &.collapsed {
       height: auto !important;
+      max-height: none !important;
       min-height: 0 !important;
       flex: 0 0 auto !important;
       justify-content: center;

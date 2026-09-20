@@ -345,14 +345,22 @@
   padding: 0;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--font-size-s);
-  overflow: hidden;
   height: 100vh;
-  width: 100vw;
+  height: 100dvh;
 }
 
 button {
@@ -1217,6 +1225,7 @@ a.badge-primary,
 
 .page-container.scroll-y {
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 12. Unified Dashboard / Screen Header */

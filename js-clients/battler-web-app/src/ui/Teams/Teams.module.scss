@@ -5,6 +5,7 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .directoryView {
@@ -12,6 +13,8 @@
   max-width: rem(800px); /* Bounded width so list directory is balanced on wide screens */
   margin: 0 auto;
   overflow-y: auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .editorView {
@@ -19,6 +22,7 @@
   height: 100%;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
 .emptyText {

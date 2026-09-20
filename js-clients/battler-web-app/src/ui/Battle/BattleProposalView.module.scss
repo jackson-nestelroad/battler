@@ -4,16 +4,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
   padding: var(--spacing-l) 0;
 
   & > :global(.card) {
     max-width: rem(640px);
     width: 100%;
+    margin: auto 0;
   }
 }
 

@@ -2,13 +2,13 @@
 
 .appContainer {
   display: flex;
-  width: 100vw;
+  width: 100%;
   min-width: rem(320px); /* Enforces industry-standard mobile minimum width */
   height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow-y: hidden;
-  overflow-x: auto; /* Enable horizontal scrolling if viewport shrinks below 320px */
+  overflow: hidden;
 }
 
 .mainContent {
@@ -97,8 +97,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   font-size: var(--font-size-l);

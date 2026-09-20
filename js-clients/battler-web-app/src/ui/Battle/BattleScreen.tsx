@@ -227,8 +227,8 @@ export default function BattleScreen() {
 
   const metadata = battleSession?.serviceBattle?.metadata || battleSession?.metadata;
 
-  return (
-    <div className="page-container">
+  const screenHeaderContent = (
+    <>
       <header className="screen-header flex-row justify-between align-center gap-m">
         <div className="screen-header-title flex-col gap-xs flex-1 min-w-0">
           <h2>{title}</h2>
@@ -295,6 +295,16 @@ export default function BattleScreen() {
             special={metadata.special}
           />
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="page-container">
+      {showDebug || battleSession.isDeleted ? (
+        screenHeaderContent
+      ) : (
+        <div className={styles.desktopOnlyHeader}>{screenHeaderContent}</div>
       )}
 
       {battleSession.isDeleted ? (
@@ -417,6 +427,7 @@ export default function BattleScreen() {
         <div className={styles.workspaceGrid}>
           {/* Left Column: Team selection panel */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
+            <div className={styles.mobileOnlyHeader}>{screenHeaderContent}</div>
             <BattleTimers
               activeTimers={battleSession.activeTimers}
               playerId={connection.playerId || undefined}
@@ -445,6 +456,7 @@ export default function BattleScreen() {
         <div className={styles.workspaceGrid}>
           {/* Left Arena & Command Deck */}
           <section className={`${styles.leftColumn} flex-col gap-m`}>
+            <div className={styles.mobileOnlyHeader}>{screenHeaderContent}</div>
             <Field
               battleState={battleSession.battleState}
               activeTimers={battleSession.activeTimers}
