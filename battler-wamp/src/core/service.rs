@@ -188,7 +188,7 @@ impl Service {
 
     async fn run(self) {
         let mut rate_limiter = self.rate_limiter;
-        let idle_timeout = self.idle_timeout.unwrap_or(Duration::from_secs(300));
+        let idle_timeout = self.idle_timeout;
 
         let wrapper = StreamWrapper { inner: self.stream };
         let (mut stream_sink, mut stream_stream) = wrapper.split();
@@ -275,7 +275,12 @@ impl Service {
                 }
                 // Timeout is implemented at this layer so that ping messages are considered
                 // for keeping the connection alive.
-                _ = tokio::time::sleep(idle_timeout) => {
+                _ = async {
+                    match idle_timeout {
+                        Some(timeout) => tokio::time::sleep(timeout).await,
+                        None => std::future::pending().await,
+                    }
+                } => {
                     result = Err(Error::msg("timed out"));
                     break;
                 }
