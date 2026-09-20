@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { TypeChartData } from "battler-types";
-import { connectionManager } from "../core/wamp";
+import { DEFAULT_TYPE_CHART } from "../data/defaultTypeChart";
 
 export const ALL_POKEMON_TYPES = [
   "Normal",
@@ -25,8 +25,17 @@ export const ALL_POKEMON_TYPES = [
 
 export type PokemonType = (typeof ALL_POKEMON_TYPES)[number];
 
-let cachedTypeChart: TypeChartData | null = null;
+let cachedTypeChart: TypeChartData | null = DEFAULT_TYPE_CHART;
 let pendingPromise: Promise<TypeChartData> | null = null;
+
+async function getDataServiceClient() {
+  try {
+    const { connectionManager } = await import("../core/wamp");
+    return connectionManager.dataServiceClient;
+  } catch {
+    return null;
+  }
+}
 
 export function getCachedTypeChart(): TypeChartData | null {
   return cachedTypeChart;
@@ -41,9 +50,9 @@ export async function fetchTypeChart(): Promise<TypeChartData> {
   if (cachedTypeChart) return cachedTypeChart;
   if (pendingPromise) return pendingPromise;
 
-  const dataClient = connectionManager.dataServiceClient;
+  const dataClient = await getDataServiceClient();
   if (!dataClient) {
-    throw new Error("Data client is not connected");
+    return DEFAULT_TYPE_CHART;
   }
 
   const promise = dataClient
@@ -55,6 +64,9 @@ export async function fetchTypeChart(): Promise<TypeChartData> {
     })
     .catch((err: unknown) => {
       pendingPromise = null;
+      if (cachedTypeChart) {
+        return cachedTypeChart;
+      }
       throw err;
     });
 

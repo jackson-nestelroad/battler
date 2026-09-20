@@ -83,11 +83,7 @@ export default function App() {
               </ConnectionRequired>
             )}
             {currentView === "replays" && <ReplaysHome />}
-            {currentView === "resources" && (
-              <ConnectionRequired>
-                <Resources />
-              </ConnectionRequired>
-            )}
+            {currentView === "resources" && <Resources />}
           </div>
         </main>
       </div>

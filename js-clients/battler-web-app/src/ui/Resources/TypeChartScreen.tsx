@@ -22,6 +22,13 @@ export default function TypeChartScreen({ onBack }: TypeChartScreenProps) {
             <h2>Type Chart</h2>
           </div>
         </div>
+        <a
+          href={`${import.meta.env.BASE_URL || "/"}type-chart`}
+          className="btn btn-secondary btn-sm"
+          title="Open standalone type chart"
+        >
+          Standalone ↗
+        </a>
       </header>
 
       <div className={styles.gridContainer}>

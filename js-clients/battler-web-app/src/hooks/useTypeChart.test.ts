@@ -114,4 +114,17 @@ describe("useTypeChart helpers", () => {
     expect(formatFraction(2)).toBe("2");
     expect(formatFraction(1)).toBe("1");
   });
+
+  it("provides complete offline coverage across all 18 standard types in DEFAULT_TYPE_CHART", async () => {
+    const { DEFAULT_TYPE_CHART } = await import("../data/defaultTypeChart");
+    const { fetchTypeChart, getCachedTypeChart } = await import("./useTypeChart");
+
+    expect(getCachedTypeChart()).not.toBeNull();
+    const chart = await fetchTypeChart();
+    expect(chart).toBeDefined();
+    for (const type of ALL_POKEMON_TYPES) {
+      expect(DEFAULT_TYPE_CHART.types).toHaveProperty(type);
+    }
+  });
 });
+

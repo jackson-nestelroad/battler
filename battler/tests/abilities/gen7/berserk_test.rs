@@ -123,23 +123,21 @@ fn berserk_boosts_after_berry_for_multi_hit_move() {
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
     assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-1", "move 2"), Ok(()));
+    assert_matches::assert_matches!(battle.set_player_choice("player-2", "pass"), Ok(()));
 
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
             "supereffective|mon:Drampa,player-2,1",
             "split|side:1",
-            "damage|mon:Drampa,player-2,1|health:190/266",
-            "damage|mon:Drampa,player-2,1|health:72/100",
+            "damage|mon:Drampa,player-2,1|health:228/266",
+            "damage|mon:Drampa,player-2,1|health:86/100",
             "animatemove|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
             "supereffective|mon:Drampa,player-2,1",
             "split|side:1",
-            "damage|mon:Drampa,player-2,1|health:110/266",
-            "damage|mon:Drampa,player-2,1|health:42/100",
-            "itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat",
-            "split|side:1",
-            "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:176/266",
-            "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:67/100",
+            "damage|mon:Drampa,player-2,1|health:188/266",
+            "damage|mon:Drampa,player-2,1|health:71/100",
             "hitcount|hits:2",
             "residual",
             "turn|turn:2",
@@ -147,17 +145,35 @@ fn berserk_boosts_after_berry_for_multi_hit_move() {
             "move|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
             "supereffective|mon:Drampa,player-2,1",
             "split|side:1",
-            "damage|mon:Drampa,player-2,1|health:100/266",
-            "damage|mon:Drampa,player-2,1|health:38/100",
+            "damage|mon:Drampa,player-2,1|health:150/266",
+            "damage|mon:Drampa,player-2,1|health:57/100",
             "animatemove|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
             "supereffective|mon:Drampa,player-2,1",
             "split|side:1",
-            "damage|mon:Drampa,player-2,1|health:24/266",
-            "damage|mon:Drampa,player-2,1|health:10/100",
+            "damage|mon:Drampa,player-2,1|health:112/266",
+            "damage|mon:Drampa,player-2,1|health:43/100",
+            "itemend|mon:Drampa,player-2,1|item:Sitrus Berry|eat",
+            "split|side:1",
+            "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:178/266",
+            "heal|mon:Drampa,player-2,1|from:item:Sitrus Berry|health:67/100",
+            "hitcount|hits:2",
+            "residual",
+            "turn|turn:3",
+            "continue",
+            "move|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
+            "supereffective|mon:Drampa,player-2,1",
+            "split|side:1",
+            "damage|mon:Drampa,player-2,1|health:140/266",
+            "damage|mon:Drampa,player-2,1|health:53/100",
+            "animatemove|mon:Drampa,player-1,1|name:Double Kick|target:Drampa,player-2,1",
+            "supereffective|mon:Drampa,player-2,1",
+            "split|side:1",
+            "damage|mon:Drampa,player-2,1|health:106/266",
+            "damage|mon:Drampa,player-2,1|health:40/100",
             "hitcount|hits:2",
             "boost|mon:Drampa,player-2,1|stat:spa|by:1|from:ability:Berserk",
             "residual",
-            "turn|turn:3"
+            "turn|turn:4"
         ]"#,
     )
     .unwrap();

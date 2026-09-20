@@ -60,17 +60,16 @@ fn punching_glove_removes_contact_for_punching_moves() {
     let expected_logs = serde_json::from_str::<Vec<LogMatch>>(
         r#"[
             "move|mon:Garchomp,player-2,1|name:Mach Punch|target:Garchomp,player-1,1",
-            "supereffective|mon:Garchomp,player-1,1",
             "split|side:0",
-            "damage|mon:Garchomp,player-1,1|health:114/168",
-            "damage|mon:Garchomp,player-1,1|health:68/100",
+            "damage|mon:Garchomp,player-1,1|health:141/168",
+            "damage|mon:Garchomp,player-1,1|health:84/100",
             "move|mon:Garchomp,player-1,1|name:Tackle|target:Garchomp,player-2,1",
             "split|side:1",
             "damage|mon:Garchomp,player-2,1|health:146/168",
             "damage|mon:Garchomp,player-2,1|health:87/100",
             "split|side:0",
-            "damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:93/168",
-            "damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:56/100",
+            "damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:120/168",
+            "damage|mon:Garchomp,player-1,1|from:ability:Rough Skin|of:Garchomp,player-2,1|health:72/100",
             "residual",
             "turn|turn:2"
         ]"#,

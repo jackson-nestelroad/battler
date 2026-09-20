@@ -12,6 +12,7 @@
   max-width: 100%;
   overflow-x: auto;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-m);
@@ -181,13 +182,13 @@
   border-radius: var(--border-radius-xs);
   transition: background-color var(--transition-fast), outline var(--transition-fast);
   cursor: default;
-  background-color: transparent;
 
-  &.rowHovered:not(:global(.multSuper)):not(:global(.multQuad)):not(:global(.multResist)):not(:global(.multQuadResist)):not(:global(.multImmune)) {
-    background-color: var(--bg-subtle-hover);
+  &:global(.multNeutral) {
+    background-color: transparent;
   }
 
-  &.colHovered:not(:global(.multSuper)):not(:global(.multQuad)):not(:global(.multResist)):not(:global(.multQuadResist)):not(:global(.multImmune)) {
+  &.rowHovered:global(.multNeutral),
+  &.colHovered:global(.multNeutral) {
     background-color: var(--bg-subtle-hover);
   }
 

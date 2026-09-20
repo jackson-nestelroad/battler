@@ -17,10 +17,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: {
-        enabled: true,
-        type: "module",
+        enabled: false,
       },
-      includeAssets: ["favicon.svg", "logo.svg", "logo-mono.svg"],
       manifest: {
         name: "Battler",
         short_name: "Battler",
@@ -28,6 +26,8 @@ export default defineConfig({
         theme_color: "#1e1e2e",
         background_color: "#1e1e2e",
         display: "standalone",
+        start_url: "/",
+        scope: "/",
         icons: [
           {
             src: "favicon.svg",
@@ -40,19 +40,22 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,svg,png,wasm,json}"],
+        globIgnores: ["**/assets/mons/**", "**/assets/items/**"],
         navigateFallback: "index.html",
         navigateFallbackAllowlist: [/^\/.*/],
+        navigateFallbackDenylist: [/^\/assets\/.*/],
         clientsClaim: true,
         skipWaiting: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            urlPattern: /\/assets\/(?:mons|items)\/.+/i,
             handler: "CacheFirst",
             options: {
-              cacheName: "google-fonts-cache",
+              cacheName: "battle-assets-cache",
               expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+                purgeOnQuotaError: true,
               },
               cacheableResponse: {
                 statuses: [0, 200],
@@ -60,13 +63,21 @@ export default defineConfig({
             },
           },
           {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "google-fonts-stylesheets",
+            },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: "CacheFirst",
             options: {
-              cacheName: "gstatic-fonts-cache",
+              cacheName: "google-fonts-webfonts",
               expiration: {
-                maxEntries: 10,
+                maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365,
+                purgeOnQuotaError: true,
               },
               cacheableResponse: {
                 statuses: [0, 200],
