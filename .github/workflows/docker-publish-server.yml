@@ -2,6 +2,11 @@ name: Publish Server Docker Image
 
 on:
   workflow_dispatch:
+    inputs:
+      promote_to_prod:
+        description: "Promote image to :prod (triggers VM Watchtower restart)?"
+        type: boolean
+        default: false
   push:
     tags: ["v*"]
 
@@ -40,7 +45,9 @@ jobs:
             type=raw,value=latest,enable=true
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=sha,format=long
+            type=sha,format=short
+            type=raw,value=prod,enable=${{ startsWith(github.ref, 'refs/tags/v') || inputs.promote_to_prod == true }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

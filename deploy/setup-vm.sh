@@ -78,7 +78,7 @@ else
 fi
 
 # 4. Pull pre-built image and start containers
-echo "=> Pulling latest battler-server, caddy, and watchtower containers..."
+echo "=> Pulling battler-server (prod), caddy, and watchtower containers..."
 cd "$DEPLOY_DIR"
 
 # Ensure docker compose works even if newly added docker group is not yet active in current session

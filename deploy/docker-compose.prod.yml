@@ -1,6 +1,6 @@
 services:
   battler-server:
-    image: ghcr.io/jackson-nestelroad/battler-server:latest
+    image: ghcr.io/jackson-nestelroad/battler-server:${BATTLER_SERVER_TAG:-prod}
     container_name: battler-server
     restart: unless-stopped
     network_mode: host
