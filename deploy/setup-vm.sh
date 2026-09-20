@@ -69,14 +69,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$SCRIPT_DIR/Caddyfile" && -f "$SCRIPT_DIR/docker-compose.prod.yml" ]]; then
     cp "$SCRIPT_DIR/Caddyfile" "$DEPLOY_DIR/Caddyfile"
     cp "$SCRIPT_DIR/docker-compose.prod.yml" "$DEPLOY_DIR/docker-compose.prod.yml"
+    cp "$SCRIPT_DIR/docker-compose.prod.yml" "$DEPLOY_DIR/docker-compose.yml"
 else
     BRANCH="${BRANCH:-main}"
     curl -fsSL "https://raw.githubusercontent.com/jackson-nestelroad/battler/${BRANCH}/deploy/Caddyfile" -o "$DEPLOY_DIR/Caddyfile"
     curl -fsSL "https://raw.githubusercontent.com/jackson-nestelroad/battler/${BRANCH}/deploy/docker-compose.prod.yml" -o "$DEPLOY_DIR/docker-compose.prod.yml"
+    cp "$DEPLOY_DIR/docker-compose.prod.yml" "$DEPLOY_DIR/docker-compose.yml"
 fi
 
 # 4. Pull pre-built image and start containers
-echo "=> Pulling latest battler-server and caddy containers..."
+echo "=> Pulling latest battler-server, caddy, and watchtower containers..."
 cd "$DEPLOY_DIR"
 
 # Ensure docker compose works even if newly added docker group is not yet active in current session
@@ -85,15 +87,15 @@ if ! docker info &>/dev/null; then
     DOCKER_COMPOSE="sudo docker compose"
 fi
 
-$DOCKER_COMPOSE -f docker-compose.prod.yml pull || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml up -d
+$DOCKER_COMPOSE pull || true
+$DOCKER_COMPOSE up -d
 
 echo ""
 echo "===================================================="
 echo "🎉 Battler services launched successfully!"
 echo "===================================================="
-$DOCKER_COMPOSE -f docker-compose.prod.yml ps
+$DOCKER_COMPOSE ps
 echo ""
 echo "Check logs anytime with:"
-echo "   $DOCKER_COMPOSE -f $DEPLOY_DIR/docker-compose.prod.yml logs -f"
+echo "   $DOCKER_COMPOSE -f $DEPLOY_DIR/docker-compose.yml logs -f"
 

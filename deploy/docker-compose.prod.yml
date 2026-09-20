@@ -27,6 +27,25 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  watchtower:
+    image: containrrr/watchtower
+    container_name: battler-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=120
+      - WATCHTOWER_INCLUDE_STOPPED=false
+    command: battler-server
+    depends_on:
+      - battler-server
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   caddy_data:
   caddy_config:
