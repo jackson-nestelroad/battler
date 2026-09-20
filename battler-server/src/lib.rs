@@ -439,6 +439,15 @@ impl ServerHandle {
     }
 }
 
+/// Default router limits for battler server.
+pub fn default_router_limits() -> RouterLimitsConfig {
+    RouterLimitsConfig {
+        rate_limit_burst: 150,
+        rate_limit_refill_per_sec: 30,
+        ..Default::default()
+    }
+}
+
 pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     // 1. Initialize local data store from disk (using Box::leak for static lifetime)
     let data_store: &'static LocalDataStore =
@@ -453,7 +462,7 @@ pub async fn start_server(config: ServerConfig) -> Result<ServerHandle> {
     let mut router_config = RouterConfig {
         address: config.address,
         port: config.port,
-        limits: config.limits.unwrap_or_default(),
+        limits: config.limits.unwrap_or_else(default_router_limits),
         ..Default::default()
     };
     router_config.realms.push(RealmConfig {

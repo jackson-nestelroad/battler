@@ -82,6 +82,7 @@ export class BattlerClient extends EventEmitter {
     private readonly service: BattlerServiceClient,
     role: Role,
     initialLogLines: string[],
+    public readonly battle: Battle,
   ) {
     super();
     this._role = role;
@@ -99,7 +100,7 @@ export class BattlerClient extends EventEmitter {
     const role = getRoleForPlayer(battle, player);
     const initialLogLines = await service.fullLog(battleId, role.side);
 
-    const client = new BattlerClient(battleId, player, service, role, initialLogLines);
+    const client = new BattlerClient(battleId, player, service, role, initialLogLines, battle);
     await client.init();
     return client;
   }

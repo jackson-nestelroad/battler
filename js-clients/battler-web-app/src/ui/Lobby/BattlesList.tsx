@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattlePreview } from "battler-service-client";
 import { fetchBattles, restoreBattleSession } from "../../core/wamp";
 import { selectBattle } from "../../store/battlesSlice";
@@ -35,10 +35,12 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
   const [battles, setBattles] = useState<BattlePreview[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadingRef = useRef(false);
 
   const loadPage = useCallback(
     async (pageIndex: number) => {
-      if (!isConnected) return;
+      if (!isConnected || loadingRef.current) return;
+      loadingRef.current = true;
       setIsLoading(true);
       setError(null);
       try {
@@ -49,6 +51,7 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
         console.error("[BattlesList] Failed to fetch battles:", err);
         setError(typeof err === "string" ? err : String(err));
       } finally {
+        loadingRef.current = false;
         setIsLoading(false);
       }
     },

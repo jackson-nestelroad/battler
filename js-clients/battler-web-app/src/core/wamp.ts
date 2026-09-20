@@ -356,20 +356,15 @@ export async function initializeBattleClient(
       );
       dispatch(setBattleRequest({ battleId, request: client.request() }));
 
-      // Fetch initial service battle state
-      if (connectionManager.serviceClient) {
+      // Initial service battle state (already fetched by BattlerClient.create)
+      if (client.battle) {
+        dispatch(serviceBattleUpdated({ battleId, serviceBattle: client.battle }));
+      }
+      if (connectionManager.serviceClient && client.role().type === "player") {
         try {
-          const serviceBattle = await connectionManager.serviceClient.battle(battleId);
-          dispatch(serviceBattleUpdated({ battleId, serviceBattle }));
+          await fetchTeamPlayerData(battleId, playerId, client.state(), dispatch);
         } catch (e) {
-          handleBattleError(dispatch, battleId, "Failed to fetch initial service battle state", e);
-        }
-        if (client.role().type === "player") {
-          try {
-            await fetchTeamPlayerData(battleId, playerId, client.state(), dispatch);
-          } catch (e) {
-            handleBattleError(dispatch, battleId, "Failed to fetch initial player data", e);
-          }
+          handleBattleError(dispatch, battleId, "Failed to fetch initial player data", e);
         }
       }
 
@@ -724,11 +719,13 @@ export const connectWamp = createAsyncThunk<
         console.error("[WAMP] Failed to restore spectating battles:", err);
       }
 
-      // Subscribe to proposal updates
-      connectionManager.proposalSubscription =
-        await connectionManager.multiplayerClient.proposedBattleUpdates(
-          getProposalUpdateHandler(playerId, dispatch, getState),
-        );
+      // Ensure proposal updates are subscribed if not already subscribed by connect event
+      if (!connectionManager.proposalSubscription && connectionManager.multiplayerClient) {
+        connectionManager.proposalSubscription =
+          await connectionManager.multiplayerClient.proposedBattleUpdates(
+            getProposalUpdateHandler(playerId, dispatch, getState),
+          );
+      }
 
       dispatch(setConnectionStatus("connected"));
     } catch (err: unknown) {

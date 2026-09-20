@@ -48,6 +48,14 @@ struct Args {
     /// Maximum active connections allowed per client IP address
     #[arg(long, default_value_t = 10)]
     max_connections_per_ip: usize,
+
+    /// Maximum burst of incoming messages allowed per connection
+    #[arg(long, default_value_t = 150)]
+    rate_limit_burst: u32,
+
+    /// Sustained message refill rate (tokens/second) per connection
+    #[arg(long, default_value_t = 30)]
+    rate_limit_refill_per_sec: u32,
 }
 
 #[tokio::main]
@@ -74,6 +82,8 @@ async fn run_server() -> Result<()> {
         } else {
             None
         },
+        rate_limit_burst: args.rate_limit_burst,
+        rate_limit_refill_per_sec: args.rate_limit_refill_per_sec,
         ..Default::default()
     };
 
