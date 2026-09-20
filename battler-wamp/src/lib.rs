@@ -156,6 +156,7 @@
 //!             "X-WAMP-Framework".to_owned(),
 //!             "battler-wamp".to_owned(),
 //!         )]),
+//!         ..Default::default()
 //!     });
 //!
 //!     // Create peer, connect to a router, and join a realm.
