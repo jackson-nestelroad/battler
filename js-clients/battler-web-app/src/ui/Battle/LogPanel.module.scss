@@ -6,19 +6,24 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0; // Ensure parent flex container doesn't overflow
-  padding: 0;
-  gap: 0;
+  padding: 0 !important;
+  gap: 0 !important;
   transition:
     height var(--transition-duration) var(--transition-timing),
     flex var(--transition-duration) var(--transition-timing);
 
   @include tablet {
     &.collapsed {
-      height: var(--mobile-header-height) !important; /* Force minimum height matching header */
-      flex: 0 0 auto !important; /* Prevent expansion */
+      height: auto !important;
+      min-height: 0 !important;
+      flex: 0 0 auto !important;
+      justify-content: center;
 
       .header {
-        border-bottom: none; /* Hide border when closed */
+        border-bottom: none;
+        margin: 0 !important;
+        padding: var(--spacing-xs) var(--spacing-m) !important;
+        min-height: rem(36px);
       }
 
       // Hide nested content components from rendering inside minimized container
@@ -31,8 +36,14 @@
 }
 
 .header {
-  padding: var(--spacing-s) var(--spacing-m); // override default card-header padding
-  margin-bottom: 0; // scrollArea handles padding natively
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-s); // matches .card padding-top (spacing-m) + .card-header padding-bottom (spacing-s)
+  margin-bottom: 0 !important; // scrollArea handles padding natively
+  display: flex;
+  align-items: center;
+
+  @include tablet {
+    padding: var(--spacing-s) var(--spacing-m);
+  }
 }
 
 .collapseToggle {
@@ -47,6 +58,7 @@
   border-radius: var(--border-radius-xs);
   cursor: pointer;
   transition: var(--transition-fast);
+  line-height: 1;
 
   &:hover {
     color: var(--text-primary);
@@ -55,7 +67,9 @@
   }
 
   @include tablet {
-    display: inline-block; /* Show on mobile viewports */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

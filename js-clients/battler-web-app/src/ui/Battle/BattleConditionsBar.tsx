@@ -10,7 +10,12 @@ import {
 import { extractAllBattleConditions } from "../../utils/conditionData";
 import { isTargetInsideModal } from "../../utils/dom";
 import FloatingTooltip from "../Common/Tooltip/FloatingTooltip";
-import { TooltipParentContext, useTooltipChildTracker } from "../Common/Tooltip/TooltipContext";
+import {
+  TooltipParentContext,
+  useTooltipChildTracker,
+  registerActivePinnedTooltip,
+  hasActivePinnedTooltip,
+} from "../Common/Tooltip/TooltipContext";
 import BattleConditionPopover, { type ConditionTab } from "./BattleConditionPopover";
 
 export interface BattleConditionsBarProps {
@@ -74,6 +79,7 @@ export default function BattleConditionsBar({
     e: MouseEvent<HTMLButtonElement>,
     tab: ConditionTab,
   ) => {
+    if (hasActivePinnedTooltip() && !isPinned) return;
     isHoveringRef.current = true;
     activeChipRef.current = e.currentTarget;
     if (isPinned) return;
@@ -94,6 +100,7 @@ export default function BattleConditionsBar({
     setTargetRect(rect);
 
     if (isOpen && isPinned && activeTab === tab) {
+      closeChild();
       setIsPinned(false);
       setIsOpen(false);
     } else {
@@ -104,10 +111,24 @@ export default function BattleConditionsBar({
   };
 
   useEffect(() => {
+    if (!isOpen) {
+      closeChild();
+    }
+  }, [isOpen, closeChild]);
+
+  useEffect(() => {
     if (openChildCount === 0 && !isPinned && !isHoveringRef.current && isOpen) {
       scheduleClose();
     }
   }, [openChildCount, isPinned, isOpen, scheduleClose]);
+
+  useEffect(() => {
+    if (!isOpen || !isPinned) return;
+    return registerActivePinnedTooltip("battle-conditions-bar", () => {
+      setIsPinned(false);
+      setIsOpen(false);
+    });
+  }, [isOpen, isPinned]);
 
   // Close on outside click if pinned
   useEffect(() => {

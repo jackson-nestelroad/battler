@@ -26,7 +26,7 @@ import ItemTooltipCard from "./ItemTooltipCard";
 import MoveTooltipCard from "./MoveTooltipCard";
 import SpeciesTooltipCard from "./SpeciesTooltipCard";
 import TypeTooltipCard from "./TypeTooltipCard";
-import { TooltipParentContext, useTooltipChildTracker } from "./TooltipContext";
+import { TooltipParentContext, useTooltipChildTracker, registerActivePinnedTooltip } from "./TooltipContext";
 
 export type DataResourceType = ResourceType | "resource" | "type";
 
@@ -171,6 +171,13 @@ export default function DataTooltipTrigger({
       closeChild();
     }
   }, [isOpen, closeChild]);
+
+  useEffect(() => {
+    if (!isOpen || parentContext) return;
+    return registerActivePinnedTooltip(triggerId, () => {
+      setIsOpen(false);
+    });
+  }, [isOpen, parentContext, triggerId]);
 
   const cleanName = name?.trim();
 

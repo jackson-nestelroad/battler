@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { MonBattleData } from "battler-types";
 import MonCard from "./MonCard";
 
 describe("MonCard", () => {
@@ -177,4 +178,70 @@ describe("MonCard", () => {
 
     expect(html).not.toContain("/assets/mons/icons/");
   });
+
+  it("renders info button in card variant when monBattleData is present", () => {
+    const mon = {
+      species: "Pikachu",
+      summary: { name: "Pikachu", level: 50 },
+      hp: 100,
+      max_hp: 100,
+      moves: [],
+    } as unknown as MonBattleData;
+
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Pikachu"
+        level={50}
+        hp={100}
+        maxHp={100}
+        monBattleData={mon}
+        variant="card"
+        isClickable={true}
+      />,
+    );
+
+    expect(html).toContain("info-btn");
+    expect(html).toContain('aria-label="View Pikachu details"');
+    expect(html).toContain('title="View Pikachu details"');
+  });
+
+  it("renders info button in row variant when monBattleData is present", () => {
+    const mon = {
+      species: "Raichu",
+      summary: { name: "Raichu", level: 50 },
+      hp: 100,
+      max_hp: 100,
+      moves: [],
+    } as unknown as MonBattleData;
+
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Raichu"
+        level={50}
+        hp={100}
+        maxHp={100}
+        monBattleData={mon}
+        variant="row"
+      />,
+    );
+
+    expect(html).toContain("info-btn");
+    expect(html).toContain('aria-label="View Raichu details"');
+    expect(html).toContain('title="View Raichu details"');
+  });
+
+  it("omits info button when no mon data is provided", () => {
+    const html = renderToStaticMarkup(
+      <MonCard
+        name="Pikachu"
+        level={50}
+        hp={100}
+        maxHp={100}
+        variant="card"
+      />,
+    );
+
+    expect(html).not.toContain("info-btn");
+  });
 });
+

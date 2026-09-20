@@ -44,26 +44,6 @@
   flex-shrink: 0;
 }
 
-.infoBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--spacing-l);
-  height: var(--spacing-l);
-  border-radius: var(--border-radius-round);
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-card);
-  color: var(--text-muted);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: var(--transition-fast);
-
-  &:hover {
-    color: var(--text-primary);
-    border-color: var(--text-secondary);
-    background-color: var(--bg-card);
-  }
-}
 
 .moveMetaRow {
   display: flex;

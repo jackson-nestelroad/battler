@@ -55,4 +55,30 @@ describe("MonTooltipTrigger", () => {
     expect(divHtml).toContain("<div");
     expect(divHtml).toContain("Div Trigger");
   });
+
+  it("includes interactive button attributes when disableClick is false", () => {
+    const mon = createMockMonBattleData();
+    const html = renderToStaticMarkup(
+      <MonTooltipTrigger mon={mon} as="div">
+        <span>Interactive</span>
+      </MonTooltipTrigger>,
+    );
+    expect(html).toContain('role="button"');
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('aria-haspopup="dialog"');
+    expect(html).toContain('aria-expanded="false"');
+  });
+
+  it("omits interactive button attributes when disableClick is true", () => {
+    const mon = createMockMonBattleData();
+    const html = renderToStaticMarkup(
+      <MonTooltipTrigger mon={mon} as="div" disableClick={true}>
+        <span>Non Interactive</span>
+      </MonTooltipTrigger>,
+    );
+    expect(html).not.toContain('role="button"');
+    expect(html).not.toContain('tabindex="0"');
+    expect(html).not.toContain('aria-haspopup="dialog"');
+  });
 });
+

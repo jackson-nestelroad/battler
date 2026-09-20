@@ -90,3 +90,36 @@ export function useTooltipChildTracker(
     contextValue,
   };
 }
+
+export interface MonTooltipContextValue {
+  isOpen: boolean;
+  isPinned: boolean;
+  toggle: (targetEl?: HTMLElement) => void;
+  open: (targetEl?: HTMLElement) => void;
+  close: () => void;
+}
+
+export const MonTooltipContext = createContext<MonTooltipContextValue | null>(null);
+
+interface ActivePinnedTooltip {
+  id: string;
+  close: () => void;
+}
+
+let activePinnedTooltip: ActivePinnedTooltip | null = null;
+
+export function hasActivePinnedTooltip(): boolean {
+  return activePinnedTooltip !== null;
+}
+
+export function registerActivePinnedTooltip(id: string, close: () => void): () => void {
+  if (activePinnedTooltip && activePinnedTooltip.id !== id) {
+    activePinnedTooltip.close();
+  }
+  activePinnedTooltip = { id, close };
+  return () => {
+    if (activePinnedTooltip?.id === id) {
+      activePinnedTooltip = null;
+    }
+  };
+}

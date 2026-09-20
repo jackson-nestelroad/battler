@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import DataTooltipTrigger from "./DataTooltipTrigger";
-import { useTooltipChildTracker } from "./TooltipContext";
+import {
+  useTooltipChildTracker,
+  registerActivePinnedTooltip,
+  hasActivePinnedTooltip,
+} from "./TooltipContext";
 
 describe("DataTooltipTrigger", () => {
   it("renders children cleanly", () => {
@@ -123,5 +127,28 @@ describe("DataTooltipTrigger", () => {
 
     unregister();
     expect(tracker.isTargetInChild("inside-child" as unknown as Node)).toBe(false);
+  });
+
+  it("enforces single active pinned tooltip across root tooltips", () => {
+    expect(hasActivePinnedTooltip()).toBe(false);
+
+    const close1 = vi.fn();
+    const close2 = vi.fn();
+
+    const unregister1 = registerActivePinnedTooltip("tooltip-1", close1);
+    expect(hasActivePinnedTooltip()).toBe(true);
+    expect(close1).not.toHaveBeenCalled();
+
+    // Registering tooltip 2 must close tooltip 1
+    const unregister2 = registerActivePinnedTooltip("tooltip-2", close2);
+    expect(close1).toHaveBeenCalledTimes(1);
+    expect(close2).not.toHaveBeenCalled();
+    expect(hasActivePinnedTooltip()).toBe(true);
+
+    // Unregistering tooltip 2 clears active pinned tooltip
+    unregister2();
+    expect(hasActivePinnedTooltip()).toBe(false);
+
+    unregister1();
   });
 });

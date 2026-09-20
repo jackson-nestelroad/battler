@@ -596,7 +596,53 @@ input[type="checkbox"] {
   border-color: var(--color-danger);
 }
 
+/* Info Icon Button (for Move tooltips, Mon tooltips, etc.) */
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-l);
+  height: var(--spacing-l);
+  border-radius: var(--border-radius-round);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+  outline: none !important;
+  user-select: none;
+  position: relative;
+
+  /* Touch target hit slop */
+  &::after {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--spacing-xs));
+    bottom: calc(-1 * var(--spacing-xs));
+    left: calc(-1 * var(--spacing-xs));
+    right: calc(-1 * var(--spacing-xs));
+  }
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    background-color: var(--bg-card);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--text-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
 /* 3. Unified Status / Indicator Badges */
+
 .badge {
   display: inline-flex;
   align-items: center;

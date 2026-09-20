@@ -31,7 +31,8 @@ export default function App() {
     typeof window !== "undefined" ? window.innerWidth < BREAKPOINT_TABLET_PX : false,
   );
 
-  const showAutoconnectLoader = connection.autoconnect && connection.status === "connecting";
+  const showAutoconnectLoader =
+    connection.autoconnect && connection.status === "connecting" && !connection.hasConnected;
 
   if (!isHydrated || showAutoconnectLoader) {
     return (
