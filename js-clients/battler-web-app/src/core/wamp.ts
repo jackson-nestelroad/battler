@@ -525,6 +525,7 @@ export const connectWamp = createAsyncThunk<
     { dispatch, getState },
   ) => {
     dispatch(setConnectionStatus("connecting"));
+    dispatch(setPlayerId(null));
     dispatch(setConnectionError(null));
     dispatch(setRetryDetails(null));
     dispatch(clearBattles());

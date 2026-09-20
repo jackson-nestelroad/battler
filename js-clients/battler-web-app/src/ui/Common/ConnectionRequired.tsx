@@ -19,13 +19,13 @@ export default function ConnectionRequired({ children, bypass = false }: Connect
 
   const isDisconnected =
     connection.status === "disconnected" ||
-    (connection.status === "connecting" && !connection.playerId);
+    (connection.status === "connecting" && !connection.hasConnected);
 
   if (isDisconnected) {
     return <ConnectForm />;
   }
 
-  const isReconnecting = status === "connecting";
+  const isReconnecting = status === "connecting" && connection.hasConnected;
 
   return (
     <div className={styles.wrapper}>

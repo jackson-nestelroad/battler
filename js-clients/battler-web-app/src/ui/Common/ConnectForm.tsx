@@ -28,9 +28,21 @@ export default function ConnectForm() {
       dispatch(setConnectionError("Player IDs starting with 'ai-' are reserved.", null));
       return;
     }
+    let targetUrl = serverUrl.trim();
+    if (!targetUrl.startsWith("ws://") && !targetUrl.startsWith("wss://")) {
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      targetUrl = (isHttps ? "wss://" : "ws://") + targetUrl;
+    } else if (
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:" &&
+      targetUrl.startsWith("ws://")
+    ) {
+      targetUrl = "wss://" + targetUrl.slice(5);
+    }
+
     dispatch(
       connectWamp({
-        url: serverUrl,
+        url: targetUrl,
         playerId: cleanPlayerName,
         autoconnect,
       }),
