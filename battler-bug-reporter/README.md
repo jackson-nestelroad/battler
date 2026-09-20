@@ -19,9 +19,9 @@ Settings can be provided via environment variables or `appsettings.json`:
 
 | Environment Variable | Config Key | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `GITHUB_TOKEN` | `GitHub:Token` | *(None)* | GitHub Personal Access Token or App Installation Token. If omitted, runs in Soft-Launch mode. |
-| `GITHUB_REPO_OWNER` | `GitHub:RepoOwner` | `jackson-nestelroad` | Owner / Organization of target repository. |
-| `GITHUB_REPO_NAME` | `GitHub:RepoName` | `battler` | Name of target repository. |
+| `GITHUB_TOKEN` | `GITHUB_TOKEN` | *(None)* | GitHub Personal Access Token or App Installation Token. If omitted, runs in Soft-Launch mode. |
+| `GITHUB_REPO_OWNER` | `GITHUB_REPO_OWNER` | `jackson-nestelroad` | Owner / Organization of target repository. |
+| `GITHUB_REPO_NAME` | `GITHUB_REPO_NAME` | `battler` | Name of target repository. |
 | `REPORTS_DIRECTORY` | `ReportsDirectory` | `./reports` | Local storage directory for soft-launch reports and diagnostics. |
 | `RATE_LIMIT_GLOBAL_PERMIT_LIMIT` | `RateLimiting:GlobalPermitLimit` | `30` | Max total bug submissions allowed per hour across all clients combined. |
 | `RATE_LIMIT_GLOBAL_WINDOW_HOURS` | `RateLimiting:GlobalWindowHours` | `1` | Sliding window duration in hours for global rate limiting. |

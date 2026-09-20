@@ -14,13 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 var githubToken = builder.Configuration["GITHUB_TOKEN"]?.Trim();
 var isLiveGitHub = !string.IsNullOrWhiteSpace(githubToken);
 
-var repoOwner = (builder.Configuration["GitHub:RepoOwner"]
-    ?? builder.Configuration["GITHUB_REPO_OWNER"]
-    ?? "jackson-nestelroad").Trim();
-
-var repoName = (builder.Configuration["GitHub:RepoName"]
-    ?? builder.Configuration["GITHUB_REPO_NAME"]
-    ?? "battler").Trim();
+var repoOwner = (builder.Configuration["GITHUB_REPO_OWNER"] ?? "jackson-nestelroad").Trim();
+var repoName = (builder.Configuration["GITHUB_REPO_NAME"] ?? "battler").Trim();
 
 // 2. Server & Services
 builder.WebHost.ConfigureKestrel(serverOptions =>
