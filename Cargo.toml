@@ -92,6 +92,7 @@ log = "0.4"
 # Testing,
 assert_matches = "1.5"
 pretty_assertions = "1.4"
+tempfile = "3"
 tracing-core = "0.1"
 tracing-subscriber = "0.3"
 
