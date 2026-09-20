@@ -1,6 +1,6 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { Battle, BattleMetadata } from "battler-service-client";
+import type { Battle, BattleMetadata, BattlePreview } from "battler-service-client";
 import type { BattleState, UiLogEntry } from "battler-state";
 import type { PlayerBattleData, Request } from "battler-types";
 import type { ParsedTimerLog } from "../utils/battle";
@@ -37,6 +37,7 @@ export interface BaseBattleSession {
   isSpectator?: boolean;
   metadata?: BattleMetadata;
   activeTimers?: Record<string, ActiveTimerState>;
+  preview?: BattlePreview | null;
 }
 
 export interface LiveBattleSession extends BaseBattleSession {
@@ -286,14 +287,19 @@ const battlesSlice = createSlice({
 
     battleSessionRestored(
       state,
-      action: PayloadAction<string | { battleId: string; isProposal?: boolean }>,
+      action: PayloadAction<
+        | string
+        | { battleId: string; isProposal?: boolean; preview?: BattlePreview }
+      >,
     ) {
       const payload = action.payload;
       const battleId =
         typeof payload === "string" ? normalizeId(payload) : normalizeId(payload.battleId);
       const isProposal = typeof payload === "string" ? false : !!payload.isProposal;
+      const preview = typeof payload === "string" ? undefined : payload.preview;
 
-      if (!state.battles[battleId]) {
+      const existing = state.battles[battleId];
+      if (!existing) {
         state.battles[battleId] = {
           battleId,
           battleState: null,
@@ -307,7 +313,21 @@ const battlesSlice = createSlice({
           isLoading: false,
           serviceBattle: null,
           isProposal,
+          preview: preview ?? null,
         };
+      } else if (preview && !existing.preview) {
+        existing.preview = preview;
+      }
+    },
+
+    battlePreviewUpdated(
+      state,
+      action: PayloadAction<{ battleId: string; preview: BattlePreview }>,
+    ) {
+      const battleId = normalizeId(action.payload.battleId);
+      const battle = state.battles[battleId];
+      if (battle) {
+        battle.preview = action.payload.preview;
       }
     },
 
@@ -468,6 +488,7 @@ export const {
   setIsSpectator,
   battleSessionEnded,
   battleSessionRestored,
+  battlePreviewUpdated,
   clearBattleState,
   switchActiveBattle,
   setCurrentView,

@@ -1,4 +1,4 @@
-import type { Battle } from "battler-service-client";
+import type { Battle, BattlePreview } from "battler-service-client";
 import type { BattleState, UiLogEntry } from "battler-state";
 import type { ProposedBattleWithDetails } from "../store/proposalsSlice";
 
@@ -7,16 +7,21 @@ export function getBattleTitle(
   serviceBattle?: Battle | null,
   proposal?: ProposedBattleWithDetails | null,
   isDeleted?: boolean,
+  preview?: BattlePreview | null,
 ): string {
   const side0Name =
     battleState?.field?.sides?.[0]?.name ||
     serviceBattle?.sides?.[0]?.name ||
-    proposal?.sides?.[0]?.name;
+    proposal?.sides?.[0]?.name ||
+    preview?.sides?.[0]?.name ||
+    preview?.sides?.[0]?.players?.map((p) => p.name || p.id).join(" / ");
 
   const side1Name =
     battleState?.field?.sides?.[1]?.name ||
     serviceBattle?.sides?.[1]?.name ||
-    proposal?.sides?.[1]?.name;
+    proposal?.sides?.[1]?.name ||
+    preview?.sides?.[1]?.name ||
+    preview?.sides?.[1]?.players?.map((p) => p.name || p.id).join(" / ");
 
   if (side0Name && side1Name) {
     return `${side0Name} vs ${side1Name}`;

@@ -14,6 +14,7 @@ function formatSides(sides: BattlePreview["sides"]): string {
   if (!sides || sides.length === 0) return "Unknown Battle";
   return sides
     .map((s, idx) => {
+      if (s.name) return s.name;
       const names = s.players?.map((p) => p.name || p.id).join(", ") || `Side ${idx + 1}`;
       return names;
     })
@@ -63,8 +64,9 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
     }
   }, [loadPage, isConnected, page, refreshTrigger]);
 
-  const handleWatch = (battleId: string) => {
-    restoreBattleSession(battleId, playerId, dispatch);
+  const handleWatch = (battle: BattlePreview) => {
+    const battleId = formatUuid(battle.uuid);
+    restoreBattleSession(battleId, playerId, dispatch, undefined, battle);
     dispatch(selectBattle({ view: "battle", battleId }));
   };
 
@@ -101,13 +103,13 @@ export default function BattlesList({ refreshTrigger = 0 }: BattlesListProps) {
               <div
                 key={b.uuid}
                 className={styles.battleItem}
-                onClick={() => handleWatch(battleId)}
+                onClick={() => handleWatch(b)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    handleWatch(battleId);
+                    handleWatch(b);
                   }
                 }}
               >

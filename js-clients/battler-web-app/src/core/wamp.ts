@@ -20,6 +20,7 @@ import { WampSessionProvider } from "battler-wamp-client";
 import { getAllyPlayerIds } from "../utils/battleState";
 import {
   addSpectatingBattle,
+  battlePreviewUpdated,
   battleSessionCreated,
   battleSessionEnded,
   battleSessionRestored,
@@ -401,9 +402,10 @@ export function restoreBattleSession(
   playerId: string,
   dispatch: Dispatch,
   isSpectator?: boolean,
+  preview?: BattlePreview,
 ) {
   const battleId = formatUuid(rawBattleId);
-  dispatch(battleSessionRestored(battleId));
+  dispatch(battleSessionRestored({ battleId, preview }));
   if (isSpectator !== undefined) {
     dispatch(setIsSpectator({ battleId, isSpectator }));
     if (isSpectator) {
@@ -694,7 +696,7 @@ export const connectWamp = createAsyncThunk<
           );
           for (const b of page) {
             restoredIds.add(formatUuid(b.uuid));
-            restoreBattleSession(b.uuid, playerId, dispatch, false);
+            restoreBattleSession(b.uuid, playerId, dispatch, false, b);
           }
           if (page.length < battlesLimit) {
             break;
@@ -1003,6 +1005,7 @@ export const refreshLobby = createAsyncThunk<void, string, { state: RootState }>
           fetchedBattleIds.add(battleId);
           const existingClient = connectionManager.clientsRegistry.get(battleId);
           if (existingClient) {
+            dispatch(battlePreviewUpdated({ battleId, preview: b }));
             existingClient.sync().catch((err: unknown) => {
               console.warn(
                 `[WAMP] Failed to sync existing battle client for ${battleId} during lobby refresh:`,
@@ -1011,7 +1014,7 @@ export const refreshLobby = createAsyncThunk<void, string, { state: RootState }>
               handleBattleError(dispatch, battleId, "Failed to sync battle client", err);
             });
           } else {
-            restoreBattleSession(battleId, playerId, dispatch);
+            restoreBattleSession(battleId, playerId, dispatch, undefined, b);
           }
         }
         if (page.length < battlesLimit) {

@@ -1,5 +1,6 @@
 import type { BattleType, MonData } from "battler-types";
 import { useState } from "react";
+import NoTeamsAlert from "../Common/NoTeamsAlert";
 import TeamSelect from "../Common/TeamSelect";
 import styles from "./ProposalForm.module.scss";
 import type { FormPlayer } from "./proposalTypes";
@@ -117,7 +118,7 @@ export default function PlayerSlotCard({
                 required
               />
             ) : (
-              <span className="text-danger text-sm">No teams. Go to Teams.</span>
+              <NoTeamsAlert />
             )}
           </div>
         )}

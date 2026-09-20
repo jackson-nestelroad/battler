@@ -162,6 +162,8 @@ pub struct PlayerPreview {
 #[cfg_attr(feature = "typescript", derive(ts_rs::TS))]
 #[cfg_attr(feature = "typescript", ts(export))]
 pub struct SidePreview {
+    /// Name of the side.
+    pub name: String,
     /// Players on the side.
     pub players: Vec<PlayerPreview>,
 }

@@ -46,6 +46,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       battle.serviceBattle,
       proposalsMap[battle.battleId],
       isDeleted,
+      battle.preview,
     );
     const turnNumber = battle.battleState?.turn || 0;
     const isFinished = battle.battleState?.phase === "finished";

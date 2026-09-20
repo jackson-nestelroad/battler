@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import BattleSidesList from "../Common/BattleSidesList";
 import CountdownTimer from "../Common/CountdownTimer";
 import ErrorBanner from "../Common/ErrorBanner";
+import NoTeamsAlert from "../Common/NoTeamsAlert";
 import TeamSelect from "../Common/TeamSelect";
 import styles from "./BattlePreparationPanel.module.scss";
 
@@ -106,9 +107,7 @@ export default function BattlePreparationPanel({ battleId }: BattlePreparationPa
                 </button>
               </div>
             ) : (
-              <p className="alert alert-warning">
-                No teams configured. Go to <strong>Teams</strong>.
-              </p>
+              <NoTeamsAlert />
             )}
           </div>
         )}

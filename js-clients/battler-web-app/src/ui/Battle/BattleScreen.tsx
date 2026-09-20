@@ -108,6 +108,7 @@ export default function BattleScreen() {
       battleSession.serviceBattle,
       battleSession.isProposal ? activeProposal : null,
       battleSession.isDeleted,
+      battleSession.preview,
     );
   }, [battleSession, activeProposal]);
 

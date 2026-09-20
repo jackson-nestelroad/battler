@@ -575,12 +575,14 @@ async fn lists_battles_in_uuid_order() {
                 uuid: battles[0],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
@@ -597,12 +599,14 @@ async fn lists_battles_in_uuid_order() {
                 uuid: battles[1],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
@@ -624,12 +628,14 @@ async fn lists_battles_in_uuid_order() {
             uuid: battles[2],
             sides: Vec::from_iter([
                 SidePreview {
+                    name: "Side 1".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-1".to_owned(),
                         name: "Player 1".to_owned(),
                     }]),
                 },
                 SidePreview {
+                    name: "Side 2".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-2".to_owned(),
                         name: "Player 2".to_owned(),
@@ -694,12 +700,14 @@ async fn lists_battles_for_player_in_uuid_order() {
                 uuid: battles[0],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
@@ -716,12 +724,14 @@ async fn lists_battles_for_player_in_uuid_order() {
                 uuid: battles[1],
                 sides: Vec::from_iter([
                     SidePreview {
+                        name: "Side 1".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-1".to_owned(),
                             name: "Player 1".to_owned(),
                         }]),
                     },
                     SidePreview {
+                        name: "Side 2".to_owned(),
                         players: Vec::from_iter([PlayerPreview {
                             id: "player-2".to_owned(),
                             name: "Player 2".to_owned(),
@@ -743,12 +753,14 @@ async fn lists_battles_for_player_in_uuid_order() {
             uuid: battles[2],
             sides: Vec::from_iter([
                 SidePreview {
+                    name: "Side 1".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-1".to_owned(),
                         name: "Player 1".to_owned(),
                     }]),
                 },
                 SidePreview {
+                    name: "Side 2".to_owned(),
                     players: Vec::from_iter([PlayerPreview {
                         id: "player-2".to_owned(),
                         name: "Player 2".to_owned(),

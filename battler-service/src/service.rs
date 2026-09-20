@@ -288,6 +288,7 @@ impl<'d> LiveBattle<'d> {
 
     fn side_preview(side: &Side) -> SidePreview {
         SidePreview {
+            name: side.name.clone(),
             players: side
                 .players
                 .iter()

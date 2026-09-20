@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 
 import { setConnectionError } from "../../store/connectionSlice";
 
+import NoTeamsAlert from "../Common/NoTeamsAlert";
 import Tabs from "../Common/Tabs";
 import TeamSelect from "../Common/TeamSelect";
 import type { CustomRulesState } from "./AdvancedRulesSection";
@@ -545,7 +546,7 @@ export default function ProposalForm() {
                       required
                     />
                   ) : (
-                    <span className="text-danger text-sm">No teams. Go to Teams.</span>
+                    <NoTeamsAlert />
                   )}
                 </div>
               ) : null}
