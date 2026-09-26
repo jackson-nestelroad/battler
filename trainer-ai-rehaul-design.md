@@ -202,25 +202,16 @@ pub enum SemanticAction {
     Protection,
 }
 
-/// Manifest summarizing an effect's behavior and polarity.
+/// Manifest summarizing an effect's behavior, flags, modifiers, and actions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EffectManifest {
     pub id: String,
-    pub target_scope: MoveTarget,
+    pub target_scope: Option<MoveTarget>,
     pub default_polarity: EffectPolarity,
+    pub flags: HashSet<EffectFlag>,
     pub actions: Vec<(EffectPolarity, SemanticAction)>,
-    pub requirements: Vec<EffectRequirement>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum EffectRequirement {
-    TargetNotStatused,
-    TargetNotCondition(String),
-    SideConditionUnderMaxStacks(String, u32),
-    WeatherNotActive(String),
-    TerrainNotActive(String),
-    StatNotCapped(Boost, i8),
-    HealthBelowFull,
+    pub damage_modifiers: Vec<DamageModifier>,
+    pub fixed_damage: Option<FixedDamage>,
 }
 ```
 

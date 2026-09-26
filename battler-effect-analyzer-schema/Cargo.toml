@@ -10,11 +10,10 @@ repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-ef
 
 [dependencies]
 anyhow = { workspace = true }
+battler-data = { workspace = true }
 hashbrown = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-
-battler-data = { workspace = true }
 
 [dev-dependencies]
 assert_matches = { workspace = true }

@@ -64,7 +64,6 @@ By keeping these types in their own schema crate (following the repository conve
 - `battler-effect-analyzer-schema/src/target_role.rs`
 - `battler-effect-analyzer-schema/src/action.rs`
 - `battler-effect-analyzer-schema/src/modifier.rs`
-- `battler-effect-analyzer-schema/src/requirement.rs`
 - `battler-effect-analyzer-schema/src/effect_manifest.rs`
 - `battler-effect-analyzer-schema/src/condition_manifest.rs`
 - `battler-effect-analyzer-schema/src/ability_manifest.rs`
@@ -104,64 +103,61 @@ By keeping these types in their own schema crate (following the repository conve
    - `Heal { fraction }`
    - `ForceSwitch { target }`
    - `Protection`
-4. **Define `EffectRequirement`**:
-   - `TargetNotStatused`
-   - `TargetNotCondition(String)`
-   - `SideConditionUnderMaxStacks(String, u32)`
-   - `WeatherNotActive(String)`
-   - `TerrainNotActive(String)`
-   - `StatNotCapped(Boost, i8)`
-   - `HealthBelowFull`
+4. **Define `DamageModifier`, `FixedDamage`, and `EffectFlag`**:
+   - `DamageModifierEvent`: `BasePower`, `Stat(Stat)`, `PreRandom`, `Damage`
+   - `DamageModifierCondition`: Typed activation conditions (`Always`, `HealthBelow`, `HealthFull`, `TargetHealthFull`, `MoveType`, `ContactMove`, `BiteMove`, `PunchMove`, `SoundMove`, `PulseMove`, `RecoilMove`, `SuperEffective`, `Resisted`, `BasePowerMax`, `GroundedAttacker`, `WeatherActive`, `TerrainActive`)
+   - `FixedDamage`: `Constant`, `Level`, `FractionTargetCurrentHp`, `FractionTargetMaxHp`, `HpDifference`, `LevelRange`
+   - `EffectFlag`: `BreaksScreens`, `IgnoresSubstitute`, `IgnoresProtect`, `Ohko`
 5. **Define `AbilityManifest`**:
-   - `immunities: Vec<Type>` (e.g., Electric for *Volt Absorb*, Ground for *Levitate*)
-   - `absorption: Vec<(Type, HealOrBoost)>`
+   - `flags: HashSet<AbilityFlag>` (`WonderGuard`, `Trapping`, `SuppressesWeather`, `IgnoresHazards`)
+   - `type_immunities: Vec<Type>` (e.g., Ground for *Levitate*)
+   - `absorption: Vec<(Type, HealOrBoost)>` (e.g., *Volt Absorb*, *Lightning Rod*)
    - `status_immunities: Vec<String>` (e.g., `par` for *Limber*, `slp` for *Insomnia*)
+   - `move_flag_immunities: Vec<MoveFlag>` (e.g., *Soundproof*)
    - `contact_punishment: Option<ContactPunishment>` (e.g., *Rough Skin* 1/8 damage, *Flame Body* 30% burn)
-   - `survival: Option<SurvivalType>` (e.g., *Sturdy* Focus Sash effect at full HP)
-   - `entry_effect: Option<SemanticAction>` (e.g., *Intimidate* $-1$ Atk on foes, *Drizzle* rain weather)
-   - `trapping: Option<TrappingScope>` (e.g., *Shadow Tag*, *Arena Trap*)
+   - `survival: Option<SurvivalType>` (*OhkoImmunity*, *LethalDamageCapAtFullHp*, *Disguise*)
+   - `damage_modifiers: Vec<DamageModifier>` (*Technician*, *Huge Power*, *Multiscale*)
 6. **Define `ItemManifest`**:
-   - **Held Item**:
-     - `hazard_immunity: bool` (*Heavy-Duty Boots*)
-     - `survival: Option<SurvivalType>` (*Focus Sash*)
-     - `contact_punishment: Option<ContactPunishment>` (*Rocky Helmet*)
-     - `stat_multiplier: Option<(Stat, Fraction<u64>)>` (*Choice Band*, *Eviolite*)
-     - `move_lock: Option<MoveLockType>` (*Choice Scarf*, *Assault Vest*)
-   - **Bag Item** (Trainer items):
-     - `target: TargetRole` (User or Ally)
-     - `action: SemanticAction` (Heal, StatusCure, StatChange)
-     - `polarity: EffectPolarity` (Beneficial)
-7. **Define `EffectManifest` and `ConditionManifest`** with full `serde` serialization.
+   - `flags: HashSet<ItemFlag>` (`IgnoresHazards` for *Heavy-Duty Boots*, `WeatherSuppressedForHolder` for *Utility Umbrella*)
+   - `type_immunities: Vec<Type>` (e.g., Ground for *Air Balloon*)
+   - `survival: Option<SurvivalType>` (*Focus Sash*)
+   - `contact_punishment: Option<ContactPunishment>` (*Rocky Helmet*)
+   - `damage_modifiers: Vec<DamageModifier>` (*Choice Band*, *Life Orb*, *Charcoal*, *Eviolite*, Resist Berries)
+   - `move_lock: Option<MoveLockType>` (*Choice Band*, *Assault Vest*)
+   - `bag_item: Option<BagItemAction>` (`target: TargetRole`, `action: SemanticAction`, `polarity: EffectPolarity`)
+7. **Define `EffectManifest` and `ConditionManifest`**:
+   - `EffectManifest`: `id`, `target_scope`, `default_polarity`, `flags: HashSet<EffectFlag>`, `actions: Vec<(EffectPolarity, SemanticAction)>`, `damage_modifiers`, `fixed_damage`.
+   - `ConditionManifest`: `id`, `scope: ConditionScope`, `polarity: EffectPolarity`, `max_stacks: u32`, `duration: Option<u32>`.
 8. **Define `ManifestStore`, `ManifestStoreByName`, and `CalcDataStore` Traits**:
-   Following the exact architectural design of `battler-data-service-schema::DescriptionStore`:
+   Following the exact architectural design of `battler-data::DataStore` and `battler-data-service-schema::DescriptionStore`:
    ```rust
    pub trait ManifestStore: Send + Sync {
-       fn get_move_manifest(&self, id: &Id) -> Result<Option<&EffectManifest>>;
-       fn get_condition_manifest(&self, id: &Id) -> Result<Option<&ConditionManifest>>;
-       fn get_ability_manifest(&self, id: &Id) -> Result<Option<&AbilityManifest>>;
-       fn get_item_manifest(&self, id: &Id) -> Result<Option<&ItemManifest>>;
+       fn get_move_manifest(&self, id: &Id) -> Result<Option<EffectManifest>>;
+       fn get_condition_manifest(&self, id: &Id) -> Result<Option<ConditionManifest>>;
+       fn get_ability_manifest(&self, id: &Id) -> Result<Option<AbilityManifest>>;
+       fn get_item_manifest(&self, id: &Id) -> Result<Option<ItemManifest>>;
    }
 
    pub trait ManifestStoreByName: ManifestStore {
-       fn get_move_manifest_by_name(&self, name: &str) -> Result<Option<&EffectManifest>>;
-       fn get_condition_manifest_by_name(&self, name: &str) -> Result<Option<&ConditionManifest>>;
-       fn get_ability_manifest_by_name(&self, name: &str) -> Result<Option<&AbilityManifest>>;
-       fn get_item_manifest_by_name(&self, name: &str) -> Result<Option<&ItemManifest>>;
+       fn get_move_manifest_by_name(&self, name: &str) -> Result<Option<EffectManifest>>;
+       fn get_condition_manifest_by_name(&self, name: &str) -> Result<Option<ConditionManifest>>;
+       fn get_ability_manifest_by_name(&self, name: &str) -> Result<Option<AbilityManifest>>;
+       fn get_item_manifest_by_name(&self, name: &str) -> Result<Option<ItemManifest>>;
    }
 
    /// Combined trait implemented by any data source that provides both authentic Mon data and manifests.
    pub trait CalcDataStore: battler_data::DataStoreByName + ManifestStoreByName {}
    impl<T: battler_data::DataStoreByName + ManifestStoreByName> CalcDataStore for T {}
    ```
-   This ensures `battler-data` remains 100% untouched and pure `no_std`.
+   This ensures `battler-data` remains 100% untouched and pure `no_std`, and allows stores to return cached or synthesized manifests without lifetime restrictions.
 
 ### Verification & High-Quality Tests
 - **Unit Test: `serde_roundtrip_test`**:
-  Verify every variant of `SemanticAction`, `EffectRequirement`, `AbilityManifest`, `ItemManifest`, and `EffectManifest` serializes to and from JSON without loss.
+  Verify every variant of `SemanticAction`, `DamageModifier`, `AbilityManifest`, `ItemManifest`, `ConditionManifest`, and `EffectManifest` serializes to and from JSON without loss.
 - **Unit Test: `polarity_helpers_test`**:
-  Test helper predicates (`is_beneficial()`, `is_harmful()`, `inverts_with()`).
+  Test helper predicates (`is_beneficial()`, `is_harmful()`, `invert()`).
 - **Unit Test: `target_role_classification_test`**:
-  Test mapping from relative positions and team relationships to `TargetRole`.
+  Test classification helpers (`is_friendly()`, `is_opposing()`, `is_mon()`, `is_side()`).
 
 ---
 
@@ -227,10 +223,10 @@ Build the standalone CLI compilation tool that scans `battle-data/data/moves/gen
      - *Assault Vest*: $1.5\times$ SpDef stat multiplier + status move lock.
    - **Trainer Bag Items (In-Battle Consumables)**:
      - Scan and parse bag items in `battle-data/data/items/gen*.json`:
-       - Healing Items (*Potion*, *Super Potion*, *Hyper Potion*, *Max Potion*, *Full Restore*) $\rightarrow$ `BagItemManifest { target: TargetRole::Ally, action: SemanticAction::Heal, polarity: EffectPolarity::Beneficial }`.
-       - Status Cures (*Antidote*, *Awakening*, *Burn Heal*, *Full Heal*) $\rightarrow$ `BagItemManifest { target: TargetRole::Ally, action: SemanticAction::StatusCure, polarity: EffectPolarity::Beneficial }`.
-       - Revives (*Revive*, *Max Revive*) $\rightarrow$ `BagItemManifest { target: TargetRole::FaintedAlly, action: SemanticAction::Revive, polarity: EffectPolarity::Beneficial }`.
-       - Battle Stat Boosters (*X Attack*, *X Defense*, *X Speed*, *Dire Hit*) $\rightarrow$ `BagItemManifest { target: TargetRole::Ally, action: SemanticAction::StatChange, polarity: EffectPolarity::Beneficial }`.
+       - Healing Items (*Potion*, *Super Potion*, *Hyper Potion*, *Max Potion*, *Full Restore*) $\rightarrow$ `BagItemAction { target: TargetRole::Ally, action: SemanticAction::Heal, polarity: EffectPolarity::Beneficial }`.
+       - Status Cures (*Antidote*, *Awakening*, *Burn Heal*, *Full Heal*) $\rightarrow$ `BagItemAction { target: TargetRole::Ally, action: SemanticAction::StatusCure, polarity: EffectPolarity::Beneficial }`.
+       - Revives (*Revive*, *Max Revive*) $\rightarrow$ `BagItemAction { target: TargetRole::Ally, action: SemanticAction::Revive, polarity: EffectPolarity::Beneficial }`.
+       - Battle Stat Boosters (*X Attack*, *X Defense*, *X Speed*, *Dire Hit*) $\rightarrow$ `BagItemAction { target: TargetRole::Ally, action: SemanticAction::StatChange, polarity: EffectPolarity::Beneficial }`.
    - **Non-Scalar Mechanics & Traits in Abilities**:
      - Parse `on_try_hit` in abilities to extract type immunities (*Volt Absorb*, *Water Absorb*, *Levitate*, *Flash Fire*) and status immunities (*Limber*, *Insomnia*).
      - Parse `on_damage` / `on_damaging_hit` for contact punishments (*Rough Skin*, *Iron Barbs*, *Flame Body*) and survival (*Sturdy*).
