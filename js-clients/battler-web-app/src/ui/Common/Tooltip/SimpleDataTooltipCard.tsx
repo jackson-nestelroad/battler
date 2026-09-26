@@ -12,6 +12,7 @@ export interface SimpleDataTooltipCardProps {
   flags?: Iterable<string> | null;
   description?: DescriptionData | null;
   children?: ReactNode;
+  headerAction?: ReactNode;
 }
 
 export default function SimpleDataTooltipCard({
@@ -22,6 +23,7 @@ export default function SimpleDataTooltipCard({
   flags,
   description,
   children,
+  headerAction,
 }: SimpleDataTooltipCardProps) {
   return (
     <article className={`${cardStyles.card} ${cardStyles.cardCompact}`}>
@@ -35,11 +37,19 @@ export default function SimpleDataTooltipCard({
                 aria-hidden="true"
                 className={cardStyles.headerIcon}
                 draggable={false}
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.visibility = "hidden";
+                }}
               />
             )}
             <span className={cardStyles.name}>{name}</span>
           </div>
-          {resourceType && <TooltipEffectButton type={resourceType} name={name} />}
+          {(resourceType || headerAction) && (
+            <div className="flex-row align-center gap-xs">
+              {resourceType && <TooltipEffectButton type={resourceType} name={name} />}
+              {headerAction}
+            </div>
+          )}
         </div>
         <span className={cardStyles.subtitle}>{subtitle}</span>
       </header>

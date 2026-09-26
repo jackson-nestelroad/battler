@@ -23,10 +23,154 @@ export interface ResourceMap {
   species: SpeciesData;
 }
 
-const cache = new Map<string, unknown>();
-const descriptionCache = new Map<string, DescriptionData | null>();
+export interface LruResourceEntry {
+  type: ResourceType;
+  canonicalKey: string;
+  aliases: Set<string>;
+  data: unknown;
+  genericWrapper?: ResourceData;
+  description?: DescriptionData | null;
+  hasFx: boolean;
+}
+
+export const DEFAULT_LRU_CAPACITY = 400;
+
+export class ResourceLruStore {
+  private capacity: number;
+  private entries = new Map<string, LruResourceEntry>();
+  private keyToCanonical = new Map<string, string>();
+
+  constructor(capacity = DEFAULT_LRU_CAPACITY) {
+    this.capacity = capacity;
+  }
+
+  public setCapacity(capacity: number): void {
+    this.capacity = capacity;
+    this.trimToCapacity();
+  }
+
+  public get(key: string): LruResourceEntry | undefined {
+    if (!key) return undefined;
+    const canonicalKey = this.keyToCanonical.get(key) || key;
+    const entry = this.entries.get(canonicalKey);
+    if (!entry) return undefined;
+
+    // Refresh LRU position
+    this.entries.delete(canonicalKey);
+    this.entries.set(canonicalKey, entry);
+    return entry;
+  }
+
+  public set(
+    type: ResourceType,
+    canonicalKey: string,
+    aliases: Iterable<string>,
+    data: unknown,
+    description?: DescriptionData | null,
+    isFx = false,
+  ): void {
+    if (!canonicalKey || !data || typeof data !== "object") return;
+
+    const existing = this.entries.get(canonicalKey);
+    if (!isFx && existing?.hasFx && type !== "species") {
+      // Do not downgrade rich fxlang data to stripped data
+      // But update aliases and description if provided
+      if (description !== undefined && description !== null) {
+        existing.description = description;
+      }
+      for (const alias of aliases) {
+        existing.aliases.add(alias);
+        this.keyToCanonical.set(alias, canonicalKey);
+      }
+      return;
+    }
+
+    if (existing) {
+      this.entries.delete(canonicalKey);
+    }
+
+    const mergedAliases = new Set<string>(existing ? existing.aliases : []);
+    for (const alias of aliases) {
+      mergedAliases.add(alias);
+    }
+
+    const entry: LruResourceEntry = {
+      type,
+      canonicalKey,
+      aliases: mergedAliases,
+      data,
+      description: description !== undefined ? description : existing?.description,
+      hasFx: type === "species" || isFx || Boolean(existing?.hasFx),
+    };
+
+    this.trimToCapacity(this.capacity - 1);
+
+    this.entries.set(canonicalKey, entry);
+    for (const alias of mergedAliases) {
+      this.keyToCanonical.set(alias, canonicalKey);
+    }
+  }
+
+  public updateDescription(
+    canonicalKey: string,
+    description?: DescriptionData | null,
+    extraAliases?: Iterable<string>,
+  ): void {
+    if (description === undefined) return;
+    const entry = this.entries.get(canonicalKey);
+    if (entry) {
+      entry.description = description;
+      if (extraAliases) {
+        for (const alias of extraAliases) {
+          entry.aliases.add(alias);
+          this.keyToCanonical.set(alias, canonicalKey);
+        }
+      }
+    }
+  }
+
+  public evict(canonicalKey: string): void {
+    const entry = this.entries.get(canonicalKey);
+    if (entry) {
+      for (const alias of entry.aliases) {
+        this.keyToCanonical.delete(alias);
+      }
+      this.entries.delete(canonicalKey);
+    }
+  }
+
+  private trimToCapacity(max = this.capacity): void {
+    while (this.entries.size > max && this.entries.size > 0) {
+      const oldestKey = this.entries.keys().next().value;
+      if (!oldestKey) break;
+      this.evict(oldestKey);
+    }
+  }
+
+  public clear(): void {
+    this.entries.clear();
+    this.keyToCanonical.clear();
+  }
+
+  public get size(): number {
+    return this.entries.size;
+  }
+}
+
+const lruStore = new ResourceLruStore();
 const pending = new Map<string, Promise<unknown>>();
-const fxCached = new Set<string>();
+
+export function setLruCapacityForTesting(capacity: number): void {
+  lruStore.setCapacity(capacity);
+}
+
+export function resetLruCapacityForTesting(): void {
+  lruStore.setCapacity(DEFAULT_LRU_CAPACITY);
+}
+
+export function getLruSizeForTesting(): number {
+  return lruStore.size;
+}
 
 function getResourceAliases(query: string, data?: unknown): string[] {
   const aliases = new Set<string>();
@@ -44,19 +188,29 @@ function getResourceAliases(query: string, data?: unknown): string[] {
   return Array.from(aliases);
 }
 
+function getCanonicalKey(type: ResourceType, query: string, data?: unknown): string {
+  const name = extractResourceName(data);
+  const id = (name ? toId(name) : "") || toId(query) || query.toLowerCase();
+  return `${type}:${id}`;
+}
+
 function markFxCached(type: ResourceType, query: string, data: unknown): void {
-  for (const alias of getResourceAliases(query, data)) {
-    fxCached.add(`${type}:${alias}`);
-  }
+  const canonicalKey = getCanonicalKey(type, query, data);
+  const aliases = getResourceAliases(query, data).map((a) => `${type}:${a}`);
+  lruStore.set(type, canonicalKey, aliases, data, undefined, true);
 }
 
 function isFxCached(type: ResourceType, query: string, name?: string): boolean {
   if (type === "species") return true;
   for (const q of [query, name]) {
     if (!q) continue;
-    if (fxCached.has(`${type}:${q}`)) return true;
+    const entry = lruStore.get(`${type}:${q}`);
+    if (entry?.hasFx) return true;
     const queryId = toId(q);
-    if (queryId && fxCached.has(`${type}:${queryId}`)) return true;
+    if (queryId) {
+      const idEntry = lruStore.get(`${type}:${queryId}`);
+      if (idEntry?.hasFx) return true;
+    }
   }
   return false;
 }
@@ -73,14 +227,16 @@ function cacheTypedResource(
   isFx = false,
 ): void {
   if (!data || typeof data !== "object") return;
-  const name = extractResourceName(data);
-  if (!isFx && hasFxAstCached(type, query, name)) {
-    // Do not downgrade rich fxlang data to stripped data
-    return;
-  }
+  const canonicalKey = getCanonicalKey(type, query, data);
+  const aliases: string[] = [];
   for (const alias of getResourceAliases(query, data)) {
-    cache.set(`${type}:${alias}`, data);
+    aliases.push(`${type}:${alias}`);
+    const id = toId(alias);
+    if (id) {
+      aliases.push(`resource:${id}`);
+    }
   }
+  lruStore.set(type, canonicalKey, aliases, data, undefined, isFx);
 }
 
 function cacheTypedDescription(
@@ -90,9 +246,9 @@ function cacheTypedDescription(
   description?: DescriptionData | null,
 ): void {
   if (description === undefined) return;
-  for (const alias of getResourceAliases(query, data)) {
-    descriptionCache.set(`${type}:${alias}`, description);
-  }
+  const canonicalKey = getCanonicalKey(type, query, data);
+  const aliases = getResourceAliases(query, data).map((a) => `${type}:${a}`);
+  lruStore.updateDescription(canonicalKey, description, aliases);
 }
 
 export function getCachedResource<T extends ResourceType>(
@@ -100,12 +256,16 @@ export function getCachedResource<T extends ResourceType>(
   query: string,
 ): ResourceMap[T] | undefined {
   if (!query) return undefined;
-  const direct = cache.get(`${type}:${query}`);
-  if (direct !== undefined) return direct as ResourceMap[T];
+  const entry = lruStore.get(`${type}:${query}`);
+  if (entry && entry.type === type) {
+    return entry.data as ResourceMap[T];
+  }
   const queryId = toId(query);
   if (queryId) {
-    const idItem = cache.get(`${type}:${queryId}`);
-    if (idItem !== undefined) return idItem as ResourceMap[T];
+    const idEntry = lruStore.get(`${type}:${queryId}`);
+    if (idEntry && idEntry.type === type) {
+      return idEntry.data as ResourceMap[T];
+    }
   }
   return undefined;
 }
@@ -115,21 +275,23 @@ export function getCachedDescription(
   query: string,
 ): DescriptionData | null | undefined {
   if (!query) return undefined;
-  const direct = descriptionCache.get(`${type}:${query}`);
-  if (direct !== undefined) return direct;
+  const entry = lruStore.get(`${type}:${query}`);
+  if (entry && entry.type === type && entry.description !== undefined) {
+    return entry.description;
+  }
   const queryId = toId(query);
   if (queryId) {
-    const idItem = descriptionCache.get(`${type}:${queryId}`);
-    if (idItem !== undefined) return idItem;
+    const idEntry = lruStore.get(`${type}:${queryId}`);
+    if (idEntry && idEntry.type === type && idEntry.description !== undefined) {
+      return idEntry.description;
+    }
   }
   return undefined;
 }
 
 export function clearDataStoreCache(): void {
-  cache.clear();
-  descriptionCache.clear();
+  lruStore.clear();
   pending.clear();
-  fxCached.clear();
 }
 
 export async function fetchResource<T extends ResourceType>(
@@ -223,11 +385,16 @@ export function getCachedGenericResource(
   const key = getGenericResourceCacheKey(query);
 
   // 1. Direct key match (by normalized ID)
-  const direct = cache.get(key) as ResourceData | undefined;
-  if (direct !== undefined) {
-    const dataName = extractResourceName(direct.data);
-    if (!options?.include_fxlang || isFxCached(direct.type, query, dataName)) {
-      return direct;
+  const directEntry = lruStore.get(key);
+  if (directEntry !== undefined) {
+    if (!options?.include_fxlang || directEntry.hasFx || directEntry.type === "species") {
+      if (!directEntry.genericWrapper) {
+        directEntry.genericWrapper = {
+          type: directEntry.type,
+          data: directEntry.data,
+        } as ResourceData;
+      }
+      return directEntry.genericWrapper;
     }
   }
 
@@ -239,13 +406,18 @@ export function getCachedGenericResource(
       if (options?.include_fxlang && !isFxCached(type, query, itemName)) {
         continue;
       }
-      const data = { type, data: item } as ResourceData;
-      cache.set(key, data);
+      const canonicalKey = getCanonicalKey(type, query, item);
+      const aliases = [key, `${type}:${toId(query)}`];
       const itemDesc = getCachedDescription(type, query);
-      if (itemDesc !== undefined) {
-        descriptionCache.set(key, itemDesc);
+      lruStore.set(type, canonicalKey, aliases, item, itemDesc);
+      const entry = lruStore.get(canonicalKey);
+      if (entry) {
+        if (!entry.genericWrapper) {
+          entry.genericWrapper = { type, data: item } as ResourceData;
+        }
+        return entry.genericWrapper;
       }
-      return data;
+      return { type, data: item } as ResourceData;
     }
   }
   return undefined;
@@ -256,13 +428,15 @@ export function getCachedGenericDescription(
 ): DescriptionData | null | undefined {
   if (!query) return undefined;
   const key = getGenericResourceCacheKey(query);
-  const direct = descriptionCache.get(key);
-  if (direct !== undefined) return direct;
+  const entry = lruStore.get(key);
+  if (entry && entry.description !== undefined) return entry.description;
 
   for (const type of DEFAULT_RESOURCE_SEARCH_ORDER) {
     const itemDesc = getCachedDescription(type, query);
     if (itemDesc !== undefined) {
-      descriptionCache.set(key, itemDesc);
+      if (entry) {
+        entry.description = itemDesc;
+      }
       return itemDesc;
     }
   }
@@ -312,19 +486,25 @@ export async function fetchGenericResource(
         const dataName = extractResourceName(data.data);
         const alreadyFx = hasFxAstCached(data.type, query, dataName);
         if (!alreadyFx || options?.include_fxlang) {
-          cache.set(key, data);
-          if (description !== undefined) {
-            descriptionCache.set(key, description);
-          }
+          const canonicalKey = getCanonicalKey(data.type, query, data.data);
+          const aliases = new Set<string>();
+          aliases.add(key);
           if (dataName && dataName !== query) {
-            const aliasKey = getGenericResourceCacheKey(dataName);
-            cache.set(aliasKey, data);
-            if (description !== undefined) {
-              descriptionCache.set(aliasKey, description);
-            }
+            aliases.add(getGenericResourceCacheKey(dataName));
           }
-          cacheTypedResource(data.type, query, data.data, Boolean(options?.include_fxlang));
-          cacheTypedDescription(data.type, query, data.data, description);
+          for (const a of getResourceAliases(query, data.data)) {
+            aliases.add(`${data.type}:${a}`);
+            const id = toId(a);
+            if (id) aliases.add(`resource:${id}`);
+          }
+          lruStore.set(
+            data.type,
+            canonicalKey,
+            aliases,
+            data.data,
+            description,
+            Boolean(options?.include_fxlang),
+          );
         }
 
         if (options?.include_fxlang) {

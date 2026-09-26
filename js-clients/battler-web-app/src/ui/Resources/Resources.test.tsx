@@ -16,8 +16,38 @@ describe("Resources", () => {
 
     expect(html).toContain("Resources");
     expect(html).toContain("Type Chart");
-    expect(html).toContain("Effectiveness matrix and matchup calculator.");
+    expect(html).toContain("Dex");
+    expect(html).toContain("Catalog of Pokémon species, moves, abilities, and items.");
     expect(html).not.toContain("Coming soon");
+  });
+
+  it("renders Resources wrapper routing to DexScreen when activeResource is dex", () => {
+    const store = configureStore({
+      reducer: {
+        battles: battlesReducer,
+      },
+      preloadedState: {
+        battles: {
+          battles: {},
+          activeBattleId: null,
+          currentView: "resources" as const,
+          activeResource: "dex",
+          spectatingBattleIds: [],
+        },
+      },
+    });
+
+    const html = renderToStaticMarkup(
+      <Provider store={store}>
+        <Resources />
+      </Provider>,
+    );
+    expect(html).toContain("← Resources");
+    expect(html).toContain("Dex");
+    expect(html).toContain("Species");
+    expect(html).toContain("Moves");
+    expect(html).toContain("Abilities");
+    expect(html).toContain("Items");
   });
 
   it("renders TypeChartScreen with back button, title, and type chart grid", () => {

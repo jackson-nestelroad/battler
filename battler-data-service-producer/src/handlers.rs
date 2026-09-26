@@ -353,3 +353,34 @@ impl battler_wamprat::procedure::TypedProcedure for TypeChartHandler {
         }
     }
 }
+
+pub struct CatalogHandler {
+    pub service: Arc<BattlerDataService<'static>>,
+}
+
+impl battler_data_service_schema::CatalogProcedure for CatalogHandler {}
+
+impl battler_wamprat::procedure::TypedProcedure for CatalogHandler {
+    type Input = battler_data_service_schema::CatalogInput;
+    type Output = battler_data_service_schema::CatalogOutput;
+    type Error = anyhow::Error;
+
+    async fn invoke(
+        &self,
+        _: battler_wamprat::procedure::Invocation,
+        _input: Self::Input,
+    ) -> Result<Self::Output, Self::Error> {
+        let catalog = self.service.get_catalog()?;
+        let data_json = serde_json::to_string(&catalog)?;
+        Ok(battler_data_service_schema::CatalogOutput(
+            battler_data_service_schema::CatalogOutputArgs { data_json },
+        ))
+    }
+
+    fn options() -> battler_wamprat::procedure::ProcedureOptions {
+        battler_wamprat::procedure::ProcedureOptions {
+            disclose_caller: false,
+            ..Default::default()
+        }
+    }
+}

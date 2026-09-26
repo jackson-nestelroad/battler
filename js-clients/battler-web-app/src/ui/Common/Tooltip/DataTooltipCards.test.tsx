@@ -546,6 +546,17 @@ describe("Data Tooltip Cards", () => {
       expect(html).toContain("Item");
       expect(html).not.toContain("Flags");
     });
+
+    it("renders icon when iconSrc provided", () => {
+      const html = renderToStaticMarkup(
+        <SimpleDataTooltipCard
+          name="Leftovers"
+          subtitle="Item"
+          iconSrc="/assets/items/leftovers.png"
+        />,
+      );
+      expect(html).toContain('src="/assets/items/leftovers.png"');
+    });
   });
 
   describe("TooltipFlagsSection", () => {

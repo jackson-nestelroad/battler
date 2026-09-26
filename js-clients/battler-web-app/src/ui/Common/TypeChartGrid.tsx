@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ALL_POKEMON_TYPES,
+  STANDARD_POKEMON_TYPES,
   formatMultiplierValue,
   getDefensiveMultipliers,
   getEffectiveness,
@@ -10,20 +11,32 @@ import {
   formatEffectivenessComparison,
   getMultiplierClass,
 } from "../../utils/typeEffectiveness";
+import { hasBooleanSearchParam } from "../../utils/url";
 import TypeBadge from "./TypeBadge";
 import styles from "./TypeChartGrid.module.scss";
+
+/**
+ * Checks whether the `?all` secret search parameter is activated in the URL.
+ */
+function hasAllTypesParam(): boolean {
+  return hasBooleanSearchParam("all");
+}
 
 export interface TypeChartGridProps {
   defendingTypes?: string[];
   onDefendersChange?: (defenders: string[]) => void;
   className?: string;
+  showAllTypes?: boolean;
 }
 
 export default function TypeChartGrid({
   defendingTypes,
   onDefendersChange,
   className = "",
+  showAllTypes,
 }: TypeChartGridProps) {
+  const isAllTypes = showAllTypes !== undefined ? showAllTypes : hasAllTypesParam();
+  const availableTypes = isAllTypes ? ALL_POKEMON_TYPES : STANDARD_POKEMON_TYPES;
   const { typeChart, loading, error } = useTypeChart();
   const [selectedDefenders, setSelectedDefenders] = useState<string[]>(
     defendingTypes ?? []
@@ -57,12 +70,12 @@ export default function TypeChartGrid({
 
   const combinedMultipliers = useMemo(() => {
     if (selectedDefenders.length === 0) return null;
-    return getDefensiveMultipliers(typeChart, selectedDefenders);
-  }, [typeChart, selectedDefenders]);
+    return getDefensiveMultipliers(typeChart, selectedDefenders, availableTypes);
+  }, [typeChart, selectedDefenders, availableTypes]);
 
   const remainingTypes = useMemo(() => {
-    return ALL_POKEMON_TYPES.filter((t) => !selectedDefenders.includes(t));
-  }, [selectedDefenders]);
+    return availableTypes.filter((t) => !selectedDefenders.includes(t));
+  }, [availableTypes, selectedDefenders]);
 
   if (loading) {
     return (
@@ -207,7 +220,7 @@ export default function TypeChartGrid({
             </tr>
           </thead>
           <tbody>
-            {ALL_POKEMON_TYPES.map((atk) => {
+            {availableTypes.map((atk) => {
               const isRowHovered = hoveredRow === atk;
 
               return (

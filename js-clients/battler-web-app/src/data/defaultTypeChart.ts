@@ -158,5 +158,8 @@ export const DEFAULT_TYPE_CHART: TypeChartData = {
       Dark: 2,
       Steel: 0.5,
     },
+    Stellar: {},
+    None: {},
+    "???": {},
   },
 };

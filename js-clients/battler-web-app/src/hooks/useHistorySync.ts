@@ -14,7 +14,8 @@ const getCleanPathname = () => {
 const pushPath = (cleanPath: string) => {
   const base = import.meta.env.BASE_URL || "/";
   const baseNoTrailing = base.endsWith("/") ? base.slice(0, -1) : base;
-  window.history.pushState(null, "", (baseNoTrailing + cleanPath).replace(/\/+/g, "/"));
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  window.history.pushState(null, "", (baseNoTrailing + cleanPath).replace(/\/+/g, "/") + search);
 };
 
 export function useHistorySync() {
@@ -84,6 +85,9 @@ export function useHistorySync() {
       } else if (path === "/resources/type-chart" || path === "/type-chart") {
         view = "resources";
         resource = "type-chart";
+      } else if (path === "/resources/dex") {
+        view = "resources";
+        resource = "dex";
       } else if (path === "/resources") {
         view = "resources";
         resource = null;

@@ -1,6 +1,6 @@
 import type { DescriptionData } from "battler-data-service-client";
 import type { SpeciesData } from "battler-types";
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import { monRenderUrl } from "../../../utils/assets";
 import {
   formatDeciMetric,
@@ -17,9 +17,14 @@ import TooltipFlagsSection from "./TooltipFlagsSection";
 export interface SpeciesTooltipCardProps {
   data: SpeciesData;
   description?: DescriptionData | null;
+  headerAction?: ReactNode;
 }
 
-export default function SpeciesTooltipCard({ data, description }: SpeciesTooltipCardProps) {
+export default function SpeciesTooltipCard({
+  data,
+  description,
+  headerAction,
+}: SpeciesTooltipCardProps) {
   const monClass = formatSpeciesClass(data.class);
 
   const genderRatio = parseGenderRatio(data.gender_ratio ?? 255);
@@ -44,7 +49,10 @@ export default function SpeciesTooltipCard({ data, description }: SpeciesTooltip
       <header className={cardStyles.header}>
         <div className="flex-row justify-between align-center">
           <span className={cardStyles.name}>{data.name}</span>
-          <TooltipEffectButton type="species" name={data.name} />
+          <div className="flex-row align-center gap-xs">
+            <TooltipEffectButton type="species" name={data.name} />
+            {headerAction}
+          </div>
         </div>
 
         <div className="flex-row justify-between align-start gap-s">
@@ -65,6 +73,9 @@ export default function SpeciesTooltipCard({ data, description }: SpeciesTooltip
               aria-hidden="true"
               className={cardStyles.monRender}
               draggable={false}
+              onError={(e) => {
+                (e.currentTarget as HTMLElement).style.visibility = "hidden";
+              }}
             />
           )}
         </div>

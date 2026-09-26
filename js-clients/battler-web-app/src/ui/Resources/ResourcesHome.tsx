@@ -1,7 +1,7 @@
 import styles from "./ResourcesHome.module.scss";
 
 export interface ResourcesHomeProps {
-  onSelectResource: (resource: "type-chart") => void;
+  onSelectResource: (resource: "type-chart" | "dex") => void;
 }
 
 export default function ResourcesHome({ onSelectResource }: ResourcesHomeProps) {
@@ -22,6 +22,17 @@ export default function ResourcesHome({ onSelectResource }: ResourcesHomeProps) 
           <span className={styles.cardTitle}>Type Chart</span>
           <p className={styles.cardDescription}>
             Effectiveness matrix and matchup calculator.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className={styles.resourceCard}
+          onClick={() => onSelectResource("dex")}
+        >
+          <span className={styles.cardTitle}>Dex</span>
+          <p className={styles.cardDescription}>
+            Catalog of Pokémon species, moves, abilities, and items.
           </p>
         </button>
       </div>

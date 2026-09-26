@@ -1,0 +1,40 @@
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.itemsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+  gap: var(--spacing-s);
+  width: 100%;
+}
+
+.emptyState {
+  color: var(--text-muted);
+  font-size: var(--font-size-s);
+  font-style: italic;
+  text-align: center;
+  padding: var(--spacing-xxl) var(--spacing-m);
+  width: 100%;
+}
+
+.paginationHeader {
+  padding-bottom: var(--spacing-m);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-m);
+}
+
+.paginationFooter {
+  padding-top: var(--spacing-m);
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-m);
+}
+
+.pageIndicator {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  min-width: 5rem;
+  text-align: center;
+}

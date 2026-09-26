@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { TypeChartData } from "battler-types";
 import { DEFAULT_TYPE_CHART } from "../data/defaultTypeChart";
 
-export const ALL_POKEMON_TYPES = [
+export const STANDARD_POKEMON_TYPES = [
   "Normal",
   "Fire",
   "Water",
@@ -23,6 +23,19 @@ export const ALL_POKEMON_TYPES = [
   "Fairy",
 ] as const;
 
+export const SPECIAL_POKEMON_TYPES = [
+  "Stellar",
+  "None",
+  "???",
+] as const;
+
+export const ALL_POKEMON_TYPES = [
+  ...STANDARD_POKEMON_TYPES,
+  ...SPECIAL_POKEMON_TYPES,
+] as const;
+
+export type StandardPokemonType = (typeof STANDARD_POKEMON_TYPES)[number];
+export type SpecialPokemonType = (typeof SPECIAL_POKEMON_TYPES)[number];
 export type PokemonType = (typeof ALL_POKEMON_TYPES)[number];
 
 let cachedTypeChart: TypeChartData | null = DEFAULT_TYPE_CHART;
@@ -89,11 +102,12 @@ export function getEffectiveness(
 export function getDefensiveMultipliers(
   typeChart: TypeChartData | null,
   defenders: string[],
+  types: readonly string[] = ALL_POKEMON_TYPES,
 ): Record<string, number> {
   const cleanDefenders = defenders.filter(Boolean);
   const result: Record<string, number> = {};
 
-  for (const atk of ALL_POKEMON_TYPES) {
+  for (const atk of types) {
     if (cleanDefenders.length === 0) {
       result[atk] = 1;
       continue;
@@ -111,9 +125,10 @@ export function getDefensiveMultipliers(
 export function getOffensiveMultipliers(
   typeChart: TypeChartData | null,
   attacker: string,
+  types: readonly string[] = ALL_POKEMON_TYPES,
 ): Record<string, number> {
   const result: Record<string, number> = {};
-  for (const def of ALL_POKEMON_TYPES) {
+  for (const def of types) {
     result[def] = getEffectiveness(typeChart, attacker, def);
   }
   return result;

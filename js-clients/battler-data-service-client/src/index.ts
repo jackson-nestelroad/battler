@@ -3,10 +3,12 @@ import { WampSessionProvider, getWampResultString, safeJsonStringify } from "bat
 import {
   BatchQuery,
   BatchResult,
+  CatalogData,
   DescriptionData,
   ResourceData,
   ResourceLookupOptions,
   ResourceOptions,
+  ResourceType,
 } from "./bindings/index.js";
 
 export * from "./bindings/index.js";
@@ -125,6 +127,20 @@ export class BattlerDataServiceClient {
       json = getWampResultString(res);
     }
     if (!json) throw new Error("Failed to parse type chart response string");
+    return JSON.parse(json);
+  }
+
+  async getCatalog(): Promise<CatalogData> {
+    const res = await this.session.call<unknown>("com.battler.data_service.catalog", []);
+    let json: string | null = null;
+    if (Array.isArray(res)) {
+      json = getWampResultString(res[0]);
+    } else if (res && typeof res === "object" && "args" in res && Array.isArray((res as any).args)) {
+      json = getWampResultString((res as any).args[0]);
+    } else {
+      json = getWampResultString(res);
+    }
+    if (!json) throw new Error("Failed to parse catalog response string");
     return JSON.parse(json);
   }
 }

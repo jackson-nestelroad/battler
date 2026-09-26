@@ -23,7 +23,7 @@ export default function TypeChartScreen({ onBack }: TypeChartScreenProps) {
           </div>
         </div>
         <a
-          href={`${import.meta.env.BASE_URL || "/"}type-chart`}
+          href={`${import.meta.env.BASE_URL || "/"}type-chart${typeof window !== "undefined" && window.location.search ? window.location.search : ""}`}
           className="btn btn-secondary btn-sm"
           title="Open standalone type chart"
         >

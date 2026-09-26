@@ -11,14 +11,19 @@ use battler_data::{
     TypeChart,
 };
 pub use battler_data_service_schema::{
+    AbilitySummary,
     BatchQuery,
     BatchResult,
+    CatalogData,
     DescriptionData,
     DescriptionStore,
+    ItemSummary,
+    MoveSummary,
     ResourceData,
     ResourceLookupOptions,
     ResourceOptions,
     ResourceType as SchemaResourceType,
+    SpeciesSummary,
 };
 
 /// Sanitizes a [`MoveData`] by stripping fxlang AST bytecode fields.
@@ -241,5 +246,87 @@ impl<'d> BattlerDataService<'d> {
     /// Queries the full type chart.
     pub fn get_type_chart(&self) -> Result<TypeChart> {
         self.data.get_type_chart()
+    }
+
+    /// Queries the summary catalog data for all resources.
+    pub fn get_catalog(&self) -> Result<CatalogData> {
+        let mut catalog = CatalogData::default();
+
+        let species_ids = self.data.all_species_ids(&|_| true)?;
+        let mut list = Vec::with_capacity(species_ids.len());
+        for id in species_ids {
+            if let Some(s) = self.data.get_species(&id)? {
+                list.push(SpeciesSummary {
+                    id: id.to_string(),
+                    name: s.name,
+                    primary_type: s.primary_type.to_string(),
+                    secondary_type: s.secondary_type.map(|t| t.to_string()),
+                });
+            }
+        }
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        catalog.species = list;
+
+        let move_ids = self.data.all_move_ids(&|_| true)?;
+        let mut list = Vec::with_capacity(move_ids.len());
+        for id in move_ids {
+            if let Some(m) = self.data.get_move(&id)? {
+                list.push(MoveSummary {
+                    id: id.to_string(),
+                    name: m.name,
+                    primary_type: m.primary_type.to_string(),
+                    category: m.category.to_string(),
+                });
+            }
+        }
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        catalog.moves = list;
+
+        let ability_ids = self.data.all_ability_ids(&|_| true)?;
+        let mut list = Vec::with_capacity(ability_ids.len());
+        for id in ability_ids {
+            if let Some(a) = self.data.get_ability(&id)? {
+                let desc = self
+                    .get_description(SchemaResourceType::Ability, id.as_ref())?
+                    .map(|d| d.description);
+                list.push(AbilitySummary {
+                    id: id.to_string(),
+                    name: a.name,
+                    description: desc,
+                });
+            }
+        }
+        list.sort_by(|a, b| a.name.cmp(&b.name));
+        catalog.abilities = list;
+
+        let item_ids = self.data.all_item_ids(&|_| true)?;
+        let mut list = Vec::with_capacity(item_ids.len());
+        for id in item_ids {
+            if id.as_ref().starts_with("dynamaxcrystal") {
+                continue;
+            }
+            if let Some(i) = self.data.get_item(&id)? {
+                let desc = self
+                    .get_description(SchemaResourceType::Item, id.as_ref())?
+                    .map(|d| d.description);
+                list.push(ItemSummary {
+                    id: id.to_string(),
+                    name: i.name,
+                    description: desc,
+                });
+            }
+        }
+        list.sort_by(|a, b| {
+            let a_sym = !a.name.chars().next().map_or(false, |c| c.is_alphanumeric());
+            let b_sym = !b.name.chars().next().map_or(false, |c| c.is_alphanumeric());
+            match (a_sym, b_sym) {
+                (true, false) => std::cmp::Ordering::Greater,
+                (false, true) => std::cmp::Ordering::Less,
+                _ => a.name.cmp(&b.name),
+            }
+        });
+        catalog.items = list;
+
+        Ok(catalog)
     }
 }

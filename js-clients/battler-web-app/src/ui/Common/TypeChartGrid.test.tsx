@@ -48,7 +48,7 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("alert-danger");
   });
 
-  it("renders full 18x18 matrix by default", () => {
+  it("renders standard 18 types by default without secret ?all param", () => {
     vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
       typeChart: MOCK_CHART,
       loading: false,
@@ -61,8 +61,32 @@ describe("TypeChartGrid", () => {
     expect(html).toContain("typeSquare");
     expect(html).toContain("Grass");
     expect(html).toContain("Water");
+    expect(html).not.toContain("None");
+    expect(html).not.toContain("Stellar");
+    expect(html).not.toContain("???");
     expect(html).toContain("2");
     expect(html).toContain('aria-label="Grass vs Water: 2×"');
+  });
+
+  it("renders all types including Stellar, None, and ??? in order when showAllTypes is true", () => {
+    vi.spyOn(typeChartHook, "useTypeChart").mockReturnValue({
+      typeChart: MOCK_CHART,
+      loading: false,
+      error: null,
+    });
+
+    const html = renderToStaticMarkup(<TypeChartGrid showAllTypes={true} />);
+    expect(html).toContain("Grass");
+    expect(html).toContain("Water");
+    expect(html).toContain("Stellar");
+    expect(html).toContain("None");
+    expect(html).toContain("???");
+
+    const stellarIdx = html.indexOf("Stellar");
+    const noneIdx = html.indexOf("None");
+    const unknownIdx = html.indexOf("???");
+    expect(stellarIdx).toBeLessThan(noneIdx);
+    expect(noneIdx).toBeLessThan(unknownIdx);
   });
 
   it("renders merged 2-width column when 2 defendingTypes are specified", () => {

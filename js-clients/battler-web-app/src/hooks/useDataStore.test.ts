@@ -21,6 +21,9 @@ import {
   getCachedGenericResource,
   getCachedResource,
   getGenericResourceCacheKey,
+  getLruSizeForTesting,
+  resetLruCapacityForTesting,
+  setLruCapacityForTesting,
 } from "./useDataStore";
 
 describe("useDataStore", () => {
@@ -592,6 +595,105 @@ describe("useDataStore", () => {
       expect(getGenericResourceCacheKey("Toxic Spikes")).toBe("resource:toxicspikes");
       expect(getGenericResourceCacheKey("rain")).toBe("resource:rain");
       expect(getGenericResourceCacheKey("Rain-Dance")).toBe("resource:raindance");
+    });
+  });
+
+  describe("ResourceLruStore eviction and bounds", () => {
+    beforeEach(() => {
+      clearDataStoreCache();
+      resetLruCapacityForTesting();
+    });
+
+    it("enforces maximum capacity bound and evicts oldest entry", async () => {
+      setLruCapacityForTesting(2);
+
+      mockClient.getMove.mockImplementation((name: string) =>
+        Promise.resolve({
+          data: { ...mockMove, name },
+          description: { description: `${name} description`, source: "Test" },
+        }),
+      );
+
+      await fetchMove("Move1");
+      await fetchMove("Move2");
+      expect(getLruSizeForTesting()).toBe(2);
+      expect(getCachedResource("move", "Move1")).toBeDefined();
+      expect(getCachedResource("move", "Move2")).toBeDefined();
+
+      // Third move should evict Move1
+      await fetchMove("Move3");
+      expect(getLruSizeForTesting()).toBe(2);
+      expect(getCachedResource("move", "Move1")).toBeUndefined();
+      expect(getCachedResource("move", "Move2")).toBeDefined();
+      expect(getCachedResource("move", "Move3")).toBeDefined();
+    });
+
+    it("promotes accessed entries to MRU preventing their eviction", async () => {
+      setLruCapacityForTesting(2);
+
+      mockClient.getMove.mockImplementation((name: string) =>
+        Promise.resolve({
+          data: { ...mockMove, name },
+          description: { description: `${name} description`, source: "Test" },
+        }),
+      );
+
+      await fetchMove("MoveA");
+      await fetchMove("MoveB");
+
+      // Read MoveA to bump it to MRU
+      const cachedA = getCachedResource("move", "MoveA");
+      expect(cachedA).toBeDefined();
+
+      // Insert MoveC: MoveB should be evicted because MoveA was accessed
+      await fetchMove("MoveC");
+      expect(getLruSizeForTesting()).toBe(2);
+      expect(getCachedResource("move", "MoveB")).toBeUndefined();
+      expect(getCachedResource("move", "MoveA")).toBeDefined();
+      expect(getCachedResource("move", "MoveC")).toBeDefined();
+    });
+
+    it("atomically evicts all aliases and descriptions when entry is evicted", async () => {
+      setLruCapacityForTesting(1);
+
+      mockClient.getMove.mockImplementation((name: string) =>
+        Promise.resolve({
+          data: { ...mockMove, name },
+          description: { description: `${name} description`, source: "Test" },
+        }),
+      );
+
+      await fetchMove("Thunder Wave");
+      expect(getCachedResource("move", "Thunder Wave")).toBeDefined();
+      expect(getCachedResource("move", "thunderwave")).toBeDefined();
+      expect(getCachedDescription("move", "Thunder Wave")?.description).toBe(
+        "Thunder Wave description",
+      );
+
+      // Insert second move to evict Thunder Wave
+      await fetchMove("Tackle");
+      expect(getCachedResource("move", "Thunder Wave")).toBeUndefined();
+      expect(getCachedResource("move", "thunderwave")).toBeUndefined();
+      expect(getCachedDescription("move", "Thunder Wave")).toBeUndefined();
+      expect(getCachedResource("move", "Tackle")).toBeDefined();
+    });
+
+    it("protects FxLang bytecode from being downgraded", async () => {
+      mockClient.getMove.mockResolvedValueOnce({
+        data: { ...mockMove, name: "Fire Blast", fx: "bytecode_data" },
+      });
+
+      // First fetch with fxlang
+      await fetchMove("Fire Blast");
+      mockClient.getMove.mockClear();
+
+      // Attempt to cache non-fx data over it
+      mockClient.getMove.mockResolvedValueOnce({
+        data: { ...mockMove, name: "Fire Blast", fx: undefined },
+      });
+
+      const res = getCachedResource("move", "Fire Blast");
+      expect((res as any)?.fx).toBe("bytecode_data");
     });
   });
 });
