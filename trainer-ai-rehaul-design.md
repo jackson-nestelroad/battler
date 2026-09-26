@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The current `battler-ai::trainer` module serves as a foundation for rule-based Pokémon battle decision-making. However, as the battle system has evolved to support complex interactions in **`fxlang`** (the interpreted scripting language for battle effects), several structural limitations in `battler-ai` have become apparent:
+The current `battler-ai::trainer` module serves as a foundation for rule-based battle decision-making. However, as the battle system has evolved to support complex interactions in **`fxlang`** (the interpreted scripting language for battle effects), several structural limitations in `battler-ai` have become apparent:
 
 1. **Disconnected from FXLang**: Game mechanics and battle effects are implemented in `fxlang` and data definitions, but `battler-ai` has zero visibility into what `fxlang` code actually does. Instead, it relies on a hardcoded, coarse `StatusEffect` struct in `battler-calc` and hardcoded string matches (`"Stockpile"`, `"Spikes"`, `"Trick Room"`).
 2. **Lack of Effect Polarity & Target Alignment**: The engine does not have a formal understanding of **Beneficial** vs. **Harmful** effects or **Allies** vs. **Foes**. A hardcoded `-30` penalty is applied to *any* move targeting an ally—penalizing helpful moves like *Heal Pulse*, *Helping Hand*, or *Coaching*—while stat drops and healing lack awareness of whether the recipient is a friend or foe.
@@ -307,7 +307,7 @@ The AI evaluates desirability by cross-referencing `TargetRole` with `EffectPola
 
 ### 3. Net Utility for Spread Moves (Fixing the Multi-Target Average)
 
-In doubles, moves like *Earthquake* or *Surf* affect all adjacent Pokémon.
+In doubles, moves like *Earthquake* or *Surf* affect all adjacent Mons.
 Instead of averaging the scores across targets (`(Foe1 + Foe2 + Ally) / 3`), the engine computes **Net Spread Utility**:
 
 $$\text{NetUtility} = \sum_{t \in \text{Foes}} \text{Utility}(t) - \sum_{a \in \text{Allies}} \text{HarmPenalty}(a) + \sum_{a \in \text{Allies}} \text{BenefitUtility}(a)$$
@@ -383,7 +383,7 @@ flowchart TD
 #### Complete Elimination of Both `hooks.rs` Files
 
 A central achievement of this unified architecture is the **100% deletion of both legacy hook files** in the codebase:
-1. **`battler-calc/src/hooks.rs` (1,457 lines $\rightarrow$ DELETED)**: All static macros (`type_powering_ability!`, `gem!`, `MODIFY_BASE_POWER_HOOKS`, `MODIFY_DAMAGE_HOOKS`, `FAIL_MOVE_BEFORE_HIT_HOOKS`) are eliminated. `battler-calc` becomes a pure math and formula engine iterating over declarative manifest fields (`DamageModifier`, `FixedDamage`, `ImmunityRule`, `SimulationFlags`).
+1. **`battler-calc/src/hooks.rs` (1,457 lines $\rightarrow$ DELETED)**: All static macros (`type_powering_ability!`, `gem!`, `MODIFY_BASE_POWER_HOOKS`, `MODIFY_DAMAGE_HOOKS`, `FAIL_MOVE_BEFORE_HIT_HOOKS`) are eliminated. `battler-calc` becomes a pure math and formula engine iterating over declarative manifest fields (`DamageModifier`, `FixedDamage`, `ImmunityRule`, `EffectFlag`).
 2. **`battler-ai/src/trainer/hooks.rs` (300 lines $\rightarrow$ DELETED)**: All ad-hoc scoring closures (`BASIC_MODIFY_MOVE_SCORE_HOOKS`) and string checks are eliminated. `battler-ai` becomes a pure decision engine evaluating target alignment and risk utilities.
 
 | Architecture Pillar | Role | Logic Source | Hooks? |
@@ -494,7 +494,7 @@ Abilities and items modify the **Viability** and **Utility** phases via manifest
 
 ### 2. Battle Conditions (Field & Side)
 - **Trick Room**: Inverts speed comparison utility for move order and switch evaluations.
-- **Hazards**: When evaluating switches, the AI calculates incoming hazard damage against the bench Pokémon before deciding to switch.
+- **Hazards**: When evaluating switches, the AI calculates incoming hazard damage against the bench Mon before deciding to switch.
 - **Terrain**: *Psychic Terrain* disables priority moves against grounded targets in Phase 1.
 
 ### 4. Switch & Matchup Evaluation Engine
@@ -515,9 +515,9 @@ pub struct SwitchEvaluation {
 }
 ```
 
-- **Hazard Awareness**: Before switching, the AI calculates expected damage from *Stealth Rock*, *Spikes*, and *Toxic Spikes* on the candidate Pokémon. If sending in Charizard into Stealth Rock would take 50% HP (or lethal damage), the candidate receives a heavy penalty.
+- **Hazard Awareness**: Before switching, the AI calculates expected damage from *Stealth Rock*, *Spikes*, and *Toxic Spikes* on the candidate Mon. If sending in Charizard into Stealth Rock would take 50% HP (or lethal damage), the candidate receives a heavy penalty.
 - **Entry Ability Awareness**: Positive entry abilities (*Intimidate*, *Drizzle*, *Drought*, *Electric Surge*) add a bonus to the candidate's switch score; negative incoming conditions (e.g. switching into a trapped field) disqualify the switch.
-- **Active Mon Risk**: If the active Pokémon is in imminent KO danger (outsped and in lethal range) and has a poor matchup, the threshold to switch decreases dynamically.
+- **Active Mon Risk**: If the active Mon is in imminent KO danger (outsped and in lethal range) and has a poor matchup, the threshold to switch decreases dynamically.
 
 ---
 
@@ -639,7 +639,7 @@ impl UtilityRule for TargetAlignmentUtilityRule {
 
 | Crate | Responsibilities | Key Additions / Modifications |
 | :--- | :--- | :--- |
-| **`battler-effect-analyzer-schema`** *(new crate)* | Effect analyzer schemas & types. | Defines `EffectManifest`, `ConditionManifest`, `AbilityManifest`, `ItemManifest`, `DamageModifier`, `FixedDamage`, `SimulationFlags`, `SemanticAction`, `TargetRole`, `EffectPolarity`. Keeps `battler-data` pure. |
+| **`battler-effect-analyzer-schema`** *(new crate)* | Effect analyzer schemas & types. | Defines `EffectManifest`, `ConditionManifest`, `AbilityManifest`, `ItemManifest`, `DamageModifier`, `FixedDamage`, `AbilityFlag`, `EffectFlag`, `ItemFlag`, `SemanticAction`, `TargetRole`, `EffectPolarity`. Keeps `battler-data` pure. |
 | **`battler-effect-analyzer`** *(new tool crate)* | Offline compiler & CLI. | Parses `battle-data/data/moves/*.json`, `conditions.json`, `abilities/`, and `items/`, runs FXLang AST visitor, outputs manifests, runs snapshot tests. |
 | **`battle-data`** | Version-controlled repository data. | Adds `data/manifests/moves.json`, `conditions.json`, `abilities.json`, and `items.json`. |
 | **`battler-local-data`** | Local data store loader. | Implements `ManifestStore` and `ManifestStoreByName` for `LocalDataStore`, loading manifests from disk; implements `CalcDataStore`. |
@@ -739,4 +739,4 @@ Here is the exact breakdown across the entire move database:
 ### Summary of Override Burden
 - You will **not** need to write rules or overrides for normal moves, damage moves, stat moves, status moves, healing moves, hazards, screens, or standard volatiles.
 - By tagging the ~20 core volatile conditions once (e.g. marking `taunt` as `Harmful` and `substitute` as `Beneficial`), all moves applying those volatiles are automatically handled.
-- Only the ~36 genuinely unusual game-theory moves in Pokémon history require explicit hints or specialized heuristics.
+- Only the ~36 genuinely unusual game-theory moves in battle history require explicit hints or specialized heuristics.

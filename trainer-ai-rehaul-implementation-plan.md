@@ -30,7 +30,7 @@ flowchart TD
 ### Objective
 Create a dedicated schema crate, `battler-effect-analyzer-schema`, to house all semantic effect classifications, polarity enums, action models, damage modifiers, and simulation flags. 
 
-By keeping these types in their own schema crate (following the repository convention of `battler-service-schema` and `battler-data-service-schema`), **`battler-data` remains completely clean**, unpolluted, and strictly focused on `no_std` authentic Pokémon definitions and TypeScript bindings.
+By keeping these types in their own schema crate (following the repository convention of `battler-service-schema` and `battler-data-service-schema`), **`battler-data` remains completely clean**, unpolluted, and strictly focused on `no_std` authentic Mon definitions and TypeScript bindings.
 
 ### Target Files
 - `battler-effect-analyzer-schema/Cargo.toml` (new crate)
@@ -44,7 +44,7 @@ By keeping these types in their own schema crate (following the repository conve
 - `battler-effect-analyzer-schema/src/condition_manifest.rs`
 - `battler-effect-analyzer-schema/src/ability_manifest.rs`
 - `battler-effect-analyzer-schema/src/item_manifest.rs`
-- `battler-effect-analyzer-schema/src/data_store.rs` (manifest store traits)
+- `battler-effect-analyzer-schema/src/manifest_store.rs` (manifest store traits)
 
 ### Tasks
 1. **Define `EffectPolarity`**:
@@ -124,7 +124,7 @@ By keeping these types in their own schema crate (following the repository conve
        fn get_item_manifest_by_name(&self, name: &str) -> Result<Option<&ItemManifest>>;
    }
 
-   /// Combined trait implemented by any data source that provides both authentic Pokémon data and manifests.
+   /// Combined trait implemented by any data source that provides both authentic Mon data and manifests.
    pub trait CalcDataStore: battler_data::DataStoreByName + ManifestStoreByName {}
    impl<T: battler_data::DataStoreByName + ManifestStoreByName> CalcDataStore for T {}
    ```
@@ -283,7 +283,7 @@ Integrate precompiled manifests into `LocalDataStore` by implementing `ManifestS
 ## Phase 4: `battler-calc` Calculator Overhaul & 100% `hooks.rs` Deletion (`battler-calc`)
 
 ### Objective
-Eliminate all 1,457 lines of hardcoded macros and static function pointer tables in `battler-calc/src/hooks.rs`. Refactor `battler-calc/src/simulate.rs` into a pure mathematical formula engine that reads `DamageModifier`s, `FixedDamage`, `ImmunityRule`, and `SimulationFlags` directly from manifests via `CalcDataStore`. Update `battler-calc/battler-calc-client-util` to support the overhauled input.
+Eliminate all 1,457 lines of hardcoded macros and static function pointer tables in `battler-calc/src/hooks.rs`. Refactor `battler-calc/src/simulate.rs` into a pure mathematical formula engine that reads `DamageModifier`s, `FixedDamage`, `ImmunityRule`, and `EffectFlag`s directly from manifests via `CalcDataStore`. Update `battler-calc/battler-calc-client-util` to support the overhauled input.
 
 ### Target Files
 - `battler-calc/Cargo.toml` (add `battler-effect-analyzer-schema = { workspace = true }`)
@@ -305,7 +305,7 @@ Eliminate all 1,457 lines of hardcoded macros and static function pointer tables
      - Priority move blocked if `field.has_terrain(["Psychic Terrain"])` and defender is grounded.
      - OHKO move fails if defender has `AbilityManifest { survival: Some(SurvivalType::Sturdy) }`.
      - Elemental immunity: check defender `AbilityManifest.type_immunities` (*Volt Absorb*, *Flash Fire*, *Levitate*).
-4. **Declarative State Mutations (`SimulationFlags`)**:
+4. **Declarative State Mutations (`EffectFlag`)**:
    - Screen breaking: if `manifest.breaks_screens`, clear Reflect/Light Screen/Aurora Veil (*Brick Break*).
    - Weather suppression: if attacker or defender has `AbilityManifest.suppresses_weather`, treat weather as None (*Air Lock*, *Cloud Nine*).
    - Item weather suppression: if mon has `ItemManifest.weather_suppressed_for_holder`, ignore weather effects on that mon (*Utility Umbrella*).
@@ -331,7 +331,7 @@ Rather than relying solely on a handful of smoke tests, we establish an **exhaus
    - Abilities: verifies *Tough Claws* ($1.3\times$ on contact), *Strong Jaw* ($1.5\times$ on bite), *Iron Fist* ($1.2\times$ on punch), *Mega Launcher* ($1.5\times$ on pulse), *Reckless* ($1.2\times$ on recoil), *Sheer Force* ($1.3\times$ + strips secondary effects).
 3. **Stat Modifiers Suite (`tests/stat_modifiers_test.rs`)**:
    - Stat Stages: tests full $-6$ to $+6$ stage curve for Attack, Defense, SpAtk, SpDef, and Speed, matching authentic fraction formulas ($\frac{2}{8}, \frac{2}{7}, \dots, \frac{8}{2}$).
-   - Held Items: tests *Choice Band* ($1.5\times$ Atk), *Choice Specs* ($1.5\times$ SpAtk), *Eviolite* ($1.5\times$ Def & SpDef on unevolved Pokémon like Chansey and Dusclops), *Assault Vest* ($1.5\times$ SpDef).
+   - Held Items: tests *Choice Band* ($1.5\times$ Atk), *Choice Specs* ($1.5\times$ SpAtk), *Eviolite* ($1.5\times$ Def & SpDef on unevolved Mons like Chansey and Dusclops), *Assault Vest* ($1.5\times$ SpDef).
    - Abilities: tests *Huge Power* / *Pure Power* ($2.0\times$ Atk), *Fur Coat* ($2.0\times$ Def against physical), *Ice Scales* ($0.5\times$ special damage taken).
    - Burn & Status: tests burn halving physical damage; tests *Guts* and *Facade* ignoring the burn reduction.
    - Paradox Abilities: tests *Protosynthesis* and *Quark Drive* boosting highest stat by $1.3\times$ ($1.5\times$ for Speed).
@@ -409,8 +409,8 @@ Implement the mathematical core for evaluating recipient relationships and multi
 - **Unit Test: `target_alignment_matrix_test`**:
   Verify all combinations of `(TargetRole, EffectPolarity)` produce correct polarity evaluations.
 - **Unit Test: `friendly_fire_penalty_test`**:
-  - Using *Sludge Bomb* on partner Pokémon receives $-100$ alignment penalty.
-  - Using *Heal Pulse* on partner Pokémon at $40\%$ HP receives $+60$ beneficial utility.
+  - Using *Sludge Bomb* on partner Mon receives $-100$ alignment penalty.
+  - Using *Heal Pulse* on partner Mon at $40\%$ HP receives $+60$ beneficial utility.
   - Using *Heal Pulse* on opponent receives $-100$ penalty.
 - **Unit Test: `net_spread_utility_doubles_test`**:
   - Doubles battle with User, Ally, Foe 1, Foe 2.
@@ -534,7 +534,7 @@ Enhance switch evaluation to factor in entry hazard damage (*Stealth Rock*, *Spi
 
 ### Tasks
 1. **Implement `HazardDamageCalculator`**:
-   - Calculates exact incoming damage fraction on a bench Pokémon:
+   - Calculates exact incoming damage fraction on a bench Mon:
      - *Stealth Rock*: type effectiveness against Rock $\times 12.5\%$.
      - *Spikes*: $12.5\%$ (1 layer), $16.6\%$ (2 layers), $25\%$ (3 layers) if grounded.
      - *Toxic Spikes*: inflicts Poison / Toxic if grounded (cured if Poison-type).
@@ -560,8 +560,8 @@ Enhance switch evaluation to factor in entry hazard damage (*Stealth Rock*, *Spi
 - **Unit Test: `hazard_damage_calculation_test`**:
   - Charizard into Stealth Rock takes $50\%$ damage.
   - Ferrothorn (Steel/Grass) takes $6.25\%$ damage.
-  - Flying Pokémon ignores Spikes.
-  - Pokémon holding Heavy-Duty Boots takes $0\%$ damage from all hazards.
+  - Flying Mon ignores Spikes.
+  - Mon holding Heavy-Duty Boots takes $0\%$ damage from all hazards.
   - Poison-type absorbs Toxic Spikes.
 - **Integration Test: `switch_avoidance_on_lethal_hazard_test`**:
   - AI considers switching to Charizard at $40\%$ HP with Stealth Rock on field.
@@ -576,13 +576,13 @@ Enhance switch evaluation to factor in entry hazard damage (*Stealth Rock*, *Spi
 - **Scenario Test: `benefit_partner_doubles_test`**:
   - Low-HP partner: AI partner uses *Heal Pulse* or *Helping Hand* instead of attacking.
 - **Scenario Test: `trick_room_speed_control_test`**:
-  - In Trick Room, AI recognizes slow Pokémon moves first and avoids Speed-lowering moves on foes.
+  - In Trick Room, AI recognizes slow Mon moves first and avoids Speed-lowering moves on foes.
 
 ---
 
 ## Deep Dive: How Abilities and Items Affect AI Decision-Making
 
-Abilities and held items are fundamental to Pokémon battle dynamics. Rather than treating them as special-case hacks in the AI, the new semantic architecture incorporates them across 5 core evaluation hooks:
+Abilities and held items are fundamental to battle dynamics. Rather than treating them as special-case hacks in the AI, the new semantic architecture incorporates them across 5 core evaluation hooks:
 
 ```mermaid
 flowchart TD
@@ -642,7 +642,7 @@ For trainer battles with items enabled (`TrainerFlag::UseItems`):
 - Healing items (*Potion*, *Super Potion*, *Hyper Potion*, *Max Potion*, *Full Restore*):
   - Target: `User` (or `Ally` in doubles).
   - Polarity: `Beneficial`.
-  - Evaluated in the same decision pool as moves: if the active Pokémon is a primary win condition, at $< 25\%$ HP, and outspeeds the foe next turn, clicking *Full Restore* can outscore attacking.
+  - Evaluated in the same decision pool as moves: if the active Mon is a primary win condition, at $< 25\%$ HP, and outspeeds the foe next turn, clicking *Full Restore* can outscore attacking.
 - Battle stat items (*X Attack*, *X Speed*, *Dire Hit*):
   - Evaluated similar to setup moves like *Swords Dance* or *Agility*.
 
@@ -666,7 +666,7 @@ To guarantee that the AI performs reliably under real battle pressure and produc
    - PRNG seed logging: every battle seed is captured; any assertion failure prints the exact seed for immediate deterministic reproduction.
    - Invariants checked on every turn:
      - 0 panics or unexpected errors.
-     - 0 illegal moves (e.g. attempting to use a move with 0 PP, or switching to an already fainted Pokémon).
+     - 0 illegal moves (e.g. attempting to use a move with 0 PP, or switching to an already fainted Mon).
      - 0 friendly-fire self-destructions (AI never attacks partner with lethal damage unless tactically beneficial like *Water Absorb*).
      - Strict execution speed: turn evaluation latency is verified to be $< 3\text{ms}$ per turn.
 2. **Doubles Championship Scenario (`tests/doubles_championship_scenario_test.rs`)**:
@@ -677,9 +677,9 @@ To guarantee that the AI performs reliably under real battle pressure and produc
      - Weather war: switching in weather setter on the turn opponent initiates a weather-dependent sweep.
 3. **Singles Hazard & Phazing Scenario (`tests/singles_hazard_phazing_test.rs`)**:
    - Turn 1: AI sets *Stealth Rock*.
-   - Turn 2: Opponent switches in Rock-weak Pokémon.
+   - Turn 2: Opponent switches in Rock-weak Mon.
    - Turn 3: AI uses *Roar* to phaze and force hazard entry damage on opposing team.
-   - Turn 4: AI refuses to switch in its own Rock-weak Pokémon if entry damage is lethal.
+   - Turn 4: AI refuses to switch in its own Rock-weak Mon if entry damage is lethal.
 
 ---
 
@@ -687,7 +687,7 @@ To guarantee that the AI performs reliably under real battle pressure and produc
 
 | Phase | Description | Deliverables | Key Test Coverage |
 | :---: | :--- | :--- | :--- |
-| **1** | Effect Analyzer Schemas | `battler-effect-analyzer-schema`: `EffectManifest`, `ConditionManifest`, `AbilityManifest`, `ItemManifest`, `TargetRole`, `DamageModifier`, `FixedDamage`, `SimulationFlags` | `serde_roundtrip_test`, `target_role_test` |
+| **1** | Effect Analyzer Schemas | `battler-effect-analyzer-schema`: `EffectManifest`, `ConditionManifest`, `AbilityManifest`, `ItemManifest`, `TargetRole`, `DamageModifier`, `FixedDamage`, `AbilityFlag`, `EffectFlag`, `ItemFlag` | `serde_roundtrip_test`, `target_role_test` |
 | **2** | Offline Effect Analyzer | `battler-effect-analyzer`: AST scanner, CLI, `moves.json`, `conditions.json`, `abilities.json`, `items.json` | 936-move + 300-ability snapshot test, `--check` CI drift test |
 | **3** | Local Data Store Integration | `battler-local-data`: `get_move_manifest`, `get_condition_manifest`, `get_ability_manifest`, `get_item_manifest` | `manifest_store_test` |
 | **4** | `battler-calc` Overhaul & Hooks Deletion | `battler-calc`: Replaces all static hook dispatch with manifest queries; **100% deletes `battler-calc/src/hooks.rs`** | **250+ Tests**: 45 existing regression tests + 8 dedicated integration suites |

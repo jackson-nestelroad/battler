@@ -1,0 +1,21 @@
+[package]
+name = "battler-effect-analyzer-schema"
+version = "0.1.0"
+edition = "2024"
+description = "Semantic manifests, actions, polarity, and effect schemas for battler AI and calculation engines."
+authors = ["Jackson Nestelroad <jackson@nestelroad.com>"]
+keywords = ["pokemon", "ai", "battle"]
+license = "MIT"
+repository = "https://github.com/jackson-nestelroad/battler/tree/main/battler-effect-analyzer-schema"
+
+[dependencies]
+anyhow = { workspace = true }
+hashbrown = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+battler-data = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+pretty_assertions = { workspace = true }
