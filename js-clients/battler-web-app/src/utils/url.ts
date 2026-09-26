@@ -23,3 +23,33 @@ export function normalizeWebSocketUrl(url: string, isHttps?: boolean): string {
 
   return target;
 }
+
+/**
+ * Checks whether a boolean search parameter/flag is present and active in a query string or current URL.
+ * Supports flags without values (e.g. `?flag`), or values other than "false" and "0".
+ * Also checks hash queries (e.g. `#/path?flag`) as fallback when running in a browser environment.
+ */
+export function hasBooleanSearchParam(param: string, search?: string): boolean {
+  if (typeof window === "undefined" && search === undefined) {
+    return false;
+  }
+  const query = search !== undefined ? search : window.location.search;
+  const params = new URLSearchParams(query);
+  if (params.has(param)) {
+    const val = params.get(param);
+    return val !== "false" && val !== "0";
+  }
+  if (
+    search === undefined &&
+    typeof window !== "undefined" &&
+    window.location.hash.includes("?")
+  ) {
+    const hashQuery = window.location.hash.slice(window.location.hash.indexOf("?"));
+    const hashParams = new URLSearchParams(hashQuery);
+    if (hashParams.has(param)) {
+      const val = hashParams.get(param);
+      return val !== "false" && val !== "0";
+    }
+  }
+  return false;
+}

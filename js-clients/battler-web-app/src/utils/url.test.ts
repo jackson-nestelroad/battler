@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeWebSocketUrl } from "./url";
+import { hasBooleanSearchParam, normalizeWebSocketUrl } from "./url";
 
 describe("normalizeWebSocketUrl", () => {
   it("returns empty string if input is empty", () => {
@@ -28,5 +28,24 @@ describe("normalizeWebSocketUrl", () => {
     expect(normalizeWebSocketUrl("ws.battler.live", true)).toBe("wss://ws.battler.live");
     expect(normalizeWebSocketUrl("localhost:8080", true)).toBe("wss://localhost:8080");
     expect(normalizeWebSocketUrl("ws://localhost:8080", true)).toBe("wss://localhost:8080");
+  });
+});
+
+describe("hasBooleanSearchParam", () => {
+  it("detects boolean search parameters in various query string formats", () => {
+    expect(hasBooleanSearchParam("all", "?all")).toBe(true);
+    expect(hasBooleanSearchParam("all", "?all=true")).toBe(true);
+    expect(hasBooleanSearchParam("all", "?all=1")).toBe(true);
+    expect(hasBooleanSearchParam("all", "?foo=bar&all")).toBe(true);
+    expect(hasBooleanSearchParam("all", "?all&foo=bar")).toBe(true);
+    expect(hasBooleanSearchParam("debug", "?debug=yes")).toBe(true);
+  });
+
+  it("returns false when parameter is missing or explicitly disabled", () => {
+    expect(hasBooleanSearchParam("all", "")).toBe(false);
+    expect(hasBooleanSearchParam("all", "?")).toBe(false);
+    expect(hasBooleanSearchParam("all", "?foo=bar")).toBe(false);
+    expect(hasBooleanSearchParam("all", "?all=false")).toBe(false);
+    expect(hasBooleanSearchParam("all", "?all=0")).toBe(false);
   });
 });

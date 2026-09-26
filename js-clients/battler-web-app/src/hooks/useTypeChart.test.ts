@@ -115,7 +115,7 @@ describe("useTypeChart helpers", () => {
     expect(formatFraction(1)).toBe("1");
   });
 
-  it("provides complete offline coverage across all 18 standard types in DEFAULT_TYPE_CHART", async () => {
+  it("provides complete offline coverage across all types including None, Stellar, and ??? in DEFAULT_TYPE_CHART", async () => {
     const { DEFAULT_TYPE_CHART } = await import("../data/defaultTypeChart");
     const { fetchTypeChart, getCachedTypeChart } = await import("./useTypeChart");
 
@@ -124,6 +124,30 @@ describe("useTypeChart helpers", () => {
     expect(chart).toBeDefined();
     for (const type of ALL_POKEMON_TYPES) {
       expect(DEFAULT_TYPE_CHART.types).toHaveProperty(type);
+    }
+  });
+
+  it("includes Stellar, None, and ??? types in order with neutral effectiveness against all types", async () => {
+    const { DEFAULT_TYPE_CHART } = await import("../data/defaultTypeChart");
+    const { getEffectiveness, SPECIAL_POKEMON_TYPES } = await import("./useTypeChart");
+
+    expect(SPECIAL_POKEMON_TYPES).toEqual(["Stellar", "None", "???"]);
+    expect(ALL_POKEMON_TYPES).toContain("Stellar");
+    expect(ALL_POKEMON_TYPES).toContain("None");
+    expect(ALL_POKEMON_TYPES).toContain("???");
+
+    for (const type of ALL_POKEMON_TYPES) {
+      // None offensive and defensive
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, "None", type)).toBe(1);
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, type, "None")).toBe(1);
+
+      // Stellar offensive and defensive
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, "Stellar", type)).toBe(1);
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, type, "Stellar")).toBe(1);
+
+      // ??? offensive and defensive
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, "???", type)).toBe(1);
+      expect(getEffectiveness(DEFAULT_TYPE_CHART, type, "???")).toBe(1);
     }
   });
 });
