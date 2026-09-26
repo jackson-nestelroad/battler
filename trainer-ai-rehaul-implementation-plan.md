@@ -25,6 +25,31 @@ flowchart TD
 
 ---
 
+## Core Implementation Guidelines & Phase 1 Learnings
+
+These rules were derived directly from review feedback during Phase 1 and **must be strictly followed across all phases**:
+
+1. **Repository Terminology Standard**:
+   - Strictly use **"Mon"** or **"Mons"**.
+   - **Never** use "Pokémon" or "Pokemon" in code, comments, docstrings, filenames, or test descriptions.
+2. **Strict Phase Isolation & Separation of Concerns**:
+   - Schema crates (`battler-effect-analyzer-schema`) are **pure schemas** (types, enums, structs, traits, and serde bindings only).
+   - **Never** add unnecessary code that is unused or belongs in different phases (e.g., AST parsing, analysis heuristics, fallback synthesis belong strictly in `battler-effect-analyzer` during Phase 2, not Phase 1).
+3. **No Loose Booleans / Prefer Typed Flag Sets**:
+   - Avoid boolean sprawl across structs (e.g., `wonder_guard: bool`, `hazard_immunity: bool`, `trapping: bool`).
+   - Use typed flag enums (`HashSet<AbilityFlag>`, `HashSet<ItemFlag>`, `HashSet<EffectFlag>`) for extensibility, clean serialization, and consistency with `battler-data::MoveFlag`.
+   - Unify identical domain concepts across schemas (e.g., `type_immunities: Vec<Type>` on both `AbilityManifest` and `ItemManifest` for `Levitate` and `Air Balloon`).
+4. **Accurate Domain Naming**:
+   - File and symbol names must accurately reflect their actual domain responsibility (e.g., `manifest_store.rs` rather than `data_store.rs`).
+5. **Strict Alphabetical Ordering**:
+   - All `Cargo.toml` files (workspace `members`, `[workspace.dependencies]`, crate-level `[dependencies]`, and `[dev-dependencies]`) must be strictly alphabetical.
+   - Module declarations (`mod foo;`), `pub use` statements, and `use` imports must be maintained in alphabetical order.
+6. **Explicit Review Gates**:
+   - At the completion of each phase, stop immediately.
+   - Do **not** proceed to the next phase until the user has thoroughly reviewed the code and given explicit approval to go on.
+
+---
+
 ## Phase 1: Effect Analyzer Schemas & Types (`battler-effect-analyzer-schema`)
 
 ### Objective
