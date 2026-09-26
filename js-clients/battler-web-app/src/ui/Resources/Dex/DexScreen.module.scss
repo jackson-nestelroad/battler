@@ -1,0 +1,13 @@
+@use "../../../styles/breakpoints" as *;
+
+.dexLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-l);
+  width: 100%;
+
+  @include tablet {
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+}

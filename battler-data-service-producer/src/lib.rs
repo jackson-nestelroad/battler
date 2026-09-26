@@ -84,6 +84,9 @@ where
     builder.register_type_chart(handlers::TypeChartHandler {
         service: service.clone(),
     })?;
+    builder.register_catalog(handlers::CatalogHandler {
+        service: service.clone(),
+    })?;
 
     let producer = builder.start(peer)?;
 

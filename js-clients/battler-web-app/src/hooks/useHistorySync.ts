@@ -84,6 +84,9 @@ export function useHistorySync() {
       } else if (path === "/resources/type-chart" || path === "/type-chart") {
         view = "resources";
         resource = "type-chart";
+      } else if (path === "/resources/dex") {
+        view = "resources";
+        resource = "dex";
       } else if (path === "/resources") {
         view = "resources";
         resource = null;

@@ -1,0 +1,68 @@
+.catalogItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: var(--spacing-s) var(--spacing-m);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-m);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  min-height: 3.25rem;
+  transition: var(--transition-fast);
+
+  &:hover {
+    background-color: var(--bg-subtle-hover);
+    border-color: var(--text-muted);
+  }
+
+  &.selected {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-bg);
+  }
+}
+
+.itemIcon {
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+  min-width: 0;
+  flex: 1;
+}
+
+.itemName {
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.itemDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.3;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

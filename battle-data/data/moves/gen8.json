@@ -165,7 +165,7 @@
     "flags": ["Mirror", "Protect", "Reflectable"],
     "hit_effect": {
       "boosts": {
-        "spe": 1
+        "spe": -1
       },
       "volatile_status": "tarshot"
     },

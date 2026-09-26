@@ -1,5 +1,6 @@
 import { selectResource } from "../../store/battlesSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
+import DexScreen from "./Dex/DexScreen";
 import ResourcesHome from "./ResourcesHome";
 import TypeChartScreen from "./TypeChartScreen";
 
@@ -10,6 +11,14 @@ export default function Resources() {
   if (activeResource === "type-chart") {
     return (
       <TypeChartScreen
+        onBack={() => dispatch(selectResource(null))}
+      />
+    );
+  }
+
+  if (activeResource === "dex") {
+    return (
+      <DexScreen
         onBack={() => dispatch(selectResource(null))}
       />
     );

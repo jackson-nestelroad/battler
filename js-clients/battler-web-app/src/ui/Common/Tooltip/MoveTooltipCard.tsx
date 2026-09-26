@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DescriptionData } from "battler-data-service-client";
 import { formatMoveEffects } from "battler-log-formatter";
 import type { MoveData } from "battler-types";
@@ -16,9 +17,14 @@ import TooltipFlagsSection from "./TooltipFlagsSection";
 export interface MoveTooltipCardProps {
   data: MoveData;
   description?: DescriptionData | null;
+  headerAction?: ReactNode;
 }
 
-export default function MoveTooltipCard({ data, description }: MoveTooltipCardProps) {
+export default function MoveTooltipCard({
+  data,
+  description,
+  headerAction,
+}: MoveTooltipCardProps) {
   const basePowerStr = formatBasePower(data.base_power);
   const accuracyStr = formatAccuracy(data.accuracy);
   const ppStr = formatPp(data.pp, data.no_pp_boosts);
@@ -30,7 +36,10 @@ export default function MoveTooltipCard({ data, description }: MoveTooltipCardPr
       <header className={cardStyles.header}>
         <div className="flex-row justify-between align-center">
           <span className={cardStyles.name}>{data.name}</span>
-          <TooltipEffectButton type="move" name={data.name} />
+          <div className="flex-row align-center gap-xs">
+            <TooltipEffectButton type="move" name={data.name} />
+            {headerAction}
+          </div>
         </div>
         <span className={cardStyles.subtitle}>Move</span>
         <div className="flex-row align-center gap-xs">

@@ -261,7 +261,64 @@ mod typescript_tests {
         ResourceOptions::export().unwrap();
         BatchQuery::export().unwrap();
         BatchResult::export().unwrap();
+        SpeciesSummary::export().unwrap();
+        MoveSummary::export().unwrap();
+        AbilitySummary::export().unwrap();
+        ItemSummary::export().unwrap();
+        CatalogData::export().unwrap();
     }
+}
+
+/// Summary information for a species.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct SpeciesSummary {
+    pub id: String,
+    pub name: String,
+    pub primary_type: String,
+    pub secondary_type: Option<String>,
+}
+
+/// Summary information for a move.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct MoveSummary {
+    pub id: String,
+    pub name: String,
+    pub primary_type: String,
+    pub category: String,
+}
+
+/// Summary information for an ability.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct AbilitySummary {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+/// Summary information for an item.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct ItemSummary {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+/// Full catalog containing summaries of all resources.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "typescript", derive(ts_rs::TS), ts(export))]
+pub struct CatalogData {
+    #[serde(default)]
+    pub species: Vec<SpeciesSummary>,
+    #[serde(default)]
+    pub moves: Vec<MoveSummary>,
+    #[serde(default)]
+    pub abilities: Vec<AbilitySummary>,
+    #[serde(default)]
+    pub items: Vec<ItemSummary>,
 }
 
 /// Service for querying game data from the `battler` data store.
@@ -299,6 +356,10 @@ pub enum BattlerDataService {
     /// Queries the full type chart.
     #[rpc(uri = "com.battler.data_service.type_chart", input = TypeChartInput, output = TypeChartOutput)]
     TypeChart,
+
+    /// Queries summary catalog data for resources.
+    #[rpc(uri = "com.battler.data_service.catalog", input = CatalogInput, output = CatalogOutput)]
+    Catalog,
 }
 
 /// Input for querying the type chart.
@@ -315,3 +376,18 @@ pub struct TypeChartOutputArgs {
 /// Output for querying the type chart.
 #[derive(Debug, Clone, WampApplicationMessage)]
 pub struct TypeChartOutput(#[arguments] pub TypeChartOutputArgs);
+
+/// Input for querying catalog data.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct CatalogInput;
+
+/// Arguments for catalog output.
+#[derive(Debug, Default, Clone, WampList)]
+pub struct CatalogOutputArgs {
+    /// JSON-serialized catalog data.
+    pub data_json: String,
+}
+
+/// Output for querying catalog data.
+#[derive(Debug, Clone, WampApplicationMessage)]
+pub struct CatalogOutput(#[arguments] pub CatalogOutputArgs);
