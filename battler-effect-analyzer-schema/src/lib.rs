@@ -6,7 +6,6 @@ mod item_manifest;
 mod manifest_store;
 mod modifier;
 mod polarity;
-mod requirement;
 mod target_role;
 
 pub use ability_manifest::{
@@ -41,5 +40,4 @@ pub use modifier::{
     FixedDamage,
 };
 pub use polarity::EffectPolarity;
-pub use requirement::EffectRequirement;
 pub use target_role::TargetRole;

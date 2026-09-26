@@ -16,7 +16,6 @@ use crate::{
         FixedDamage,
     },
     polarity::EffectPolarity,
-    requirement::EffectRequirement,
 };
 
 /// Precompiled semantic manifest for a move or active effect.
@@ -31,9 +30,6 @@ pub struct EffectManifest {
     /// Specific typed actions performed by this effect and their individual polarities on the recipient.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub actions: Vec<(EffectPolarity, SemanticAction)>,
-    /// Viability requirements that must hold before this effect can be used.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub requirements: Vec<EffectRequirement>,
     /// Damage modifiers applied by this move.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub damage_modifiers: Vec<DamageModifier>,

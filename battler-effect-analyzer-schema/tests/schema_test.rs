@@ -4,7 +4,6 @@ use battler_data::{
     Id,
     MoveCategory,
     MoveTarget,
-    Stat,
     Type,
 };
 use battler_effect_analyzer_schema::*;
@@ -121,25 +120,6 @@ fn serde_roundtrip_semantic_actions() {
 }
 
 #[test]
-fn serde_roundtrip_requirements() {
-    let requirements = vec![
-        EffectRequirement::TargetNotStatused,
-        EffectRequirement::TargetNotCondition("taunt".to_owned()),
-        EffectRequirement::SideConditionUnderMaxStacks("spikes".to_owned(), 3),
-        EffectRequirement::WeatherNotActive("Rain".to_owned()),
-        EffectRequirement::TerrainNotActive("Electric Terrain".to_owned()),
-        EffectRequirement::StatNotCapped(Stat::Atk, 6),
-        EffectRequirement::HealthBelowFull,
-    ];
-
-    for req in requirements {
-        let serialized = serde_json::to_string(&req).unwrap();
-        let deserialized: EffectRequirement = serde_json::from_str(&serialized).unwrap();
-        pretty_assertions::assert_eq!(req, deserialized);
-    }
-}
-
-#[test]
 fn serde_roundtrip_modifiers_and_flags() {
     let modifier = DamageModifier::new(
         DamageModifierEvent::BasePower,
@@ -192,7 +172,6 @@ fn serde_roundtrip_manifests() {
                 },
             ),
         ],
-        requirements: vec![],
         damage_modifiers: vec![],
         fixed_damage: None,
         flags: [EffectFlag::IgnoresProtect].into_iter().collect(),
